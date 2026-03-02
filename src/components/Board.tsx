@@ -9,7 +9,7 @@ interface BoardProps {
 
 export function Board({ guesses, current, gameOver }: BoardProps) {
   return (
-    <div className="board">
+    <div role="grid" aria-label="Wordle board" className="space-y-1.5 sm:space-y-2">
       {Array.from({ length: 6 }, (_, i) => {
         if (i < guesses.length) {
           return (

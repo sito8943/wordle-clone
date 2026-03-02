@@ -9,7 +9,7 @@ interface RowProps {
 
 export function Row({ word, statuses, current }: RowProps) {
   return (
-    <div className="board-row">
+    <div role="row" className="flex gap-1.5 sm:gap-2">
       {Array.from({ length: 5 }, (_, i) => {
         if (word && statuses) {
           return <Tile key={i} letter={word[i]} status={statuses[i]} />;
