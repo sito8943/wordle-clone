@@ -1,13 +1,7 @@
-import { Tile } from './Tile';
-import type { TileStatus } from '../utils/checker';
+import { Tile } from "./Tile";
+import type { RowPropsType } from "./types";
 
-interface RowProps {
-  word?: string;
-  statuses?: TileStatus[];
-  current?: string;
-}
-
-export function Row({ word, statuses, current }: RowProps) {
+export function Row({ word, statuses, current }: RowPropsType) {
   return (
     <div role="row" className="flex gap-1.5 sm:gap-2">
       {Array.from({ length: 5 }, (_, i) => {
@@ -19,7 +13,7 @@ export function Row({ word, statuses, current }: RowProps) {
             <Tile
               key={i}
               letter={current[i]}
-              status={current[i] ? 'tbd' : 'empty'}
+              status={current[i] ? "tbd" : "empty"}
             />
           );
         }

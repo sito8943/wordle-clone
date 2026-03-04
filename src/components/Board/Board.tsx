@@ -1,15 +1,13 @@
-import { Row } from './Row';
-import type { GuessResult } from '../hooks/useWordle';
+import { Row } from "./Row";
+import type { BoardPropsType } from "./types";
 
-interface BoardProps {
-  guesses: GuessResult[];
-  current: string;
-  gameOver: boolean;
-}
-
-export function Board({ guesses, current, gameOver }: BoardProps) {
+export function Board({ guesses, current, gameOver }: BoardPropsType) {
   return (
-    <div role="grid" aria-label="Wordle board" className="space-y-1.5 sm:space-y-2">
+    <div
+      role="grid"
+      aria-label="Wordle board"
+      className="space-y-1.5 sm:space-y-2"
+    >
       {Array.from({ length: 6 }, (_, i) => {
         if (i < guesses.length) {
           return (
