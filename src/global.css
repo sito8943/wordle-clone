@@ -1,5 +1,5 @@
 @import "tailwindcss";
 
-* {
-  font-family: 'Times New Roman', Times, serif;
+h1, .times-new-roman {
+  font-family: "Times New Roman", Times, serif;
 }

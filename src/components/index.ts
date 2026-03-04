@@ -1,4 +1,4 @@
 import { Board } from "./Board/Board";
 import { Keyboard } from "./Keyboard";
-
-export { Board, Keyboard };
+import { Navbar } from "./Navbar";
+export { Board, Keyboard, Navbar };
