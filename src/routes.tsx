@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import { Home, Scoreboard } from "./views";
+import { Home, NotFound, Profile, Scoreboard } from "./views";
 import { View } from "./layouts/";
 
 const routes = createBrowserRouter([
@@ -9,6 +9,11 @@ const routes = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "/scoreboard", element: <Scoreboard /> },
+      { path: "/profile", element: <Profile /> },
+      {
+        path: "/*",
+        element: <NotFound />,
+      },
     ],
   },
 ]);

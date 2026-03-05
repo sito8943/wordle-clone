@@ -1,10 +1,19 @@
-import type { JSX } from "react";
+import { useEffect, type JSX } from "react";
 import { Board, Keyboard } from "../components";
-import { useWordle } from "../hooks/useWordle";
+import { useWordle } from "../hooks/";
+import { usePlayer } from "../providers";
 
 const Home = (): JSX.Element => {
   const { answer, guesses, current, gameOver, won, message, handleKey } =
     useWordle();
+
+  const { increaseScore } = usePlayer();
+
+  useEffect(() => {
+    if (won) {
+      increaseScore(guesses.length);
+    }
+  }, [guesses.length, increaseScore, won]);
 
   return (
     <>
