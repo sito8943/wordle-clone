@@ -1,19 +1,30 @@
-import { useEffect, type JSX } from "react";
+import { useEffect, useRef, type JSX } from "react";
 import { Board, Keyboard } from "../components";
 import { useWordle } from "../hooks/";
 import { usePlayer } from "../providers";
 
 const Home = (): JSX.Element => {
-  const { answer, guesses, current, gameOver, won, message, handleKey } =
-    useWordle();
-
   const { increaseScore } = usePlayer();
 
+  const {
+    answer,
+    guesses,
+    current,
+    gameOver,
+    won,
+    message,
+    handleKey,
+    refresh,
+  } = useWordle();
+
+  const alreadyScored = useRef(false);
+
   useEffect(() => {
-    if (won) {
+    if (won && !alreadyScored.current) {
       increaseScore(guesses.length);
+      alreadyScored.current = true;
     }
-  }, [guesses.length, increaseScore, won]);
+  }, [won, increaseScore, guesses.length]);
 
   return (
     <>
@@ -31,11 +42,21 @@ const Home = (): JSX.Element => {
           <Board guesses={guesses} current={current} gameOver={gameOver} />
 
           {gameOver && (
-            <p className="text-center text-base font-semibold text-neutral-800 sm:text-lg">
-              {won
-                ? `You got it in ${guesses.length}!`
-                : `The word was: ${answer}`}
-            </p>
+            <>
+              <p className="text-center text-base font-semibold text-neutral-800 sm:text-lg">
+                {won
+                  ? `You got it in ${guesses.length}!`
+                  : `The word was: ${answer}`}
+              </p>
+              <button
+                onClick={() => {
+                  refresh();
+                  alreadyScored.current = false;
+                }}
+              >
+                Refresh
+              </button>
+            </>
           )}
         </section>
 

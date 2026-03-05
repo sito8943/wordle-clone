@@ -18,44 +18,28 @@ const DEFAULT_PLAYER = {
 const PlayerProvider = (props: { children: React.ReactNode }) => {
   const { children } = props;
 
-  const [player, setPlayer] = useState({
-    name: "Player",
-    score: 0,
-  });
+  const [player, setPlayer] = useState(DEFAULT_PLAYER);
 
-  const updateLocal = useCallback(() => {
+  const updatePlayer = useCallback((name: string) => {
+    setPlayer((prev) => ({ ...prev, name }));
+  }, []);
+
+  const increaseScore = useCallback((points: number) => {
+    setPlayer((prev) => ({ ...prev, score: prev.score + points }));
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem("player", JSON.stringify(player));
   }, [player]);
 
-  const updatePlayer = useCallback(
-    (name: string) => {
-      setPlayer((prev) => ({ ...prev, name }));
-      updateLocal();
-    },
-    [updateLocal],
-  );
-
-  const increaseScore = useCallback(
-    (points: number) => {
-      setPlayer((prev) => ({ ...prev, score: prev.score + points }));
-      updateLocal();
-    },
-    [updateLocal],
-  );
-
   useEffect(() => {
-    const storedPlayer = localStorage.getItem("player");
-    if (storedPlayer) {
-      setPlayer(JSON.parse(storedPlayer));
-    } else {
-      localStorage.setItem("player", JSON.stringify(DEFAULT_PLAYER));
-    }
+    const stored = localStorage.getItem("player");
+    if (stored) setPlayer(JSON.parse(stored));
+    else localStorage.setItem("player", JSON.stringify(DEFAULT_PLAYER));
   }, []);
 
   return (
-    <PlayerContext.Provider
-      value={{ player, updateLocal, updatePlayer, increaseScore }}
-    >
+    <PlayerContext.Provider value={{ player, updatePlayer, increaseScore }}>
       {children}
     </PlayerContext.Provider>
   );

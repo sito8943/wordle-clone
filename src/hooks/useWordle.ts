@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { checkGuess } from "../utils/checker";
 import { getRandomWord, isValidWord } from "../utils/words";
 import type { GuessResult } from "./types";
@@ -10,49 +10,72 @@ export default function useWordle() {
   const [message, setMessage] = useState("");
   const [gameOver, setGameOver] = useState(false);
 
-  const won = guesses.some((g) => g.word === answer);
+  // pure computation of whether the answer has been guessed
+  const won = useMemo(
+    () => guesses.some((g) => g.word === answer),
+    [guesses, answer],
+  );
 
   const showMessage = (msg: string) => {
     setMessage(msg);
     setTimeout(() => setMessage(""), 1800);
   };
 
+  const checkInput = useCallback(
+    (input: string) => {
+      if (input.length < 5) {
+        showMessage("Not enough letters");
+        return false;
+      }
+      if (!isValidWord(input)) {
+        showMessage("Not in word list");
+        return false;
+      }
+      const statuses = checkGuess(current, answer);
+      const result: GuessResult = { word: current, statuses };
+      setGuesses((prev) => {
+        const next = [...prev, result];
+        if (current === answer || next.length === 6) {
+          setGameOver(true);
+        }
+        return next;
+      });
+      setCurrent("");
+      return;
+    },
+    [answer, current],
+  );
+
+  const removeLetter = useCallback(() => {
+    setCurrent((prev) => prev.slice(0, -1));
+  }, []);
+
+  const addLetter = useCallback(
+    (letter: string) => {
+      if (current.length < 5) {
+        setCurrent((prev) => prev + letter);
+      }
+    },
+    [current],
+  );
+
   const handleKey = useCallback(
     (key: string) => {
       if (gameOver) return;
 
       if (key === "ENTER") {
-        if (current.length < 5) {
-          showMessage("Not enough letters");
-          return;
-        }
-        if (!isValidWord(current)) {
-          showMessage("Not in word list");
-          return;
-        }
-        const statuses = checkGuess(current, answer);
-        const result: GuessResult = { word: current, statuses };
-        setGuesses((prev) => {
-          const next = [...prev, result];
-          if (current === answer || next.length === 6) {
-            setGameOver(true);
-          }
-          return next;
-        });
-        setCurrent("");
-        return;
+        return checkInput(current);
       }
 
       if (key === "BACKSPACE") {
-        setCurrent((prev) => prev.slice(0, -1));
-        return;
+        return removeLetter();
       }
 
-      if (/^[A-Z]$/.test(key) && current.length < 5) {
-        setCurrent((prev) => prev + key);
+      if (/^[A-Z]$/.test(key)) {
+        return addLetter(key);
       }
     },
-    [current, answer, gameOver],
+    [gameOver, current, checkInput, removeLetter, addLetter],
   );
 
   const refresh = useCallback(() => {
