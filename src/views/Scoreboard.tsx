@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 
 const Scoreboard = (): JSX.Element => {
-  return <div></div>;
+  return <main>Working on it</main>;
 };
 
 export default Scoreboard;
