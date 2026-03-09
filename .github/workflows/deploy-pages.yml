@@ -1,66 +1,96 @@
-name: Deploy to GitHub Pages
+name: Verify and Deploy
 
 on:
   push:
-    branches:
-      - main
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
-  build:
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+          node-version-file: .nvmrc
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Set base path
-        run: |
-          if [ "${{ github.event.repository.name }}" = "${{ github.repository_owner }}.github.io" ]; then
-            echo "BASE_PATH=/" >> "$GITHUB_ENV"
-          else
-            echo "BASE_PATH=/${{ github.event.repository.name }}/" >> "$GITHUB_ENV"
-          fi
+      - name: Typecheck
+        run: npm run lint-typecheck
+      - name: ESLint
+        run: npm run lint-eslint
+      - name: Prettier
+        run: npm run lint-prettier
+      - name: depcheck
+        run: npm run lint-depcheck
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm run test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [verify, test]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build
-        run: npm run build -- --base "$BASE_PATH"
-
-      - name: Fallback for SPA routes
-        run: cp dist/index.html dist/404.html
+        run: npm run build -- --base=/${{ github.event.repository.name }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ./dist
 
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+    name: Deploy
     runs-on: ubuntu-latest
+    environment: github-pages
+    needs: build
+
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    permissions:
+      id-token: write
+      pages: write
+      contents: write
+      packages: write
+
     steps:
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
