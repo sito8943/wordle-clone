@@ -1,4 +1,4 @@
-import type { GuessResult } from "../../hooks/useWordle";
+import type { GuessResult } from "../../hooks/";
 import type { TileStatus } from "../../utils/checker";
 
 export type BoardPropsType = {

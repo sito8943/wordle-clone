@@ -21,7 +21,9 @@ describe("ProfileCard", () => {
 
   it("submits the edited name", () => {
     const onSubmit = vi.fn();
-    render(<EditableProfileCard name="Player" score={12} onSubmit={onSubmit} />);
+    render(
+      <EditableProfileCard name="Player" score={12} onSubmit={onSubmit} />,
+    );
 
     fireEvent.change(screen.getByLabelText("Name:"), {
       target: { value: "Ana" },

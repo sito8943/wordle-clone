@@ -33,7 +33,13 @@ describe("Keyboard", () => {
   });
 
   it("keeps the highest priority style for a key across guesses", () => {
-    const absent: TileStatus[] = ["absent", "absent", "absent", "absent", "absent"];
+    const absent: TileStatus[] = [
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+    ];
     const withCorrectA: TileStatus[] = [
       "correct",
       "absent",

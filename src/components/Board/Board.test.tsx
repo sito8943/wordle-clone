@@ -38,7 +38,13 @@ describe("Board", () => {
   });
 
   it("hides typing cells when game is over", () => {
-    const absent: TileStatus[] = ["absent", "absent", "absent", "absent", "absent"];
+    const absent: TileStatus[] = [
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+    ];
 
     render(
       <Board

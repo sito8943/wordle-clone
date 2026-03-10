@@ -10,9 +10,8 @@ import App from "./App";
 import { PlayerProvider } from "./providers";
 
 vi.mock("./utils/words", async () => {
-  const actual = await vi.importActual<typeof import("./utils/words")>(
-    "./utils/words",
-  );
+  const actual =
+    await vi.importActual<typeof import("./utils/words")>("./utils/words");
 
   return {
     ...actual,
@@ -37,9 +36,7 @@ describe("App", () => {
       </PlayerProvider>,
     );
 
-    expect(
-      await screen.findByRole("heading", { name: "WORDLE" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Home" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Profile" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
@@ -87,7 +84,9 @@ describe("App", () => {
     );
 
     fireEvent.click(screen.getByRole("link", { name: "Profile" }));
-    expect(await screen.findByRole("heading", { name: "Profile" })).toBeTruthy();
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Name:"), {
