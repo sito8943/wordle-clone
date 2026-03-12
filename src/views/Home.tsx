@@ -3,6 +3,7 @@ import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import {
   Board,
   Button,
+  FireStreak,
   Keyboard,
   RefreshConfirmationDialog,
   SessionResumeDialog,
@@ -25,6 +26,7 @@ const Home = (): JSX.Element => {
     showRefreshDialog,
     continuePreviousBoard,
     startNewBoard,
+    currentWinStreak,
     refreshBoard,
     confirmRefreshBoard,
     cancelRefreshBoard,
@@ -55,7 +57,8 @@ const Home = (): JSX.Element => {
       )}
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-start gap-6 max-sm:gap-2 py-6 max-sm:py-2">
-          <div className="w-full max-w-md flex justify-end">
+          <div className="w-full max-w-md flex items-center justify-end gap-2">
+            <FireStreak streak={currentWinStreak} />
             <Button
               onClick={refreshBoard}
               aria-label="Refresh"

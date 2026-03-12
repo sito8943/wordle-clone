@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "../components";
+import { Button, FireStreak } from "../components";
 import { useScoreboardController } from "../hooks";
 
 const Scoreboard = (): JSX.Element => {
@@ -60,16 +60,17 @@ const Scoreboard = (): JSX.Element => {
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-100">
             <tr>
-              <th className="px-4 py-2">#</th>
-              <th className="px-4 py-2">Nick</th>
-              <th className="px-4 py-2">Score</th>
-              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2 text-xs">#</th>
+              <th className="px-4 py-2 text-xs">Nick</th>
+              <th className="px-4 py-2 text-xs">Streak</th>
+              <th className="px-4 py-2 text-xs">Score</th>
+              <th className="px-4 py-2 text-xs">Date</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td className="px-4 py-4 text-neutral-600" colSpan={4}>
+                <td className="px-4 py-4 text-neutral-600" colSpan={5}>
                   Loading scores...
                 </td>
               </tr>
@@ -77,7 +78,7 @@ const Scoreboard = (): JSX.Element => {
 
             {!loading && scores.length === 0 && (
               <tr>
-                <td className="px-4 py-4 text-neutral-600" colSpan={4}>
+                <td className="px-4 py-4 text-neutral-600" colSpan={5}>
                   No scores yet.
                 </td>
               </tr>
@@ -88,10 +89,10 @@ const Scoreboard = (): JSX.Element => {
                 <tr
                   key={`${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`}
                   className={`border-t border-neutral-200 ${
-                    entry.isCurrentClient ? "bg-emerald-50/80" : ""
+                    entry.isCurrentClient ? "scoreboard-current-player-row" : ""
                   }`}
                 >
-                  <td className="px-4 py-2 font-semibold">
+                  <td className="px-4 py-2 font-semibold text-xs">
                     <div className="flex flex-col">
                       <span>#{entry.displayRank}</span>
                       {entry.isPinnedCurrentClient &&
@@ -102,18 +103,12 @@ const Scoreboard = (): JSX.Element => {
                         )}
                     </div>
                   </td>
+                  <td className="px-4 py-2">{entry.nick}</td>
                   <td className="px-4 py-2">
-                    <div className="flex items-center gap-2">
-                      <span>{entry.nick}</span>
-                      {entry.isCurrentClient && (
-                        <span className="rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                          You
-                        </span>
-                      )}
-                    </div>
+                    <FireStreak streak={entry.streak} size="sm" />
                   </td>
                   <td className="px-4 py-2">{entry.score}</td>
-                  <td className="px-4 py-2 text-neutral-600">
+                  <td className="px-4 py-2 text-neutral-600 text-xs">
                     {entry.formattedDate}
                   </td>
                 </tr>

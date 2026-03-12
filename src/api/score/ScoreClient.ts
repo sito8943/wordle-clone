@@ -78,12 +78,27 @@ class ScoreClient {
   }
 
   async recordScore(input: RecordScoreInput): Promise<void> {
+    const currentRecord = this.getCurrentClientStoredScore();
+    const normalizedInputScore = this.normalizeScore(input.score);
+    const score = currentRecord
+      ? Math.max(currentRecord.score, normalizedInputScore)
+      : normalizedInputScore;
+    const streak =
+      typeof input.streak === "number"
+        ? this.normalizeStreak(input.streak)
+        : (currentRecord?.streak ?? 0);
+    const createdAt =
+      currentRecord && score <= currentRecord.score
+        ? currentRecord.createdAt
+        : (input.createdAt ?? Date.now());
+
     const record: StoredScore = {
-      localId: this.createLocalId(input.createdAt),
+      localId: currentRecord?.localId ?? this.createLocalId(createdAt),
       clientId: this.clientId,
       nick: this.normalizeNick(input.nick),
-      score: this.normalizeScore(input.score),
-      createdAt: input.createdAt ?? Date.now(),
+      score,
+      streak,
+      createdAt,
     };
 
     this.addToCache(record);
@@ -99,6 +114,7 @@ class ScoreClient {
         clientId: this.clientId,
         nick: record.nick,
         score: record.score,
+        streak: record.streak,
         createdAt: record.createdAt,
       });
     } catch (error) {
@@ -189,6 +205,7 @@ class ScoreClient {
           clientId: this.clientId,
           nick: entry.nick,
           score: entry.score,
+          streak: entry.streak,
           createdAt: entry.createdAt,
         });
       } catch (error) {
@@ -239,6 +256,7 @@ class ScoreClient {
       id: entry.localId,
       nick: entry.nick,
       score: entry.score,
+      streak: entry.streak,
       createdAt: entry.createdAt,
       source: "local",
       isCurrentClient: !entry.clientId || entry.clientId === this.clientId,
@@ -247,13 +265,14 @@ class ScoreClient {
 
   private toScoreEntry(
     entry: Pick<RemoteScore, "id" | "nick" | "score" | "createdAt"> &
-      Partial<Pick<RemoteScore, "isCurrentClient">>,
+      Partial<Pick<RemoteScore, "isCurrentClient" | "streak">>,
     source: ScoreSource,
   ): ScoreEntry {
     return {
       id: entry.id,
       nick: entry.nick,
       score: entry.score,
+      streak: this.normalizeStreak(entry.streak ?? 0),
       createdAt: entry.createdAt,
       source,
       isCurrentClient: Boolean(entry.isCurrentClient),
@@ -338,7 +357,10 @@ class ScoreClient {
         return [];
       }
 
-      return parsed.filter(this.isStoredScore);
+      return parsed.flatMap((entry) => {
+        const normalized = this.toStoredScore(entry);
+        return normalized ? [normalized] : [];
+      });
     } catch {
       return [];
     }
@@ -367,6 +389,14 @@ class ScoreClient {
     }
 
     return Math.max(0, Math.floor(score));
+  }
+
+  private normalizeStreak(streak: number): number {
+    if (!Number.isFinite(streak)) {
+      return 0;
+    }
+
+    return Math.max(0, Math.floor(streak));
   }
 
   private normalizeLimit(limit: number): number {
@@ -401,20 +431,31 @@ class ScoreClient {
     return Math.random().toString(36).slice(2);
   }
 
-  private isStoredScore(value: unknown): value is StoredScore {
+  private toStoredScore(value: unknown): StoredScore | null {
     if (!value || typeof value !== "object") {
-      return false;
+      return null;
     }
 
     const candidate = value as Partial<StoredScore>;
-    return (
-      typeof candidate.localId === "string" &&
-      (candidate.clientId === undefined ||
-        typeof candidate.clientId === "string") &&
-      typeof candidate.nick === "string" &&
-      typeof candidate.score === "number" &&
-      typeof candidate.createdAt === "number"
-    );
+    if (
+      typeof candidate.localId !== "string" ||
+      (candidate.clientId !== undefined &&
+        typeof candidate.clientId !== "string") ||
+      typeof candidate.nick !== "string" ||
+      typeof candidate.score !== "number" ||
+      typeof candidate.createdAt !== "number"
+    ) {
+      return null;
+    }
+
+    return {
+      localId: candidate.localId,
+      clientId: candidate.clientId,
+      nick: candidate.nick,
+      score: this.normalizeScore(candidate.score),
+      streak: this.normalizeStreak(candidate.streak ?? 0),
+      createdAt: candidate.createdAt,
+    };
   }
 
   private dedupeStoredByNick(entries: StoredScore[]): StoredScore[] {
@@ -423,13 +464,36 @@ class ScoreClient {
     for (const entry of entries) {
       const key = this.nickKey(entry.nick);
       const current = byNick.get(key);
+      const comparison = current ? scoreSorter(entry, current) : 0;
 
-      if (!current || scoreSorter(entry, current) < 0) {
+      if (!current || comparison < 0) {
+        byNick.set(key, entry);
+        continue;
+      }
+
+      if (comparison === 0) {
         byNick.set(key, entry);
       }
     }
 
     return [...byNick.values()];
+  }
+
+  private getCurrentClientStoredScore(): StoredScore | null {
+    const entries = [
+      ...this.readScores(SCOREBOARD_CACHE_KEY),
+      ...this.readScores(SCOREBOARD_PENDING_KEY),
+    ].filter((entry) => entry.clientId === this.clientId);
+
+    let current: StoredScore | null = null;
+
+    for (const entry of entries) {
+      if (!current || scoreSorter(entry, current) < 0) {
+        current = entry;
+      }
+    }
+
+    return current;
   }
 
   private dedupeScoreEntriesByNick(entries: ScoreEntry[]): ScoreEntry[] {
@@ -447,7 +511,8 @@ class ScoreClient {
       if (
         scoreSorter(entry, current) === 0 &&
         entry.isCurrentClient &&
-        !current.isCurrentClient
+        (!current.isCurrentClient ||
+          (entry.source === "local" && current.source !== "local"))
       ) {
         byNick.set(key, entry);
         continue;

@@ -52,6 +52,210 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Home" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Profile" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
+    expect(screen.getByText("#--")).toBeTruthy();
+  });
+
+  it("shows the scoreboard navbar button in red when current player is first", async () => {
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "me",
+          nick: "Sito",
+          score: 999,
+          createdAt: 1,
+        },
+      ]),
+    );
+
+    renderApp();
+
+    const scoreboardLink = screen.getByRole("link", { name: "Scoreboard" });
+
+    await waitFor(() => {
+      expect(scoreboardLink.textContent).toContain("#1");
+      expect(scoreboardLink.className).toContain("text-red-700");
+    });
+  });
+
+  it("shows the scoreboard navbar button in green when current player is in the top 10", async () => {
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "other",
+          clientId: "other-client",
+          nick: "Alpha",
+          score: 100,
+          createdAt: 1,
+        },
+        {
+          localId: "me",
+          nick: "Sito",
+          score: 99,
+          createdAt: 2,
+        },
+      ]),
+    );
+
+    renderApp();
+
+    const scoreboardLink = screen.getByRole("link", { name: "Scoreboard" });
+
+    await waitFor(() => {
+      expect(scoreboardLink.textContent).toContain("#2");
+      expect(scoreboardLink.className).toContain("text-emerald-700");
+    });
+  });
+
+  it("shows the scoreboard navbar button in gray when current player is outside the top 10", async () => {
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "p1",
+          clientId: "other-1",
+          nick: "A",
+          score: 120,
+          createdAt: 1,
+        },
+        {
+          localId: "p2",
+          clientId: "other-2",
+          nick: "B",
+          score: 119,
+          createdAt: 2,
+        },
+        {
+          localId: "p3",
+          clientId: "other-3",
+          nick: "C",
+          score: 118,
+          createdAt: 3,
+        },
+        {
+          localId: "p4",
+          clientId: "other-4",
+          nick: "D",
+          score: 117,
+          createdAt: 4,
+        },
+        {
+          localId: "p5",
+          clientId: "other-5",
+          nick: "E",
+          score: 116,
+          createdAt: 5,
+        },
+        {
+          localId: "p6",
+          clientId: "other-6",
+          nick: "F",
+          score: 115,
+          createdAt: 6,
+        },
+        {
+          localId: "p7",
+          clientId: "other-7",
+          nick: "G",
+          score: 114,
+          createdAt: 7,
+        },
+        {
+          localId: "p8",
+          clientId: "other-8",
+          nick: "H",
+          score: 113,
+          createdAt: 8,
+        },
+        {
+          localId: "p9",
+          clientId: "other-9",
+          nick: "I",
+          score: 112,
+          createdAt: 9,
+        },
+        {
+          localId: "p10",
+          clientId: "other-10",
+          nick: "J",
+          score: 111,
+          createdAt: 10,
+        },
+        {
+          localId: "p11",
+          clientId: "other-11",
+          nick: "K",
+          score: 110,
+          createdAt: 11,
+        },
+        {
+          localId: "me",
+          nick: "Sito",
+          score: 1,
+          createdAt: 12,
+        },
+      ]),
+    );
+
+    renderApp();
+
+    const scoreboardLink = screen.getByRole("link", { name: "Scoreboard" });
+
+    await waitFor(() => {
+      expect(scoreboardLink.textContent).toContain("#12");
+      expect(scoreboardLink.className).toContain("text-neutral-600");
+    });
+  });
+
+  it("shows and increments win streak in home after a victory", async () => {
+    renderApp();
+
+    expect(screen.getByLabelText("Racha: 0")).toBeTruthy();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    expect(await screen.findByText("You got it in 1!")).toBeTruthy();
+    expect(screen.getByLabelText("Racha: 1")).toBeTruthy();
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.streak).toBe(1);
+    });
+  });
+
+  it("resets win streak when the last persisted game is a loss", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 20, streak: 4 }),
+    );
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-lost",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: true,
+      }),
+    );
+
+    renderApp();
+
+    expect(screen.getByLabelText("Racha: 0")).toBeTruthy();
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.streak).toBe(0);
+    });
   });
 
   it("shows a validation message when submitting fewer than 5 letters", async () => {
@@ -136,7 +340,11 @@ describe("App", () => {
       await screen.findByRole("heading", { name: "Scoreboard" }),
     ).toBeTruthy();
 
-    expect(await screen.findByText("You")).toBeTruthy();
+    await waitFor(() => {
+      expect(
+        document.querySelector(".scoreboard-current-player-row"),
+      ).toBeTruthy();
+    });
   });
 
   it("shows the current player as #11 when outside top 10 and displays real rank", async () => {
@@ -190,7 +398,45 @@ describe("App", () => {
     ).toBeTruthy();
     expect(await screen.findByText("#11")).toBeTruthy();
     expect(await screen.findByText("Real #12")).toBeTruthy();
-    expect(await screen.findByText("You")).toBeTruthy();
+    await waitFor(() => {
+      expect(
+        document.querySelector(".scoreboard-current-player-row"),
+      ).toBeTruthy();
+    });
+  });
+
+  it("renders a fire streak badge for each visible scoreboard row", async () => {
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "p1",
+          clientId: "c1",
+          nick: "Ana",
+          score: 20,
+          streak: 4,
+          createdAt: 1,
+        },
+        {
+          localId: "p2",
+          clientId: "c2",
+          nick: "Luis",
+          score: 19,
+          streak: 2,
+          createdAt: 2,
+        },
+      ]),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
+    expect(
+      await screen.findByRole("heading", { name: "Scoreboard" }),
+    ).toBeTruthy();
+
+    expect(await screen.findByLabelText("Racha: 4")).toBeTruthy();
+    expect(await screen.findByLabelText("Racha: 2")).toBeTruthy();
   });
 
   it("lets the user edit the profile name", async () => {

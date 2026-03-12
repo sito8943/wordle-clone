@@ -4,53 +4,135 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import { useLocalStorage } from "../hooks/";
 import { useApi } from "./ApiProvider";
 import { DEFAULT_PLAYER } from "./constant";
 import type { Player, PlayerContextType, ProviderProps } from "./types";
-import { normalizePlayerName } from "./utils";
+import { normalizePlayer, normalizePlayerName } from "./utils";
 
 const PlayerContext = createContext({} as PlayerContextType);
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
 
-  const [player, setPlayer] = useLocalStorage<Player>("player", DEFAULT_PLAYER);
+  const [storedPlayer, setStoredPlayer] = useLocalStorage<Player>(
+    "player",
+    DEFAULT_PLAYER,
+  );
+  const player = useMemo(() => normalizePlayer(storedPlayer), [storedPlayer]);
+
   const didMountRef = useRef(false);
-  const previousScoreRef = useRef(player.score);
+  const previousSnapshotRef = useRef({
+    name: player.name,
+    score: player.score,
+    streak: player.streak,
+  });
+
+  useEffect(() => {
+    if (
+      storedPlayer.name !== player.name ||
+      storedPlayer.score !== player.score ||
+      storedPlayer.streak !== player.streak
+    ) {
+      setStoredPlayer({
+        name: player.name,
+        score: player.score,
+        streak: player.streak,
+      });
+    }
+  }, [
+    player.name,
+    player.score,
+    player.streak,
+    setStoredPlayer,
+    storedPlayer.name,
+    storedPlayer.score,
+    storedPlayer.streak,
+  ]);
 
   const updatePlayer = useCallback(
     (name: string) => {
-      setPlayer((prev) => ({ ...prev, name: normalizePlayerName(name) }));
+      setStoredPlayer((prev) => ({
+        ...normalizePlayer(prev),
+        name: normalizePlayerName(name),
+      }));
     },
-    [setPlayer],
+    [setStoredPlayer],
   );
 
   const increaseScore = useCallback(
     (points: number) => {
-      setPlayer((prev) => ({ ...prev, score: prev.score + points }));
+      const safePoints =
+        Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
+
+      if (safePoints === 0) {
+        return;
+      }
+
+      setStoredPlayer((prev) => {
+        const normalized = normalizePlayer(prev);
+        return { ...normalized, score: normalized.score + safePoints };
+      });
     },
-    [setPlayer],
+    [setStoredPlayer],
   );
+
+  const increaseWinStreak = useCallback(() => {
+    setStoredPlayer((prev) => {
+      const normalized = normalizePlayer(prev);
+      return { ...normalized, streak: normalized.streak + 1 };
+    });
+  }, [setStoredPlayer]);
+
+  const resetWinStreak = useCallback(() => {
+    setStoredPlayer((prev) => {
+      const normalized = normalizePlayer(prev);
+      if (normalized.streak === 0) {
+        if (typeof prev.streak === "number" && prev.streak === 0) {
+          return prev;
+        }
+
+        return normalized;
+      }
+
+      return { ...normalized, streak: 0 };
+    });
+  }, [setStoredPlayer]);
+
+  const { name, score, streak } = player;
 
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
-      previousScoreRef.current = player.score;
+      previousSnapshotRef.current = { name, score, streak };
       return;
     }
 
-    if (player.score > previousScoreRef.current) {
-      void scoreClient.recordScore({ nick: player.name, score: player.score });
+    const previous = previousSnapshotRef.current;
+    const nameChanged = name !== previous.name;
+    const scoreChanged = score !== previous.score;
+    const streakChanged = streak !== previous.streak;
+
+    if (nameChanged || scoreChanged || streakChanged) {
+      void scoreClient.recordScore({ nick: name, score, streak });
     }
 
-    previousScoreRef.current = player.score;
-  }, [player.name, player.score, scoreClient]);
+    previousSnapshotRef.current = { name, score, streak };
+  }, [name, score, streak, scoreClient]);
 
   return (
-    <PlayerContext.Provider value={{ player, updatePlayer, increaseScore }}>
+    <PlayerContext.Provider
+      value={{
+        player,
+        updatePlayer,
+        increaseScore,
+        increaseWinStreak,
+        resetWinStreak,
+      }}
+    >
       {children}
     </PlayerContext.Provider>
   );

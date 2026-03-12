@@ -7,6 +7,7 @@ export default defineSchema({
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
     score: v.number(),
+    streak: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_client_id", ["clientId"])

@@ -4,12 +4,15 @@ import type { ScoreClient } from "../api/score";
 export type Player = {
   name: string;
   score: number;
+  streak: number;
 };
 
 export type PlayerContextType = {
   player: Player;
   updatePlayer: (name: string) => void;
   increaseScore: (points: number) => void;
+  increaseWinStreak: () => void;
+  resetWinStreak: () => void;
 };
 
 export type ApiContextType = {

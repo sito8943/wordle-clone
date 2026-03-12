@@ -4,11 +4,12 @@ import { usePlayer } from "../providers";
 import { useWordle } from "./useWordle";
 
 export default function useHomeController() {
-  const { increaseScore } = usePlayer();
+  const { player, increaseScore, increaseWinStreak, resetWinStreak } =
+    usePlayer();
   const wordle = useWordle();
   const { won, guesses, current, gameOver, refresh, showResumeDialog } = wordle;
 
-  const alreadyScored = useRef(false);
+  const roundSettled = useRef(false);
   const hydrated = useRef(false);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
 
@@ -20,23 +21,43 @@ export default function useHomeController() {
   useEffect(() => {
     if (!hydrated.current) {
       hydrated.current = true;
-      alreadyScored.current = won;
+
+      if (gameOver && !won) {
+        resetWinStreak();
+      }
+
+      roundSettled.current = gameOver;
       return;
     }
 
-    if (won && !alreadyScored.current) {
-      increaseScore(getPointsForWin(guesses.length));
-      alreadyScored.current = true;
+    if (!gameOver) {
+      roundSettled.current = false;
+      return;
     }
 
-    if (!won) {
-      alreadyScored.current = false;
+    if (roundSettled.current) {
+      return;
     }
-  }, [won, guesses.length, increaseScore]);
+
+    if (won) {
+      increaseScore(getPointsForWin(guesses.length));
+      increaseWinStreak();
+    } else {
+      resetWinStreak();
+    }
+
+    roundSettled.current = true;
+  }, [
+    gameOver,
+    guesses.length,
+    increaseScore,
+    increaseWinStreak,
+    resetWinStreak,
+    won,
+  ]);
 
   const refreshBoardNow = useCallback(() => {
     refresh();
-    alreadyScored.current = false;
   }, [refresh]);
 
   const refreshBoard = useCallback(() => {
@@ -65,6 +86,7 @@ export default function useHomeController() {
 
   return {
     ...wordle,
+    currentWinStreak: player.streak,
     refreshBoard,
     showRefreshDialog,
     confirmRefreshBoard,

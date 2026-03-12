@@ -4,6 +4,7 @@ export type ScoreEntry = {
   id: string;
   nick: string;
   score: number;
+  streak: number;
   createdAt: number;
   source: ScoreSource;
   isCurrentClient: boolean;
@@ -12,6 +13,7 @@ export type ScoreEntry = {
 export type RecordScoreInput = {
   nick: string;
   score: number;
+  streak?: number;
   createdAt?: number;
 };
 
@@ -27,6 +29,7 @@ export type StoredScore = {
   clientId?: string;
   nick: string;
   score: number;
+  streak: number;
   createdAt: number;
 };
 
@@ -34,6 +37,7 @@ export type RemoteScore = {
   id: string;
   nick: string;
   score: number;
+  streak?: number;
   createdAt: number;
   isCurrentClient?: boolean;
 };

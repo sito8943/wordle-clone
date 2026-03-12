@@ -104,11 +104,13 @@ export const addScore = mutation({
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
     score: v.number(),
+    streak: v.optional(v.number()),
     createdAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const nick = normalizeNick(args.nick);
     const score = Math.max(0, Math.floor(args.score));
+    const streak = Math.max(0, Math.floor(args.streak ?? 0));
     const createdAt = args.createdAt ?? Date.now();
     const normalizedKey = nickKey(nick);
 
@@ -124,11 +126,13 @@ export const addScore = mutation({
         const nextScore = Math.max(existing.score, score);
         const nextCreatedAt =
           nextScore > existing.score ? createdAt : existing.createdAt;
+        const nextStreak = streak;
         const nextClientId = args.clientId ?? existing.clientId;
 
         if (
           existing.nick !== nick ||
           existing.score !== nextScore ||
+          (existing.streak ?? 0) !== nextStreak ||
           existing.createdAt !== nextCreatedAt ||
           existing.clientId !== nextClientId
         ) {
@@ -136,6 +140,7 @@ export const addScore = mutation({
             clientId: nextClientId,
             nick,
             score: nextScore,
+            streak: nextStreak,
             createdAt: nextCreatedAt,
           });
         }
@@ -164,18 +169,21 @@ export const addScore = mutation({
           nextScore > existingForClient.score
             ? createdAt
             : existingForClient.createdAt;
+        const nextStreak = streak;
         const nextClientRecordId =
           args.clientRecordId ?? existingForClient.clientRecordId;
 
         if (
           existingForClient.nick !== resolvedNick ||
           existingForClient.score !== nextScore ||
+          (existingForClient.streak ?? 0) !== nextStreak ||
           existingForClient.createdAt !== nextCreatedAt ||
           existingForClient.clientRecordId !== nextClientRecordId
         ) {
           await ctx.db.patch(existingForClient._id, {
             nick: resolvedNick,
             score: nextScore,
+            streak: nextStreak,
             createdAt: nextCreatedAt,
             clientRecordId: nextClientRecordId,
           });
@@ -189,6 +197,7 @@ export const addScore = mutation({
         clientRecordId: args.clientRecordId,
         nick: resolvedNick,
         score,
+        streak,
         createdAt,
       });
     }
@@ -205,10 +214,12 @@ export const addScore = mutation({
       const nextScore = Math.max(primary.score, score);
       const nextCreatedAt =
         nextScore > primary.score ? createdAt : primary.createdAt;
+      const nextStreak = streak;
 
       if (
         primary.nick !== nick ||
         primary.score !== nextScore ||
+        (primary.streak ?? 0) !== nextStreak ||
         primary.createdAt !== nextCreatedAt ||
         (args.clientRecordId && primary.clientRecordId !== args.clientRecordId)
       ) {
@@ -216,6 +227,7 @@ export const addScore = mutation({
           clientRecordId: args.clientRecordId ?? primary.clientRecordId,
           nick,
           score: nextScore,
+          streak: nextStreak,
           createdAt: nextCreatedAt,
         });
       }
@@ -231,6 +243,7 @@ export const addScore = mutation({
       clientRecordId: args.clientRecordId,
       nick,
       score,
+      streak,
       createdAt,
     });
   },
@@ -271,6 +284,7 @@ export const listTopScores = query({
       id: score._id,
       nick: score.nick,
       score: score.score,
+      streak: score.streak ?? 0,
       createdAt: score.createdAt,
       isCurrentClient:
         typeof args.clientId === "string" &&
@@ -287,6 +301,7 @@ export const listTopScores = query({
             id: currentClientScore._id,
             nick: currentClientScore.nick,
             score: currentClientScore.score,
+            streak: currentClientScore.streak ?? 0,
             createdAt: currentClientScore.createdAt,
             isCurrentClient: true,
           }
