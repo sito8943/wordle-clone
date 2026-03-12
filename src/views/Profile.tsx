@@ -3,15 +3,27 @@ import { EditableProfileCard, ProfileCard } from "../components/ProfileCard";
 import { useProfileController } from "../hooks";
 
 const Profile = () => {
-  const { player, editing, savedMessage, toggleEditing, submitProfile } =
-    useProfileController();
+  const {
+    player,
+    editing,
+    savedMessage,
+    toggleEditing,
+    submitProfile,
+    startAnimationsEnabled,
+    toggleStartAnimations,
+  } = useProfileController();
 
   return (
     <main className="flex flex-col items-center justify-center py-20 gap-10">
       <div className="flex gap-4 items-center">
         <h2 className="text-2xl font-bold">Profile</h2>
-        <Button onClick={toggleEditing}>
-          {editing ? "Cancel" : "Edit"}
+        <Button onClick={toggleEditing}>{editing ? "Cancel" : "Edit"}</Button>
+        <Button
+          onClick={toggleStartAnimations}
+          variant="outline"
+          color="neutral"
+        >
+          {startAnimationsEnabled ? "Anim: on" : "Anim: off"}
         </Button>
       </div>
       {savedMessage && (

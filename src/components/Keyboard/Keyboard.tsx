@@ -1,24 +1,12 @@
-import {
-  KEYBOARD_ROWS,
-  getKeyStatuses,
-  type GuessResult,
-} from "../domain/wordle";
-import type { TileStatus } from "../utils/checker";
+import { KEYBOARD_ROWS, getKeyStatuses } from "../../domain/wordle";
+import { KEY_STYLE } from "./constant";
+import type { KeyboardProps } from "./types";
 
-const KEY_STYLE: Record<TileStatus | "default", string> = {
-  correct: "border-black bg-black text-white hover:bg-neutral-800",
-  present: "border-yellow-600 bg-yellow-500 text-black hover:bg-yellow-400",
-  absent: "border-neutral-500 bg-neutral-500 text-white hover:bg-neutral-600",
-  default:
-    "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300",
-};
-
-interface KeyboardProps {
-  guesses: GuessResult[];
-  onKey: (key: string) => void;
-}
-
-export function Keyboard({ guesses, onKey }: KeyboardProps) {
+export function Keyboard({
+  guesses,
+  onKey,
+  animateEntry = false,
+}: KeyboardProps) {
   const keyStatuses = getKeyStatuses(guesses);
 
   return (
@@ -27,7 +15,9 @@ export function Keyboard({ guesses, onKey }: KeyboardProps) {
       <div
         role="group"
         aria-label="On-screen keyboard"
-        className="w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm"
+        className={`w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm ${
+          animateEntry ? "keyboard-entry-animation" : ""
+        }`}
       >
         {KEYBOARD_ROWS.map((row, ri) => (
           <div

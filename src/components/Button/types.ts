@@ -1,0 +1,14 @@
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+
+export type ButtonVariant = "solid" | "outline" | "ghost";
+export type ButtonColor = "primary" | "secondary" | "neutral";
+
+export type ButtonProps = Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "color"
+> & {
+  variant?: ButtonVariant;
+  color?: ButtonColor;
+  icon?: IconProp;
+  hideLabelOnMobile?: boolean;
+};

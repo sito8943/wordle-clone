@@ -4,6 +4,7 @@ import {
   applyGuess,
   createInitialGameState,
   getOrCreateSessionId,
+  hasAttemptedRow,
   isLetterKey,
   isWon,
   normalizePersistedGameState,
@@ -12,20 +13,45 @@ import {
   removeLetter,
   shouldAskToResume,
   validateGuessInput,
-} from "../domain/wordle";
-import { getRandomWord } from "../utils/words";
+  WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
+} from "../../domain/wordle";
+import { getRandomWord } from "../../utils/words";
+import { useLocalStorage } from "../useLocalStorage";
+import {
+  markStartAnimationAsSeen,
+  shouldAnimateKeyboardEntryOnSession,
+  shouldAnimateOnFirstSessionView,
+} from "./utils";
 
 export default function useWordle() {
   const currentSessionId = useMemo(getOrCreateSessionId, []);
   const initialAnswer = useMemo(getRandomWord, []);
-
-  const [gameState, setGameState] = useState(() =>
-    normalizePersistedGameState(
-      readPersistedGameState(),
-      currentSessionId,
-      initialAnswer,
-    ),
+  const initialGameState = useMemo(
+    () =>
+      normalizePersistedGameState(
+        readPersistedGameState(),
+        currentSessionId,
+        initialAnswer,
+      ),
+    [currentSessionId, initialAnswer],
   );
+  const [animationsDisabled] = useLocalStorage<boolean>(
+    WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
+    false,
+  );
+  const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
+    shouldAnimateOnFirstSessionView(
+      animationsDisabled,
+      hasAttemptedRow(initialGameState),
+    )
+      ? 1
+      : 0,
+  );
+  const [keyboardEntryAnimationEnabled] = useState(() =>
+    shouldAnimateKeyboardEntryOnSession(animationsDisabled),
+  );
+
+  const [gameState, setGameState] = useState(initialGameState);
 
   const [message, setMessage] = useState("");
   const [showResumeDialog, setShowResumeDialog] = useState(() =>
@@ -108,11 +134,21 @@ export default function useWordle() {
     setShowResumeDialog(false);
   }, [currentSessionId]);
 
+  const triggerStartAnimation = useCallback(() => {
+    if (animationsDisabled) {
+      return;
+    }
+
+    markStartAnimationAsSeen();
+    setStartAnimationSeed((prev) => prev + 1);
+  }, [animationsDisabled]);
+
   const resetBoard = useCallback(() => {
     setGameState(createInitialGameState(currentSessionId, getRandomWord()));
     setShowResumeDialog(false);
     setMessage("");
-  }, [currentSessionId]);
+    triggerStartAnimation();
+  }, [currentSessionId, triggerStartAnimation]);
 
   const startNewBoard = useCallback(() => {
     resetBoard();
@@ -146,6 +182,9 @@ export default function useWordle() {
     message,
     handleKey,
     refresh,
+    startAnimationSeed,
+    startAnimationsEnabled: !animationsDisabled,
+    keyboardEntryAnimationEnabled,
     showResumeDialog,
     continuePreviousBoard,
     startNewBoard,

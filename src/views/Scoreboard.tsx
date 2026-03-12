@@ -1,11 +1,19 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "../components";
+import { Button, FireStreak } from "../components";
 import { useScoreboardController } from "../hooks";
 
 const Scoreboard = (): JSX.Element => {
-  const { convexEnabled, source, loading, error, scores, refresh } =
-    useScoreboardController();
+  const {
+    convexEnabled,
+    source,
+    loading,
+    error,
+    scores,
+    currentClientRank,
+    currentClientOutsideTop,
+    refresh,
+  } = useScoreboardController();
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
@@ -41,14 +49,21 @@ const Scoreboard = (): JSX.Element => {
         </p>
       )}
 
+      {currentClientOutsideTop && currentClientRank !== null && (
+        <p className="rounded border border-emerald-300 bg-emerald-100 px-3 py-2 text-sm text-emerald-900">
+          You are shown as #{scores.length}. Real position: #{currentClientRank}
+          .
+        </p>
+      )}
+
       <section className="overflow-hidden rounded border border-neutral-300 bg-white">
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-100">
             <tr>
-              <th className="px-4 py-2">#</th>
-              <th className="px-4 py-2">Nick</th>
-              <th className="px-4 py-2">Score</th>
-              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2 text-xs">#</th>
+              <th className="px-4 py-2 text-xs">Nick</th>
+              <th className="px-4 py-2 text-xs">Score</th>
+              <th className="px-4 py-2 text-xs">Date</th>
             </tr>
           </thead>
           <tbody>
@@ -69,12 +84,34 @@ const Scoreboard = (): JSX.Element => {
             )}
 
             {!loading &&
-              scores.map((entry, index) => (
-                <tr key={entry.id} className="border-t border-neutral-200">
-                  <td className="px-4 py-2 font-semibold">{index + 1}</td>
+              scores.map((entry) => (
+                <tr
+                  key={`${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`}
+                  className={`border-t border-neutral-200 ${
+                    entry.isCurrentClient ? "scoreboard-current-player-row" : ""
+                  }`}
+                >
+                  <td className="px-4 py-2 font-semibold text-xs">
+                    <div className="flex flex-col">
+                      <span>#{entry.displayRank}</span>
+                      {entry.isPinnedCurrentClient &&
+                        entry.realRank !== null && (
+                          <span className="text-xs font-medium text-emerald-700">
+                            Real #{entry.realRank}
+                          </span>
+                        )}
+                    </div>
+                  </td>
                   <td className="px-4 py-2">{entry.nick}</td>
-                  <td className="px-4 py-2">{entry.score}</td>
-                  <td className="px-4 py-2 text-neutral-600">
+                  <td className="px-4 py-2">
+                    <div className="flex items-center gap-2">
+                      <span>{entry.score}</span>
+                      {entry.streak >= 2 && (
+                        <FireStreak streak={entry.streak} size="sm" noLabel />
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 text-neutral-600 text-xs">
                     {entry.formattedDate}
                   </td>
                 </tr>

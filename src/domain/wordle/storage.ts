@@ -1,4 +1,4 @@
-import { env } from "../../config/env";
+import { env } from "../../config";
 import { hasAttemptedRow } from "./state";
 import type { PersistedGameState } from "./types";
 

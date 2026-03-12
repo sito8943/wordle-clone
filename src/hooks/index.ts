@@ -1,8 +1,8 @@
-import useLocalStorage from "./useLocalStorage";
+import { useLocalStorage } from "./useLocalStorage";
 import useHomeController from "./useHomeController";
 import useProfileController from "./useProfileController";
 import useScoreboardController from "./useScoreboardController";
-import useWordle from "./useWordle";
+import { useWordle } from "./useWordle";
 export {
   useHomeController,
   useLocalStorage,

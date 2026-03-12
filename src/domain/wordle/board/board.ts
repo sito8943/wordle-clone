@@ -1,19 +1,6 @@
-import type { GuessResult } from "./types";
-
-export type BoardCellStatus =
-  | "correct"
-  | "present"
-  | "absent"
-  | "empty"
-  | "tbd";
-
-export type BoardRowModel = {
-  letters: string[];
-  statuses: BoardCellStatus[];
-};
-
-const BOARD_ROWS = 6;
-const BOARD_COLUMNS = 5;
+import type { GuessResult } from "../types";
+import { BOARD_ROWS, BOARD_COLUMNS } from "./constant";
+import type { BoardRowModel } from "./types";
 
 export const buildBoardRows = (
   guesses: GuessResult[],

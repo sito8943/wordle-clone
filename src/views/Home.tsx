@@ -3,7 +3,9 @@ import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import {
   Board,
   Button,
+  FireStreak,
   Keyboard,
+  RefreshConfirmationDialog,
   SessionResumeDialog,
 } from "../components";
 import { useHomeController } from "../hooks";
@@ -17,10 +19,17 @@ const Home = (): JSX.Element => {
     won,
     message,
     handleKey,
+    startAnimationSeed,
+    startAnimationsEnabled,
+    keyboardEntryAnimationEnabled,
     showResumeDialog,
+    showRefreshDialog,
     continuePreviousBoard,
     startNewBoard,
+    currentWinStreak,
     refreshBoard,
+    confirmRefreshBoard,
+    cancelRefreshBoard,
   } = useHomeController();
 
   return (
@@ -40,9 +49,16 @@ const Home = (): JSX.Element => {
           onStartNew={startNewBoard}
         />
       )}
+      {!showResumeDialog && showRefreshDialog && (
+        <RefreshConfirmationDialog
+          onCancel={cancelRefreshBoard}
+          onConfirm={confirmRefreshBoard}
+        />
+      )}
       <main className="flex flex-1 flex-col">
-        <section className="flex flex-1 flex-col items-center justify-center gap-6 max-sm:gap-2 py-6 max-sm:py-2">
-          <div className="w-full max-w-md flex justify-end">
+        <section className="flex flex-1 flex-col items-center justify-start gap-6 max-sm:gap-2 py-6 max-sm:py-2">
+          <div className="w-full max-w-md flex items-center justify-end gap-2">
+            <FireStreak streak={currentWinStreak} />
             <Button
               onClick={refreshBoard}
               aria-label="Refresh"
@@ -54,7 +70,13 @@ const Home = (): JSX.Element => {
             </Button>
           </div>
 
-          <Board guesses={guesses} current={current} gameOver={gameOver} />
+          <Board
+            key={`board-${startAnimationSeed}`}
+            guesses={guesses}
+            current={current}
+            gameOver={gameOver}
+            animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
+          />
 
           {gameOver && (
             <>
@@ -67,7 +89,11 @@ const Home = (): JSX.Element => {
           )}
         </section>
 
-        <Keyboard guesses={guesses} onKey={handleKey} />
+        <Keyboard
+          guesses={guesses}
+          onKey={handleKey}
+          animateEntry={keyboardEntryAnimationEnabled}
+        />
       </main>
     </>
   );

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { TileStatus } from "../utils/checker";
-import { Keyboard } from "./Keyboard";
+import type { TileStatus } from "../../utils/types";
+import { Keyboard } from ".";
 
 describe("Keyboard", () => {
   afterEach(() => {
@@ -60,5 +60,13 @@ describe("Keyboard", () => {
 
     const aKey = screen.getByRole("button", { name: "Letter A" });
     expect(aKey.className).toContain("bg-black");
+  });
+
+  it("adds the entry animation class when enabled", () => {
+    render(<Keyboard guesses={[]} onKey={vi.fn()} animateEntry />);
+
+    expect(
+      screen.getByRole("group", { name: "On-screen keyboard" }).className,
+    ).toContain("keyboard-entry-animation");
   });
 });

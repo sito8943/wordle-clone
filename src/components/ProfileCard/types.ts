@@ -4,5 +4,5 @@ export type ProfileCardPropsTypes = {
 };
 
 export interface EditableProfileCardPropsTypes extends ProfileCardPropsTypes {
-  onSubmit: (name: string) => void;
+  onSubmit: (name: string) => Promise<string | null>;
 }

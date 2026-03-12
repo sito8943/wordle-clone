@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import type { TileStatus } from "../../utils/checker";
+import type { TileStatus } from "../../utils/types";
 import { Board } from "./Board";
 
 describe("Board", () => {
@@ -55,5 +55,13 @@ describe("Board", () => {
     );
 
     expect(screen.queryByRole("gridcell", { name: "Z, typing" })).toBeNull();
+  });
+
+  it("adds the entry animation class when enabled", () => {
+    render(<Board guesses={[]} current="" gameOver={false} animateEntry />);
+
+    expect(screen.getByRole("grid").className).toContain(
+      "board-entry-animation",
+    );
   });
 });

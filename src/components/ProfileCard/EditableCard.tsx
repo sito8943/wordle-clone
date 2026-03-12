@@ -1,20 +1,29 @@
 import { useState, useEffect } from "react";
-import Button from "../Button";
+import Button from "../Button/Button";
 import type { EditableProfileCardPropsTypes } from "./types";
 
 const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   const [name, setName] = useState(props.name);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length === 0) {
       setError("Name cannot be empty.");
       return;
     }
 
-    props.onSubmit(name);
+    setIsSubmitting(true);
+    const submitError = await props.onSubmit(name);
+    if (submitError) {
+      setError(submitError);
+      setIsSubmitting(false);
+      return;
+    }
+
     setError("");
+    setIsSubmitting(false);
   };
 
   useEffect(() => {
@@ -50,8 +59,8 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
           readOnly
         />
       </div>
-      <Button type="submit" className="self-start">
-        Save
+      <Button type="submit" className="self-start" disabled={isSubmitting}>
+        {isSubmitting ? "Saving..." : "Save"}
       </Button>
     </form>
   );

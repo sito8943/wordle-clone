@@ -9,3 +9,160 @@ h1,
 .times-new-roman {
   font-family: "Times New Roman", Times, serif;
 }
+
+@keyframes smooth-entry {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes keyboard-enter-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fire-shell-flicker {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  35% {
+    transform: translateY(-1px) scale(1.05, 0.96);
+  }
+
+  70% {
+    transform: translateY(1px) scale(0.97, 1.04);
+  }
+}
+
+@keyframes fire-core-flicker {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: scale(1.08, 0.92);
+    opacity: 1;
+  }
+}
+
+@keyframes ember-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+
+  25% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.35);
+  }
+}
+
+@keyframes scoreboard-row-border-glow {
+  0%,
+  100% {
+    border-color: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35);
+  }
+
+  50% {
+    border-color: #059669;
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+}
+
+.board-entry-animation {
+  animation: smooth-entry 360ms ease-out both;
+}
+
+.keyboard-entry-animation {
+  opacity: 0;
+  animation: keyboard-enter-from-bottom 440ms ease-out 120ms both;
+}
+
+.fire-streak-icon-active .fire-shell {
+  transform-origin: 50% 80%;
+  animation: fire-shell-flicker 820ms ease-in-out infinite;
+}
+
+.fire-streak-icon-active .fire-core {
+  transform-origin: 50% 80%;
+  animation: fire-core-flicker 620ms ease-in-out infinite;
+}
+
+.fire-streak-icon-active .fire-ember {
+  fill: #f97316;
+  opacity: 0;
+  animation: ember-rise 1.4s ease-in-out infinite;
+}
+
+.fire-streak-icon-active .fire-ember-2 {
+  animation-delay: 320ms;
+}
+
+.fire-streak-icon-active .fire-ember-3 {
+  animation-delay: 540ms;
+}
+
+.fire-streak-icon-idle .fire-shell,
+.fire-streak-icon-idle .fire-core {
+  opacity: 0.55;
+}
+
+.fire-streak-icon-idle .fire-ember {
+  display: none;
+}
+
+.scoreboard-current-player-row > td {
+  background-color: rgba(236, 253, 245, 0.78);
+  border-top: 2px solid #10b981;
+  border-bottom: 2px solid #10b981;
+  animation: scoreboard-row-border-glow 1.9s ease-in-out infinite;
+}
+
+.scoreboard-current-player-row > td:first-child {
+  border-left: 2px solid #10b981;
+}
+
+.scoreboard-current-player-row > td:last-child {
+  border-right: 2px solid #10b981;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-entry-animation,
+  .keyboard-entry-animation {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fire-streak-icon-active .fire-shell,
+  .fire-streak-icon-active .fire-core,
+  .fire-streak-icon-active .fire-ember {
+    animation: none;
+  }
+
+  .scoreboard-current-player-row > td {
+    animation: none;
+  }
+}
