@@ -14,6 +14,9 @@ describe("Keyboard", () => {
     expect(
       screen.getByRole("group", { name: "On-screen keyboard" }),
     ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Letter A" }).className,
+    ).toContain("active:scale-[0.97]");
     expect(screen.getByRole("button", { name: "Submit guess" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Delete letter" })).toBeTruthy();
     expect(screen.getAllByRole("button").length).toBe(28);
