@@ -36,7 +36,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
       onSubmit={handleSubmit}
       className="flex flex-col gap-4 border border-gray-300 rounded-lg p-4 w-full max-w-sm"
     >
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center flex-wrap">
         <label htmlFor="name">Name:</label>
         <input
           className="border border-gray-300 rounded px-2 py-1"
@@ -49,7 +49,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
         />
       </div>
       {error && <p className="text-sm text-red-700">{error}</p>}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center flex-wrap">
         <label htmlFor="score">Score:</label>
         <input
           className="border border-gray-300 rounded px-2 py-1"
