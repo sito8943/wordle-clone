@@ -4,39 +4,63 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useRef,
 } from "react";
-import type { PlayerContextType } from "./types";
+import useLocalStorage from "../hooks/useLocalStorage";
+import { useApi } from "./ApiProvider";
+import type { Player, PlayerContextType } from "./types";
 
 const PlayerContext = createContext({} as PlayerContextType);
 
-const DEFAULT_PLAYER = {
+const DEFAULT_PLAYER: Player = {
   name: "Player",
   score: 0,
 };
 
+const normalizePlayerName = (value: string): string => {
+  const normalized = value.trim();
+  if (normalized.length === 0) {
+    return DEFAULT_PLAYER.name;
+  }
+
+  return normalized.slice(0, 30);
+};
+
 const PlayerProvider = (props: { children: React.ReactNode }) => {
   const { children } = props;
+  const { scoreClient } = useApi();
 
-  const [player, setPlayer] = useState(DEFAULT_PLAYER);
+  const [player, setPlayer] = useLocalStorage<Player>("player", DEFAULT_PLAYER);
+  const didMountRef = useRef(false);
+  const previousScoreRef = useRef(player.score);
 
-  const updatePlayer = useCallback((name: string) => {
-    setPlayer((prev) => ({ ...prev, name }));
-  }, []);
+  const updatePlayer = useCallback(
+    (name: string) => {
+      setPlayer((prev) => ({ ...prev, name: normalizePlayerName(name) }));
+    },
+    [setPlayer],
+  );
 
-  const increaseScore = useCallback((points: number) => {
-    setPlayer((prev) => ({ ...prev, score: prev.score + points }));
-  }, []);
+  const increaseScore = useCallback(
+    (points: number) => {
+      setPlayer((prev) => ({ ...prev, score: prev.score + points }));
+    },
+    [setPlayer],
+  );
 
   useEffect(() => {
-    localStorage.setItem("player", JSON.stringify(player));
-  }, [player]);
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      previousScoreRef.current = player.score;
+      return;
+    }
 
-  useEffect(() => {
-    const stored = localStorage.getItem("player");
-    if (stored) setPlayer(JSON.parse(stored));
-    else localStorage.setItem("player", JSON.stringify(DEFAULT_PLAYER));
-  }, []);
+    if (player.score > previousScoreRef.current) {
+      void scoreClient.recordScore({ nick: player.name, score: player.score });
+    }
+
+    previousScoreRef.current = player.score;
+  }, [player.name, player.score, scoreClient]);
 
   return (
     <PlayerContext.Provider value={{ player, updatePlayer, increaseScore }}>

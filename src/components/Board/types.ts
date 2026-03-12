@@ -1,5 +1,4 @@
-import type { GuessResult } from "../../hooks/";
-import type { TileStatus } from "../../utils/checker";
+import type { BoardCellStatus, GuessResult } from "../../domain/wordle";
 
 export type BoardPropsType = {
   guesses: GuessResult[];
@@ -8,12 +7,11 @@ export type BoardPropsType = {
 };
 
 export type RowPropsType = {
-  word?: string;
-  statuses?: TileStatus[];
-  current?: string;
+  letters: string[];
+  statuses: BoardCellStatus[];
 };
 
-export type Status = TileStatus | "empty" | "tbd";
+export type Status = BoardCellStatus;
 
 export type TilePropsType = {
   letter?: string;

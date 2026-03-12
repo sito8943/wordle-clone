@@ -4,6 +4,11 @@ on:
   push:
   workflow_dispatch:
 
+env:
+  VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
+  VITE_SCORE_LIMIT: "10"
+  VITE_WORDLE_GAME_STORAGE_KEY: "wordle:game"
+
 jobs:
   verify:
     name: Verify

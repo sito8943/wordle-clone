@@ -1,11 +1,8 @@
-import { useEffect, useRef, type JSX } from "react";
-import { Board, Keyboard } from "../components";
-import { useWordle } from "../hooks/";
-import { usePlayer } from "../providers";
+import type { JSX } from "react";
+import { Board, Keyboard, SessionResumeDialog } from "../components";
+import { useHomeController } from "../hooks";
 
 const Home = (): JSX.Element => {
-  const { increaseScore } = usePlayer();
-
   const {
     answer,
     guesses,
@@ -14,17 +11,11 @@ const Home = (): JSX.Element => {
     won,
     message,
     handleKey,
-    refresh,
-  } = useWordle();
-
-  const alreadyScored = useRef(false);
-
-  useEffect(() => {
-    if (won && !alreadyScored.current) {
-      increaseScore(guesses.length);
-      alreadyScored.current = true;
-    }
-  }, [won, increaseScore, guesses.length]);
+    showResumeDialog,
+    continuePreviousBoard,
+    startNewBoard,
+    refreshBoard,
+  } = useHomeController();
 
   return (
     <>
@@ -36,6 +27,12 @@ const Home = (): JSX.Element => {
         >
           {message}
         </div>
+      )}
+      {showResumeDialog && (
+        <SessionResumeDialog
+          onContinue={continuePreviousBoard}
+          onStartNew={startNewBoard}
+        />
       )}
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-center gap-6 py-6">
@@ -50,8 +47,7 @@ const Home = (): JSX.Element => {
               </p>
               <button
                 onClick={() => {
-                  refresh();
-                  alreadyScored.current = false;
+                  refreshBoard();
                 }}
               >
                 Refresh

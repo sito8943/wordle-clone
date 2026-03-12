@@ -1,13 +1,9 @@
+import {
+  KEYBOARD_ROWS,
+  getKeyStatuses,
+  type GuessResult,
+} from "../domain/wordle";
 import type { TileStatus } from "../utils/checker";
-import type { GuessResult } from "../hooks";
-
-const ROWS = [
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
-];
-
-const STATUS_PRIORITY: TileStatus[] = ["correct", "present", "absent"];
 
 const KEY_STYLE: Record<TileStatus | "default", string> = {
   correct: "border-black bg-black text-white hover:bg-neutral-800",
@@ -16,23 +12,6 @@ const KEY_STYLE: Record<TileStatus | "default", string> = {
   default:
     "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300",
 };
-
-function getKeyStatuses(guesses: GuessResult[]): Record<string, TileStatus> {
-  const result: Record<string, TileStatus> = {};
-  for (const { word, statuses } of guesses) {
-    word.split("").forEach((letter: string, i: number) => {
-      const prev = result[letter];
-      const next = statuses[i];
-      if (
-        !prev ||
-        STATUS_PRIORITY.indexOf(next) < STATUS_PRIORITY.indexOf(prev)
-      ) {
-        result[letter] = next;
-      }
-    });
-  }
-  return result;
-}
 
 interface KeyboardProps {
   guesses: GuessResult[];
@@ -48,7 +27,7 @@ export function Keyboard({ guesses, onKey }: KeyboardProps) {
       aria-label="On-screen keyboard"
       className="w-full pb-2 sm:pb-4"
     >
-      {ROWS.map((row, ri) => (
+      {KEYBOARD_ROWS.map((row, ri) => (
         <div
           key={ri}
           className="mb-1.5 flex justify-center gap-1.5 last:mb-0 sm:mb-2 sm:gap-2"

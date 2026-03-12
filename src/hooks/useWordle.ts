@@ -1,94 +1,138 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { checkGuess } from "../utils/checker";
-import { getRandomWord, isValidWord } from "../utils/words";
-import type { GuessResult } from "./types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  addLetter,
+  applyGuess,
+  createInitialGameState,
+  getOrCreateSessionId,
+  isLetterKey,
+  isWon,
+  normalizePersistedGameState,
+  persistGameState,
+  readPersistedGameState,
+  removeLetter,
+  shouldAskToResume,
+  validateGuessInput,
+} from "../domain/wordle";
+import { getRandomWord } from "../utils/words";
 
 export default function useWordle() {
-  const [answer] = useState(getRandomWord);
-  const [guesses, setGuesses] = useState<GuessResult[]>([]);
-  const [current, setCurrent] = useState("");
-  const [message, setMessage] = useState("");
-  const [gameOver, setGameOver] = useState(false);
+  const currentSessionId = useMemo(getOrCreateSessionId, []);
+  const initialAnswer = useMemo(getRandomWord, []);
 
-  // pure computation of whether the answer has been guessed
-  const won = useMemo(
-    () => guesses.some((g) => g.word === answer),
-    [guesses, answer],
+  const [gameState, setGameState] = useState(() =>
+    normalizePersistedGameState(
+      readPersistedGameState(),
+      currentSessionId,
+      initialAnswer,
+    ),
   );
 
-  const showMessage = (msg: string) => {
-    setMessage(msg);
+  const [message, setMessage] = useState("");
+  const [showResumeDialog, setShowResumeDialog] = useState(() =>
+    shouldAskToResume(gameState, currentSessionId),
+  );
+
+  const { answer, guesses, current, gameOver } = gameState;
+
+  useEffect(() => {
+    persistGameState(gameState);
+  }, [gameState]);
+
+  useEffect(() => {
+    if (shouldAskToResume(gameState, currentSessionId)) {
+      setShowResumeDialog(true);
+    }
+  }, [gameState, currentSessionId]);
+
+  const won = useMemo(() => isWon(gameState), [gameState]);
+
+  const showMessage = useCallback((text: string) => {
+    setMessage(text);
     setTimeout(() => setMessage(""), 1800);
-  };
+  }, []);
 
   const checkInput = useCallback(
     (input: string) => {
-      if (input.length < 5) {
-        showMessage("Not enough letters");
-        return false;
+      const validation = validateGuessInput(input, answer);
+
+      if (!validation.ok) {
+        showMessage(validation.message);
+        return;
       }
-      if (!isValidWord(input)) {
-        showMessage("Not in word list");
-        return false;
-      }
-      const statuses = checkGuess(current, answer);
-      const result: GuessResult = { word: current, statuses };
-      setGuesses((prev) => {
-        const next = [...prev, result];
-        if (current === answer || next.length === 6) {
-          setGameOver(true);
-        }
-        return next;
-      });
-      setCurrent("");
-      return;
+
+      setGameState((prev) => applyGuess(prev, validation.guess));
     },
-    [answer, current],
+    [answer, showMessage],
   );
 
-  const removeLetter = useCallback(() => {
-    setCurrent((prev) => prev.slice(0, -1));
+  const removeCurrentLetter = useCallback(() => {
+    setGameState((prev) => removeLetter(prev));
   }, []);
 
-  const addLetter = useCallback(
-    (letter: string) => {
-      if (current.length < 5) {
-        setCurrent((prev) => prev + letter);
-      }
-    },
-    [current],
-  );
+  const addCurrentLetter = useCallback((letter: string) => {
+    setGameState((prev) => addLetter(prev, letter));
+  }, []);
 
   const handleKey = useCallback(
     (key: string) => {
-      if (gameOver) return;
+      if (gameOver || showResumeDialog) {
+        return;
+      }
 
       if (key === "ENTER") {
-        return checkInput(current);
+        checkInput(current);
+        return;
       }
 
       if (key === "BACKSPACE") {
-        return removeLetter();
+        removeCurrentLetter();
+        return;
       }
 
-      if (/^[A-Z]$/.test(key)) {
-        return addLetter(key);
+      if (isLetterKey(key)) {
+        addCurrentLetter(key);
       }
     },
-    [gameOver, current, checkInput, removeLetter, addLetter],
+    [
+      addCurrentLetter,
+      checkInput,
+      current,
+      gameOver,
+      removeCurrentLetter,
+      showResumeDialog,
+    ],
   );
 
+  const continuePreviousBoard = useCallback(() => {
+    setGameState((prev) => ({ ...prev, sessionId: currentSessionId }));
+    setShowResumeDialog(false);
+  }, [currentSessionId]);
+
+  const resetBoard = useCallback(() => {
+    setGameState(createInitialGameState(currentSessionId, getRandomWord()));
+    setShowResumeDialog(false);
+    setMessage("");
+  }, [currentSessionId]);
+
+  const startNewBoard = useCallback(() => {
+    resetBoard();
+  }, [resetBoard]);
+
   const refresh = useCallback(() => {
-    setGuesses([]);
-    setCurrent("");
-    setGameOver(false);
-  }, []);
+    resetBoard();
+  }, [resetBoard]);
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      handleKey(e.key === "Backspace" ? "BACKSPACE" : e.key.toUpperCase());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
+      handleKey(
+        event.key === "Backspace" ? "BACKSPACE" : event.key.toUpperCase(),
+      );
     };
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleKey]);
@@ -102,5 +146,8 @@ export default function useWordle() {
     message,
     handleKey,
     refresh,
+    showResumeDialog,
+    continuePreviousBoard,
+    startNewBoard,
   };
 }
