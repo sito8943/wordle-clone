@@ -13,10 +13,13 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
+    "convex": "^1.32.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "^7.13.1",

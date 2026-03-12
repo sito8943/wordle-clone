@@ -1,5 +1,5 @@
 import { useEffect, useRef, type JSX } from "react";
-import { Board, Keyboard } from "../components";
+import { Board, Keyboard, SessionResumeDialog } from "../components";
 import { useWordle } from "../hooks/";
 import { usePlayer } from "../providers";
 
@@ -15,14 +15,28 @@ const Home = (): JSX.Element => {
     message,
     handleKey,
     refresh,
+    showResumeDialog,
+    continuePreviousBoard,
+    startNewBoard,
   } = useWordle();
 
   const alreadyScored = useRef(false);
+  const hydrated = useRef(false);
 
   useEffect(() => {
+    if (!hydrated.current) {
+      hydrated.current = true;
+      alreadyScored.current = won;
+      return;
+    }
+
     if (won && !alreadyScored.current) {
       increaseScore(guesses.length);
       alreadyScored.current = true;
+    }
+
+    if (!won) {
+      alreadyScored.current = false;
     }
   }, [won, increaseScore, guesses.length]);
 
@@ -36,6 +50,12 @@ const Home = (): JSX.Element => {
         >
           {message}
         </div>
+      )}
+      {showResumeDialog && (
+        <SessionResumeDialog
+          onContinue={continuePreviousBoard}
+          onStartNew={startNewBoard}
+        />
       )}
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-center gap-6 py-6">

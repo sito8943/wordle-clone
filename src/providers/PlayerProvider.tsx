@@ -1,42 +1,39 @@
 /* eslint-disable react-refresh/only-export-components */
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import type { PlayerContextType } from "./types";
+import { createContext, useCallback, useContext } from "react";
+import useLocalStorage from "../hooks/useLocalStorage";
+import { useApi } from "./ApiProvider";
+import type { Player, PlayerContextType } from "./types";
 
 const PlayerContext = createContext({} as PlayerContextType);
 
-const DEFAULT_PLAYER = {
+const DEFAULT_PLAYER: Player = {
   name: "Player",
   score: 0,
 };
 
 const PlayerProvider = (props: { children: React.ReactNode }) => {
   const { children } = props;
+  const { scoreClient } = useApi();
 
-  const [player, setPlayer] = useState(DEFAULT_PLAYER);
+  const [player, setPlayer] = useLocalStorage<Player>("player", DEFAULT_PLAYER);
 
-  const updatePlayer = useCallback((name: string) => {
-    setPlayer((prev) => ({ ...prev, name }));
-  }, []);
+  const updatePlayer = useCallback(
+    (name: string) => {
+      setPlayer((prev) => ({ ...prev, name }));
+    },
+    [setPlayer],
+  );
 
-  const increaseScore = useCallback((points: number) => {
-    setPlayer((prev) => ({ ...prev, score: prev.score + points }));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("player", JSON.stringify(player));
-  }, [player]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("player");
-    if (stored) setPlayer(JSON.parse(stored));
-    else localStorage.setItem("player", JSON.stringify(DEFAULT_PLAYER));
-  }, []);
+  const increaseScore = useCallback(
+    (points: number) => {
+      setPlayer((prev) => {
+        const next = { ...prev, score: prev.score + points };
+        void scoreClient.recordScore({ nick: next.name, score: next.score });
+        return next;
+      });
+    },
+    [scoreClient, setPlayer],
+  );
 
   return (
     <PlayerContext.Provider value={{ player, updatePlayer, increaseScore }}>

@@ -7,7 +7,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
-import { PlayerProvider } from "./providers";
+import { ApiProvider, PlayerProvider } from "./providers";
 
 vi.mock("./utils/words", async () => {
   const actual =
@@ -19,6 +19,15 @@ vi.mock("./utils/words", async () => {
   };
 });
 
+const renderApp = () =>
+  render(
+    <ApiProvider>
+      <PlayerProvider>
+        <App />
+      </PlayerProvider>
+    </ApiProvider>,
+  );
+
 describe("App", () => {
   afterEach(() => {
     cleanup();
@@ -26,15 +35,13 @@ describe("App", () => {
 
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     window.history.pushState({}, "", "/");
+    window.dispatchEvent(new PopStateEvent("popstate"));
   });
 
   it("renders the main navigation", async () => {
-    render(
-      <PlayerProvider>
-        <App />
-      </PlayerProvider>,
-    );
+    renderApp();
 
     expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Home" })).toBeTruthy();
@@ -43,11 +50,7 @@ describe("App", () => {
   });
 
   it("shows a validation message when submitting fewer than 5 letters", async () => {
-    render(
-      <PlayerProvider>
-        <App />
-      </PlayerProvider>,
-    );
+    renderApp();
 
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
@@ -56,11 +59,7 @@ describe("App", () => {
   });
 
   it("finishes a winning round and allows refreshing the board", async () => {
-    render(
-      <PlayerProvider>
-        <App />
-      </PlayerProvider>,
-    );
+    renderApp();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -77,11 +76,7 @@ describe("App", () => {
   });
 
   it("lets the user edit the profile name", async () => {
-    render(
-      <PlayerProvider>
-        <App />
-      </PlayerProvider>,
-    );
+    renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Profile" }));
     expect(
@@ -100,6 +95,63 @@ describe("App", () => {
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.name).toBe("Ana");
+    });
+  });
+
+  it("restores the current game after reload", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-a");
+    localStorage.setItem(
+      "wordle:game",
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    expect(screen.getByRole("gridcell", { name: "B, absent" })).toBeTruthy();
+    expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
+    expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
+  });
+
+  it("asks to continue if a saved board belongs to another tab session", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-b");
+    localStorage.setItem(
+      "wordle:game",
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    expect(
+      screen.getByRole("dialog", { name: "Resume previous game?" }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Start new game" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Resume previous game?" }),
+      ).toBeNull();
     });
   });
 });
