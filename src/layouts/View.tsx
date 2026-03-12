@@ -2,19 +2,16 @@ import { useCallback, useState } from "react";
 import { Outlet } from "react-router";
 import { InitialPlayerDialog, Navbar } from "../components";
 import { useAnimationsPreference, useThemePreference } from "../hooks";
-import { usePlayer } from "../providers";
-
-const PLAYER_STORAGE_KEY = "player";
-
-const shouldAskForInitialPlayerName = (): boolean => {
-  try {
-    return localStorage.getItem(PLAYER_STORAGE_KEY) === null;
-  } catch {
-    return false;
-  }
-};
+import { useApi, usePlayer } from "../providers";
+import { normalizePlayerName } from "../providers/utils";
+import {
+  INITIAL_PLAYER_NAME_NOT_AVAILABLE_ERROR,
+  INITIAL_PLAYER_NAME_VALIDATION_ERROR,
+} from "./constants";
+import { shouldAskForInitialPlayerName } from "./utils";
 
 const View = () => {
+  const { scoreClient } = useApi();
   const { player, updatePlayer } = usePlayer();
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
@@ -30,6 +27,24 @@ const View = () => {
     [updatePlayer],
   );
 
+  const validateInitialPlayerName = useCallback(
+    async (name: string): Promise<string | null> => {
+      const normalizedName = normalizePlayerName(name);
+
+      try {
+        const isAvailable = await scoreClient.isNickAvailable(normalizedName);
+        if (!isAvailable) {
+          return INITIAL_PLAYER_NAME_NOT_AVAILABLE_ERROR;
+        }
+
+        return null;
+      } catch {
+        return INITIAL_PLAYER_NAME_VALIDATION_ERROR;
+      }
+    },
+    [scoreClient],
+  );
+
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
       <div className="mx-auto flex min-h-screen w-full flex-col max-sm:p-3 p-1">
@@ -40,6 +55,7 @@ const View = () => {
         <InitialPlayerDialog
           initialName={player.name}
           onConfirm={confirmInitialPlayerName}
+          onValidateName={validateInitialPlayerName}
         />
       ) : null}
     </div>

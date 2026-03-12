@@ -18,9 +18,11 @@ import type { InitialPlayerDialogProps } from "./types";
 const InitialPlayerDialog = ({
   initialName,
   onConfirm,
+  onValidateName,
 }: InitialPlayerDialogProps) => {
   const [name, setName] = useState(initialName);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
@@ -32,10 +34,10 @@ const InitialPlayerDialog = ({
     nameInputRef.current?.focus();
   }, []);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (isClosing) {
+    if (isClosing || isSubmitting) {
       return;
     }
 
@@ -44,7 +46,19 @@ const InitialPlayerDialog = ({
       return;
     }
 
+    setIsSubmitting(true);
+
+    if (onValidateName) {
+      const validationError = await onValidateName(name);
+      if (validationError) {
+        setError(validationError);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     setError("");
+    setIsSubmitting(false);
     closeWithAction(() => onConfirm(name));
   };
 
@@ -75,12 +89,15 @@ const InitialPlayerDialog = ({
             id={INITIAL_PLAYER_DIALOG_INPUT_ID}
             type="text"
             value={name}
-            disabled={isClosing}
+            disabled={isClosing || isSubmitting}
             maxLength={30}
             onChange={(
               event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
             ) => {
               setName(event.target.value);
+              if (error) {
+                setError("");
+              }
               event.stopPropagation();
             }}
             className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
@@ -89,7 +106,7 @@ const InitialPlayerDialog = ({
           {error ? <p className="mt-2 input-error-text">{error}</p> : null}
 
           <div className="mt-5 flex justify-end">
-            <Button type="submit" disabled={isClosing}>
+            <Button type="submit" disabled={isClosing || isSubmitting}>
               {INITIAL_PLAYER_DIALOG_PRIMARY_ACTION_LABEL}
             </Button>
           </div>

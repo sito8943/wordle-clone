@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import { ScoreClient, type TopScoresResult } from "./api/score";
 import { env } from "./config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
@@ -77,7 +78,43 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Home" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Profile" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
-    expect(screen.getByText("#--")).toBeTruthy();
+  });
+
+  it("shows loading in scoreboard navbar label while rank is loading", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    let resolveListTopScores!: (value: TopScoresResult) => void;
+    const listTopScoresPromise = new Promise<TopScoresResult>((resolve) => {
+      resolveListTopScores = resolve;
+    });
+    const listTopScoresSpy = vi
+      .spyOn(ScoreClient.prototype, "listTopScores")
+      .mockReturnValue(listTopScoresPromise);
+
+    try {
+      renderApp();
+
+      const scoreboardLink = await screen.findByRole("link", {
+        name: "Scoreboard",
+      });
+      expect(scoreboardLink.textContent).toContain("Loading");
+
+      resolveListTopScores({
+        scores: [],
+        source: "local",
+        currentClientRank: null,
+        currentClientEntry: null,
+      });
+
+      await waitFor(() => {
+        expect(scoreboardLink.textContent).toContain("#--");
+      });
+    } finally {
+      listTopScoresSpy.mockRestore();
+    }
   });
 
   it("asks for the player name on first app launch", async () => {
@@ -101,6 +138,36 @@ describe("App", () => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.name).toBe("Ana");
     });
+  });
+
+  it("prevents duplicated player name on first app launch", async () => {
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "other-player",
+          clientId: "other-client",
+          nick: "Ana",
+          score: 20,
+          streak: 3,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    renderApp();
+
+    const nameInput = await screen.findByLabelText("Player name");
+    fireEvent.change(nameInput, { target: { value: "Ana" } });
+    fireEvent.click(screen.getByRole("button", { name: "Start playing" }));
+
+    expect(await screen.findByText("Name is not available.")).toBeTruthy();
+    expect(
+      screen.getByRole("dialog", { name: "Welcome to Wordle" }),
+    ).toBeTruthy();
+
+    const player = JSON.parse(localStorage.getItem("player") || "{}");
+    expect(player.name).toBe("Player");
   });
 
   it("defaults to system theme preference", async () => {

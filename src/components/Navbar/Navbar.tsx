@@ -15,11 +15,15 @@ const Navbar = () => {
   const [currentClientRank, setCurrentClientRank] = useState<number | null>(
     null,
   );
+  const [isCurrentClientRankLoading, setIsCurrentClientRankLoading] =
+    useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     const loadCurrentClientRank = async () => {
+      setIsCurrentClientRankLoading(true);
+
       try {
         const result = await scoreClient.listTopScores(
           Math.max(env.scoreLimit, TOP_TEN_LIMIT),
@@ -31,6 +35,10 @@ const Navbar = () => {
         if (!cancelled) {
           setCurrentClientRank(null);
         }
+      } finally {
+        if (!cancelled) {
+          setIsCurrentClientRankLoading(false);
+        }
       }
     };
 
@@ -41,8 +49,12 @@ const Navbar = () => {
     };
   }, [location.pathname, player.score, scoreClient]);
 
-  const positionLabel =
-    currentClientRank === null ? "#--" : `#${currentClientRank}`;
+  const positionLabel = isCurrentClientRankLoading
+    ? "Loading"
+    : currentClientRank === null
+      ? "#--"
+      : `#${currentClientRank}`;
+  const rankTone = isCurrentClientRankLoading ? null : currentClientRank;
 
   const links = useMemo(
     () => [
@@ -54,10 +66,10 @@ const Navbar = () => {
         extraLabel: positionLabel,
         ariaLabel: "Scoreboard",
         icon: faTrophy,
-        toneClassName: getScoreboardToneClassName(currentClientRank),
+        toneClassName: getScoreboardToneClassName(rankTone),
       },
     ],
-    [currentClientRank, positionLabel],
+    [positionLabel, rankTone],
   );
 
   return (
