@@ -4,6 +4,7 @@ import {
   applyGuess,
   createInitialGameState,
   getOrCreateSessionId,
+  hasAttemptedRow,
   isLetterKey,
   isWon,
   normalizePersistedGameState,
@@ -37,8 +38,13 @@ const markStartAnimationAsSeen = (): void => {
 
 const shouldAnimateOnFirstSessionView = (
   animationsDisabled: boolean,
+  hasRestoredBoard: boolean,
 ): boolean => {
-  if (animationsDisabled || hasSeenStartAnimationInSession()) {
+  if (
+    animationsDisabled ||
+    hasRestoredBoard ||
+    hasSeenStartAnimationInSession()
+  ) {
     return false;
   }
 
@@ -79,24 +85,32 @@ const shouldAnimateKeyboardEntryOnSession = (
 export default function useWordle() {
   const currentSessionId = useMemo(getOrCreateSessionId, []);
   const initialAnswer = useMemo(getRandomWord, []);
+  const initialGameState = useMemo(
+    () =>
+      normalizePersistedGameState(
+        readPersistedGameState(),
+        currentSessionId,
+        initialAnswer,
+      ),
+    [currentSessionId, initialAnswer],
+  );
   const [animationsDisabled] = useLocalStorage<boolean>(
     WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
     false,
   );
   const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
-    shouldAnimateOnFirstSessionView(animationsDisabled) ? 1 : 0,
+    shouldAnimateOnFirstSessionView(
+      animationsDisabled,
+      hasAttemptedRow(initialGameState),
+    )
+      ? 1
+      : 0,
   );
   const [keyboardEntryAnimationEnabled] = useState(() =>
     shouldAnimateKeyboardEntryOnSession(animationsDisabled),
   );
 
-  const [gameState, setGameState] = useState(() =>
-    normalizePersistedGameState(
-      readPersistedGameState(),
-      currentSessionId,
-      initialAnswer,
-    ),
-  );
+  const [gameState, setGameState] = useState(initialGameState);
 
   const [message, setMessage] = useState("");
   const [showResumeDialog, setShowResumeDialog] = useState(() =>

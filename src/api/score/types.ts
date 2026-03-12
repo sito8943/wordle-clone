@@ -6,6 +6,7 @@ export type ScoreEntry = {
   score: number;
   createdAt: number;
   source: ScoreSource;
+  isCurrentClient: boolean;
 };
 
 export type RecordScoreInput = {
@@ -17,4 +18,6 @@ export type RecordScoreInput = {
 export type TopScoresResult = {
   scores: ScoreEntry[];
   source: ScoreSource;
+  currentClientRank: number | null;
+  currentClientEntry: ScoreEntry | null;
 };

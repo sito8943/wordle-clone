@@ -13,12 +13,22 @@ const formatDate = (timestamp: number): string =>
   });
 
 type ViewScoreEntry = ScoreEntry & { formattedDate: string };
+type ScoreboardRowEntry = ViewScoreEntry & {
+  displayRank: number;
+  realRank: number | null;
+  isPinnedCurrentClient: boolean;
+};
 
 export default function useScoreboardController() {
   const { scoreClient, convexEnabled } = useApi();
 
   const [scores, setScores] = useState<ScoreEntry[]>([]);
   const [source, setSource] = useState<"convex" | "local">("local");
+  const [currentClientRank, setCurrentClientRank] = useState<number | null>(
+    null,
+  );
+  const [currentClientEntry, setCurrentClientEntry] =
+    useState<ScoreEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -30,6 +40,8 @@ export default function useScoreboardController() {
       const result = await scoreClient.listTopScores(env.scoreLimit);
       setScores(result.scores);
       setSource(result.source);
+      setCurrentClientRank(result.currentClientRank);
+      setCurrentClientEntry(result.currentClientEntry);
     } catch (currentError) {
       const message =
         currentError instanceof Error
@@ -45,14 +57,40 @@ export default function useScoreboardController() {
     void loadScores();
   }, [loadScores]);
 
-  const visibleScores = useMemo<ViewScoreEntry[]>(
-    () =>
-      scores.map((score) => ({
-        ...score,
-        formattedDate: formatDate(score.createdAt),
-      })),
-    [scores],
-  );
+  const visibleScores = useMemo<ScoreboardRowEntry[]>(() => {
+    const topRows: ScoreboardRowEntry[] = scores.map((score, index) => ({
+      ...score,
+      formattedDate: formatDate(score.createdAt),
+      displayRank: index + 1,
+      realRank: index + 1,
+      isPinnedCurrentClient: false,
+    }));
+
+    const alreadyVisible = topRows.some((entry) => entry.isCurrentClient);
+    if (
+      alreadyVisible ||
+      currentClientRank === null ||
+      currentClientEntry === null ||
+      currentClientRank <= env.scoreLimit
+    ) {
+      return topRows;
+    }
+
+    return [
+      ...topRows,
+      {
+        ...currentClientEntry,
+        isCurrentClient: true,
+        formattedDate: formatDate(currentClientEntry.createdAt),
+        displayRank: env.scoreLimit + 1,
+        realRank: currentClientRank,
+        isPinnedCurrentClient: true,
+      },
+    ];
+  }, [scores, currentClientEntry, currentClientRank]);
+
+  const currentClientOutsideTop =
+    currentClientRank !== null && currentClientRank > env.scoreLimit;
 
   return {
     convexEnabled,
@@ -60,6 +98,8 @@ export default function useScoreboardController() {
     loading,
     error,
     scores: visibleScores,
+    currentClientRank,
+    currentClientOutsideTop,
     refresh: loadScores,
   };
 }

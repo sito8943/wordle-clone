@@ -16,9 +16,12 @@ const Home = (): JSX.Element => {
     startAnimationsEnabled,
     keyboardEntryAnimationEnabled,
     showResumeDialog,
+    showRefreshDialog,
     continuePreviousBoard,
     startNewBoard,
     refreshBoard,
+    confirmRefreshBoard,
+    cancelRefreshBoard,
   } = useHomeController();
 
   return (
@@ -36,6 +39,17 @@ const Home = (): JSX.Element => {
         <SessionResumeDialog
           onContinue={continuePreviousBoard}
           onStartNew={startNewBoard}
+        />
+      )}
+      {!showResumeDialog && showRefreshDialog && (
+        <SessionResumeDialog
+          title="Refresh current game?"
+          description="You have an active board. If you refresh now, your current progress will be lost."
+          onContinue={cancelRefreshBoard}
+          onStartNew={confirmRefreshBoard}
+          secondaryActionLabel="Cancel"
+          primaryActionLabel="Yes, refresh game"
+          dialogTitleId="refresh-dialog-title"
         />
       )}
       <main className="flex flex-1 flex-col">
@@ -57,7 +71,7 @@ const Home = (): JSX.Element => {
             guesses={guesses}
             current={current}
             gameOver={gameOver}
-            animateEntry={startAnimationsEnabled}
+            animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
           />
 
           {gameOver && (

@@ -1,5 +1,5 @@
-import { Board } from "./Board/Board";
-import Button from "./Button";
+import { Board } from "./Board";
+import { Button } from "./Button";
 import { Keyboard } from "./Keyboard";
 import { Navbar } from "./Navbar";
 import { SessionResumeDialog } from "./SessionResumeDialog";

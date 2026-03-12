@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Button from "../Button";
+import Button from "../Button/Button";
 import type { EditableProfileCardPropsTypes } from "./types";
 
 const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {

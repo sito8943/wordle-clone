@@ -14,7 +14,7 @@ const Navbar = () => {
         WORDLE
       </h1>
       <nav>
-        <ul className="m-auto flex items-center justify-center gap-4 max-sm:gap-1 text-sm font-medium text-neutral-600">
+        <ul className="m-auto flex items-center justify-center gap-4 max-sm:gap-2 text-sm font-medium text-neutral-600">
           {links.map((link) => (
             <li key={link.to}>
               <NavLink to={link.to} label={link.label} icon={link.icon} />

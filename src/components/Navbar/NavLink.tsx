@@ -16,7 +16,7 @@ const NavLink = ({ to, label, icon }: NavLinkPropsType) => {
         ].join(" ")
       }
     >
-      <FontAwesomeIcon icon={icon} aria-hidden="true" />
+      <FontAwesomeIcon icon={icon} aria-hidden="true" className="text-lg" />
       <span className="hidden text-sm sm:inline">{label}</span>
     </RouterNavLink>
   );

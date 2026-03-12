@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { TileStatus } from "../utils/checker";
-import { Keyboard } from "./Keyboard";
+import type { TileStatus } from "../../utils/checker";
+import { Keyboard } from ".";
 
 describe("Keyboard", () => {
   afterEach(() => {

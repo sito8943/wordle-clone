@@ -1,8 +1,14 @@
 import { ConvexGateway } from "../convex/ConvexGateway";
-import type { RecordScoreInput, ScoreEntry, TopScoresResult } from "./types";
+import type {
+  RecordScoreInput,
+  ScoreEntry,
+  ScoreSource,
+  TopScoresResult,
+} from "./types";
 
 const SCOREBOARD_CACHE_KEY = "wordle:scoreboard:cache";
 const SCOREBOARD_PENDING_KEY = "wordle:scoreboard:pending";
+const SCOREBOARD_CLIENT_ID_KEY = "wordle:scoreboard:client-id";
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 const ADD_SCORE_MUTATION = "scores:addScore";
@@ -10,6 +16,7 @@ const LIST_TOP_SCORES_QUERY = "scores:listTopScores";
 
 type StoredScore = {
   localId: string;
+  clientId?: string;
   nick: string;
   score: number;
   createdAt: number;
@@ -20,6 +27,13 @@ type RemoteScore = {
   nick: string;
   score: number;
   createdAt: number;
+  isCurrentClient?: boolean;
+};
+
+type RemoteScoresResponse = {
+  scores: RemoteScore[];
+  currentClientRank?: number | null;
+  currentClientEntry?: RemoteScore | null;
 };
 
 const scoreSorter = (
@@ -73,15 +87,18 @@ const resolveStorage = (storage?: Storage): Storage => {
 class ScoreClient {
   private readonly gateway: ConvexGateway;
   private readonly storage: Storage;
+  private readonly clientId: string;
 
   constructor(gateway: ConvexGateway, storage?: Storage) {
     this.gateway = gateway;
     this.storage = resolveStorage(storage);
+    this.clientId = this.getOrCreateClientId();
   }
 
   async recordScore(input: RecordScoreInput): Promise<void> {
     const record: StoredScore = {
       localId: this.createLocalId(input.createdAt),
+      clientId: this.clientId,
       nick: this.normalizeNick(input.nick),
       score: this.normalizeScore(input.score),
       createdAt: input.createdAt ?? Date.now(),
@@ -97,6 +114,7 @@ class ScoreClient {
     try {
       await this.gateway.mutation(ADD_SCORE_MUTATION, {
         clientRecordId: record.localId,
+        clientId: this.clientId,
         nick: record.nick,
         score: record.score,
         createdAt: record.createdAt,
@@ -113,32 +131,50 @@ class ScoreClient {
     const safeLimit = this.normalizeLimit(limit);
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
+      const localScores = this.localScoresRanked();
+      const localResult = this.buildTopScoresResult(localScores, safeLimit);
       return {
-        scores: this.localTopScores(safeLimit),
+        scores: localResult.scores,
         source: "local",
+        currentClientRank: localResult.currentClientRank,
+        currentClientEntry: localResult.currentClientEntry,
       };
     }
 
     await this.syncPendingScores();
 
     try {
-      const remoteScores = await this.gateway.query<RemoteScore[]>(
-        LIST_TOP_SCORES_QUERY,
-        { limit: safeLimit },
+      const remoteResponse = await this.gateway.query<
+        RemoteScoresResponse | RemoteScore[]
+      >(LIST_TOP_SCORES_QUERY, { limit: safeLimit, clientId: this.clientId });
+      const parsedResponse = this.parseRemoteScoresResponse(remoteResponse);
+      const mergedScores = this.mergeRemoteAndPending(
+        parsedResponse.scores,
+        safeLimit,
       );
+      const currentClientEntry =
+        parsedResponse.currentClientEntry !== null
+          ? this.toScoreEntry(parsedResponse.currentClientEntry, "convex")
+          : (mergedScores.find((entry) => entry.isCurrentClient) ?? null);
 
       return {
-        scores: this.mergeRemoteAndPending(remoteScores, safeLimit),
+        scores: mergedScores,
         source: "convex",
+        currentClientRank: parsedResponse.currentClientRank,
+        currentClientEntry,
       };
     } catch (error) {
       if (!this.gateway.isNetworkError(error)) {
         throw error;
       }
 
+      const localScores = this.localScoresRanked();
+      const localResult = this.buildTopScoresResult(localScores, safeLimit);
       return {
-        scores: this.localTopScores(safeLimit),
+        scores: localResult.scores,
         source: "local",
+        currentClientRank: localResult.currentClientRank,
+        currentClientEntry: localResult.currentClientEntry,
       };
     }
   }
@@ -168,6 +204,7 @@ class ScoreClient {
       try {
         await this.gateway.mutation(ADD_SCORE_MUTATION, {
           clientRecordId: entry.localId,
+          clientId: this.clientId,
           nick: entry.nick,
           score: entry.score,
           createdAt: entry.createdAt,
@@ -188,17 +225,10 @@ class ScoreClient {
     );
   }
 
-  private localTopScores(limit: number): ScoreEntry[] {
+  private localScoresRanked(): ScoreEntry[] {
     return this.dedupeStoredByNick(this.readScores(SCOREBOARD_CACHE_KEY))
       .sort(scoreSorter)
-      .slice(0, limit)
-      .map((entry) => ({
-        id: entry.localId,
-        nick: entry.nick,
-        score: entry.score,
-        createdAt: entry.createdAt,
-        source: "local" as const,
-      }));
+      .map((entry) => this.toLocalScoreEntry(entry));
   }
 
   private mergeRemoteAndPending(
@@ -209,25 +239,92 @@ class ScoreClient {
       this.readScores(SCOREBOARD_PENDING_KEY),
     );
 
-    const remoteEntries: ScoreEntry[] = remoteScores.map((entry) => ({
-      id: entry.id,
-      nick: entry.nick,
-      score: entry.score,
-      createdAt: entry.createdAt,
-      source: "convex",
-    }));
+    const remoteEntries: ScoreEntry[] = remoteScores.map((entry) =>
+      this.toScoreEntry(entry, "convex"),
+    );
 
-    const pendingEntries: ScoreEntry[] = pending.map((entry) => ({
+    const pendingEntries: ScoreEntry[] = pending.map((entry) =>
+      this.toLocalScoreEntry(entry),
+    );
+
+    return this.dedupeScoreEntriesByNick([...remoteEntries, ...pendingEntries])
+      .sort((a, b) => scoreSorter(a, b))
+      .slice(0, limit);
+  }
+
+  private toLocalScoreEntry(entry: StoredScore): ScoreEntry {
+    return {
       id: entry.localId,
       nick: entry.nick,
       score: entry.score,
       createdAt: entry.createdAt,
       source: "local",
-    }));
+      isCurrentClient: !entry.clientId || entry.clientId === this.clientId,
+    };
+  }
 
-    return this.dedupeScoreEntriesByNick([...remoteEntries, ...pendingEntries])
-      .sort((a, b) => scoreSorter(a, b))
-      .slice(0, limit);
+  private toScoreEntry(
+    entry: Pick<RemoteScore, "id" | "nick" | "score" | "createdAt"> &
+      Partial<Pick<RemoteScore, "isCurrentClient">>,
+    source: ScoreSource,
+  ): ScoreEntry {
+    return {
+      id: entry.id,
+      nick: entry.nick,
+      score: entry.score,
+      createdAt: entry.createdAt,
+      source,
+      isCurrentClient: Boolean(entry.isCurrentClient),
+    };
+  }
+
+  private parseRemoteScoresResponse(
+    response: RemoteScoresResponse | RemoteScore[],
+  ): {
+    scores: RemoteScore[];
+    currentClientRank: number | null;
+    currentClientEntry: RemoteScore | null;
+  } {
+    if (Array.isArray(response)) {
+      return {
+        scores: response,
+        currentClientRank: null,
+        currentClientEntry: null,
+      };
+    }
+
+    const normalizedRank =
+      typeof response.currentClientRank === "number" &&
+      Number.isFinite(response.currentClientRank) &&
+      response.currentClientRank > 0
+        ? Math.floor(response.currentClientRank)
+        : null;
+
+    return {
+      scores: Array.isArray(response.scores) ? response.scores : [],
+      currentClientRank: normalizedRank,
+      currentClientEntry: response.currentClientEntry ?? null,
+    };
+  }
+
+  private buildTopScoresResult(
+    rankedScores: ScoreEntry[],
+    limit: number,
+  ): Pick<
+    TopScoresResult,
+    "scores" | "currentClientRank" | "currentClientEntry"
+  > {
+    const currentClientIndex = rankedScores.findIndex(
+      (entry) => entry.isCurrentClient,
+    );
+
+    return {
+      scores: rankedScores.slice(0, limit),
+      currentClientRank:
+        currentClientIndex >= 0 ? currentClientIndex + 1 : null,
+      currentClientEntry:
+        currentClientIndex >= 0 ? rankedScores[currentClientIndex] : null,
+    };
   }
 
   private addToCache(entry: StoredScore): void {
@@ -300,11 +397,26 @@ class ScoreClient {
 
   private createLocalId(createdAt?: number): string {
     const baseTime = createdAt ?? Date.now();
-    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-      return `${baseTime}-${crypto.randomUUID()}`;
+    return `${baseTime}-${this.createIdentifier()}`;
+  }
+
+  private getOrCreateClientId(): string {
+    const existing = this.storage.getItem(SCOREBOARD_CLIENT_ID_KEY);
+    if (existing && existing.trim().length > 0) {
+      return existing;
     }
 
-    return `${baseTime}-${Math.random().toString(36).slice(2)}`;
+    const created = this.createIdentifier();
+    this.storage.setItem(SCOREBOARD_CLIENT_ID_KEY, created);
+    return created;
+  }
+
+  private createIdentifier(): string {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+      return crypto.randomUUID();
+    }
+
+    return Math.random().toString(36).slice(2);
   }
 
   private isStoredScore(value: unknown): value is StoredScore {
@@ -315,6 +427,8 @@ class ScoreClient {
     const candidate = value as Partial<StoredScore>;
     return (
       typeof candidate.localId === "string" &&
+      (candidate.clientId === undefined ||
+        typeof candidate.clientId === "string") &&
       typeof candidate.nick === "string" &&
       typeof candidate.score === "number" &&
       typeof candidate.createdAt === "number"
@@ -344,6 +458,15 @@ class ScoreClient {
       const current = byNick.get(key);
 
       if (!current || scoreSorter(entry, current) < 0) {
+        byNick.set(key, entry);
+        continue;
+      }
+
+      if (
+        scoreSorter(entry, current) === 0 &&
+        entry.isCurrentClient &&
+        !current.isCurrentClient
+      ) {
         byNick.set(key, entry);
         continue;
       }

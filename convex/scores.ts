@@ -23,8 +23,84 @@ const scoreSorter = (
   return a.createdAt - b.createdAt;
 };
 
+const NICK_SUFFIX_PATTERN = /\s+#\d+$/i;
+
+type ScoreRecord = {
+  _id: string;
+  nick: string;
+  clientId?: string;
+};
+
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const normalizeNickBase = (value: string): string => {
+  const normalized = normalizeNick(value);
+  const base = normalized.replace(NICK_SUFFIX_PATTERN, "").trim();
+  return base.length > 0 ? base : "Player";
+};
+
+const toNickWithIndex = (baseNick: string, index: number): string => {
+  if (index <= 1) {
+    return baseNick;
+  }
+
+  const suffix = ` #${index}`;
+  const maxBaseLength = Math.max(1, MAX_NICK_LENGTH - suffix.length);
+  return `${baseNick.slice(0, maxBaseLength)}${suffix}`;
+};
+
+const matchNickIndex = (value: string, baseNick: string): number | null => {
+  const pattern = new RegExp(`^${escapeRegExp(baseNick)}(?:\\s#(\\d+))?$`, "i");
+  const match = value.match(pattern);
+  if (!match) {
+    return null;
+  }
+
+  if (!match[1]) {
+    return 1;
+  }
+
+  const parsed = Number.parseInt(match[1], 10);
+  return Number.isFinite(parsed) && parsed > 1 ? parsed : null;
+};
+
+const resolveUniqueNickForClient = (
+  scores: ScoreRecord[],
+  requestedNick: string,
+  clientId: string,
+): string => {
+  const baseNick = normalizeNickBase(requestedNick);
+  const usedIndices = new Set<number>();
+
+  for (const entry of scores) {
+    const index = matchNickIndex(entry.nick, baseNick);
+    if (!index) {
+      continue;
+    }
+
+    if (entry.clientId === clientId) {
+      return entry.nick;
+    }
+
+    usedIndices.add(index);
+  }
+
+  if (!usedIndices.has(1)) {
+    return baseNick;
+  }
+
+  let nextIndex = 2;
+  while (usedIndices.has(nextIndex)) {
+    nextIndex += 1;
+  }
+
+  return toNickWithIndex(baseNick, nextIndex);
+};
+
 export const addScore = mutation({
   args: {
+    clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
     score: v.number(),
@@ -48,13 +124,16 @@ export const addScore = mutation({
         const nextScore = Math.max(existing.score, score);
         const nextCreatedAt =
           nextScore > existing.score ? createdAt : existing.createdAt;
+        const nextClientId = args.clientId ?? existing.clientId;
 
         if (
           existing.nick !== nick ||
           existing.score !== nextScore ||
-          existing.createdAt !== nextCreatedAt
+          existing.createdAt !== nextCreatedAt ||
+          existing.clientId !== nextClientId
         ) {
           await ctx.db.patch(existing._id, {
+            clientId: nextClientId,
             nick,
             score: nextScore,
             createdAt: nextCreatedAt,
@@ -63,6 +142,55 @@ export const addScore = mutation({
 
         return existing._id;
       }
+    }
+
+    if (args.clientId) {
+      const existingForClient = await ctx.db
+        .query("scores")
+        .withIndex("by_client_id", (query) =>
+          query.eq("clientId", args.clientId),
+        )
+        .first();
+      const scores = await ctx.db.query("scores").collect();
+      const resolvedNick = resolveUniqueNickForClient(
+        scores as ScoreRecord[],
+        nick,
+        args.clientId,
+      );
+
+      if (existingForClient) {
+        const nextScore = Math.max(existingForClient.score, score);
+        const nextCreatedAt =
+          nextScore > existingForClient.score
+            ? createdAt
+            : existingForClient.createdAt;
+        const nextClientRecordId =
+          args.clientRecordId ?? existingForClient.clientRecordId;
+
+        if (
+          existingForClient.nick !== resolvedNick ||
+          existingForClient.score !== nextScore ||
+          existingForClient.createdAt !== nextCreatedAt ||
+          existingForClient.clientRecordId !== nextClientRecordId
+        ) {
+          await ctx.db.patch(existingForClient._id, {
+            nick: resolvedNick,
+            score: nextScore,
+            createdAt: nextCreatedAt,
+            clientRecordId: nextClientRecordId,
+          });
+        }
+
+        return existingForClient._id;
+      }
+
+      return ctx.db.insert("scores", {
+        clientId: args.clientId,
+        clientRecordId: args.clientRecordId,
+        nick: resolvedNick,
+        score,
+        createdAt,
+      });
     }
 
     const scores = await ctx.db.query("scores").collect();
@@ -111,6 +239,7 @@ export const addScore = mutation({
 export const listTopScores = query({
   args: {
     limit: v.optional(v.number()),
+    clientId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const limit = Math.max(
@@ -130,14 +259,38 @@ export const listTopScores = query({
       }
     }
 
-    return [...byNick.values()]
-      .sort(scoreSorter)
-      .slice(0, limit)
-      .map((score) => ({
-        id: score._id,
-        nick: score.nick,
-        score: score.score,
-        createdAt: score.createdAt,
-      }));
+    const sortedScores = [...byNick.values()].sort(scoreSorter);
+    const currentClientIndex =
+      typeof args.clientId === "string" && args.clientId.length > 0
+        ? sortedScores.findIndex((score) => score.clientId === args.clientId)
+        : -1;
+    const currentClientScore =
+      currentClientIndex >= 0 ? sortedScores[currentClientIndex] : null;
+
+    const mappedTopScores = sortedScores.slice(0, limit).map((score) => ({
+      id: score._id,
+      nick: score.nick,
+      score: score.score,
+      createdAt: score.createdAt,
+      isCurrentClient:
+        typeof args.clientId === "string" &&
+        args.clientId.length > 0 &&
+        score.clientId === args.clientId,
+    }));
+
+    return {
+      scores: mappedTopScores,
+      currentClientRank:
+        currentClientIndex >= 0 ? currentClientIndex + 1 : null,
+      currentClientEntry: currentClientScore
+        ? {
+            id: currentClientScore._id,
+            nick: currentClientScore.nick,
+            score: currentClientScore.score,
+            createdAt: currentClientScore.createdAt,
+            isCurrentClient: true,
+          }
+        : null,
+    };
   },
 });

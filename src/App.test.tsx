@@ -79,11 +79,118 @@ describe("App", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(
+      screen.queryByRole("dialog", { name: "Refresh current game?" }),
+    ).toBeNull();
 
     await waitFor(() => {
       expect(screen.queryByText("You got it in 1!")).toBeNull();
     });
     expect(screen.getByRole("button", { name: "Refresh" })).toBeTruthy();
+  });
+
+  it("asks confirmation before refreshing an active game", async () => {
+    renderApp();
+
+    fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
+    expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    expect(
+      await screen.findByRole("dialog", { name: "Refresh current game?" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Refresh current game?" }),
+      ).toBeNull();
+    });
+    expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    fireEvent.click(screen.getByRole("button", { name: "Yes, refresh game" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("gridcell", { name: "A, typing" })).toBeNull();
+    });
+  });
+
+  it("highlights the current player row in the scoreboard", async () => {
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.score).toBe(6);
+    });
+
+    fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
+    expect(
+      await screen.findByRole("heading", { name: "Scoreboard" }),
+    ).toBeTruthy();
+
+    expect(await screen.findByText("You")).toBeTruthy();
+  });
+
+  it("shows the current player as #11 when outside top 10 and displays real rank", async () => {
+    const clientId = "client-me";
+    localStorage.setItem("wordle:scoreboard:client-id", clientId);
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        { localId: "p1", clientId: "c1", nick: "A", score: 110, createdAt: 1 },
+        { localId: "p2", clientId: "c2", nick: "B", score: 109, createdAt: 2 },
+        { localId: "p3", clientId: "c3", nick: "C", score: 108, createdAt: 3 },
+        { localId: "p4", clientId: "c4", nick: "D", score: 107, createdAt: 4 },
+        { localId: "p5", clientId: "c5", nick: "E", score: 106, createdAt: 5 },
+        { localId: "p6", clientId: "c6", nick: "F", score: 105, createdAt: 6 },
+        { localId: "p7", clientId: "c7", nick: "G", score: 104, createdAt: 7 },
+        { localId: "p8", clientId: "c8", nick: "H", score: 103, createdAt: 8 },
+        { localId: "p9", clientId: "c9", nick: "I", score: 102, createdAt: 9 },
+        {
+          localId: "p10",
+          clientId: "c10",
+          nick: "J",
+          score: 101,
+          createdAt: 10,
+        },
+        {
+          localId: "p11",
+          clientId: "c11",
+          nick: "K",
+          score: 100,
+          createdAt: 11,
+        },
+        {
+          localId: "me",
+          clientId,
+          nick: "Sito",
+          score: 1,
+          createdAt: 12,
+        },
+      ]),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
+    expect(
+      await screen.findByRole("heading", { name: "Scoreboard" }),
+    ).toBeTruthy();
+
+    expect(
+      await screen.findByText("You are shown as #11. Real position: #12."),
+    ).toBeTruthy();
+    expect(await screen.findByText("#11")).toBeTruthy();
+    expect(await screen.findByText("Real #12")).toBeTruthy();
+    expect(await screen.findByText("You")).toBeTruthy();
   });
 
   it("lets the user edit the profile name", async () => {
@@ -212,6 +319,9 @@ describe("App", () => {
 
     renderApp();
 
+    expect(
+      screen.getByRole("grid", { name: "Wordle board" }).className,
+    ).not.toContain("board-entry-animation");
     expect(screen.getByRole("gridcell", { name: "B, absent" })).toBeTruthy();
     expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
     expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
