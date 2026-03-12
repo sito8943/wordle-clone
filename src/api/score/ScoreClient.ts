@@ -144,7 +144,9 @@ class ScoreClient {
   }
 
   private async syncPendingScores(): Promise<void> {
-    const pending = this.readScores(SCOREBOARD_PENDING_KEY);
+    const pending = this.dedupeStoredByNick(
+      this.readScores(SCOREBOARD_PENDING_KEY),
+    );
 
     if (
       pending.length === 0 ||
@@ -180,11 +182,14 @@ class ScoreClient {
       }
     }
 
-    this.writeScores(SCOREBOARD_PENDING_KEY, stillPending);
+    this.writeScores(
+      SCOREBOARD_PENDING_KEY,
+      this.dedupeStoredByNick(stillPending),
+    );
   }
 
   private localTopScores(limit: number): ScoreEntry[] {
-    return this.readScores(SCOREBOARD_CACHE_KEY)
+    return this.dedupeStoredByNick(this.readScores(SCOREBOARD_CACHE_KEY))
       .sort(scoreSorter)
       .slice(0, limit)
       .map((entry) => ({
@@ -200,8 +205,9 @@ class ScoreClient {
     remoteScores: RemoteScore[],
     limit: number,
   ): ScoreEntry[] {
-    const pending = this.readScores(SCOREBOARD_PENDING_KEY);
-    const seen = new Set(remoteScores.map((entry) => this.fingerprint(entry)));
+    const pending = this.dedupeStoredByNick(
+      this.readScores(SCOREBOARD_PENDING_KEY),
+    );
 
     const remoteEntries: ScoreEntry[] = remoteScores.map((entry) => ({
       id: entry.id,
@@ -211,40 +217,33 @@ class ScoreClient {
       source: "convex",
     }));
 
-    const pendingEntries: ScoreEntry[] = pending
-      .filter((entry) => !seen.has(this.fingerprint(entry)))
-      .map((entry) => ({
-        id: entry.localId,
-        nick: entry.nick,
-        score: entry.score,
-        createdAt: entry.createdAt,
-        source: "local",
-      }));
+    const pendingEntries: ScoreEntry[] = pending.map((entry) => ({
+      id: entry.localId,
+      nick: entry.nick,
+      score: entry.score,
+      createdAt: entry.createdAt,
+      source: "local",
+    }));
 
-    return [...remoteEntries, ...pendingEntries]
+    return this.dedupeScoreEntriesByNick([...remoteEntries, ...pendingEntries])
       .sort((a, b) => scoreSorter(a, b))
       .slice(0, limit);
   }
 
   private addToCache(entry: StoredScore): void {
-    const cache = this.readScores(SCOREBOARD_CACHE_KEY);
-    if (cache.some((item) => item.localId === entry.localId)) {
-      return;
-    }
-
-    cache.push(entry);
-    cache.sort(scoreSorter);
+    const cache = this.dedupeStoredByNick([
+      ...this.readScores(SCOREBOARD_CACHE_KEY),
+      entry,
+    ]);
 
     this.writeScores(SCOREBOARD_CACHE_KEY, cache.slice(0, 200));
   }
 
   private addToPending(entry: StoredScore): void {
-    const pending = this.readScores(SCOREBOARD_PENDING_KEY);
-    if (pending.some((item) => item.localId === entry.localId)) {
-      return;
-    }
-
-    pending.push(entry);
+    const pending = this.dedupeStoredByNick([
+      ...this.readScores(SCOREBOARD_PENDING_KEY),
+      entry,
+    ]);
     this.writeScores(SCOREBOARD_PENDING_KEY, pending);
   }
 
@@ -277,6 +276,10 @@ class ScoreClient {
     }
 
     return trimmed.slice(0, 30);
+  }
+
+  private nickKey(nick: string): string {
+    return this.normalizeNick(nick).toLowerCase();
   }
 
   private normalizeScore(score: number): number {
@@ -318,10 +321,43 @@ class ScoreClient {
     );
   }
 
-  private fingerprint(
-    entry: Pick<StoredScore, "nick" | "score" | "createdAt">,
-  ): string {
-    return `${entry.nick}::${entry.score}::${entry.createdAt}`;
+  private dedupeStoredByNick(entries: StoredScore[]): StoredScore[] {
+    const byNick = new Map<string, StoredScore>();
+
+    for (const entry of entries) {
+      const key = this.nickKey(entry.nick);
+      const current = byNick.get(key);
+
+      if (!current || scoreSorter(entry, current) < 0) {
+        byNick.set(key, entry);
+      }
+    }
+
+    return [...byNick.values()];
+  }
+
+  private dedupeScoreEntriesByNick(entries: ScoreEntry[]): ScoreEntry[] {
+    const byNick = new Map<string, ScoreEntry>();
+
+    for (const entry of entries) {
+      const key = this.nickKey(entry.nick);
+      const current = byNick.get(key);
+
+      if (!current || scoreSorter(entry, current) < 0) {
+        byNick.set(key, entry);
+        continue;
+      }
+
+      if (
+        scoreSorter(entry, current) === 0 &&
+        entry.source === "convex" &&
+        current.source !== "convex"
+      ) {
+        byNick.set(key, entry);
+      }
+    }
+
+    return [...byNick.values()];
   }
 
   private isOnline(): boolean {
