@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
-import { IconButton } from "../components";
+import { Button } from "../components";
 import { useScoreboardController } from "../hooks";
 
 const Scoreboard = (): JSX.Element => {
@@ -11,14 +11,15 @@ const Scoreboard = (): JSX.Element => {
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">Scoreboard</h2>
-        <IconButton
+        <Button
           onClick={() => void refresh()}
-          ariaLabel="Refresh scores"
-          label="Refresh"
+          aria-label="Refresh scores"
           icon={faRotateRight}
           className="max-sm:px-2"
           hideLabelOnMobile
-        />
+        >
+          Refresh
+        </Button>
       </div>
 
       {!convexEnabled && (

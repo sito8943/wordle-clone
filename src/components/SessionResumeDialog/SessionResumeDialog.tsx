@@ -1,3 +1,5 @@
+import Button from "../Button";
+
 type SessionResumeDialogProps = {
   onContinue: () => void;
   onStartNew: () => void;
@@ -25,20 +27,12 @@ const SessionResumeDialog = (props: SessionResumeDialogProps) => {
         </p>
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <button
-            type="button"
-            onClick={onStartNew}
-            className="rounded border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-100"
-          >
+          <Button onClick={onStartNew}>
             Start new game
-          </button>
-          <button
-            type="button"
-            onClick={onContinue}
-            className="rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-700"
-          >
+          </Button>
+          <Button onClick={onContinue}>
             Continue previous board
-          </button>
+          </Button>
         </div>
       </div>
     </div>

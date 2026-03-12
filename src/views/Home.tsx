@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import {
   Board,
-  IconButton,
+  Button,
   Keyboard,
   SessionResumeDialog,
 } from "../components";
@@ -43,14 +43,15 @@ const Home = (): JSX.Element => {
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-center gap-6 py-6 max-sm:py-2">
           <div className="w-full max-w-md flex justify-end">
-            <IconButton
+            <Button
               onClick={refreshBoard}
-              ariaLabel="Refresh"
-              label="Refresh"
+              aria-label="Refresh"
               icon={faRotateRight}
-              className="text-sm font-semibold max-sm:px-2"
+              className="max-sm:px-2"
               hideLabelOnMobile
-            />
+            >
+              Refresh
+            </Button>
           </div>
 
           <Board guesses={guesses} current={current} gameOver={gameOver} />

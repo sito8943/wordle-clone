@@ -4,7 +4,7 @@ import { Navbar } from "../components";
 const View = () => {
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900">
-      <div className="mx-auto flex min-h-screen w-full flex-col px-3 py-3 sm:px-4 sm:py-4">
+      <div className="mx-auto flex min-h-screen w-full flex-col max-sm:p-3 p-1">
         <Navbar />
         <Outlet />
       </div>

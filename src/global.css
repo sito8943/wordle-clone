@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #2563eb;
+  --color-secondary: #0f766e;
+}
+
 h1,
 .times-new-roman {
   font-family: "Times New Roman", Times, serif;

@@ -9,7 +9,7 @@ const links = [
 
 const Navbar = () => {
   return (
-    <header className="w-full justify-between border-b border-neutral-300 py-2 sm:py-5 flex">
+    <header className="w-full justify-between border-b border-neutral-300 py-2 sm:py-3 flex">
       <h1 className="text-center text-3xl max-sm:text-xl font-black tracking-[0.28em] text-black">
         WORDLE
       </h1>

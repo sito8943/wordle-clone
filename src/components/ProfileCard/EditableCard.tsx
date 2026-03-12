@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Button from "../Button";
 import type { EditableProfileCardPropsTypes } from "./types";
 
 const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
@@ -49,12 +50,9 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
           readOnly
         />
       </div>
-      <button
-        type="submit"
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 self-start"
-      >
+      <Button type="submit" className="self-start">
         Save
-      </button>
+      </Button>
     </form>
   );
 };
