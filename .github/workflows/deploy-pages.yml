@@ -71,8 +71,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate production frontend env
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        run: |
+          if [ -z "${VITE_CONVEX_URL}" ]; then
+            echo "VITE_CONVEX_URL is empty. Set repository variable VITE_CONVEX_URL."
+            exit 1
+          fi
+
       - name: Build
-        run: npm run build -- --base=/${{ github.event.repository.name }}
+        run: npm run build -- --base=/${{ github.event.repository.name }}/
 
       - name: Add SPA fallback page
         run: cp dist/index.html dist/404.html
@@ -82,11 +90,43 @@ jobs:
         with:
           path: ./dist
 
+  deploy-convex:
+    name: Deploy Convex
+    runs-on: ubuntu-latest
+    needs: [verify, test]
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Convex deploy key
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: |
+          if [ -z "${CONVEX_DEPLOY_KEY}" ]; then
+            echo "CONVEX_DEPLOY_KEY is empty. Add it as a repository secret."
+            exit 1
+          fi
+
+      - name: Deploy Convex backend
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: npm run convex:deploy
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     environment: github-pages
-    needs: build
+    needs: [build, deploy-convex]
 
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
 
@@ -96,8 +136,6 @@ jobs:
     permissions:
       id-token: write
       pages: write
-      contents: write
-      packages: write
 
     steps:
       - name: Deploy to GitHub Pages
