@@ -90,4 +90,76 @@ describe("Board", () => {
       "board-entry-animation",
     );
   });
+
+  it("adds staggered tile entry animation when enabled", () => {
+    render(<Board guesses={[]} current="" gameOver={false} animateTileEntry />);
+
+    const cells = screen.getAllByRole("gridcell");
+
+    expect(cells[0].className).toContain("tile-entry-animation");
+    expect(cells[0].style.animationDelay).toBe("0ms");
+    expect(cells[1].style.animationDelay).toBe("16ms");
+  });
+
+  it("highlights only the current active tile", () => {
+    render(<Board guesses={[]} current="AB" gameOver={false} />);
+
+    const cells = screen.getAllByRole("gridcell");
+
+    expect(
+      cells[2].querySelector(".tile-active-border-animation"),
+    ).toBeTruthy();
+    expect(cells[0].querySelector(".tile-active-border-animation")).toBeNull();
+    expect(cells[1].querySelector(".tile-active-border-animation")).toBeNull();
+  });
+
+  it("shows animated indicator only on the current row", () => {
+    const correct: TileStatus[] = [
+      "correct",
+      "correct",
+      "correct",
+      "correct",
+      "correct",
+    ];
+
+    render(
+      <Board
+        guesses={[{ word: "APPLE", statuses: correct }]}
+        current="AB"
+        gameOver={false}
+      />,
+    );
+
+    const rows = screen.getAllByRole("row");
+
+    expect(
+      rows[1].querySelector(".row-active-indicator-animation"),
+    ).toBeTruthy();
+    expect(rows[0].querySelector(".row-active-indicator-animation")).toBeNull();
+    expect(rows[2].querySelector(".row-active-indicator-animation")).toBeNull();
+  });
+
+  it("scales past rows to 0.9 and active row to 1.1 with transition", () => {
+    const correct: TileStatus[] = [
+      "correct",
+      "correct",
+      "correct",
+      "correct",
+      "correct",
+    ];
+
+    render(
+      <Board
+        guesses={[{ word: "APPLE", statuses: correct }]}
+        current="AB"
+        gameOver={false}
+      />,
+    );
+
+    const rows = screen.getAllByRole("row");
+
+    expect(rows[0].className).toContain("scale-90");
+    expect(rows[1].className).toContain("scale-110");
+    expect(rows[1].className).toContain("transition-transform");
+  });
 });

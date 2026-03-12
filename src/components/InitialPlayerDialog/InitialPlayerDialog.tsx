@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "../Button";
 import {
   INITIAL_PLAYER_DIALOG_DESCRIPTION,
@@ -65,7 +65,10 @@ const InitialPlayerDialog = ({
             type="text"
             value={name}
             maxLength={30}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event: ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
+              setName(event.target.value);
+              event.stopPropagation();
+            }}
             className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
           />
 

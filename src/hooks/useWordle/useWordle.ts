@@ -23,6 +23,19 @@ import {
   shouldAnimateOnFirstSessionView,
 } from "./utils";
 
+const isEditableKeyboardTarget = (target: EventTarget | null): boolean => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  );
+};
+
 export default function useWordle() {
   const currentSessionId = useMemo(getOrCreateSessionId, []);
   const initialAnswer = useMemo(getRandomWord, []);
@@ -160,6 +173,10 @@ export default function useWordle() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (isEditableKeyboardTarget(event.target)) {
+        return;
+      }
+
       if (event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }

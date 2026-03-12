@@ -34,6 +34,44 @@ h1,
   }
 }
 
+@keyframes tile-enter-with-delay {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tile-active-border-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(37, 100, 235);
+    scale: 1;
+  }
+
+  50% {
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0);
+    scale: 0.99;
+  }
+}
+
+@keyframes row-active-indicator-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.88);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes fire-shell-flicker {
   0%,
   100% {
@@ -100,6 +138,20 @@ h1,
   animation: keyboard-enter-from-bottom 440ms ease-out 120ms both;
 }
 
+.tile-entry-animation {
+  opacity: 0;
+  animation: tile-enter-with-delay 260ms ease-out both;
+}
+
+.tile-active-border-animation {
+  animation: tile-active-border-glow 3.25s ease-in-out infinite;
+  border-color: #2563eb;
+}
+
+.row-active-indicator-animation {
+  animation: row-active-indicator-pulse 3s ease-in-out infinite;
+}
+
 .fire-streak-icon-active .fire-shell {
   transform-origin: 50% 80%;
   animation: fire-shell-flicker 820ms ease-in-out infinite;
@@ -150,10 +202,19 @@ h1,
 
 @media (prefers-reduced-motion: reduce) {
   .board-entry-animation,
-  .keyboard-entry-animation {
+  .keyboard-entry-animation,
+  .tile-entry-animation {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+
+  .tile-active-border-animation {
+    animation: none;
+  }
+
+  .row-active-indicator-animation {
+    animation: none;
   }
 
   .fire-streak-icon-active .fire-shell,

@@ -94,4 +94,22 @@ describe("Keyboard", () => {
       screen.getByRole("group", { name: "On-screen keyboard" }).className,
     ).toContain("keyboard-entry-animation");
   });
+
+  it("calls onEntryAnimationEnd when keyboard entry animation ends", () => {
+    const onEntryAnimationEnd = vi.fn();
+    render(
+      <Keyboard
+        guesses={[]}
+        onKey={vi.fn()}
+        animateEntry
+        onEntryAnimationEnd={onEntryAnimationEnd}
+      />,
+    );
+
+    fireEvent.animationEnd(
+      screen.getByRole("group", { name: "On-screen keyboard" }),
+    );
+
+    expect(onEntryAnimationEnd).toHaveBeenCalledTimes(1);
+  });
 });

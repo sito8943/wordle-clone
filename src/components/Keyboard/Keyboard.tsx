@@ -6,6 +6,7 @@ export function Keyboard({
   guesses,
   onKey,
   animateEntry = false,
+  onEntryAnimationEnd,
   isLoss = false,
 }: KeyboardProps) {
   const keyStatuses = getKeyStatuses(guesses);
@@ -17,6 +18,7 @@ export function Keyboard({
       <div
         role="group"
         aria-label="On-screen keyboard"
+        onAnimationEnd={animateEntry ? onEntryAnimationEnd : undefined}
         className={`w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm ${
           animateEntry ? "keyboard-entry-animation" : ""
         }`}

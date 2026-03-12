@@ -78,6 +78,15 @@ describe("App", () => {
     });
   });
 
+  it("does not type on the board while writing the initial player name", async () => {
+    renderApp();
+
+    const nameInput = await screen.findByLabelText("Player name");
+    fireEvent.keyDown(nameInput, { key: "A" });
+
+    expect(screen.queryByRole("gridcell", { name: "A, typing" })).toBeNull();
+  });
+
   it("shows the scoreboard navbar button in red when current player is first", async () => {
     localStorage.setItem(
       "wordle:scoreboard:cache",
