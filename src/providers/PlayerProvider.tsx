@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useLocalStorage } from "../hooks/";
 import { useApi } from "./ApiProvider";
-import { DEFAULT_PLAYER } from "./constant";
+import { DEFAULT_PLAYER } from "./constants";
 import type { Player, PlayerContextType, ProviderProps } from "./types";
 import { normalizePlayer, normalizePlayerName } from "./utils";
 

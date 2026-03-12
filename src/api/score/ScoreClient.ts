@@ -8,7 +8,7 @@ import {
   SCOREBOARD_CACHE_KEY,
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PENDING_KEY,
-} from "./constant";
+} from "./constants";
 import type {
   RecordScoreInput,
   RemoteScore,

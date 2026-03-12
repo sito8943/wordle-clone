@@ -1,5 +1,5 @@
 import { KEYBOARD_ROWS, getKeyStatuses } from "../../domain/wordle";
-import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constant";
+import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constants";
 import type { KeyboardProps } from "./types";
 
 export function Keyboard({

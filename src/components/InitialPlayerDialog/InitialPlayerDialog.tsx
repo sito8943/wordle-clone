@@ -12,7 +12,7 @@ import {
   INITIAL_PLAYER_DIALOG_PRIMARY_ACTION_LABEL,
   INITIAL_PLAYER_DIALOG_TITLE,
   INITIAL_PLAYER_DIALOG_TITLE_ID,
-} from "./constant";
+} from "./constants";
 import type { InitialPlayerDialogProps } from "./types";
 
 const InitialPlayerDialog = ({

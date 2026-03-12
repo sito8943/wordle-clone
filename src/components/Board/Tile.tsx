@@ -1,4 +1,4 @@
-import { STATUS_LABEL, STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "./constant";
+import { STATUS_LABEL, STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "./constants";
 import type { TilePropsType } from "./types";
 
 export function Tile({

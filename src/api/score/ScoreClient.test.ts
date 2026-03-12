@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConvexGateway } from "../convex/ConvexGateway";
 import { ScoreClient } from "./ScoreClient";
-import { SCOREBOARD_CACHE_KEY, SCOREBOARD_CLIENT_ID_KEY } from "./constant";
+import { SCOREBOARD_CACHE_KEY, SCOREBOARD_CLIENT_ID_KEY } from "./constants";
 import type { ScoreClientGatewayOverrides } from "./types";
 
 const createStorage = (): Storage => {

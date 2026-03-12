@@ -3,7 +3,7 @@ import {
   DIALOG_BACKDROP_EXIT_ANIMATION_CLASS,
   DIALOG_PANEL_ENTER_ANIMATION_CLASS,
   DIALOG_PANEL_EXIT_ANIMATION_CLASS,
-} from "./constant";
+} from "./constants";
 import type { DialogTransitionClasses } from "./types";
 
 export const getDialogTransitionClasses = (

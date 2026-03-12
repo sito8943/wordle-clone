@@ -1,4 +1,4 @@
-import { WORDS } from "./constant";
+import { WORDS } from "./constants";
 
 export function getRandomWord(): string {
   return WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase();

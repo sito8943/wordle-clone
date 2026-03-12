@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY } from "../../domain/wordle";
 import { useLocalStorage } from "../useLocalStorage";
-import { WORDLE_ANIMATIONS_PREFERENCE_SYNC_EVENT } from "../constant";
+import { WORDLE_ANIMATIONS_PREFERENCE_SYNC_EVENT } from "../constants";
 import type { UseAnimationsPreferenceOptions } from "./types";
 import { applyAnimationsPreferenceToDocument, isBoolean } from "./utils";
 

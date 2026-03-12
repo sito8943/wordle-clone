@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { ButtonProps } from "./types";
-import { BASE_STYLE, STYLE_BY_VARIANT } from "./constant";
+import { BASE_STYLE, STYLE_BY_VARIANT } from "./constants";
 
 const Button = ({
   type = "button",

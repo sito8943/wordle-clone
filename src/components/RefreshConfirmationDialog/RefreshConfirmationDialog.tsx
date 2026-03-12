@@ -5,7 +5,7 @@ import {
   REFRESH_CONFIRMATION_DIALOG_DESCRIPTION,
   REFRESH_CONFIRMATION_DIALOG_TITLE,
   REFRESH_CONFIRMATION_DIALOG_TITLE_ID,
-} from "./constant";
+} from "./constants";
 import type { RefreshConfirmationDialogProps } from "./types";
 
 const RefreshConfirmationDialog = ({

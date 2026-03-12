@@ -1,5 +1,5 @@
 import type { GuessResult } from "../types";
-import { BOARD_ROWS, BOARD_COLUMNS } from "./constant";
+import { BOARD_ROWS, BOARD_COLUMNS } from "./constants";
 import type { BoardRowModel } from "./types";
 
 export const buildBoardRows = (

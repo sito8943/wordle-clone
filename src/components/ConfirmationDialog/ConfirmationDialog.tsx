@@ -1,6 +1,6 @@
 import { useDialogCloseTransition } from "../../hooks";
 import { Button } from "../Button";
-import { DIALOG_CLOSE_DURATION_MS } from "./constant";
+import { DIALOG_CLOSE_DURATION_MS } from "./constants";
 import type { ConfirmationDialogProps } from "./types";
 import { getDialogTransitionClasses } from "./utils";
 
