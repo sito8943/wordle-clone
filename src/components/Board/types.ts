@@ -4,6 +4,7 @@ export type BoardPropsType = {
   guesses: GuessResult[];
   current: string;
   gameOver: boolean;
+  animateEntry?: boolean;
 };
 
 export type RowPropsType = {

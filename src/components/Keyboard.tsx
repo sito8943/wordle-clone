@@ -16,9 +16,14 @@ const KEY_STYLE: Record<TileStatus | "default", string> = {
 interface KeyboardProps {
   guesses: GuessResult[];
   onKey: (key: string) => void;
+  animateEntry?: boolean;
 }
 
-export function Keyboard({ guesses, onKey }: KeyboardProps) {
+export function Keyboard({
+  guesses,
+  onKey,
+  animateEntry = false,
+}: KeyboardProps) {
   const keyStatuses = getKeyStatuses(guesses);
 
   return (
@@ -27,7 +32,9 @@ export function Keyboard({ guesses, onKey }: KeyboardProps) {
       <div
         role="group"
         aria-label="On-screen keyboard"
-        className="w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm"
+        className={`w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm ${
+          animateEntry ? "keyboard-entry-animation" : ""
+        }`}
       >
         {KEYBOARD_ROWS.map((row, ri) => (
           <div

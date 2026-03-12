@@ -56,4 +56,12 @@ describe("Board", () => {
 
     expect(screen.queryByRole("gridcell", { name: "Z, typing" })).toBeNull();
   });
+
+  it("adds the entry animation class when enabled", () => {
+    render(<Board guesses={[]} current="" gameOver={false} animateEntry />);
+
+    expect(screen.getByRole("grid").className).toContain(
+      "board-entry-animation",
+    );
+  });
 });

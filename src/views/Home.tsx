@@ -1,11 +1,6 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
-import {
-  Board,
-  Button,
-  Keyboard,
-  SessionResumeDialog,
-} from "../components";
+import { Board, Button, Keyboard, SessionResumeDialog } from "../components";
 import { useHomeController } from "../hooks";
 
 const Home = (): JSX.Element => {
@@ -17,6 +12,9 @@ const Home = (): JSX.Element => {
     won,
     message,
     handleKey,
+    startAnimationSeed,
+    startAnimationsEnabled,
+    keyboardEntryAnimationEnabled,
     showResumeDialog,
     continuePreviousBoard,
     startNewBoard,
@@ -54,7 +52,13 @@ const Home = (): JSX.Element => {
             </Button>
           </div>
 
-          <Board guesses={guesses} current={current} gameOver={gameOver} />
+          <Board
+            key={`board-${startAnimationSeed}`}
+            guesses={guesses}
+            current={current}
+            gameOver={gameOver}
+            animateEntry={startAnimationsEnabled}
+          />
 
           {gameOver && (
             <>
@@ -67,7 +71,11 @@ const Home = (): JSX.Element => {
           )}
         </section>
 
-        <Keyboard guesses={guesses} onKey={handleKey} />
+        <Keyboard
+          guesses={guesses}
+          onKey={handleKey}
+          animateEntry={keyboardEntryAnimationEnabled}
+        />
       </main>
     </>
   );

@@ -8,6 +8,10 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { env } from "./config/env";
+import {
+  WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
+  WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
+} from "./domain/wordle";
 import { ApiProvider, PlayerProvider } from "./providers";
 
 vi.mock("./utils/words", async () => {
@@ -143,6 +147,49 @@ describe("App", () => {
 
     const nameInput = screen.getByLabelText("Name:") as HTMLInputElement;
     expect(nameInput.value).toBe("   ");
+  });
+
+  it("lets the user toggle start animations from profile", async () => {
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Anim: on" }));
+
+    expect(screen.getByRole("button", { name: "Anim: off" })).toBeTruthy();
+    expect(localStorage.getItem(WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY)).toBe(
+      "true",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Anim: off" }));
+
+    expect(screen.getByRole("button", { name: "Anim: on" })).toBeTruthy();
+    expect(localStorage.getItem(WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY)).toBe(
+      "false",
+    );
+  });
+
+  it("animates the keyboard only once per tab session", async () => {
+    renderApp();
+
+    const firstKeyboard = await screen.findByRole("group", {
+      name: "On-screen keyboard",
+    });
+    expect(firstKeyboard.className).toContain("keyboard-entry-animation");
+    expect(
+      sessionStorage.getItem(WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY),
+    ).toBe("seen");
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+
+    const secondKeyboard = await screen.findByRole("group", {
+      name: "On-screen keyboard",
+    });
+    expect(secondKeyboard.className).not.toContain("keyboard-entry-animation");
   });
 
   it("restores the current game after reload", async () => {

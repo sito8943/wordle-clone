@@ -61,4 +61,12 @@ describe("Keyboard", () => {
     const aKey = screen.getByRole("button", { name: "Letter A" });
     expect(aKey.className).toContain("bg-black");
   });
+
+  it("adds the entry animation class when enabled", () => {
+    render(<Keyboard guesses={[]} onKey={vi.fn()} animateEntry />);
+
+    expect(
+      screen.getByRole("group", { name: "On-screen keyboard" }).className,
+    ).toContain("keyboard-entry-animation");
+  });
 });

@@ -9,3 +9,45 @@ h1,
 .times-new-roman {
   font-family: "Times New Roman", Times, serif;
 }
+
+@keyframes smooth-entry {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes keyboard-enter-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.board-entry-animation {
+  animation: smooth-entry 360ms ease-out both;
+}
+
+.keyboard-entry-animation {
+  opacity: 0;
+  animation: keyboard-enter-from-bottom 440ms ease-out 120ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-entry-animation,
+  .keyboard-entry-animation {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
