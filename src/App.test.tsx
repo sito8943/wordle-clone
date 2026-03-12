@@ -99,6 +99,46 @@ describe("App", () => {
     });
   });
 
+  it("normalizes and saves profile name", async () => {
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.change(screen.getByLabelText("Name:"), {
+      target: { value: "   Ana   " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.name).toBe("Ana");
+    });
+  });
+
+  it("prevents saving an empty profile name", async () => {
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.change(screen.getByLabelText("Name:"), {
+      target: { value: "   " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(screen.getByText("Name cannot be empty.")).toBeTruthy();
+
+    const nameInput = screen.getByLabelText("Name:") as HTMLInputElement;
+    expect(nameInput.value).toBe("   ");
+  });
+
   it("restores the current game after reload", async () => {
     sessionStorage.setItem("wordle:session-id", "session-a");
     localStorage.setItem(

@@ -11,6 +11,15 @@ const DEFAULT_PLAYER: Player = {
   score: 0,
 };
 
+const normalizePlayerName = (value: string): string => {
+  const normalized = value.trim();
+  if (normalized.length === 0) {
+    return DEFAULT_PLAYER.name;
+  }
+
+  return normalized.slice(0, 30);
+};
+
 const PlayerProvider = (props: { children: React.ReactNode }) => {
   const { children } = props;
   const { scoreClient } = useApi();
@@ -19,7 +28,7 @@ const PlayerProvider = (props: { children: React.ReactNode }) => {
 
   const updatePlayer = useCallback(
     (name: string) => {
-      setPlayer((prev) => ({ ...prev, name }));
+      setPlayer((prev) => ({ ...prev, name: normalizePlayerName(name) }));
     },
     [setPlayer],
   );
