@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 const NotFound = () => {
   return (
-    <main className="flex flex-col items-center justify-center py-20">
+    <main className="page-centered">
       <h2 className="page-title">404 - Not Found</h2>
       <p className="mt-2 text-base text-neutral-600">
         The page you are looking for does not exist.

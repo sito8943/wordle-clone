@@ -86,7 +86,7 @@ const InitialPlayerDialog = ({
             className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
           />
 
-          {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+          {error ? <p className="mt-2 input-error-text">{error}</p> : null}
 
           <div className="mt-5 flex justify-end">
             <Button type="submit" disabled={isClosing}>

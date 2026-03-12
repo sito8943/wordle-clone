@@ -23,7 +23,7 @@ const Scoreboard = (): JSX.Element => {
           onClick={() => void refresh()}
           aria-label="Refresh scores"
           icon={faRotateRight}
-          className="max-sm:px-2"
+          className="mobile-compact-button"
           hideLabelOnMobile
         >
           Refresh
@@ -31,34 +31,34 @@ const Scoreboard = (): JSX.Element => {
       </div>
 
       {!convexEnabled && (
-        <p className="rounded border border-amber-300 bg-amber-100 px-3 py-2 text-sm text-amber-900">
+        <p className="scoreboard-notice scoreboard-notice-amber">
           Convex is not configured (`VITE_CONVEX_URL`). Using local storage
           only.
         </p>
       )}
 
       {convexEnabled && source === "local" && (
-        <p className="rounded border border-sky-300 bg-sky-100 px-3 py-2 text-sm text-sky-900">
+        <p className="scoreboard-notice scoreboard-notice-sky">
           Offline fallback active. Showing cached local scores.
         </p>
       )}
 
       {error && (
-        <p className="rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-900">
+        <p className="scoreboard-notice scoreboard-notice-red">
           {error}
         </p>
       )}
 
       {currentClientOutsideTop && currentClientRank !== null && (
-        <p className="rounded border border-emerald-300 bg-emerald-100 px-3 py-2 text-sm text-emerald-900">
+        <p className="scoreboard-notice scoreboard-notice-emerald">
           You are shown as #{scores.length}. Real position: #{currentClientRank}
           .
         </p>
       )}
 
-      <section className="overflow-hidden rounded border border-neutral-300 bg-white">
+      <section className="overflow-hidden rounded border border-neutral-300 bg-white text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100">
         <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-100">
+          <thead className="bg-neutral-100 dark:bg-neutral-700/80">
             <tr>
               <th className="scoreboard-header-cell">#</th>
               <th className="scoreboard-header-cell">Nick</th>
@@ -87,7 +87,7 @@ const Scoreboard = (): JSX.Element => {
               scores.map((entry) => (
                 <tr
                   key={`${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`}
-                  className={`border-t border-neutral-200 ${
+                  className={`border-t border-neutral-200 dark:border-neutral-700 ${
                     entry.isCurrentClient ? "scoreboard-current-player-row" : ""
                   }`}
                 >
@@ -96,7 +96,7 @@ const Scoreboard = (): JSX.Element => {
                       <span>#{entry.displayRank}</span>
                       {entry.isPinnedCurrentClient &&
                         entry.realRank !== null && (
-                          <span className="text-xs font-medium text-emerald-700">
+                          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
                             Real #{entry.realRank}
                           </span>
                         )}
@@ -111,7 +111,7 @@ const Scoreboard = (): JSX.Element => {
                       )}
                     </div>
                   </td>
-                  <td className="scoreboard-cell text-xs text-neutral-600">
+                  <td className="scoreboard-cell text-xs text-neutral-600 dark:text-neutral-400">
                     {entry.formattedDate}
                   </td>
                 </tr>

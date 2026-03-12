@@ -64,7 +64,7 @@ const Home = (): JSX.Element => {
               onClick={refreshBoard}
               aria-label="Refresh"
               icon={faRotateRight}
-              className="max-sm:px-2"
+              className="mobile-compact-button"
               hideLabelOnMobile
             >
               Refresh

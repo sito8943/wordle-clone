@@ -45,7 +45,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
           onChange={(e) => setName(e.target.value)}
         />
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="input-error-text">{error}</p>}
       <div className="profile-card-field-row">
         <label htmlFor="score">Score:</label>
         <input

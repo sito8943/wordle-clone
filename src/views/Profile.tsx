@@ -17,7 +17,7 @@ const Profile = () => {
   } = useProfileController();
 
   return (
-    <main className="flex flex-col items-center justify-center py-20 gap-10">
+    <main className="page-centered gap-10">
       <div className="flex gap-4 items-center flex-wrap justify-center">
         <h2 className="page-title">Profile</h2>
         <Button onClick={toggleEditing}>{editing ? "Cancel" : "Edit"}</Button>
