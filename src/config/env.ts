@@ -1,7 +1,4 @@
-import {
-  SCORE_LIMIT,
-  WORDLE_GAME_STORAGE_KEY,
-} from "./constant";
+import { SCORE_LIMIT, WORDLE_GAME_STORAGE_KEY } from "./constant";
 import type { RuntimeEnv } from "./types";
 
 const readString = (value: string | undefined, fallback: string): string => {
