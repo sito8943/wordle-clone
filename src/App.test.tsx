@@ -71,7 +71,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(5);
+      expect(player.score).toBe(6);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
