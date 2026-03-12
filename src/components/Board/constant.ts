@@ -16,3 +16,5 @@ export const STATUS_LABEL: Record<Status, string> = {
   present: "present",
   absent: "absent",
 };
+
+export const TILE_ENTRY_STAGGER_MS = 16;

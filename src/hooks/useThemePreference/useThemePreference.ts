@@ -1,8 +1,17 @@
 import { useCallback, useEffect } from "react";
 import { useLocalStorage } from "../useLocalStorage";
-import { THEME_PREFERENCE_STORAGE_KEY, DEFAULT_THEME_PREFERENCE, THEME_PREFERENCE_SYNC_EVENT } from "./constants";
+import {
+  THEME_PREFERENCE_STORAGE_KEY,
+  DEFAULT_THEME_PREFERENCE,
+  THEME_PREFERENCE_SYNC_EVENT,
+} from "./constants";
 import type { UseThemePreferenceOptions, ThemePreference } from "./types";
-import { isThemePreference, resolveTheme, getSystemPrefersDark, applyThemeToDocument } from "./utils";
+import {
+  isThemePreference,
+  resolveTheme,
+  getSystemPrefersDark,
+  applyThemeToDocument,
+} from "./utils";
 
 export default function useThemePreference(
   options: UseThemePreferenceOptions = {},

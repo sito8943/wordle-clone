@@ -25,3 +25,11 @@ export const getFireVisualState = (streak: number): FireVisualState => {
 
   return 0;
 };
+
+export const clampSize = (value: number): number => {
+  if (!Number.isFinite(value)) {
+    return 24;
+  }
+
+  return Math.min(64, Math.max(12, value));
+};

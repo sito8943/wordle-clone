@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type JSX } from "react";
+import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import {
   Board,
@@ -31,24 +31,7 @@ const Home = (): JSX.Element => {
     confirmRefreshBoard,
     cancelRefreshBoard,
   } = useHomeController();
-  const [animateTileEntryOnKeyboardStart, setAnimateTileEntryOnKeyboardStart] =
-    useState(keyboardEntryAnimationEnabled);
-
-  const onKeyboardEntryAnimationEnd = useCallback(() => {
-    setAnimateTileEntryOnKeyboardStart(false);
-  }, []);
-
-  useEffect(() => {
-    if (!keyboardEntryAnimationEnabled) {
-      return;
-    }
-
-    const fallbackTimeout = window.setTimeout(() => {
-      setAnimateTileEntryOnKeyboardStart(false);
-    }, 900);
-
-    return () => window.clearTimeout(fallbackTimeout);
-  }, [keyboardEntryAnimationEnabled]);
+  const animateTileEntry = startAnimationsEnabled && startAnimationSeed > 0;
 
   return (
     <>
@@ -93,7 +76,7 @@ const Home = (): JSX.Element => {
             guesses={guesses}
             current={current}
             gameOver={gameOver}
-            animateTileEntry={animateTileEntryOnKeyboardStart}
+            animateTileEntry={animateTileEntry}
             isLoss={gameOver && !won}
             animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
           />
@@ -112,7 +95,6 @@ const Home = (): JSX.Element => {
         <Keyboard
           guesses={guesses}
           onKey={handleKey}
-          onEntryAnimationEnd={onKeyboardEntryAnimationEnd}
           isLoss={gameOver && !won}
           animateEntry={keyboardEntryAnimationEnabled}
         />

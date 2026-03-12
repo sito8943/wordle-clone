@@ -139,7 +139,7 @@ describe("Board", () => {
     expect(rows[2].querySelector(".row-active-indicator-animation")).toBeNull();
   });
 
-  it("scales past rows to 0.9 and active row to 1.1 with transition", () => {
+  it("scales past rows to 0.95 and active row to 1.05 with transition", () => {
     const correct: TileStatus[] = [
       "correct",
       "correct",
@@ -158,8 +158,8 @@ describe("Board", () => {
 
     const rows = screen.getAllByRole("row");
 
-    expect(rows[0].className).toContain("scale-90");
-    expect(rows[1].className).toContain("scale-110");
+    expect(rows[0].className).toContain("scale-[0.95]");
+    expect(rows[1].className).toContain("scale-[1.05]");
     expect(rows[1].className).toContain("transition-transform");
   });
 });

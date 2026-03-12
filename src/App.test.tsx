@@ -11,6 +11,7 @@ import { env } from "./config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
+  WORDLE_START_ANIMATION_SESSION_KEY,
 } from "./domain/wordle";
 import { THEME_PREFERENCE_STORAGE_KEY } from "./hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "./providers";
@@ -691,6 +692,32 @@ describe("App", () => {
       name: "On-screen keyboard",
     });
     expect(secondKeyboard.className).not.toContain("keyboard-entry-animation");
+  });
+
+  it("replays tile entry animation on refresh even when keyboard animation is disabled", async () => {
+    sessionStorage.setItem(WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY, "seen");
+    sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");
+
+    renderApp();
+
+    const keyboard = await screen.findByRole("group", {
+      name: "On-screen keyboard",
+    });
+    expect(keyboard.className).not.toContain("keyboard-entry-animation");
+    expect(screen.getAllByRole("gridcell")[0].className).not.toContain(
+      "tile-entry-animation",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("gridcell")[0].className).toContain(
+        "tile-entry-animation",
+      );
+    });
+    const cells = screen.getAllByRole("gridcell");
+    const stagger = Number.parseInt(cells[1].style.animationDelay, 10);
+    expect(cells[29].style.animationDelay).toBe(`${29 * stagger}ms`);
   });
 
   it("restores the current game after reload", async () => {

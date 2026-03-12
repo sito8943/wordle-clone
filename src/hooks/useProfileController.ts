@@ -1,9 +1,6 @@
 import { useCallback, useState } from "react";
-import useAnimationsPreference from "./useAnimationsPreference";
-import {
-  useThemePreference,
-  type ThemePreference,
-} from "./useThemePreference";
+import { useAnimationsPreference } from "./useAnimationsPreference";
+import { useThemePreference, type ThemePreference } from "./useThemePreference";
 import { useApi, usePlayer } from "../providers";
 import { normalizePlayerName } from "../providers/utils";
 

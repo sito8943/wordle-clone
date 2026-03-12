@@ -16,7 +16,3 @@ export type UseDialogCloseTransitionResult = {
   isClosing: boolean;
   closeWithAction: (action: DialogCloseAction) => void;
 };
-
-export type UseAnimationsPreferenceOptions = {
-  applyToDocument?: boolean;
-};

@@ -32,10 +32,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   }, [props.name, props.score]);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="profile-card-container"
-    >
+    <form onSubmit={handleSubmit} className="profile-card-container">
       <div className="profile-card-field-row">
         <label htmlFor="name">Name:</label>
         <input

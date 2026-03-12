@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { DialogCloseAction, UseDialogCloseTransitionResult } from "./types";
+import type {
+  DialogCloseAction,
+  UseDialogCloseTransitionResult,
+} from "./types";
 
 const useDialogCloseTransition = (
   closeDurationMs: number,

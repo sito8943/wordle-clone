@@ -15,7 +15,7 @@ import {
   validateGuessInput,
 } from "../../domain/wordle";
 import { getRandomWord } from "../../utils/words";
-import useAnimationsPreference from "../useAnimationsPreference";
+import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
   markStartAnimationAsSeen,
   shouldAnimateKeyboardEntryOnSession,

@@ -1,5 +1,5 @@
 import { useLocalStorage } from "./useLocalStorage";
-import useAnimationsPreference from "./useAnimationsPreference";
+import { useAnimationsPreference } from "./useAnimationsPreference";
 import useDialogCloseTransition from "./useDialogCloseTransition";
 import useHomeController from "./useHomeController";
 import useProfileController from "./useProfileController";

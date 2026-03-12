@@ -33,7 +33,10 @@ const ConfirmationDialog = ({
         <p className="dialog-description">{description}</p>
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <Button onClick={() => closeWithAction(onConfirm)} disabled={isClosing}>
+          <Button
+            onClick={() => closeWithAction(onConfirm)}
+            disabled={isClosing}
+          >
             {confirmActionLabel}
           </Button>
           <Button

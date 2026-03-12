@@ -1,26 +1,9 @@
 import { useCallback, useEffect } from "react";
-import { WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY } from "../domain/wordle";
-import { useLocalStorage } from "./useLocalStorage";
-import {
-  WORDLE_ANIMATIONS_DISABLED_CLASSNAME,
-  WORDLE_ANIMATIONS_PREFERENCE_SYNC_EVENT,
-} from "./constant";
+import { WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY } from "../../domain/wordle";
+import { useLocalStorage } from "../useLocalStorage";
+import { WORDLE_ANIMATIONS_PREFERENCE_SYNC_EVENT } from "../constant";
 import type { UseAnimationsPreferenceOptions } from "./types";
-
-const isBoolean = (value: unknown): value is boolean => typeof value === "boolean";
-
-const applyAnimationsPreferenceToDocument = (
-  animationsDisabled: boolean,
-): void => {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  document.documentElement.classList.toggle(
-    WORDLE_ANIMATIONS_DISABLED_CLASSNAME,
-    animationsDisabled,
-  );
-};
+import { applyAnimationsPreferenceToDocument, isBoolean } from "./utils";
 
 export default function useAnimationsPreference(
   options: UseAnimationsPreferenceOptions = {},

@@ -10,3 +10,14 @@ export type FireStreakProps = {
   className?: string;
   noLabel?: boolean;
 };
+
+export type FireVisualConfig = {
+  scale: number;
+  opacity: number;
+  glowOpacity: number;
+  floatDurationMs: number;
+  flickerDurationMs: number;
+  pulseDurationMs: number;
+  emberDurationMs: number;
+  shakeDurationMs: number;
+};
