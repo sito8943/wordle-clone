@@ -1,7 +1,9 @@
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+
 export type NavLinkPropsType = {
   to: string;
   label: string;
-  icon: React.ReactNode;
+  icon: IconProp;
 };
 
 export type NavbarPropsType = {
