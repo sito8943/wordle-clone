@@ -68,6 +68,12 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
     expect(await screen.findByText("You got it in 1!")).toBeTruthy();
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.score).toBe(5);
+    });
+
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
 
     await waitFor(() => {

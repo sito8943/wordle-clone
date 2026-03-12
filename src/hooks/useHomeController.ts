@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getPointsForWin } from "../domain/wordle";
 import { usePlayer } from "../providers";
 import useWordle from "./useWordle";
 
@@ -17,7 +18,7 @@ export default function useHomeController() {
     }
 
     if (wordle.won && !alreadyScored.current) {
-      increaseScore(wordle.guesses.length);
+      increaseScore(getPointsForWin(wordle.guesses.length));
       alreadyScored.current = true;
     }
 

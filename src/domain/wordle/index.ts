@@ -1,6 +1,7 @@
 export * from "./board";
 export * from "./constants";
 export * from "./keyboard";
+export * from "./scoring";
 export * from "./session";
 export * from "./state";
 export * from "./storage";
