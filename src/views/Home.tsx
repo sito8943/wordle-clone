@@ -31,6 +31,7 @@ const Home = (): JSX.Element => {
     confirmRefreshBoard,
     cancelRefreshBoard,
   } = useHomeController();
+  const animateTileEntry = startAnimationsEnabled && startAnimationSeed > 0;
 
   return (
     <>
@@ -75,12 +76,14 @@ const Home = (): JSX.Element => {
             guesses={guesses}
             current={current}
             gameOver={gameOver}
+            animateTileEntry={animateTileEntry}
+            isLoss={gameOver && !won}
             animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
           />
 
           {gameOver && (
             <>
-              <p className="text-center text-base font-semibold text-neutral-800 sm:text-lg">
+              <p className="text-center text-base font-semibold text-neutral-800 dark:text-neutral-200 sm:text-lg">
                 {won
                   ? `You got it in ${guesses.length}!`
                   : `The word was: ${answer}`}
@@ -92,6 +95,7 @@ const Home = (): JSX.Element => {
         <Keyboard
           guesses={guesses}
           onKey={handleKey}
+          isLoss={gameOver && !won}
           animateEntry={keyboardEntryAnimationEnabled}
         />
       </main>

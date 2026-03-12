@@ -11,7 +11,9 @@ import { env } from "./config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
+  WORDLE_START_ANIMATION_SESSION_KEY,
 } from "./domain/wordle";
+import { THEME_PREFERENCE_STORAGE_KEY } from "./hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "./providers";
 
 vi.mock("./utils/words", async () => {
@@ -33,6 +35,25 @@ const renderApp = () =>
     </ApiProvider>,
   );
 
+const mockSystemTheme = (mode: "light" | "dark") => {
+  const prefersDark = mode === "dark";
+
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    configurable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: prefersDark,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+};
+
 describe("App", () => {
   afterEach(() => {
     cleanup();
@@ -41,6 +62,10 @@ describe("App", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.remove("wordle-animations-disabled");
+    document.documentElement.style.colorScheme = "";
+    mockSystemTheme("light");
     window.history.pushState({}, "", "/");
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
@@ -53,6 +78,87 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Profile" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
     expect(screen.getByText("#--")).toBeTruthy();
+  });
+
+  it("asks for the player name on first app launch", async () => {
+    renderApp();
+
+    expect(
+      await screen.findByRole("dialog", { name: "Welcome to Wordle" }),
+    ).toBeTruthy();
+
+    const nameInput = screen.getByLabelText("Player name");
+    fireEvent.change(nameInput, { target: { value: "Ana" } });
+    fireEvent.click(screen.getByRole("button", { name: "Start playing" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Welcome to Wordle" }),
+      ).toBeNull();
+    });
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.name).toBe("Ana");
+    });
+  });
+
+  it("defaults to system theme preference", async () => {
+    mockSystemTheme("dark");
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(localStorage.getItem(THEME_PREFERENCE_STORAGE_KEY)).toBe(
+      JSON.stringify("system"),
+    );
+  });
+
+  it("lets user change theme mode from profile", async () => {
+    mockSystemTheme("dark");
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const themeSelect = screen.getByLabelText(
+      "Theme mode",
+    ) as HTMLSelectElement;
+    expect(themeSelect.value).toBe("system");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+
+    fireEvent.change(themeSelect, { target: { value: "light" } });
+
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains("dark")).toBe(false);
+    });
+
+    fireEvent.change(themeSelect, { target: { value: "dark" } });
+
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains("dark")).toBe(true);
+    });
+  });
+
+  it("does not type on the board while writing the initial player name", async () => {
+    renderApp();
+
+    const nameInput = await screen.findByLabelText("Player name");
+    fireEvent.keyDown(nameInput, { key: "A" });
+
+    expect(screen.queryByRole("gridcell", { name: "A, typing" })).toBeNull();
   });
 
   it("shows the scoreboard navbar button in red when current player is first", async () => {
@@ -553,6 +659,9 @@ describe("App", () => {
     expect(localStorage.getItem(WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY)).toBe(
       "true",
     );
+    expect(
+      document.documentElement.classList.contains("wordle-animations-disabled"),
+    ).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "Anim: off" }));
 
@@ -560,6 +669,9 @@ describe("App", () => {
     expect(localStorage.getItem(WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY)).toBe(
       "false",
     );
+    expect(
+      document.documentElement.classList.contains("wordle-animations-disabled"),
+    ).toBe(false);
   });
 
   it("animates the keyboard only once per tab session", async () => {
@@ -580,6 +692,32 @@ describe("App", () => {
       name: "On-screen keyboard",
     });
     expect(secondKeyboard.className).not.toContain("keyboard-entry-animation");
+  });
+
+  it("replays tile entry animation on refresh even when keyboard animation is disabled", async () => {
+    sessionStorage.setItem(WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY, "seen");
+    sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");
+
+    renderApp();
+
+    const keyboard = await screen.findByRole("group", {
+      name: "On-screen keyboard",
+    });
+    expect(keyboard.className).not.toContain("keyboard-entry-animation");
+    expect(screen.getAllByRole("gridcell")[0].className).not.toContain(
+      "tile-entry-animation",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("gridcell")[0].className).toContain(
+        "tile-entry-animation",
+      );
+    });
+    const cells = screen.getAllByRole("gridcell");
+    const stagger = Number.parseInt(cells[1].style.animationDelay, 10);
+    expect(cells[29].style.animationDelay).toBe(`${29 * stagger}ms`);
   });
 
   it("restores the current game after reload", async () => {

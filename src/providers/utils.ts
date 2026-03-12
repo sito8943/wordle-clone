@@ -1,5 +1,5 @@
 import type { Player } from "./types";
-import { DEFAULT_PLAYER } from "./constant";
+import { DEFAULT_PLAYER } from "./constants";
 
 export const normalizePlayerName = (value: string): string => {
   const normalized = value.trim();

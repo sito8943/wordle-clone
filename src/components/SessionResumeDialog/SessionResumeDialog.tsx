@@ -5,7 +5,7 @@ import {
   DEFAULT_RESUME_DIALOG_SECONDARY_ACTION_LABEL,
   DEFAULT_RESUME_DIALOG_TITLE,
   DEFAULT_RESUME_DIALOG_TITLE_ID,
-} from "./constant";
+} from "./constants";
 import type { SessionResumeDialogProps } from "./types";
 
 const SessionResumeDialog = ({

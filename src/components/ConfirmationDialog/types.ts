@@ -7,3 +7,8 @@ export type ConfirmationDialogProps = {
   onConfirm: () => void;
   onCancel: () => void;
 };
+
+export type DialogTransitionClasses = {
+  backdropAnimationClassName: string;
+  panelAnimationClassName: string;
+};

@@ -13,15 +13,27 @@ import {
   removeLetter,
   shouldAskToResume,
   validateGuessInput,
-  WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
 } from "../../domain/wordle";
 import { getRandomWord } from "../../utils/words";
-import { useLocalStorage } from "../useLocalStorage";
+import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
   markStartAnimationAsSeen,
   shouldAnimateKeyboardEntryOnSession,
   shouldAnimateOnFirstSessionView,
 } from "./utils";
+
+const isEditableKeyboardTarget = (target: EventTarget | null): boolean => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  );
+};
 
 export default function useWordle() {
   const currentSessionId = useMemo(getOrCreateSessionId, []);
@@ -35,10 +47,7 @@ export default function useWordle() {
       ),
     [currentSessionId, initialAnswer],
   );
-  const [animationsDisabled] = useLocalStorage<boolean>(
-    WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
-    false,
-  );
+  const { animationsDisabled } = useAnimationsPreference();
   const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
     shouldAnimateOnFirstSessionView(
       animationsDisabled,
@@ -160,6 +169,10 @@ export default function useWordle() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (isEditableKeyboardTarget(event.target)) {
+        return;
+      }
+
       if (event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }

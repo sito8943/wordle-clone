@@ -19,8 +19,7 @@
   transform: translate3d(0, 0, 0);
   will-change: transform, opacity, filter;
   filter: drop-shadow(
-    0 0 calc(var(--fire-size) * 0.2)
-      rgba(249, 115, 22, var(--fire-glow-opacity))
+    0 0 calc(var(--fire-size) * 0.2) rgba(255, 120, 0, var(--fire-glow-opacity))
   );
   animation: streak-fire-float var(--fire-float-duration) ease-in-out infinite;
   transition:
@@ -100,9 +99,9 @@
 .streak-fire-state-3 {
   filter: drop-shadow(
       0 0 calc(var(--fire-size) * 0.25)
-        rgba(249, 115, 22, var(--fire-glow-opacity))
+        rgba(255, 120, 0, var(--fire-glow-opacity))
     )
-    drop-shadow(0 0 calc(var(--fire-size) * 0.45) rgba(251, 191, 36, 0.32));
+    drop-shadow(0 0 calc(var(--fire-size) * 0.9) rgba(255, 180, 0, 0.7));
 }
 
 .streak-fire-state-3 .streak-fire-glyph {
@@ -171,7 +170,7 @@
   }
 
   50% {
-    transform: translate3d(0, -2%, 0) scale(1.06);
+    transform: translate3d(0, -6%, 0) scale(1.18);
   }
 }
 
@@ -181,20 +180,20 @@
     transform: translate3d(0, 0, 0) scale(var(--fire-scale));
   }
 
-  20% {
-    transform: translate3d(-4%, 0, 0) scale(var(--fire-scale));
+  15% {
+    transform: translate3d(-10%, -2%, 0) scale(var(--fire-scale));
   }
-
-  40% {
-    transform: translate3d(4%, 0, 0) scale(var(--fire-scale));
+  30% {
+    transform: translate3d(10%, 2%, 0) scale(var(--fire-scale));
   }
-
+  45% {
+    transform: translate3d(-8%, -1%, 0) scale(var(--fire-scale));
+  }
   60% {
-    transform: translate3d(-3%, 0, 0) scale(var(--fire-scale));
+    transform: translate3d(8%, 1%, 0) scale(var(--fire-scale));
   }
-
-  80% {
-    transform: translate3d(3%, 0, 0) scale(var(--fire-scale));
+  75% {
+    transform: translate3d(-6%, 0, 0) scale(var(--fire-scale));
   }
 }
 

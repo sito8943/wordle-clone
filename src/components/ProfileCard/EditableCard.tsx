@@ -32,14 +32,11 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   }, [props.name, props.score]);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 border border-gray-300 rounded-lg p-4 w-full max-w-sm"
-    >
-      <div className="flex gap-2 items-center">
+    <form onSubmit={handleSubmit} className="profile-card-container">
+      <div className="profile-card-field-row">
         <label htmlFor="name">Name:</label>
         <input
-          className="border border-gray-300 rounded px-2 py-1"
+          className="profile-card-field-input"
           id="name"
           type="text"
           value={name}
@@ -49,10 +46,10 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
         />
       </div>
       {error && <p className="text-sm text-red-700">{error}</p>}
-      <div className="flex gap-2 items-center">
+      <div className="profile-card-field-row">
         <label htmlFor="score">Score:</label>
         <input
-          className="border border-gray-300 rounded px-2 py-1"
+          className="profile-card-field-input"
           id="score"
           type="number"
           value={props.score}

@@ -1,74 +1,9 @@
 import { useId } from "react";
 import type { CSSProperties } from "react";
 import type { FireProps } from "./types";
-import {
-  getFireVisualState,
-  sanitizeCounter,
-  type FireVisualState,
-} from "./utils";
+import { clampSize, getFireVisualState, sanitizeCounter } from "./utils";
 import "./Fire.css";
-
-type FireVisualConfig = {
-  scale: number;
-  opacity: number;
-  glowOpacity: number;
-  floatDurationMs: number;
-  flickerDurationMs: number;
-  pulseDurationMs: number;
-  emberDurationMs: number;
-  shakeDurationMs: number;
-};
-
-const FIRE_VISUAL_CONFIG: Record<FireVisualState, FireVisualConfig> = {
-  0: {
-    scale: 0.72,
-    opacity: 0.08,
-    glowOpacity: 0,
-    floatDurationMs: 2200,
-    flickerDurationMs: 1200,
-    pulseDurationMs: 1400,
-    emberDurationMs: 1800,
-    shakeDurationMs: 110,
-  },
-  1: {
-    scale: 0.88,
-    opacity: 1,
-    glowOpacity: 0.14,
-    floatDurationMs: 1750,
-    flickerDurationMs: 980,
-    pulseDurationMs: 1200,
-    emberDurationMs: 1480,
-    shakeDurationMs: 100,
-  },
-  2: {
-    scale: 1,
-    opacity: 1,
-    glowOpacity: 0.32,
-    floatDurationMs: 1250,
-    flickerDurationMs: 760,
-    pulseDurationMs: 980,
-    emberDurationMs: 1160,
-    shakeDurationMs: 90,
-  },
-  3: {
-    scale: 1.08,
-    opacity: 1,
-    glowOpacity: 0.52,
-    floatDurationMs: 900,
-    flickerDurationMs: 470,
-    pulseDurationMs: 630,
-    emberDurationMs: 860,
-    shakeDurationMs: 78,
-  },
-};
-
-const clampSize = (value: number): number => {
-  if (!Number.isFinite(value)) {
-    return 24;
-  }
-
-  return Math.min(64, Math.max(12, value));
-};
+import { FIRE_VISUAL_CONFIG } from "./constants";
 
 const Fire = ({ streak, size = 24, className = "" }: FireProps) => {
   const safeStreak = sanitizeCounter(streak);
