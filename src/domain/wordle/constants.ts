@@ -16,4 +16,8 @@ export const KEYBOARD_ROWS = [
   ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
 ] as const;
 
-export const KEY_STATUS_PRIORITY: TileStatus[] = ["correct", "present", "absent"];
+export const KEY_STATUS_PRIORITY: TileStatus[] = [
+  "correct",
+  "present",
+  "absent",
+];

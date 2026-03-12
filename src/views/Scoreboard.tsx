@@ -62,7 +62,6 @@ const Scoreboard = (): JSX.Element => {
             <tr>
               <th className="px-4 py-2 text-xs">#</th>
               <th className="px-4 py-2 text-xs">Nick</th>
-              <th className="px-4 py-2 text-xs">Streak</th>
               <th className="px-4 py-2 text-xs">Score</th>
               <th className="px-4 py-2 text-xs">Date</th>
             </tr>
@@ -70,7 +69,7 @@ const Scoreboard = (): JSX.Element => {
           <tbody>
             {loading && (
               <tr>
-                <td className="px-4 py-4 text-neutral-600" colSpan={5}>
+                <td className="px-4 py-4 text-neutral-600" colSpan={4}>
                   Loading scores...
                 </td>
               </tr>
@@ -78,7 +77,7 @@ const Scoreboard = (): JSX.Element => {
 
             {!loading && scores.length === 0 && (
               <tr>
-                <td className="px-4 py-4 text-neutral-600" colSpan={5}>
+                <td className="px-4 py-4 text-neutral-600" colSpan={4}>
                   No scores yet.
                 </td>
               </tr>
@@ -105,9 +104,13 @@ const Scoreboard = (): JSX.Element => {
                   </td>
                   <td className="px-4 py-2">{entry.nick}</td>
                   <td className="px-4 py-2">
-                    <FireStreak streak={entry.streak} size="sm" />
+                    <div className="flex items-center gap-2">
+                      <span>{entry.score}</span>
+                      {entry.streak >= 2 && (
+                        <FireStreak streak={entry.streak} size="sm" noLabel />
+                      )}
+                    </div>
                   </td>
-                  <td className="px-4 py-2">{entry.score}</td>
                   <td className="px-4 py-2 text-neutral-600 text-xs">
                     {entry.formattedDate}
                   </td>

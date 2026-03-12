@@ -211,7 +211,7 @@ describe("App", () => {
   it("shows and increments win streak in home after a victory", async () => {
     renderApp();
 
-    expect(screen.getByLabelText("Racha: 0")).toBeTruthy();
+    expect(screen.getByLabelText("Streak: 0")).toBeTruthy();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -219,7 +219,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
     expect(await screen.findByText("You got it in 1!")).toBeTruthy();
-    expect(screen.getByLabelText("Racha: 1")).toBeTruthy();
+    expect(screen.getByLabelText("Streak: 1")).toBeTruthy();
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
@@ -250,7 +250,7 @@ describe("App", () => {
 
     renderApp();
 
-    expect(screen.getByLabelText("Racha: 0")).toBeTruthy();
+    expect(screen.getByLabelText("Streak: 0")).toBeTruthy();
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
@@ -435,8 +435,8 @@ describe("App", () => {
       await screen.findByRole("heading", { name: "Scoreboard" }),
     ).toBeTruthy();
 
-    expect(await screen.findByLabelText("Racha: 4")).toBeTruthy();
-    expect(await screen.findByLabelText("Racha: 2")).toBeTruthy();
+    expect(await screen.findByLabelText("4")).toBeTruthy();
+    expect(await screen.findByLabelText("2")).toBeTruthy();
   });
 
   it("lets the user edit the profile name", async () => {
