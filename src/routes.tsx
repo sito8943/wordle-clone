@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import { env } from "./config/env";
+import { env } from "./config";
 import { Home, NotFound, Profile, Scoreboard } from "./views";
 import { View } from "./layouts/";
 

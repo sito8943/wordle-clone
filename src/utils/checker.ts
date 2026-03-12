@@ -1,4 +1,5 @@
-export type TileStatus = "correct" | "present" | "absent";
+import type { TileStatus } from "./types";
+export type { TileStatus } from "./types";
 
 export function checkGuess(guess: string, answer: string): TileStatus[] {
   const result: TileStatus[] = Array(5).fill("absent");

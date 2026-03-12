@@ -21,3 +21,32 @@ export type TopScoresResult = {
   currentClientRank: number | null;
   currentClientEntry: ScoreEntry | null;
 };
+
+export type StoredScore = {
+  localId: string;
+  clientId?: string;
+  nick: string;
+  score: number;
+  createdAt: number;
+};
+
+export type RemoteScore = {
+  id: string;
+  nick: string;
+  score: number;
+  createdAt: number;
+  isCurrentClient?: boolean;
+};
+
+export type RemoteScoresResponse = {
+  scores: RemoteScore[];
+  currentClientRank?: number | null;
+  currentClientEntry?: RemoteScore | null;
+};
+
+export type ScoreClientGatewayOverrides = {
+  isConfigured?: boolean;
+  query?: (...args: unknown[]) => Promise<unknown>;
+  mutation?: (...args: unknown[]) => Promise<unknown>;
+  isNetworkError?: (error: unknown) => boolean;
+};

@@ -14,73 +14,14 @@ import {
   shouldAskToResume,
   validateGuessInput,
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
-  WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
-  WORDLE_START_ANIMATION_SESSION_KEY,
-} from "../domain/wordle";
-import { getRandomWord } from "../utils/words";
-import useLocalStorage from "./useLocalStorage";
-
-const hasSeenStartAnimationInSession = (): boolean => {
-  if (typeof window === "undefined") {
-    return true;
-  }
-
-  return sessionStorage.getItem(WORDLE_START_ANIMATION_SESSION_KEY) === "seen";
-};
-
-const markStartAnimationAsSeen = (): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");
-};
-
-const shouldAnimateOnFirstSessionView = (
-  animationsDisabled: boolean,
-  hasRestoredBoard: boolean,
-): boolean => {
-  if (
-    animationsDisabled ||
-    hasRestoredBoard ||
-    hasSeenStartAnimationInSession()
-  ) {
-    return false;
-  }
-
-  markStartAnimationAsSeen();
-  return true;
-};
-
-const hasSeenKeyboardAnimationInSession = (): boolean => {
-  if (typeof window === "undefined") {
-    return true;
-  }
-
-  return (
-    sessionStorage.getItem(WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY) ===
-    "seen"
-  );
-};
-
-const markKeyboardAnimationAsSeen = (): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  sessionStorage.setItem(WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY, "seen");
-};
-
-const shouldAnimateKeyboardEntryOnSession = (
-  animationsDisabled: boolean,
-): boolean => {
-  if (animationsDisabled || hasSeenKeyboardAnimationInSession()) {
-    return false;
-  }
-
-  markKeyboardAnimationAsSeen();
-  return true;
-};
+} from "../../domain/wordle";
+import { getRandomWord } from "../../utils/words";
+import { useLocalStorage } from "../useLocalStorage";
+import {
+  markStartAnimationAsSeen,
+  shouldAnimateKeyboardEntryOnSession,
+  shouldAnimateOnFirstSessionView,
+} from "./utils";
 
 export default function useWordle() {
   const currentSessionId = useMemo(getOrCreateSessionId, []);

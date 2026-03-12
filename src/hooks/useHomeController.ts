@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPointsForWin } from "../domain/wordle";
 import { usePlayer } from "../providers";
-import useWordle from "./useWordle";
+import { useWordle } from "./useWordle";
 
 export default function useHomeController() {
   const { increaseScore } = usePlayer();

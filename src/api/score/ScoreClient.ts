@@ -1,40 +1,22 @@
 import { ConvexGateway } from "../convex/ConvexGateway";
+import {
+  ADD_SCORE_MUTATION,
+  DEFAULT_LIMIT,
+  LIST_TOP_SCORES_QUERY,
+  MAX_LIMIT,
+  SCOREBOARD_CACHE_KEY,
+  SCOREBOARD_CLIENT_ID_KEY,
+  SCOREBOARD_PENDING_KEY,
+} from "./constant";
 import type {
   RecordScoreInput,
+  RemoteScore,
+  RemoteScoresResponse,
   ScoreEntry,
   ScoreSource,
+  StoredScore,
   TopScoresResult,
 } from "./types";
-
-const SCOREBOARD_CACHE_KEY = "wordle:scoreboard:cache";
-const SCOREBOARD_PENDING_KEY = "wordle:scoreboard:pending";
-const SCOREBOARD_CLIENT_ID_KEY = "wordle:scoreboard:client-id";
-const DEFAULT_LIMIT = 10;
-const MAX_LIMIT = 50;
-const ADD_SCORE_MUTATION = "scores:addScore";
-const LIST_TOP_SCORES_QUERY = "scores:listTopScores";
-
-type StoredScore = {
-  localId: string;
-  clientId?: string;
-  nick: string;
-  score: number;
-  createdAt: number;
-};
-
-type RemoteScore = {
-  id: string;
-  nick: string;
-  score: number;
-  createdAt: number;
-  isCurrentClient?: boolean;
-};
-
-type RemoteScoresResponse = {
-  scores: RemoteScore[];
-  currentClientRank?: number | null;
-  currentClientEntry?: RemoteScore | null;
-};
 
 const scoreSorter = (
   a: Pick<StoredScore, "score" | "createdAt">,

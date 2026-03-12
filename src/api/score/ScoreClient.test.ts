@@ -1,13 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConvexGateway } from "../convex/ConvexGateway";
 import { ScoreClient } from "./ScoreClient";
-
-type GatewayOverrides = {
-  isConfigured?: boolean;
-  query?: ReturnType<typeof vi.fn>;
-  mutation?: ReturnType<typeof vi.fn>;
-  isNetworkError?: (error: unknown) => boolean;
-};
+import type { ScoreClientGatewayOverrides } from "./types";
 
 const createStorage = (): Storage => {
   const values = new Map<string, string>();
@@ -34,7 +28,9 @@ const createStorage = (): Storage => {
   };
 };
 
-const createGateway = (overrides: GatewayOverrides = {}): ConvexGateway =>
+const createGateway = (
+  overrides: ScoreClientGatewayOverrides = {},
+): ConvexGateway =>
   ({
     isConfigured: overrides.isConfigured ?? false,
     query: overrides.query ?? vi.fn().mockResolvedValue([]),

@@ -1,6 +1,12 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
-import { Board, Button, Keyboard, SessionResumeDialog } from "../components";
+import {
+  Board,
+  Button,
+  Keyboard,
+  RefreshConfirmationDialog,
+  SessionResumeDialog,
+} from "../components";
 import { useHomeController } from "../hooks";
 
 const Home = (): JSX.Element => {
@@ -42,18 +48,13 @@ const Home = (): JSX.Element => {
         />
       )}
       {!showResumeDialog && showRefreshDialog && (
-        <SessionResumeDialog
-          title="Refresh current game?"
-          description="You have an active board. If you refresh now, your current progress will be lost."
-          onContinue={cancelRefreshBoard}
-          onStartNew={confirmRefreshBoard}
-          secondaryActionLabel="Cancel"
-          primaryActionLabel="Yes, refresh game"
-          dialogTitleId="refresh-dialog-title"
+        <RefreshConfirmationDialog
+          onCancel={cancelRefreshBoard}
+          onConfirm={confirmRefreshBoard}
         />
       )}
       <main className="flex flex-1 flex-col">
-        <section className="flex flex-1 flex-col items-center justify-center gap-6 max-sm:gap-2 py-6 max-sm:py-2">
+        <section className="flex flex-1 flex-col items-center justify-start gap-6 max-sm:gap-2 py-6 max-sm:py-2">
           <div className="w-full max-w-md flex justify-end">
             <Button
               onClick={refreshBoard}

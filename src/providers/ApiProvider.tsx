@@ -1,15 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo } from "react";
 import { ConvexGateway } from "../api/convex/ConvexGateway";
-import { ScoreClient } from "../api/score/ScoreClient";
-import { env } from "../config/env";
-import type { ApiContextType } from "./types";
+import { ScoreClient } from "../api/score";
+import { env } from "../config";
+import type { ApiContextType, ProviderProps } from "./types";
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
 
-const ApiProvider = (props: { children: React.ReactNode }) => {
-  const { children } = props;
-
+const ApiProvider = ({ children }: ProviderProps) => {
   const convexUrl = env.mode === "test" ? undefined : env.convexUrl;
 
   const gateway = useMemo(() => new ConvexGateway(convexUrl), [convexUrl]);

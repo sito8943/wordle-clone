@@ -1,15 +1,10 @@
-type RuntimeEnv = {
-  mode: string;
-  baseUrl: string;
-  convexUrl?: string;
-  scoreLimit: number;
-  wordleGameStorageKey: string;
-};
-
-const SCORE_LIMIT_DEFAULT = 10;
-const SCORE_LIMIT_MIN = 1;
-const SCORE_LIMIT_MAX = 50;
-const WORDLE_GAME_STORAGE_KEY_DEFAULT = "wordle:game";
+import {
+  SCORE_LIMIT_DEFAULT,
+  SCORE_LIMIT_MAX,
+  SCORE_LIMIT_MIN,
+  WORDLE_GAME_STORAGE_KEY_DEFAULT,
+} from "./constant";
+import type { RuntimeEnv } from "./types";
 
 const readString = (value: string | undefined, fallback: string): string => {
   if (!value) {

@@ -1,4 +1,4 @@
-import type { TileStatus } from "../../utils/checker";
+import type { TileStatus } from "../../utils/types";
 
 export const KEY_STYLE: Record<TileStatus | "default", string> = {
   correct: "border-black bg-black text-white hover:bg-neutral-800",

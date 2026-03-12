@@ -9,7 +9,7 @@ export function Board({
   animateEntry = false,
 }: BoardPropsType) {
   const rows = buildBoardRows(guesses, current, gameOver);
-  const boardClassName = `space-y-1.5 sm:space-y-2 ${
+  const boardClassName = `space-y-1.5 sm:space-y-2 m-auto ${
     animateEntry ? "board-entry-animation" : ""
   }`;
 

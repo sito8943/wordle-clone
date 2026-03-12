@@ -6,28 +6,15 @@ import {
   useEffect,
   useRef,
 } from "react";
-import useLocalStorage from "../hooks/useLocalStorage";
+import { useLocalStorage } from "../hooks/";
 import { useApi } from "./ApiProvider";
-import type { Player, PlayerContextType } from "./types";
+import { DEFAULT_PLAYER } from "./constant";
+import type { Player, PlayerContextType, ProviderProps } from "./types";
+import { normalizePlayerName } from "./utils";
 
 const PlayerContext = createContext({} as PlayerContextType);
 
-const DEFAULT_PLAYER: Player = {
-  name: "Player",
-  score: 0,
-};
-
-const normalizePlayerName = (value: string): string => {
-  const normalized = value.trim();
-  if (normalized.length === 0) {
-    return DEFAULT_PLAYER.name;
-  }
-
-  return normalized.slice(0, 30);
-};
-
-const PlayerProvider = (props: { children: React.ReactNode }) => {
-  const { children } = props;
+const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
 
   const [player, setPlayer] = useLocalStorage<Player>("player", DEFAULT_PLAYER);

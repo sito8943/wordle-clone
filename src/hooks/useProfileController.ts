@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY } from "../domain/wordle";
-import useLocalStorage from "./useLocalStorage";
+import { useLocalStorage } from "./useLocalStorage";
 import { usePlayer } from "../providers";
 
 export default function useProfileController() {

@@ -1,4 +1,5 @@
-import type { ScoreClient } from "../api/score/ScoreClient";
+import type { ReactNode } from "react";
+import type { ScoreClient } from "../api/score";
 
 export type Player = {
   name: string;
@@ -14,4 +15,8 @@ export type PlayerContextType = {
 export type ApiContextType = {
   scoreClient: ScoreClient;
   convexEnabled: boolean;
+};
+
+export type ProviderProps = {
+  children: ReactNode;
 };

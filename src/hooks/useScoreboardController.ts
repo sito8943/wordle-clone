@@ -1,29 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ScoreEntry } from "../api/score/types";
-import { env } from "../config/env";
+import type { ScoreEntry, ScoreSource } from "../api/score";
+import { env } from "../config";
 import { useApi } from "../providers";
-
-const formatDate = (timestamp: number): string =>
-  new Date(timestamp).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-type ViewScoreEntry = ScoreEntry & { formattedDate: string };
-type ScoreboardRowEntry = ViewScoreEntry & {
-  displayRank: number;
-  realRank: number | null;
-  isPinnedCurrentClient: boolean;
-};
+import type { ScoreboardRowEntry } from "./types";
+import { formatDate } from "./utils";
 
 export default function useScoreboardController() {
   const { scoreClient, convexEnabled } = useApi();
 
   const [scores, setScores] = useState<ScoreEntry[]>([]);
-  const [source, setSource] = useState<"convex" | "local">("local");
+  const [source, setSource] = useState<ScoreSource>("local");
   const [currentClientRank, setCurrentClientRank] = useState<number | null>(
     null,
   );

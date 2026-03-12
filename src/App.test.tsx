@@ -7,7 +7,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
-import { env } from "./config/env";
+import { env } from "./config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,

@@ -1,13 +1,6 @@
-import type { TileStatus } from "../../utils/checker";
+import type { TileStatus } from "../../utils/types";
+import { KEY_STATUS_PRIORITY } from "./constants";
 import type { GuessResult } from "./types";
-
-export const KEYBOARD_ROWS = [
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
-] as const;
-
-const STATUS_PRIORITY: TileStatus[] = ["correct", "present", "absent"];
 
 export const getKeyStatuses = (
   guesses: GuessResult[],
@@ -21,7 +14,8 @@ export const getKeyStatuses = (
 
       if (
         !previous ||
-        STATUS_PRIORITY.indexOf(next) < STATUS_PRIORITY.indexOf(previous)
+        KEY_STATUS_PRIORITY.indexOf(next) <
+          KEY_STATUS_PRIORITY.indexOf(previous)
       ) {
         result[letter] = next;
       }
