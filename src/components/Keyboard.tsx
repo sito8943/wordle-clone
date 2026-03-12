@@ -22,42 +22,45 @@ export function Keyboard({ guesses, onKey }: KeyboardProps) {
   const keyStatuses = getKeyStatuses(guesses);
 
   return (
-    <div
-      role="group"
-      aria-label="On-screen keyboard"
-      className="w-full pb-2 sm:pb-4"
-    >
-      {KEYBOARD_ROWS.map((row, ri) => (
-        <div
-          key={ri}
-          className="mb-1.5 flex justify-center gap-1.5 last:mb-0 sm:mb-2 sm:gap-2"
-        >
-          {row.map((key) => {
-            const status = keyStatuses[key];
-            const keyStyle = status ? KEY_STYLE[status] : KEY_STYLE.default;
-            const isWide = key === "ENTER" || key === "BACKSPACE";
-            const displayKey = key === "BACKSPACE" ? "⌫" : key;
-            const ariaLabel =
-              key === "BACKSPACE"
-                ? "Delete letter"
-                : key === "ENTER"
-                  ? "Submit guess"
-                  : `Letter ${key}`;
+    <>
+      <div aria-hidden="true" className="h-48 sm:hidden" />
+      <div
+        role="group"
+        aria-label="On-screen keyboard"
+        className="w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm"
+      >
+        {KEYBOARD_ROWS.map((row, ri) => (
+          <div
+            key={ri}
+            className="mb-1.5 flex justify-center gap-1.5 last:mb-0 sm:mb-2 sm:gap-2"
+          >
+            {row.map((key) => {
+              const status = keyStatuses[key];
+              const keyStyle = status ? KEY_STYLE[status] : KEY_STYLE.default;
+              const isWide = key === "ENTER" || key === "BACKSPACE";
+              const displayKey = key === "BACKSPACE" ? "⌫" : key;
+              const ariaLabel =
+                key === "BACKSPACE"
+                  ? "Delete letter"
+                  : key === "ENTER"
+                    ? "Submit guess"
+                    : `Letter ${key}`;
 
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onKey(key)}
-                aria-label={ariaLabel}
-                className={`flex h-11 w-9 items-center justify-center rounded-lg border text-xs font-bold tracking-wide transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-100 active:translate-y-px sm:h-12 sm:w-10 sm:text-sm ${isWide ? "w-14 text-[0.65rem] sm:w-16 sm:text-xs" : ""} ${keyStyle}`}
-              >
-                {displayKey}
-              </button>
-            );
-          })}
-        </div>
-      ))}
-    </div>
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => onKey(key)}
+                  aria-label={ariaLabel}
+                  className={`flex h-11 w-9 items-center justify-center rounded-lg border text-xs font-bold tracking-wide transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-100 active:translate-y-px sm:h-12 sm:w-10 sm:text-sm ${isWide ? "w-14 text-[0.65rem] sm:w-16 sm:text-xs" : ""} ${keyStyle}`}
+                >
+                  {displayKey}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

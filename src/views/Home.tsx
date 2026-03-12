@@ -41,7 +41,7 @@ const Home = (): JSX.Element => {
         />
       )}
       <main className="flex flex-1 flex-col">
-        <section className="flex flex-1 flex-col items-center justify-center gap-6 py-6 max-sm:py-2">
+        <section className="flex flex-1 flex-col items-center justify-center gap-6 max-sm:gap-2 py-6 max-sm:py-2">
           <div className="w-full max-w-md flex justify-end">
             <Button
               onClick={refreshBoard}
