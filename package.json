@@ -18,6 +18,8 @@
     "convex:deploy": "convex deploy"
   },
   "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.2.0",
     "@tailwindcss/vite": "^4.2.1",
     "convex": "^1.32.0",
     "react": "^19.1.1",

@@ -1,6 +1,7 @@
 export type NavLinkPropsType = {
   to: string;
-  children: React.ReactNode;
+  label: string;
+  icon: React.ReactNode;
 };
 
 export type NavbarPropsType = {

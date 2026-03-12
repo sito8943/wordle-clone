@@ -1,4 +1,6 @@
 import type { JSX } from "react";
+import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Board, Keyboard, SessionResumeDialog } from "../components";
 import { useHomeController } from "../hooks";
 
@@ -35,7 +37,18 @@ const Home = (): JSX.Element => {
         />
       )}
       <main className="flex flex-1 flex-col">
-        <section className="flex flex-1 flex-col items-center justify-center gap-6 py-6">
+        <section className="flex flex-1 flex-col items-center justify-center gap-6 py-6 max-sm:py-2">
+          <div className="w-full max-w-md flex justify-end">
+            <button
+              onClick={refreshBoard}
+              aria-label="Refresh"
+              className="inline-flex items-center gap-2 rounded bg-neutral-900 px-4 max-sm:px-2 py-2 text-sm font-semibold text-white hover:bg-neutral-700"
+            >
+              <FontAwesomeIcon icon={faRotateRight} aria-hidden="true" />
+              <span className="max-sm:hidden">Refresh</span>
+            </button>
+          </div>
+
           <Board guesses={guesses} current={current} gameOver={gameOver} />
 
           {gameOver && (
@@ -45,13 +58,6 @@ const Home = (): JSX.Element => {
                   ? `You got it in ${guesses.length}!`
                   : `The word was: ${answer}`}
               </p>
-              <button
-                onClick={() => {
-                  refreshBoard();
-                }}
-              >
-                Refresh
-              </button>
             </>
           )}
         </section>

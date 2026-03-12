@@ -79,7 +79,7 @@ describe("App", () => {
     await waitFor(() => {
       expect(screen.queryByText("You got it in 1!")).toBeNull();
     });
-    expect(screen.queryByRole("button", { name: "Refresh" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Refresh" })).toBeTruthy();
   });
 
   it("lets the user edit the profile name", async () => {
