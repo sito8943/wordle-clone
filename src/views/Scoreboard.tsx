@@ -14,10 +14,10 @@ const Scoreboard = (): JSX.Element => {
         <button
           onClick={() => void refresh()}
           aria-label="Refresh scores"
-          className="inline-flex items-center gap-2 rounded bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-700"
+          className="inline-flex items-center gap-2 rounded bg-neutral-900 px-4 max-sm:px-2 py-2 text-white hover:bg-neutral-700"
         >
           <FontAwesomeIcon icon={faRotateRight} aria-hidden="true" />
-          <span>Refresh</span>
+          <span className="max-sm:hidden">Refresh</span>
         </button>
       </div>
 
