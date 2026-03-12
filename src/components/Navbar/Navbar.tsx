@@ -9,12 +9,12 @@ const links = [
 
 const Navbar = () => {
   return (
-    <header className="w-full justify-between border-b border-neutral-300 py-2 sm:py-3 flex">
+    <header className="w-full items-center justify-between border-b border-neutral-300 py-2 sm:py-3 flex">
       <h1 className="text-center text-3xl max-sm:text-xl font-black tracking-[0.28em] text-black">
         WORDLE
       </h1>
       <nav>
-        <ul className="mt-2 flex items-center justify-center gap-4 max-sm:gap-1 text-sm font-medium text-neutral-600">
+        <ul className="m-auto flex items-center justify-center gap-4 max-sm:gap-1 text-sm font-medium text-neutral-600">
           {links.map((link) => (
             <li key={link.to}>
               <NavLink to={link.to} label={link.label} icon={link.icon} />
