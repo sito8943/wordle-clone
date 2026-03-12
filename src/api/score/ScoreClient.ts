@@ -96,6 +96,7 @@ class ScoreClient {
 
     try {
       await this.gateway.mutation(ADD_SCORE_MUTATION, {
+        clientRecordId: record.localId,
         nick: record.nick,
         score: record.score,
         createdAt: record.createdAt,
@@ -164,6 +165,7 @@ class ScoreClient {
 
       try {
         await this.gateway.mutation(ADD_SCORE_MUTATION, {
+          clientRecordId: entry.localId,
           nick: entry.nick,
           score: entry.score,
           createdAt: entry.createdAt,

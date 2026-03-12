@@ -1,5 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useContext } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { useApi } from "./ApiProvider";
 import type { Player, PlayerContextType } from "./types";
@@ -25,6 +31,8 @@ const PlayerProvider = (props: { children: React.ReactNode }) => {
   const { scoreClient } = useApi();
 
   const [player, setPlayer] = useLocalStorage<Player>("player", DEFAULT_PLAYER);
+  const didMountRef = useRef(false);
+  const previousScoreRef = useRef(player.score);
 
   const updatePlayer = useCallback(
     (name: string) => {
@@ -35,14 +43,24 @@ const PlayerProvider = (props: { children: React.ReactNode }) => {
 
   const increaseScore = useCallback(
     (points: number) => {
-      setPlayer((prev) => {
-        const next = { ...prev, score: prev.score + points };
-        void scoreClient.recordScore({ nick: next.name, score: next.score });
-        return next;
-      });
+      setPlayer((prev) => ({ ...prev, score: prev.score + points }));
     },
-    [scoreClient, setPlayer],
+    [setPlayer],
   );
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      previousScoreRef.current = player.score;
+      return;
+    }
+
+    if (player.score > previousScoreRef.current) {
+      void scoreClient.recordScore({ nick: player.name, score: player.score });
+    }
+
+    previousScoreRef.current = player.score;
+  }, [player.name, player.score, scoreClient]);
 
   return (
     <PlayerContext.Provider value={{ player, updatePlayer, increaseScore }}>

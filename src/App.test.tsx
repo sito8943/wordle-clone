@@ -195,4 +195,26 @@ describe("App", () => {
       ).toBeNull();
     });
   });
+
+  it("does not ask to continue when no row has been attempted", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-b");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    expect(
+      screen.queryByRole("dialog", { name: "Resume previous game?" }),
+    ).toBeNull();
+    expect(screen.queryByRole("gridcell", { name: "A, typing" })).toBeNull();
+    expect(screen.queryByRole("gridcell", { name: "P, typing" })).toBeNull();
+  });
 });

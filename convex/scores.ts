@@ -18,16 +18,31 @@ const scoreSorter = (
 
 export const addScore = mutation({
   args: {
+    clientRecordId: v.optional(v.string()),
     nick: v.string(),
     score: v.number(),
     createdAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    if (args.clientRecordId) {
+      const existing = await ctx.db
+        .query("scores")
+        .withIndex("by_client_record_id", (query) =>
+          query.eq("clientRecordId", args.clientRecordId),
+        )
+        .first();
+
+      if (existing) {
+        return existing._id;
+      }
+    }
+
     const nick = args.nick.trim().slice(0, MAX_NICK_LENGTH) || "Player";
     const score = Math.max(0, Math.floor(args.score));
     const createdAt = args.createdAt ?? Date.now();
 
     return ctx.db.insert("scores", {
+      clientRecordId: args.clientRecordId,
       nick,
       score,
       createdAt,

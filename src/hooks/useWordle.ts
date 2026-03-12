@@ -3,7 +3,6 @@ import { checkGuess } from "../utils/checker";
 import { env } from "../config/env";
 import { getRandomWord, isValidWord } from "../utils/words";
 import type { GuessResult } from "./types";
-import useLocalStorage from "./useLocalStorage";
 
 type PersistedGameState = {
   sessionId: string;
@@ -15,6 +14,9 @@ type PersistedGameState = {
 
 const WORDLE_SESSION_STORAGE_KEY = "wordle:session-id";
 const WORD_LENGTH = 5;
+
+const hasAttemptedRow = (state: PersistedGameState): boolean =>
+  state.guesses.length > 0;
 
 const createSessionId = (): string => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -74,7 +76,7 @@ const normalizePersistedGameState = (
       typeof maybe.gameOver === "boolean" &&
       maybe.guesses.every(isGuessResult)
     ) {
-      return {
+      const normalized: PersistedGameState = {
         sessionId:
           typeof maybe.sessionId === "string" ? maybe.sessionId : sessionId,
         answer: maybe.answer,
@@ -82,38 +84,69 @@ const normalizePersistedGameState = (
         current: maybe.current,
         gameOver: maybe.gameOver,
       };
+
+      // Ignore old/incomplete persisted states with no attempted row.
+      if (!hasAttemptedRow(normalized)) {
+        return createInitialGameState(sessionId);
+      }
+
+      return normalized;
     }
   }
 
   return createInitialGameState(sessionId);
 };
 
-const hasActiveProgress = (state: PersistedGameState): boolean =>
-  !state.gameOver && (state.guesses.length > 0 || state.current.length > 0);
+const readPersistedGameState = (): unknown => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = localStorage.getItem(env.wordleGameStorageKey);
+    if (!raw) {
+      return null;
+    }
+
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
+const persistGameState = (state: PersistedGameState): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    if (hasAttemptedRow(state)) {
+      localStorage.setItem(env.wordleGameStorageKey, JSON.stringify(state));
+      return;
+    }
+
+    localStorage.removeItem(env.wordleGameStorageKey);
+  } catch {
+    // Ignore localStorage write errors.
+  }
+};
 
 const shouldAskToResume = (
   state: PersistedGameState,
   currentSessionId: string,
-): boolean => state.sessionId !== currentSessionId && hasActiveProgress(state);
-
-const isSameState = (a: PersistedGameState, b: PersistedGameState): boolean =>
-  JSON.stringify(a) === JSON.stringify(b);
+): boolean =>
+  state.sessionId !== currentSessionId &&
+  !state.gameOver &&
+  hasAttemptedRow(state);
 
 export default function useWordle() {
   const currentSessionId = useMemo(getOrCreateSessionId, []);
 
-  const [storedGameState, setStoredGameState] =
-    useLocalStorage<PersistedGameState>(env.wordleGameStorageKey, () =>
-      createInitialGameState(currentSessionId),
-    );
-
-  const [message, setMessage] = useState("");
-
-  const gameState = useMemo(
-    () => normalizePersistedGameState(storedGameState, currentSessionId),
-    [storedGameState, currentSessionId],
+  const [gameState, setGameState] = useState<PersistedGameState>(() =>
+    normalizePersistedGameState(readPersistedGameState(), currentSessionId),
   );
 
+  const [message, setMessage] = useState("");
   const [showResumeDialog, setShowResumeDialog] = useState(() =>
     shouldAskToResume(gameState, currentSessionId),
   );
@@ -121,10 +154,8 @@ export default function useWordle() {
   const { answer, guesses, current, gameOver } = gameState;
 
   useEffect(() => {
-    if (!isSameState(storedGameState, gameState)) {
-      setStoredGameState(gameState);
-    }
-  }, [storedGameState, gameState, setStoredGameState]);
+    persistGameState(gameState);
+  }, [gameState]);
 
   useEffect(() => {
     if (shouldAskToResume(gameState, currentSessionId)) {
@@ -134,12 +165,12 @@ export default function useWordle() {
 
   // pure computation of whether the answer has been guessed
   const won = useMemo(
-    () => guesses.some((g) => g.word === answer),
+    () => guesses.some((guess) => guess.word === answer),
     [guesses, answer],
   );
 
-  const showMessage = (msg: string) => {
-    setMessage(msg);
+  const showMessage = (text: string) => {
+    setMessage(text);
     setTimeout(() => setMessage(""), 1800);
   };
 
@@ -149,6 +180,7 @@ export default function useWordle() {
         showMessage("Not enough letters");
         return false;
       }
+
       if (!isValidWord(input)) {
         showMessage("Not in word list");
         return false;
@@ -157,43 +189,35 @@ export default function useWordle() {
       const statuses = checkGuess(input, answer);
       const result: GuessResult = { word: input, statuses };
 
-      setStoredGameState((prev) => {
-        const base = normalizePersistedGameState(prev, currentSessionId);
-        const nextGuesses = [...base.guesses, result];
+      setGameState((prev) => {
+        const nextGuesses = [...prev.guesses, result];
 
         return {
-          ...base,
+          ...prev,
           guesses: nextGuesses,
           current: "",
-          gameOver: input === base.answer || nextGuesses.length === 6,
+          gameOver: input === prev.answer || nextGuesses.length === 6,
         };
       });
 
       return;
     },
-    [answer, setStoredGameState, currentSessionId],
+    [answer],
   );
 
   const removeLetter = useCallback(() => {
-    setStoredGameState((prev) => {
-      const base = normalizePersistedGameState(prev, currentSessionId);
-      return { ...base, current: base.current.slice(0, -1) };
+    setGameState((prev) => ({ ...prev, current: prev.current.slice(0, -1) }));
+  }, []);
+
+  const addLetter = useCallback((letter: string) => {
+    setGameState((prev) => {
+      if (prev.current.length >= WORD_LENGTH) {
+        return prev;
+      }
+
+      return { ...prev, current: prev.current + letter };
     });
-  }, [setStoredGameState, currentSessionId]);
-
-  const addLetter = useCallback(
-    (letter: string) => {
-      setStoredGameState((prev) => {
-        const base = normalizePersistedGameState(prev, currentSessionId);
-        if (base.current.length >= WORD_LENGTH) {
-          return base;
-        }
-
-        return { ...base, current: base.current + letter };
-      });
-    },
-    [setStoredGameState, currentSessionId],
-  );
+  }, []);
 
   const handleKey = useCallback(
     (key: string) => {
@@ -215,30 +239,30 @@ export default function useWordle() {
   );
 
   const continuePreviousBoard = useCallback(() => {
-    setStoredGameState((prev) => {
-      const base = normalizePersistedGameState(prev, currentSessionId);
-      return { ...base, sessionId: currentSessionId };
-    });
+    setGameState((prev) => ({ ...prev, sessionId: currentSessionId }));
     setShowResumeDialog(false);
-  }, [setStoredGameState, currentSessionId]);
+  }, [currentSessionId]);
 
   const startNewBoard = useCallback(() => {
-    setStoredGameState(createInitialGameState(currentSessionId));
+    setGameState(createInitialGameState(currentSessionId));
     setShowResumeDialog(false);
     setMessage("");
-  }, [setStoredGameState, currentSessionId]);
+  }, [currentSessionId]);
 
   const refresh = useCallback(() => {
-    setStoredGameState(createInitialGameState(currentSessionId));
+    setGameState(createInitialGameState(currentSessionId));
     setShowResumeDialog(false);
     setMessage("");
-  }, [setStoredGameState, currentSessionId]);
+  }, [currentSessionId]);
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      handleKey(e.key === "Backspace" ? "BACKSPACE" : e.key.toUpperCase());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      handleKey(
+        event.key === "Backspace" ? "BACKSPACE" : event.key.toUpperCase(),
+      );
     };
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleKey]);
