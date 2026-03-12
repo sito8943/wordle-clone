@@ -1,4 +1,5 @@
+import Fire from "./Fire";
 import FireStreak from "./FireStreak";
 
-export { FireStreak };
-export type { FireStreakProps } from "./types";
+export { Fire, FireStreak };
+export type { FireProps, FireStreakProps } from "./types";
