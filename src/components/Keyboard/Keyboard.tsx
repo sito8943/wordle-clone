@@ -1,13 +1,15 @@
 import { KEYBOARD_ROWS, getKeyStatuses } from "../../domain/wordle";
-import { KEY_STYLE } from "./constant";
+import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constant";
 import type { KeyboardProps } from "./types";
 
 export function Keyboard({
   guesses,
   onKey,
   animateEntry = false,
+  isLoss = false,
 }: KeyboardProps) {
   const keyStatuses = getKeyStatuses(guesses);
+  const keyStyleMap = isLoss ? KEY_STYLE_ON_LOSS : KEY_STYLE;
 
   return (
     <>
@@ -26,7 +28,9 @@ export function Keyboard({
           >
             {row.map((key) => {
               const status = keyStatuses[key];
-              const keyStyle = status ? KEY_STYLE[status] : KEY_STYLE.default;
+              const keyStyle = status
+                ? keyStyleMap[status]
+                : keyStyleMap.default;
               const isWide = key === "ENTER" || key === "BACKSPACE";
               const displayKey = key === "BACKSPACE" ? "⌫" : key;
               const ariaLabel =

@@ -55,6 +55,29 @@ describe("App", () => {
     expect(screen.getByText("#--")).toBeTruthy();
   });
 
+  it("asks for the player name on first app launch", async () => {
+    renderApp();
+
+    expect(
+      await screen.findByRole("dialog", { name: "Welcome to Wordle" }),
+    ).toBeTruthy();
+
+    const nameInput = screen.getByLabelText("Player name");
+    fireEvent.change(nameInput, { target: { value: "Ana" } });
+    fireEvent.click(screen.getByRole("button", { name: "Start playing" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Welcome to Wordle" }),
+      ).toBeNull();
+    });
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.name).toBe("Ana");
+    });
+  });
+
   it("shows the scoreboard navbar button in red when current player is first", async () => {
     localStorage.setItem(
       "wordle:scoreboard:cache",

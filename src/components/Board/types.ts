@@ -5,11 +5,13 @@ export type BoardPropsType = {
   current: string;
   gameOver: boolean;
   animateEntry?: boolean;
+  isLoss?: boolean;
 };
 
 export type RowPropsType = {
   letters: string[];
   statuses: BoardCellStatus[];
+  isLoss?: boolean;
 };
 
 export type Status = BoardCellStatus;
@@ -17,4 +19,5 @@ export type Status = BoardCellStatus;
 export type TilePropsType = {
   letter?: string;
   status: Status;
+  isLoss?: boolean;
 };

@@ -57,6 +57,32 @@ describe("Board", () => {
     expect(screen.queryByRole("gridcell", { name: "Z, typing" })).toBeNull();
   });
 
+  it("renders revealed colors as gray when the player loses", () => {
+    const mixed: TileStatus[] = [
+      "correct",
+      "present",
+      "absent",
+      "correct",
+      "present",
+    ];
+
+    render(
+      <Board
+        guesses={[{ word: "HOUSE", statuses: mixed }]}
+        current=""
+        gameOver={true}
+        isLoss
+      />,
+    );
+
+    expect(
+      screen.getByRole("gridcell", { name: "H, correct" }).className,
+    ).toContain("bg-neutral-700");
+    expect(
+      screen.getByRole("gridcell", { name: "O, present" }).className,
+    ).toContain("bg-neutral-700");
+  });
+
   it("adds the entry animation class when enabled", () => {
     render(<Board guesses={[]} current="" gameOver={false} animateEntry />);
 

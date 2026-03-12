@@ -7,6 +7,7 @@ export function Board({
   current,
   gameOver,
   animateEntry = false,
+  isLoss = false,
 }: BoardPropsType) {
   const rows = buildBoardRows(guesses, current, gameOver);
   const boardClassName = `space-y-1.5 sm:space-y-2 m-auto ${
@@ -16,7 +17,12 @@ export function Board({
   return (
     <div role="grid" aria-label="Wordle board" className={boardClassName}>
       {rows.map((row, index) => (
-        <Row key={index} letters={row.letters} statuses={row.statuses} />
+        <Row
+          key={index}
+          letters={row.letters}
+          statuses={row.statuses}
+          isLoss={isLoss}
+        />
       ))}
     </div>
   );

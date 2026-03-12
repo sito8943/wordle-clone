@@ -4,4 +4,5 @@ export interface KeyboardProps {
   guesses: GuessResult[];
   onKey: (key: string) => void;
   animateEntry?: boolean;
+  isLoss?: boolean;
 }

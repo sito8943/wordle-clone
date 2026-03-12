@@ -75,6 +75,7 @@ const Home = (): JSX.Element => {
             guesses={guesses}
             current={current}
             gameOver={gameOver}
+            isLoss={gameOver && !won}
             animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
           />
 
@@ -92,6 +93,7 @@ const Home = (): JSX.Element => {
         <Keyboard
           guesses={guesses}
           onKey={handleKey}
+          isLoss={gameOver && !won}
           animateEntry={keyboardEntryAnimationEnabled}
         />
       </main>
