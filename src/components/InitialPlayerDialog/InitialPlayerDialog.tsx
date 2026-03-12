@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useDialogCloseTransition } from "../../hooks";
 import { Button } from "../Button";
+import {
+  DIALOG_CLOSE_DURATION_MS,
+  getDialogTransitionClasses,
+} from "../ConfirmationDialog";
 import {
   INITIAL_PLAYER_DIALOG_DESCRIPTION,
   INITIAL_PLAYER_DIALOG_EMPTY_NAME_ERROR,
@@ -17,6 +22,11 @@ const InitialPlayerDialog = ({
   const [name, setName] = useState(initialName);
   const [error, setError] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const { isClosing, closeWithAction } = useDialogCloseTransition(
+    DIALOG_CLOSE_DURATION_MS,
+  );
+  const { backdropAnimationClassName, panelAnimationClassName } =
+    getDialogTransitionClasses(isClosing);
 
   useEffect(() => {
     nameInputRef.current?.focus();
@@ -25,22 +35,26 @@ const InitialPlayerDialog = ({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (isClosing) {
+      return;
+    }
+
     if (name.trim().length === 0) {
       setError(INITIAL_PLAYER_DIALOG_EMPTY_NAME_ERROR);
       return;
     }
 
     setError("");
-    onConfirm(name);
+    closeWithAction(() => onConfirm(name));
   };
 
   return (
-    <div className="dialog-backdrop z-30">
+    <div className={`dialog-backdrop z-30 ${backdropAnimationClassName}`}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={INITIAL_PLAYER_DIALOG_TITLE_ID}
-        className="dialog-panel"
+        className={`dialog-panel ${panelAnimationClassName}`}
       >
         <h2 id={INITIAL_PLAYER_DIALOG_TITLE_ID} className="dialog-title">
           {INITIAL_PLAYER_DIALOG_TITLE}
@@ -61,6 +75,7 @@ const InitialPlayerDialog = ({
             id={INITIAL_PLAYER_DIALOG_INPUT_ID}
             type="text"
             value={name}
+            disabled={isClosing}
             maxLength={30}
             onChange={(
               event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
@@ -74,7 +89,7 @@ const InitialPlayerDialog = ({
           {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
 
           <div className="mt-5 flex justify-end">
-            <Button type="submit">
+            <Button type="submit" disabled={isClosing}>
               {INITIAL_PLAYER_DIALOG_PRIMARY_ACTION_LABEL}
             </Button>
           </div>

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Outlet } from "react-router";
 import { InitialPlayerDialog, Navbar } from "../components";
-import useThemePreference from "../hooks/useThemePreference";
+import { useAnimationsPreference, useThemePreference } from "../hooks";
 import { usePlayer } from "../providers";
 
 const PLAYER_STORAGE_KEY = "player";
@@ -17,6 +17,7 @@ const shouldAskForInitialPlayerName = (): boolean => {
 const View = () => {
   const { player, updatePlayer } = usePlayer();
   useThemePreference({ applyToDocument: true });
+  useAnimationsPreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(
     shouldAskForInitialPlayerName,
   );

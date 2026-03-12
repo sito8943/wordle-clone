@@ -13,10 +13,9 @@ import {
   removeLetter,
   shouldAskToResume,
   validateGuessInput,
-  WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
 } from "../../domain/wordle";
 import { getRandomWord } from "../../utils/words";
-import { useLocalStorage } from "../useLocalStorage";
+import useAnimationsPreference from "../useAnimationsPreference";
 import {
   markStartAnimationAsSeen,
   shouldAnimateKeyboardEntryOnSession,
@@ -48,10 +47,7 @@ export default function useWordle() {
       ),
     [currentSessionId, initialAnswer],
   );
-  const [animationsDisabled] = useLocalStorage<boolean>(
-    WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
-    false,
-  );
+  const { animationsDisabled } = useAnimationsPreference();
   const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
     shouldAnimateOnFirstSessionView(
       animationsDisabled,

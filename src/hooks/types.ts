@@ -9,3 +9,14 @@ export type ScoreboardRowEntry = ViewScoreEntry & {
   realRank: number | null;
   isPinnedCurrentClient: boolean;
 };
+
+export type DialogCloseAction = () => void;
+
+export type UseDialogCloseTransitionResult = {
+  isClosing: boolean;
+  closeWithAction: (action: DialogCloseAction) => void;
+};
+
+export type UseAnimationsPreferenceOptions = {
+  applyToDocument?: boolean;
+};

@@ -1,52 +1,8 @@
 import { useCallback, useEffect } from "react";
-import { useLocalStorage } from "./useLocalStorage";
-
-export type ThemePreference = "system" | "light" | "dark";
-
-type ResolvedTheme = "light" | "dark";
-
-type UseThemePreferenceOptions = {
-  applyToDocument?: boolean;
-};
-
-export const THEME_PREFERENCE_STORAGE_KEY = "wordle:theme-preference";
-export const DEFAULT_THEME_PREFERENCE: ThemePreference = "system";
-const THEME_PREFERENCE_SYNC_EVENT = "wordle:theme-preference:sync";
-
-const isThemePreference = (value: unknown): value is ThemePreference =>
-  value === "system" || value === "light" || value === "dark";
-
-const resolveTheme = (
-  preference: ThemePreference,
-  prefersDark: boolean,
-): ResolvedTheme => {
-  if (preference === "system") {
-    return prefersDark ? "dark" : "light";
-  }
-
-  return preference;
-};
-
-const getSystemPrefersDark = (): boolean => {
-  if (
-    typeof window === "undefined" ||
-    typeof window.matchMedia !== "function"
-  ) {
-    return false;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
-};
-
-const applyThemeToDocument = (theme: ResolvedTheme): void => {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
-  root.style.colorScheme = theme;
-};
+import { useLocalStorage } from "../useLocalStorage";
+import { THEME_PREFERENCE_STORAGE_KEY, DEFAULT_THEME_PREFERENCE, THEME_PREFERENCE_SYNC_EVENT } from "./constants";
+import type { UseThemePreferenceOptions, ThemePreference } from "./types";
+import { isThemePreference, resolveTheme, getSystemPrefersDark, applyThemeToDocument } from "./utils";
 
 export default function useThemePreference(
   options: UseThemePreferenceOptions = {},

@@ -62,6 +62,7 @@ describe("App", () => {
     localStorage.clear();
     sessionStorage.clear();
     document.documentElement.classList.remove("dark");
+    document.documentElement.classList.remove("wordle-animations-disabled");
     document.documentElement.style.colorScheme = "";
     mockSystemTheme("light");
     window.history.pushState({}, "", "/");
@@ -657,6 +658,9 @@ describe("App", () => {
     expect(localStorage.getItem(WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY)).toBe(
       "true",
     );
+    expect(
+      document.documentElement.classList.contains("wordle-animations-disabled"),
+    ).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "Anim: off" }));
 
@@ -664,6 +668,9 @@ describe("App", () => {
     expect(localStorage.getItem(WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY)).toBe(
       "false",
     );
+    expect(
+      document.documentElement.classList.contains("wordle-animations-disabled"),
+    ).toBe(false);
   });
 
   it("animates the keyboard only once per tab session", async () => {
