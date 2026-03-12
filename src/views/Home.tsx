@@ -1,11 +1,8 @@
-import { useEffect, useRef, type JSX } from "react";
+import type { JSX } from "react";
 import { Board, Keyboard, SessionResumeDialog } from "../components";
-import { useWordle } from "../hooks/";
-import { usePlayer } from "../providers";
+import { useHomeController } from "../hooks";
 
 const Home = (): JSX.Element => {
-  const { increaseScore } = usePlayer();
-
   const {
     answer,
     guesses,
@@ -14,31 +11,11 @@ const Home = (): JSX.Element => {
     won,
     message,
     handleKey,
-    refresh,
     showResumeDialog,
     continuePreviousBoard,
     startNewBoard,
-  } = useWordle();
-
-  const alreadyScored = useRef(false);
-  const hydrated = useRef(false);
-
-  useEffect(() => {
-    if (!hydrated.current) {
-      hydrated.current = true;
-      alreadyScored.current = won;
-      return;
-    }
-
-    if (won && !alreadyScored.current) {
-      increaseScore(guesses.length);
-      alreadyScored.current = true;
-    }
-
-    if (!won) {
-      alreadyScored.current = false;
-    }
-  }, [won, increaseScore, guesses.length]);
+    refreshBoard,
+  } = useHomeController();
 
   return (
     <>
@@ -70,8 +47,7 @@ const Home = (): JSX.Element => {
               </p>
               <button
                 onClick={() => {
-                  refresh();
-                  alreadyScored.current = false;
+                  refreshBoard();
                 }}
               >
                 Refresh

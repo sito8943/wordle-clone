@@ -1,54 +1,16 @@
-import { useCallback, useEffect, useState, type JSX } from "react";
-import type { ScoreEntry } from "../api/score/types";
-import { env } from "../config/env";
-import { useApi } from "../providers";
-
-const formatDate = (timestamp: number): string =>
-  new Date(timestamp).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+import type { JSX } from "react";
+import { useScoreboardController } from "../hooks";
 
 const Scoreboard = (): JSX.Element => {
-  const { scoreClient, convexEnabled } = useApi();
-
-  const [scores, setScores] = useState<ScoreEntry[]>([]);
-  const [source, setSource] = useState<"convex" | "local">("local");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const loadScores = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const result = await scoreClient.listTopScores(env.scoreLimit);
-      setScores(result.scores);
-      setSource(result.source);
-    } catch (currentError) {
-      const message =
-        currentError instanceof Error
-          ? currentError.message
-          : "Failed to load scoreboard.";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [scoreClient]);
-
-  useEffect(() => {
-    void loadScores();
-  }, [loadScores]);
+  const { convexEnabled, source, loading, error, scores, refresh } =
+    useScoreboardController();
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">Scoreboard</h2>
         <button
-          onClick={() => void loadScores()}
+          onClick={() => void refresh()}
           className="rounded bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-700"
         >
           Refresh
@@ -108,7 +70,7 @@ const Scoreboard = (): JSX.Element => {
                   <td className="px-4 py-2">{entry.nick}</td>
                   <td className="px-4 py-2">{entry.score}</td>
                   <td className="px-4 py-2 text-neutral-600">
-                    {formatDate(entry.createdAt)}
+                    {entry.formattedDate}
                   </td>
                 </tr>
               ))}
