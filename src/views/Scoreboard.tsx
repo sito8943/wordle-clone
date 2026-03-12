@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState, type JSX } from "react";
 import type { ScoreEntry } from "../api/score/types";
+import { env } from "../config/env";
 import { useApi } from "../providers";
-
-const SCORE_LIMIT = 10;
 
 const formatDate = (timestamp: number): string =>
   new Date(timestamp).toLocaleString(undefined, {
@@ -26,7 +25,7 @@ const Scoreboard = (): JSX.Element => {
     setError("");
 
     try {
-      const result = await scoreClient.listTopScores(SCORE_LIMIT);
+      const result = await scoreClient.listTopScores(env.scoreLimit);
       setScores(result.scores);
       setSource(result.source);
     } catch (currentError) {

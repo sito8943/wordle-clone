@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import { env } from "./config/env";
 import { ApiProvider, PlayerProvider } from "./providers";
 
 vi.mock("./utils/words", async () => {
@@ -101,7 +102,7 @@ describe("App", () => {
   it("restores the current game after reload", async () => {
     sessionStorage.setItem("wordle:session-id", "session-a");
     localStorage.setItem(
-      "wordle:game",
+      env.wordleGameStorageKey,
       JSON.stringify({
         sessionId: "session-a",
         answer: "APPLE",
@@ -126,7 +127,7 @@ describe("App", () => {
   it("asks to continue if a saved board belongs to another tab session", async () => {
     sessionStorage.setItem("wordle:session-id", "session-b");
     localStorage.setItem(
-      "wordle:game",
+      env.wordleGameStorageKey,
       JSON.stringify({
         sessionId: "session-a",
         answer: "APPLE",

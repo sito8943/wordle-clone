@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { checkGuess } from "../utils/checker";
+import { env } from "../config/env";
 import { getRandomWord, isValidWord } from "../utils/words";
 import type { GuessResult } from "./types";
 import useLocalStorage from "./useLocalStorage";
@@ -12,7 +13,6 @@ type PersistedGameState = {
   gameOver: boolean;
 };
 
-const WORDLE_GAME_STORAGE_KEY = "wordle:game";
 const WORDLE_SESSION_STORAGE_KEY = "wordle:session-id";
 const WORD_LENGTH = 5;
 
@@ -103,7 +103,7 @@ export default function useWordle() {
   const currentSessionId = useMemo(getOrCreateSessionId, []);
 
   const [storedGameState, setStoredGameState] =
-    useLocalStorage<PersistedGameState>(WORDLE_GAME_STORAGE_KEY, () =>
+    useLocalStorage<PersistedGameState>(env.wordleGameStorageKey, () =>
       createInitialGameState(currentSessionId),
     );
 

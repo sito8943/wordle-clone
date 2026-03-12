@@ -2,6 +2,7 @@
 import { createContext, useContext, useMemo } from "react";
 import { ConvexGateway } from "../api/convex/ConvexGateway";
 import { ScoreClient } from "../api/score/ScoreClient";
+import { env } from "../config/env";
 import type { ApiContextType } from "./types";
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
@@ -9,10 +10,7 @@ const ApiContext = createContext<ApiContextType | undefined>(undefined);
 const ApiProvider = (props: { children: React.ReactNode }) => {
   const { children } = props;
 
-  const convexUrl =
-    import.meta.env.MODE === "test"
-      ? undefined
-      : import.meta.env.VITE_CONVEX_URL;
+  const convexUrl = env.mode === "test" ? undefined : env.convexUrl;
 
   const gateway = useMemo(() => new ConvexGateway(convexUrl), [convexUrl]);
   const scoreClient = useMemo(() => new ScoreClient(gateway), [gateway]);

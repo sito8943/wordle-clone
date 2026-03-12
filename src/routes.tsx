@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+import { env } from "./config/env";
 import { Home, NotFound, Profile, Scoreboard } from "./views";
 import { View } from "./layouts/";
 
@@ -18,7 +19,7 @@ const routes = createBrowserRouter(
       ],
     },
   ],
-  { basename: import.meta.env.BASE_URL },
+  { basename: env.baseUrl },
 );
 
 export default routes;
