@@ -44,9 +44,7 @@ const Scoreboard = (): JSX.Element => {
       )}
 
       {error && (
-        <p className="scoreboard-notice scoreboard-notice-red">
-          {error}
-        </p>
+        <p className="scoreboard-notice scoreboard-notice-red">{error}</p>
       )}
 
       {currentClientOutsideTop && currentClientRank !== null && (
