@@ -2,6 +2,7 @@ import { ConvexGateway } from "../convex/ConvexGateway";
 import {
   ADD_SCORE_MUTATION,
   DEFAULT_LIMIT,
+  IS_NICK_AVAILABLE_QUERY,
   LIST_TOP_SCORES_QUERY,
   MAX_LIMIT,
   SCOREBOARD_CACHE_KEY,
@@ -122,6 +123,45 @@ class ScoreClient {
         throw error;
       }
       this.addToPending(record);
+    }
+  }
+
+  async isNickAvailable(nick: string): Promise<boolean> {
+    const normalizedNick = this.normalizeNick(nick);
+
+    if (!this.gateway.isConfigured || !this.isOnline()) {
+      return this.isNickAvailableInLocalData(normalizedNick);
+    }
+
+    try {
+      const remoteResult = await this.gateway.query<unknown>(
+        IS_NICK_AVAILABLE_QUERY,
+        {
+          nick: normalizedNick,
+          clientId: this.clientId,
+        },
+      );
+
+      if (typeof remoteResult === "boolean") {
+        return remoteResult;
+      }
+
+      if (
+        remoteResult &&
+        typeof remoteResult === "object" &&
+        "available" in remoteResult &&
+        typeof (remoteResult as { available: unknown }).available === "boolean"
+      ) {
+        return (remoteResult as { available: boolean }).available;
+      }
+
+      return this.isNickAvailableInLocalData(normalizedNick);
+    } catch (error) {
+      if (!this.gateway.isNetworkError(error)) {
+        throw error;
+      }
+
+      return this.isNickAvailableInLocalData(normalizedNick);
     }
   }
 
@@ -528,6 +568,19 @@ class ScoreClient {
     }
 
     return [...byNick.values()];
+  }
+
+  private isNickAvailableInLocalData(nick: string): boolean {
+    const requestedKey = this.nickKey(nick);
+
+    return ![
+      ...this.readScores(SCOREBOARD_CACHE_KEY),
+      ...this.readScores(SCOREBOARD_PENDING_KEY),
+    ].some(
+      (entry) =>
+        this.nickKey(entry.nick) === requestedKey &&
+        entry.clientId !== this.clientId,
+    );
   }
 
   private isOnline(): boolean {

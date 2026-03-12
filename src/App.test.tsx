@@ -453,8 +453,10 @@ describe("App", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    const nameInput = screen.getByLabelText("Name:") as HTMLInputElement;
-    expect(nameInput.value).toBe("Ana");
+    await waitFor(() => {
+      const nameInput = screen.getByLabelText("Name:") as HTMLInputElement;
+      expect(nameInput.value).toBe("Ana");
+    });
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
@@ -500,6 +502,41 @@ describe("App", () => {
 
     const nameInput = screen.getByLabelText("Name:") as HTMLInputElement;
     expect(nameInput.value).toBe("   ");
+  });
+
+  it("prevents saving a duplicated profile name", async () => {
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "other-player",
+          clientId: "other-client",
+          nick: "Ana",
+          score: 20,
+          streak: 3,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.change(screen.getByLabelText("Name:"), {
+      target: { value: "Ana" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Name is not available.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeTruthy();
+
+    const player = JSON.parse(localStorage.getItem("player") || "{}");
+    expect(player.name).toBe("Player");
   });
 
   it("lets the user toggle start animations from profile", async () => {

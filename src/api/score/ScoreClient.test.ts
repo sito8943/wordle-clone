@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConvexGateway } from "../convex/ConvexGateway";
 import { ScoreClient } from "./ScoreClient";
+import { SCOREBOARD_CACHE_KEY, SCOREBOARD_CLIENT_ID_KEY } from "./constant";
 import type { ScoreClientGatewayOverrides } from "./types";
 
 const createStorage = (): Storage => {
@@ -209,5 +210,63 @@ describe("ScoreClient", () => {
     expect(result.currentClientEntry?.streak).toBe(7);
     expect(result.currentClientEntry?.isCurrentClient).toBe(true);
     expect(result.scores).toHaveLength(1);
+  });
+
+  it("checks nick availability through remote query", async () => {
+    const query = vi.fn().mockResolvedValue(true);
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    const available = await client.isNickAvailable(" Ana ");
+
+    expect(available).toBe(true);
+    expect(query).toHaveBeenCalledWith("scores:isNickAvailable", {
+      nick: "Ana",
+      clientId: expect.any(String),
+    });
+  });
+
+  it("falls back to local nick availability when offline", async () => {
+    const client = new ScoreClient(
+      createGateway({ isConfigured: false }),
+      storage,
+    );
+    const clientId = storage.getItem(SCOREBOARD_CLIENT_ID_KEY) ?? "";
+
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "other-a",
+          clientId: "other-client",
+          nick: "Ana",
+          score: 8,
+          streak: 2,
+          createdAt: 1000,
+        },
+      ]),
+    );
+    expect(await client.isNickAvailable("ana")).toBe(false);
+
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "me-a",
+          clientId,
+          nick: "Ana",
+          score: 8,
+          streak: 2,
+          createdAt: 1000,
+        },
+      ]),
+    );
+    expect(await client.isNickAvailable("ana")).toBe(true);
   });
 });

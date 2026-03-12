@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditableProfileCard, ProfileCard } from "./index";
 
@@ -19,8 +25,8 @@ describe("ProfileCard", () => {
     expect(scoreInput.readOnly).toBe(true);
   });
 
-  it("submits the edited name", () => {
-    const onSubmit = vi.fn();
+  it("submits the edited name", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(null);
     render(
       <EditableProfileCard name="Player" score={12} onSubmit={onSubmit} />,
     );
@@ -30,6 +36,8 @@ describe("ProfileCard", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(onSubmit).toHaveBeenCalledWith("Ana");
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith("Ana");
+    });
   });
 });
