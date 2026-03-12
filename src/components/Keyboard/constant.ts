@@ -5,7 +5,7 @@ export const KEY_STYLE: Record<TileStatus | "default", string> = {
   present: "border-yellow-600 bg-yellow-500 text-black hover:bg-yellow-400",
   absent: "border-neutral-500 bg-neutral-500 text-white hover:bg-neutral-600",
   default:
-    "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300",
+    "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600",
 };
 
 const NEUTRAL_REVEALED_KEY_STYLE =

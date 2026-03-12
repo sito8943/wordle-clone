@@ -20,8 +20,10 @@ const NavLink = ({
           "inline-flex items-center gap-2 rounded px-2 py-1 transition-colors",
           toneClassName ??
             [
-              isActive ? "bg-primary/10 text-primary" : "text-neutral-600",
-              "hover:bg-primary/10 hover:text-primary",
+              isActive
+                ? "bg-primary/10 text-primary"
+                : "text-neutral-600 dark:text-neutral-300",
+              "hover:bg-primary/10 hover:text-primary dark:hover:text-primary",
             ].join(" "),
         ].join(" ")
       }

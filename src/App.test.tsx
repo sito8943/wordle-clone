@@ -12,6 +12,7 @@ import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
 } from "./domain/wordle";
+import { THEME_PREFERENCE_STORAGE_KEY } from "./hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "./providers";
 
 vi.mock("./utils/words", async () => {
@@ -33,6 +34,25 @@ const renderApp = () =>
     </ApiProvider>,
   );
 
+const mockSystemTheme = (mode: "light" | "dark") => {
+  const prefersDark = mode === "dark";
+
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    configurable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: prefersDark,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+};
+
 describe("App", () => {
   afterEach(() => {
     cleanup();
@@ -41,6 +61,9 @@ describe("App", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    document.documentElement.classList.remove("dark");
+    document.documentElement.style.colorScheme = "";
+    mockSystemTheme("light");
     window.history.pushState({}, "", "/");
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
@@ -75,6 +98,55 @@ describe("App", () => {
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.name).toBe("Ana");
+    });
+  });
+
+  it("defaults to system theme preference", async () => {
+    mockSystemTheme("dark");
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(localStorage.getItem(THEME_PREFERENCE_STORAGE_KEY)).toBe(
+      JSON.stringify("system"),
+    );
+  });
+
+  it("lets user change theme mode from profile", async () => {
+    mockSystemTheme("dark");
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const themeSelect = screen.getByLabelText(
+      "Theme mode",
+    ) as HTMLSelectElement;
+    expect(themeSelect.value).toBe("system");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+
+    fireEvent.change(themeSelect, { target: { value: "light" } });
+
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains("dark")).toBe(false);
+    });
+
+    fireEvent.change(themeSelect, { target: { value: "dark" } });
+
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains("dark")).toBe(true);
     });
   });
 

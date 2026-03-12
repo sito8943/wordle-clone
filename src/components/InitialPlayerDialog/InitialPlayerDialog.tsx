@@ -35,27 +35,24 @@ const InitialPlayerDialog = ({
   };
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/45 p-4">
+    <div className="dialog-backdrop z-30">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={INITIAL_PLAYER_DIALOG_TITLE_ID}
-        className="w-full max-w-md rounded-2xl border border-neutral-300 bg-white p-6 shadow-2xl"
+        className="dialog-panel"
       >
-        <h2
-          id={INITIAL_PLAYER_DIALOG_TITLE_ID}
-          className="text-xl font-bold text-neutral-900"
-        >
+        <h2 id={INITIAL_PLAYER_DIALOG_TITLE_ID} className="dialog-title">
           {INITIAL_PLAYER_DIALOG_TITLE}
         </h2>
-        <p className="mt-2 text-sm text-neutral-700">
+        <p className="dialog-description">
           {INITIAL_PLAYER_DIALOG_DESCRIPTION}
         </p>
 
         <form className="mt-4" onSubmit={handleSubmit}>
           <label
             htmlFor={INITIAL_PLAYER_DIALOG_INPUT_ID}
-            className="block text-sm font-semibold text-neutral-900"
+            className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
           >
             Player name
           </label>
@@ -65,11 +62,13 @@ const InitialPlayerDialog = ({
             type="text"
             value={name}
             maxLength={30}
-            onChange={(event: ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
+            onChange={(
+              event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
+            ) => {
               setName(event.target.value);
               event.stopPropagation();
             }}
-            className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+            className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
           />
 
           {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}

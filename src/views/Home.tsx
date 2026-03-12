@@ -100,7 +100,7 @@ const Home = (): JSX.Element => {
 
           {gameOver && (
             <>
-              <p className="text-center text-base font-semibold text-neutral-800 sm:text-lg">
+              <p className="text-center text-base font-semibold text-neutral-800 dark:text-neutral-200 sm:text-lg">
                 {won
                   ? `You got it in ${guesses.length}!`
                   : `The word was: ${answer}`}

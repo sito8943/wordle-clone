@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY } from "../domain/wordle";
 import { useLocalStorage } from "./useLocalStorage";
+import useThemePreference, { type ThemePreference } from "./useThemePreference";
 import { useApi, usePlayer } from "../providers";
 import { normalizePlayerName } from "../providers/utils";
 
@@ -11,6 +12,7 @@ export default function useProfileController() {
     WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
     false,
   );
+  const { themePreference, setThemePreference } = useThemePreference();
 
   const [editing, setEditing] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
@@ -42,6 +44,13 @@ export default function useProfileController() {
     setAnimationsDisabled((prev) => !prev);
   }, [setAnimationsDisabled]);
 
+  const changeThemePreference = useCallback(
+    (nextPreference: ThemePreference) => {
+      setThemePreference(nextPreference);
+    },
+    [setThemePreference],
+  );
+
   return {
     player,
     editing,
@@ -50,5 +59,7 @@ export default function useProfileController() {
     submitProfile,
     startAnimationsEnabled: !animationsDisabled,
     toggleStartAnimations,
+    themePreference,
+    changeThemePreference,
   };
 }

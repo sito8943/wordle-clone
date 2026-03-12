@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Outlet } from "react-router";
 import { InitialPlayerDialog, Navbar } from "../components";
+import useThemePreference from "../hooks/useThemePreference";
 import { usePlayer } from "../providers";
 
 const PLAYER_STORAGE_KEY = "player";
@@ -15,6 +16,7 @@ const shouldAskForInitialPlayerName = (): boolean => {
 
 const View = () => {
   const { player, updatePlayer } = usePlayer();
+  useThemePreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(
     shouldAskForInitialPlayerName,
   );
@@ -28,7 +30,7 @@ const View = () => {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-100 text-neutral-900">
+    <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
       <div className="mx-auto flex min-h-screen w-full flex-col max-sm:p-3 p-1">
         <Navbar />
         <Outlet />

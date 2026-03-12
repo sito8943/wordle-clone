@@ -1,7 +1,7 @@
 import { STATUS_LABEL, STATUS_STYLE } from "./constant";
 import type { TilePropsType } from "./types";
 
-const TILE_ENTRY_STAGGER_MS = 16;
+const TILE_ENTRY_STAGGER_MS = 100;
 
 export function Tile({
   letter,
@@ -20,7 +20,6 @@ export function Tile({
   const tileEntryStyle = animateEntry
     ? { animationDelay: `${animationOrder * TILE_ENTRY_STAGGER_MS}ms` }
     : undefined;
-
   return (
     <div
       role="gridcell"

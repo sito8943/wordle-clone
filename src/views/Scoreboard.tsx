@@ -18,7 +18,7 @@ const Scoreboard = (): JSX.Element => {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold">Scoreboard</h2>
+        <h2 className="page-title">Scoreboard</h2>
         <Button
           onClick={() => void refresh()}
           aria-label="Refresh scores"
@@ -60,16 +60,16 @@ const Scoreboard = (): JSX.Element => {
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-100">
             <tr>
-              <th className="px-4 py-2 text-xs">#</th>
-              <th className="px-4 py-2 text-xs">Nick</th>
-              <th className="px-4 py-2 text-xs">Score</th>
-              <th className="px-4 py-2 text-xs">Date</th>
+              <th className="scoreboard-header-cell">#</th>
+              <th className="scoreboard-header-cell">Nick</th>
+              <th className="scoreboard-header-cell">Score</th>
+              <th className="scoreboard-header-cell">Date</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td className="px-4 py-4 text-neutral-600" colSpan={4}>
+                <td className="scoreboard-placeholder-cell" colSpan={4}>
                   Loading scores...
                 </td>
               </tr>
@@ -77,7 +77,7 @@ const Scoreboard = (): JSX.Element => {
 
             {!loading && scores.length === 0 && (
               <tr>
-                <td className="px-4 py-4 text-neutral-600" colSpan={4}>
+                <td className="scoreboard-placeholder-cell" colSpan={4}>
                   No scores yet.
                 </td>
               </tr>
@@ -91,7 +91,7 @@ const Scoreboard = (): JSX.Element => {
                     entry.isCurrentClient ? "scoreboard-current-player-row" : ""
                   }`}
                 >
-                  <td className="px-4 py-2 font-semibold text-xs">
+                  <td className="scoreboard-cell font-semibold text-xs">
                     <div className="flex flex-col">
                       <span>#{entry.displayRank}</span>
                       {entry.isPinnedCurrentClient &&
@@ -102,8 +102,8 @@ const Scoreboard = (): JSX.Element => {
                         )}
                     </div>
                   </td>
-                  <td className="px-4 py-2">{entry.nick}</td>
-                  <td className="px-4 py-2">
+                  <td className="scoreboard-cell">{entry.nick}</td>
+                  <td className="scoreboard-cell">
                     <div className="flex items-center gap-2">
                       <span>{entry.score}</span>
                       {entry.streak >= 2 && (
@@ -111,7 +111,7 @@ const Scoreboard = (): JSX.Element => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-2 text-neutral-600 text-xs">
+                  <td className="scoreboard-cell text-xs text-neutral-600">
                     {entry.formattedDate}
                   </td>
                 </tr>

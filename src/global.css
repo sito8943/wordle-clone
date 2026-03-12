@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-primary: #2563eb;
@@ -8,6 +9,52 @@
 h1,
 .times-new-roman {
   font-family: "Times New Roman", Times, serif;
+}
+
+@layer components {
+  .page-title {
+    @apply text-2xl font-bold;
+  }
+
+  .dialog-backdrop {
+    @apply fixed inset-0 flex items-center justify-center bg-black/45 p-4;
+  }
+
+  .dialog-panel {
+    @apply w-full max-w-md rounded-2xl border border-neutral-300 bg-white p-6 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900;
+  }
+
+  .dialog-title {
+    @apply text-xl font-bold text-neutral-900 dark:text-neutral-100;
+  }
+
+  .dialog-description {
+    @apply mt-2 text-sm text-neutral-700 dark:text-neutral-300;
+  }
+
+  .profile-card-container {
+    @apply flex w-full max-w-sm flex-col gap-4 rounded-lg border border-gray-300 p-4 dark:border-neutral-700;
+  }
+
+  .profile-card-field-row {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .profile-card-field-input {
+    @apply rounded border border-gray-300 px-2 py-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100;
+  }
+
+  .scoreboard-header-cell {
+    @apply px-4 py-2 text-xs;
+  }
+
+  .scoreboard-cell {
+    @apply px-4 py-2;
+  }
+
+  .scoreboard-placeholder-cell {
+    @apply px-4 py-4 text-neutral-600;
+  }
 }
 
 @keyframes smooth-entry {
