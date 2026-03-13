@@ -96,6 +96,26 @@ h1,
   .scoreboard-placeholder-cell {
     @apply px-4 py-4 text-neutral-600 dark:text-neutral-300;
   }
+
+  .splash-screen {
+    @apply flex min-h-screen w-full items-center justify-center bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
+  }
+
+  .splash-word {
+    @apply text-5xl font-bold tracking-[0.35em] sm:text-7xl;
+    animation: splash-word-blink 1.1s ease-in-out infinite;
+  }
+}
+
+@keyframes splash-word-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
 }
 
 @keyframes smooth-entry {

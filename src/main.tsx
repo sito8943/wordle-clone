@@ -4,9 +4,7 @@ import "./global.css";
 import App from "./App.tsx";
 import { ErrorBoundary, ErrorFallback } from "./components";
 import { ApiProvider, PlayerProvider } from "./providers/";
-
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto-slab/500.css';
+import { loadFontsAsync } from "./utils/loadFontsAsync";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -31,3 +29,5 @@ createRoot(document.getElementById("root")!).render(
     </ErrorBoundary>
   </StrictMode>,
 );
+
+void loadFontsAsync();

@@ -1,7 +1,12 @@
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
 import { env } from "./config";
-import { Home, NotFound, Profile, Scoreboard } from "./views";
-import { View } from "./layouts/";
+
+const View = lazy(() => import("./layouts/View"));
+const Home = lazy(() => import("./views/Home"));
+const Scoreboard = lazy(() => import("./views/Scoreboard"));
+const Profile = lazy(() => import("./views/Profile"));
+const NotFound = lazy(() => import("./views/NotFound"));
 
 const routes = createBrowserRouter(
   [
