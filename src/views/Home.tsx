@@ -10,6 +10,8 @@ import {
 import {
   Board,
   Button,
+  ErrorBoundary,
+  ErrorFallback,
   FireStreak,
   HelpDialog,
   Keyboard,
@@ -71,37 +73,59 @@ const Home = (): JSX.Element => {
 
   return (
     <>
-      {message && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="pointer-events-none fixed left-1/2 top-5 z-10 -translate-x-1/2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-lg"
-        >
-          {message}
-        </div>
-      )}
-      {showResumeDialog && (
-        <SessionResumeDialog
-          onContinue={continuePreviousBoard}
-          onStartNew={startNewBoard}
-        />
-      )}
-      {!showResumeDialog && showRefreshDialog && (
-        <RefreshConfirmationDialog
-          onCancel={cancelRefreshBoard}
-          onConfirm={confirmRefreshBoard}
-        />
-      )}
-      {!showResumeDialog && wordListButtonEnabled && showWordsDialog && (
-        <WordListDialog
-          language="en"
-          words={dictionaryWords}
-          onClose={closeWordsDialog}
-        />
-      )}
-      {!showResumeDialog && showHelpDialog && (
-        <HelpDialog onClose={closeHelpDialog} />
-      )}
+      <ErrorBoundary
+        name="home-overlays"
+        resetKeys={[
+          showResumeDialog,
+          showRefreshDialog,
+          showWordsDialog,
+          showHelpDialog,
+        ]}
+        fallback={({ reset }) => (
+          <div className="px-3 pb-2">
+            <ErrorFallback
+              title="A dialog failed to render."
+              description="Retry to open this panel again."
+              actionLabel="Retry panel"
+              onAction={reset}
+            />
+          </div>
+        )}
+      >
+        <>
+          {message && (
+            <div
+              role="status"
+              aria-live="polite"
+              className="pointer-events-none fixed left-1/2 top-5 z-10 -translate-x-1/2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-lg"
+            >
+              {message}
+            </div>
+          )}
+          {showResumeDialog && (
+            <SessionResumeDialog
+              onContinue={continuePreviousBoard}
+              onStartNew={startNewBoard}
+            />
+          )}
+          {!showResumeDialog && showRefreshDialog && (
+            <RefreshConfirmationDialog
+              onCancel={cancelRefreshBoard}
+              onConfirm={confirmRefreshBoard}
+            />
+          )}
+          {!showResumeDialog && wordListButtonEnabled && showWordsDialog && (
+            <WordListDialog
+              language="en"
+              words={dictionaryWords}
+              onClose={closeWordsDialog}
+            />
+          )}
+          {!showResumeDialog && showHelpDialog && (
+            <HelpDialog onClose={closeHelpDialog} />
+          )}
+        </>
+      </ErrorBoundary>
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-start gap-6 max-sm:gap-2 py-6 max-sm:py-2">
           <div className="w-full flex items-center justify-end gap-2">
@@ -190,55 +214,91 @@ const Home = (): JSX.Element => {
             </p>
           )}
 
-          {showHardModeFinalStretchBar && (
-            <div
-              role="progressbar"
-              aria-label="Hard mode countdown"
-              aria-valuemin={0}
-              aria-valuemax={15}
-              aria-valuenow={hardModeSecondsLeft}
-              className="w-full max-w-md"
-            >
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-200/80 dark:bg-blue-950/50">
+          <ErrorBoundary
+            name="home-board"
+            resetKeys={[
+              guesses.length,
+              current,
+              gameOver,
+              won,
+              startAnimationSeed,
+              boardShakePulse,
+            ]}
+            fallback={({ reset }) => (
+              <ErrorFallback
+                title="The board crashed."
+                description="Retry to restore the current match view."
+                actionLabel="Retry board"
+                onAction={reset}
+              />
+            )}
+          >
+            <>
+              {showHardModeFinalStretchBar && (
                 <div
-                  className="h-full rounded-full bg-blue-500 transition-[width] duration-1000 ease-linear dark:bg-blue-400"
-                  style={{ width: `${hardModeFinalStretchProgressPercent}%` }}
-                />
-              </div>
+                  role="progressbar"
+                  aria-label="Hard mode countdown"
+                  aria-valuemin={0}
+                  aria-valuemax={15}
+                  aria-valuenow={hardModeSecondsLeft}
+                  className="w-full max-w-md"
+                >
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-200/80 dark:bg-blue-950/50">
+                    <div
+                      className="h-full rounded-full bg-blue-500 transition-[width] duration-1000 ease-linear dark:bg-blue-400"
+                      style={{
+                        width: `${hardModeFinalStretchProgressPercent}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <Board
+                key={`board-${startAnimationSeed}`}
+                guesses={guesses}
+                current={current}
+                gameOver={gameOver}
+                animateTileEntry={animateTileEntry}
+                isLoss={gameOver && !won}
+                animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
+                shakePulse={boardShakePulse}
+                activeRowHintStatuses={activeRowHintStatuses}
+                hintRevealPulse={hintRevealPulse}
+                hintRevealTileIndex={hintRevealTileIndex}
+              />
+
+              {gameOver && (
+                <p className="text-center text-base font-semibold text-neutral-800 dark:text-neutral-200 sm:text-lg">
+                  {won
+                    ? `You got it in ${guesses.length}!`
+                    : `The word was: ${answer}`}
+                </p>
+              )}
+            </>
+          </ErrorBoundary>
+        </section>
+        <ErrorBoundary
+          name="home-keyboard"
+          resetKeys={[guesses.length, current, gameOver, won]}
+          fallback={({ reset }) => (
+            <div className="px-2 pb-2">
+              <ErrorFallback
+                title="The keyboard is unavailable."
+                description="Retry to re-enable key input."
+                actionLabel="Retry keyboard"
+                onAction={reset}
+              />
             </div>
           )}
-
-          <Board
-            key={`board-${startAnimationSeed}`}
+        >
+          <Keyboard
             guesses={guesses}
-            current={current}
-            gameOver={gameOver}
-            animateTileEntry={animateTileEntry}
+            onKey={handleKey}
             isLoss={gameOver && !won}
-            animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
-            shakePulse={boardShakePulse}
-            activeRowHintStatuses={activeRowHintStatuses}
-            hintRevealPulse={hintRevealPulse}
-            hintRevealTileIndex={hintRevealTileIndex}
+            animateEntry={keyboardEntryAnimationEnabled}
           />
-
-          {gameOver && (
-            <>
-              <p className="text-center text-base font-semibold text-neutral-800 dark:text-neutral-200 sm:text-lg">
-                {won
-                  ? `You got it in ${guesses.length}!`
-                  : `The word was: ${answer}`}
-              </p>
-            </>
-          )}
-        </section>
-
-        <Keyboard
-          guesses={guesses}
-          onKey={handleKey}
-          isLoss={gameOver && !won}
-          animateEntry={keyboardEntryAnimationEnabled}
-        />
+        </ErrorBoundary>
       </main>
     </>
   );

@@ -1,6 +1,12 @@
 import { useCallback, useState } from "react";
-import { Outlet } from "react-router";
-import { Footer, InitialPlayerDialog, Navbar } from "../components";
+import { Outlet, useLocation } from "react-router";
+import {
+  ErrorBoundary,
+  ErrorFallback,
+  Footer,
+  InitialPlayerDialog,
+  Navbar,
+} from "../components";
 import { useAnimationsPreference, useThemePreference } from "../hooks";
 import { useApi, usePlayer } from "../providers";
 import { normalizePlayerName } from "../providers/utils";
@@ -13,6 +19,7 @@ import { shouldAskForInitialPlayerName } from "./utils";
 const View = () => {
   const { scoreClient } = useApi();
   const { player, updatePlayer } = usePlayer();
+  const { pathname } = useLocation();
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(
@@ -49,7 +56,22 @@ const View = () => {
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
       <div className="mx-auto flex min-h-screen w-full flex-col max-sm:p-3 p-1">
         <Navbar />
-        <Outlet />
+        <ErrorBoundary
+          name="route-outlet"
+          resetKeys={[pathname]}
+          fallback={({ reset }) => (
+            <main className="page-centered py-10">
+              <ErrorFallback
+                title="This page could not be rendered."
+                description="Try again or navigate to a different section."
+                actionLabel="Retry page"
+                onAction={reset}
+              />
+            </main>
+          )}
+        >
+          <Outlet />
+        </ErrorBoundary>
       </div>
       <Footer />
       {showInitialPlayerDialog ? (
