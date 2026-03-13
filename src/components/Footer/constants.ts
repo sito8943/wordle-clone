@@ -5,5 +5,5 @@ export const FOOTER_PORTFOLIO_URL =
 export const FOOTER_GITHUB_REPOSITORY_URL =
   "https://github.com/sito8943/wordle-clone";
 
-export const FOOTER_COPYRIGHT_LABEL = "copyright Wordle @sito8943";
+export const FOOTER_COPYRIGHT_LABEL = "Made by @sito8943";
 export const FOOTER_GITHUB_ARIA_LABEL = "GitHub repository";
