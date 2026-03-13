@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faHouse,
+  faPlayCircle,
   faSpinner,
   faTrophy,
   faUser,
@@ -32,7 +32,7 @@ const Navbar = () => {
   );
   const links = useMemo(
     () => [
-      { to: "/", label: "Home", icon: faHouse },
+      { to: "/", label: "Play", icon: faPlayCircle },
       { to: "/profile", label: "Profile", icon: faUser },
       {
         to: "/scoreboard",

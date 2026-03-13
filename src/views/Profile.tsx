@@ -105,11 +105,13 @@ const Profile = () => {
               <option value="easy">Easy</option>
               <option value="normal">Normal</option>
               <option value="hard">Hard</option>
+              <option value="insane">Insane</option>
             </select>
             <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
               <li>Easy shows the word list.</li>
               <li>Normal hides the word list.</li>
-              <li>Hard shows a timer.</li>
+              <li>Hard disables hints.</li>
+              <li>Insane enables the timer.</li>
             </ul>
           </div>
         </div>

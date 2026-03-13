@@ -9,7 +9,7 @@ export type Player = {
   difficulty: PlayerDifficulty;
 };
 
-export type PlayerDifficulty = "easy" | "normal" | "hard";
+export type PlayerDifficulty = "easy" | "normal" | "hard" | "insane";
 
 export type PlayerContextType = {
   player: Player;

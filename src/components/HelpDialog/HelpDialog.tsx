@@ -58,6 +58,7 @@ const HelpDialog = ({ onClose }: HelpDialogProps) => {
               <li>Easy: x1 points per remaining attempt.</li>
               <li>Normal: x2 points per remaining attempt.</li>
               <li>Hard: x3 points per remaining attempt.</li>
+              <li>Insane: x4 points per remaining attempt.</li>
               <li>Final score = base points x difficulty multiplier.</li>
             </ul>
           </section>

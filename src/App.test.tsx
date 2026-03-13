@@ -77,7 +77,7 @@ describe("App", () => {
     renderApp();
 
     expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Home" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Play" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Profile" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
   });
@@ -283,6 +283,13 @@ describe("App", () => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.difficulty).toBe("hard");
     });
+
+    fireEvent.change(difficultySelect, { target: { value: "insane" } });
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.difficulty).toBe("insane");
+    });
   });
 
   it("shows word list button only in easy difficulty", async () => {
@@ -308,7 +315,7 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "easy" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+    fireEvent.click(screen.getByRole("link", { name: "Play" }));
 
     expect(
       await screen.findByRole("button", { name: "Word list" }),
@@ -322,14 +329,14 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "normal" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+    fireEvent.click(screen.getByRole("link", { name: "Play" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "Word list" })).toBeNull();
     });
   });
 
-  it("shows hint button in easy and normal, but hides it in hard", async () => {
+  it("shows hint button in easy and normal, but hides it in hard and insane", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -352,7 +359,21 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "hard" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+    fireEvent.click(screen.getByRole("link", { name: "Play" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Hint" })).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Difficulty"), {
+      target: { value: "insane" },
+    });
+    fireEvent.click(screen.getByRole("link", { name: "Play" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "Hint" })).toBeNull();
@@ -366,9 +387,25 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "easy" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+    fireEvent.click(screen.getByRole("link", { name: "Play" }));
 
     expect(await screen.findByRole("button", { name: "Hint" })).toBeTruthy();
+  });
+
+  it("does not show a timer in hard difficulty", () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "hard",
+      }),
+    );
+
+    renderApp();
+
+    expect(screen.queryByLabelText(/Insane timer:/)).toBeNull();
   });
 
   it("uses two green hints in easy mode and then disables the hint button", () => {
@@ -431,7 +468,7 @@ describe("App", () => {
     });
   });
 
-  it("shows a hard mode timer and decreases it on each tick", async () => {
+  it("shows an insane mode timer and decreases it on each tick", async () => {
     vi.useFakeTimers();
     localStorage.setItem(
       "player",
@@ -439,33 +476,33 @@ describe("App", () => {
         name: "Player",
         score: 0,
         streak: 0,
-        difficulty: "hard",
+        difficulty: "insane",
       }),
     );
 
     try {
       renderApp();
 
-      expect(screen.getByLabelText("Hard timer: 60 seconds")).toBeTruthy();
+      expect(screen.getByLabelText("Insane timer: 60 seconds")).toBeTruthy();
 
       act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(screen.getByLabelText("Hard timer: 60 seconds")).toBeTruthy();
+      expect(screen.getByLabelText("Insane timer: 60 seconds")).toBeTruthy();
       fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
 
       act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(screen.getByLabelText("Hard timer: 59 seconds")).toBeTruthy();
+      expect(screen.getByLabelText("Insane timer: 59 seconds")).toBeTruthy();
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it("pauses and restores hard mode timer when navigating away and back", () => {
+  it("pauses and restores insane mode timer when navigating away and back", () => {
     vi.useFakeTimers();
     localStorage.setItem(
       "player",
@@ -473,14 +510,14 @@ describe("App", () => {
         name: "Player",
         score: 0,
         streak: 0,
-        difficulty: "hard",
+        difficulty: "insane",
       }),
     );
-    sessionStorage.setItem("wordle:session-id", "session-hard");
+    sessionStorage.setItem("wordle:session-id", "session-insane");
     localStorage.setItem(
       env.wordleGameStorageKey,
       JSON.stringify({
-        sessionId: "session-hard",
+        sessionId: "session-insane",
         answer: "APPLE",
         guesses: [
           {
@@ -500,31 +537,31 @@ describe("App", () => {
         vi.advanceTimersByTime(3000);
       });
 
-      expect(screen.getByLabelText("Hard timer: 57 seconds")).toBeTruthy();
+      expect(screen.getByLabelText("Insane timer: 57 seconds")).toBeTruthy();
 
       fireEvent.click(screen.getByRole("link", { name: "Profile" }));
       expect(screen.getByRole("heading", { name: "Profile" })).toBeTruthy();
-      expect(screen.queryByLabelText(/Hard timer:/)).toBeNull();
+      expect(screen.queryByLabelText(/Insane timer:/)).toBeNull();
 
       act(() => {
         vi.advanceTimersByTime(10000);
       });
 
-      fireEvent.click(screen.getByRole("link", { name: "Home" }));
+      fireEvent.click(screen.getByRole("link", { name: "Play" }));
 
-      expect(screen.getByLabelText("Hard timer: 57 seconds")).toBeTruthy();
+      expect(screen.getByLabelText("Insane timer: 57 seconds")).toBeTruthy();
 
       act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(screen.getByLabelText("Hard timer: 56 seconds")).toBeTruthy();
+      expect(screen.getByLabelText("Insane timer: 56 seconds")).toBeTruthy();
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it("shows final-stretch bar and shakes board in hard mode under 15 seconds", async () => {
+  it("shows final-stretch bar and shakes board in insane mode under 15 seconds", async () => {
     vi.useFakeTimers();
     localStorage.setItem(
       "player",
@@ -532,7 +569,7 @@ describe("App", () => {
         name: "Player",
         score: 0,
         streak: 0,
-        difficulty: "hard",
+        difficulty: "insane",
       }),
     );
 
@@ -545,7 +582,7 @@ describe("App", () => {
       });
 
       const countdown = screen.getByRole("progressbar", {
-        name: "Hard mode countdown",
+        name: "Insane mode countdown",
       });
       expect(countdown.getAttribute("aria-valuenow")).toBe("15");
 
@@ -566,7 +603,7 @@ describe("App", () => {
         name: "Player",
         score: 0,
         streak: 0,
-        difficulty: "hard",
+        difficulty: "insane",
       }),
     );
 
@@ -579,7 +616,7 @@ describe("App", () => {
       });
 
       expect(screen.getByText("The word was: APPLE")).toBeTruthy();
-      expect(screen.queryByLabelText(/Hard timer:/)).toBeNull();
+      expect(screen.queryByLabelText(/Insane timer:/)).toBeNull();
 
       fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
 
@@ -976,6 +1013,30 @@ describe("App", () => {
     });
   });
 
+  it("applies insane difficulty score multiplier on win", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "insane",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.score).toBe(24);
+    });
+  });
+
   it("resets win streak when the last persisted game is a loss", async () => {
     localStorage.setItem(
       "player",
@@ -1047,6 +1108,32 @@ describe("App", () => {
         score: 0,
         streak: 0,
         difficulty: "hard",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["Z", "Z", "Z", "Z", "Z"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("gridcell", { name: "Z, absent" }).length,
+      ).toBe(5);
+    });
+  });
+
+  it("accepts unknown words in insane difficulty and counts the attempt", async () => {
+    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "insane",
       }),
     );
 
@@ -1380,7 +1467,7 @@ describe("App", () => {
     ).toBe("seen");
 
     fireEvent.click(screen.getByRole("link", { name: "Profile" }));
-    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+    fireEvent.click(screen.getByRole("link", { name: "Play" }));
 
     const secondKeyboard = await screen.findByRole("group", {
       name: "On-screen keyboard",

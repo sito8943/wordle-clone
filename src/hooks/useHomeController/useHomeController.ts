@@ -20,7 +20,8 @@ export default function useHomeController() {
   const { player, increaseScore, increaseWinStreak, resetWinStreak } =
     usePlayer();
   const wordle = useWordle({
-    allowUnknownWords: player.difficulty === "hard",
+    allowUnknownWords:
+      player.difficulty === "hard" || player.difficulty === "insane",
   });
   const {
     sessionId,
@@ -37,7 +38,7 @@ export default function useHomeController() {
     hintRevealPulse,
     hintRevealTileIndex,
   } = wordle;
-  const hardModeEnabled = player.difficulty === "hard";
+  const hardModeEnabled = player.difficulty === "insane";
   const hintsLimit = getHintsLimitByDifficulty(player.difficulty);
   const hasInProgressGameAtMount =
     !gameOver && (guesses.length > 0 || current.length > 0);

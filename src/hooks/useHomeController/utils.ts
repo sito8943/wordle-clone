@@ -18,6 +18,10 @@ export const getDifficultyScoreMultiplier = (
     return 1;
   }
 
+  if (difficulty === "insane") {
+    return 4;
+  }
+
   if (difficulty === "hard") {
     return 3;
   }
@@ -33,6 +37,10 @@ export const getHintsLimitByDifficulty = (
   }
 
   if (difficulty === "hard") {
+    return HARD_MODE_HINT_LIMIT;
+  }
+
+  if (difficulty === "insane") {
     return HARD_MODE_HINT_LIMIT;
   }
 

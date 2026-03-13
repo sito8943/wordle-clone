@@ -19,7 +19,10 @@ const normalizeCounter = (value: unknown): number => {
 };
 
 const isPlayerDifficulty = (value: unknown): value is PlayerDifficulty =>
-  value === "easy" || value === "normal" || value === "hard";
+  value === "easy" ||
+  value === "normal" ||
+  value === "hard" ||
+  value === "insane";
 
 const normalizePlayerDifficulty = (value: unknown): PlayerDifficulty => {
   if (!isPlayerDifficulty(value)) {

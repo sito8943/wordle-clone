@@ -22,6 +22,10 @@ export const getPlayerDifficultyLabel = (
     return "Easy";
   }
 
+  if (difficulty === "insane") {
+    return "Insane";
+  }
+
   if (difficulty === "hard") {
     return "Hard";
   }

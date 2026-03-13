@@ -173,7 +173,7 @@ const Home = (): JSX.Element => {
               <div
                 role="status"
                 aria-live="polite"
-                aria-label={`Hard timer: ${hardModeSecondsLeft} seconds`}
+                aria-label={`Insane timer: ${hardModeSecondsLeft} seconds`}
                 className="mobile-compact-button inline-flex items-center gap-2 rounded border border-blue-300 bg-blue-100/90 px-3 py-2 text-sm font-bold text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
               >
                 <span
@@ -237,7 +237,7 @@ const Home = (): JSX.Element => {
               {showHardModeFinalStretchBar && (
                 <div
                   role="progressbar"
-                  aria-label="Hard mode countdown"
+                  aria-label="Insane mode countdown"
                   aria-valuemin={0}
                   aria-valuemax={15}
                   aria-valuenow={hardModeSecondsLeft}
