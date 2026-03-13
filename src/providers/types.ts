@@ -6,11 +6,15 @@ export type Player = {
   name: string;
   score: number;
   streak: number;
+  difficulty: PlayerDifficulty;
 };
+
+export type PlayerDifficulty = "easy" | "normal" | "hard";
 
 export type PlayerContextType = {
   player: Player;
   updatePlayer: (name: string) => void;
+  updatePlayerDifficulty: (difficulty: PlayerDifficulty) => void;
   increaseScore: (points: number) => void;
   increaseWinStreak: () => void;
   resetWinStreak: () => void;

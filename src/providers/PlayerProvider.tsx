@@ -10,7 +10,12 @@ import {
 import { useLocalStorage } from "../hooks/";
 import { useApi } from "./ApiProvider";
 import { DEFAULT_PLAYER } from "./constants";
-import type { Player, PlayerContextType, ProviderProps } from "./types";
+import type {
+  Player,
+  PlayerContextType,
+  PlayerDifficulty,
+  ProviderProps,
+} from "./types";
 import { normalizePlayer, normalizePlayerName } from "./utils";
 
 const PlayerContext = createContext({} as PlayerContextType);
@@ -32,26 +37,20 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   });
 
   useEffect(() => {
-    if (
-      storedPlayer.name !== player.name ||
-      storedPlayer.score !== player.score ||
-      storedPlayer.streak !== player.streak
-    ) {
-      setStoredPlayer({
-        name: player.name,
-        score: player.score,
-        streak: player.streak,
-      });
-    }
-  }, [
-    player.name,
-    player.score,
-    player.streak,
-    setStoredPlayer,
-    storedPlayer.name,
-    storedPlayer.score,
-    storedPlayer.streak,
-  ]);
+    setStoredPlayer((previous) => {
+      const normalized = normalizePlayer(previous);
+      if (
+        previous.name === normalized.name &&
+        previous.score === normalized.score &&
+        previous.streak === normalized.streak &&
+        previous.difficulty === normalized.difficulty
+      ) {
+        return previous;
+      }
+
+      return normalized;
+    });
+  }, [setStoredPlayer]);
 
   const updatePlayer = useCallback(
     (name: string) => {
@@ -102,6 +101,24 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     });
   }, [setStoredPlayer]);
 
+  const updatePlayerDifficulty = useCallback(
+    (difficulty: PlayerDifficulty) => {
+      setStoredPlayer((prev) => {
+        const normalized = normalizePlayer(prev);
+        if (normalized.difficulty === difficulty) {
+          if (prev.difficulty === difficulty) {
+            return prev;
+          }
+
+          return normalized;
+        }
+
+        return { ...normalized, difficulty };
+      });
+    },
+    [setStoredPlayer],
+  );
+
   const { name, score, streak } = player;
 
   useEffect(() => {
@@ -128,6 +145,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       value={{
         player,
         updatePlayer,
+        updatePlayerDifficulty,
         increaseScore,
         increaseWinStreak,
         resetWinStreak,

@@ -1,6 +1,7 @@
 import { Board } from "./Board";
 import { Button } from "./Button";
 import { Fire, FireStreak } from "./FireStreak";
+import { HelpDialog } from "./HelpDialog";
 import { InitialPlayerDialog } from "./InitialPlayerDialog";
 import { Keyboard } from "./Keyboard";
 import { Navbar } from "./Navbar";
@@ -12,6 +13,7 @@ export {
   Button,
   Fire,
   FireStreak,
+  HelpDialog,
   InitialPlayerDialog,
   Keyboard,
   Navbar,

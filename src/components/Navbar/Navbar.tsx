@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { faHouse, faTrophy, faUser } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faHouse,
+  faSpinner,
+  faTrophy,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import { useLocation } from "react-router";
 import { env } from "../../config";
 import { useApi, usePlayer } from "../../providers";
@@ -49,11 +55,22 @@ const Navbar = () => {
     };
   }, [location.pathname, player.score, scoreClient]);
 
-  const positionLabel = isCurrentClientRankLoading
-    ? "Loading"
-    : currentClientRank === null
-      ? "#--"
-      : `#${currentClientRank}`;
+  const positionLabel = useMemo(
+    () =>
+      isCurrentClientRankLoading ? (
+        <FontAwesomeIcon
+          icon={faSpinner}
+          aria-hidden="true"
+          className="animate-spin"
+          data-testid="scoreboard-rank-spinner"
+        />
+      ) : currentClientRank === null ? (
+        "#--"
+      ) : (
+        `#${currentClientRank}`
+      ),
+    [isCurrentClientRankLoading, currentClientRank],
+  );
   const rankTone = isCurrentClientRankLoading ? null : currentClientRank;
 
   const links = useMemo(

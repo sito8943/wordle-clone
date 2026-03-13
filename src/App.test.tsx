@@ -80,7 +80,7 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
   });
 
-  it("shows loading in scoreboard navbar label while rank is loading", async () => {
+  it("shows a spinner in scoreboard navbar label while rank is loading", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({ name: "Player", score: 0, streak: 0 }),
@@ -100,7 +100,9 @@ describe("App", () => {
       const scoreboardLink = await screen.findByRole("link", {
         name: "Scoreboard",
       });
-      expect(scoreboardLink.textContent).toContain("Loading");
+      expect(
+        scoreboardLink.querySelector('[data-testid="scoreboard-rank-spinner"]'),
+      ).toBeTruthy();
 
       resolveListTopScores({
         scores: [],
@@ -110,6 +112,11 @@ describe("App", () => {
       });
 
       await waitFor(() => {
+        expect(
+          scoreboardLink.querySelector(
+            '[data-testid="scoreboard-rank-spinner"]',
+          ),
+        ).toBeNull();
         expect(scoreboardLink.textContent).toContain("#--");
       });
     } finally {
@@ -219,6 +226,211 @@ describe("App", () => {
     });
   });
 
+  it("defaults to normal difficulty from profile when missing in storage", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const difficultySelect = screen.getByLabelText(
+      "Difficulty",
+    ) as HTMLSelectElement;
+    expect(difficultySelect.value).toBe("normal");
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.difficulty).toBe("normal");
+    });
+  });
+
+  it("lets user change difficulty from profile", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const difficultySelect = screen.getByLabelText(
+      "Difficulty",
+    ) as HTMLSelectElement;
+    expect(difficultySelect.value).toBe("normal");
+
+    fireEvent.change(difficultySelect, { target: { value: "easy" } });
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.difficulty).toBe("easy");
+    });
+
+    fireEvent.change(difficultySelect, { target: { value: "hard" } });
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.difficulty).toBe("hard");
+    });
+  });
+
+  it("shows word list button only in easy difficulty", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+
+    renderApp();
+
+    expect(screen.queryByRole("button", { name: "Word list" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Difficulty"), {
+      target: { value: "easy" },
+    });
+    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+
+    expect(
+      await screen.findByRole("button", { name: "Word list" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Difficulty"), {
+      target: { value: "normal" },
+    });
+    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Word list" })).toBeNull();
+    });
+  });
+
+  it("asks confirmation when changing difficulty with an active game and cancels cleanly", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-active",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const difficultySelect = screen.getByLabelText(
+      "Difficulty",
+    ) as HTMLSelectElement;
+    expect(difficultySelect.value).toBe("normal");
+
+    fireEvent.change(difficultySelect, { target: { value: "hard" } });
+
+    expect(
+      await screen.findByRole("dialog", { name: "Change difficulty?" }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Change difficulty?" }),
+      ).toBeNull();
+    });
+
+    expect(difficultySelect.value).toBe("normal");
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.difficulty).toBe("normal");
+    });
+    expect(localStorage.getItem(env.wordleGameStorageKey)).toBeTruthy();
+  });
+
+  it("resets active game after confirming difficulty change", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-active",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const difficultySelect = screen.getByLabelText(
+      "Difficulty",
+    ) as HTMLSelectElement;
+    expect(difficultySelect.value).toBe("normal");
+
+    fireEvent.change(difficultySelect, { target: { value: "hard" } });
+
+    expect(
+      await screen.findByRole("dialog", { name: "Change difficulty?" }),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Yes, change and restart" }),
+    );
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.difficulty).toBe("hard");
+    });
+    expect(localStorage.getItem(env.wordleGameStorageKey)).toBeNull();
+  });
+
   it("does not type on the board while writing the initial player name", async () => {
     renderApp();
 
@@ -226,6 +438,24 @@ describe("App", () => {
     fireEvent.keyDown(nameInput, { key: "A" });
 
     expect(screen.queryByRole("gridcell", { name: "A, typing" })).toBeNull();
+  });
+
+  it("removes focus from refresh button when typing with physical keyboard", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    const refreshButton = screen.getByRole("button", { name: "Refresh" });
+    refreshButton.focus();
+    expect(document.activeElement).toBe(refreshButton);
+
+    fireEvent.keyDown(window, { key: "A" });
+
+    expect(document.activeElement).not.toBe(refreshButton);
+    expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
   });
 
   it("shows the scoreboard navbar button in red when current player is first", async () => {
@@ -400,6 +630,86 @@ describe("App", () => {
     });
   });
 
+  it("opens the help dialog from home and shows rules and scoring", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("button", { name: "Help" }));
+
+    expect(
+      await screen.findByRole("dialog", { name: "How to play" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Guess the hidden 5-letter word in up to 6 attempts."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Final score = base points x difficulty multiplier."),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "How to play" })).toBeNull();
+    });
+  });
+
+  it("applies easy difficulty score multiplier on win", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "easy",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.score).toBe(6);
+    });
+  });
+
+  it("applies hard difficulty score multiplier on win", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "hard",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.score).toBe(18);
+    });
+  });
+
   it("resets win streak when the last persisted game is a loss", async () => {
     localStorage.setItem(
       "player",
@@ -422,8 +732,6 @@ describe("App", () => {
     );
 
     renderApp();
-
-    expect(screen.getByLabelText("Streak: 0")).toBeTruthy();
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
@@ -452,7 +760,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(6);
+      expect(player.score).toBe(12);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
@@ -476,6 +784,11 @@ describe("App", () => {
 
     expect(
       await screen.findByRole("dialog", { name: "Refresh current game?" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "You have an active board. If you refresh now, your current progress and streak will be lost.",
+      ),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
@@ -505,7 +818,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(6);
+      expect(player.score).toBe(12);
     });
 
     fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));

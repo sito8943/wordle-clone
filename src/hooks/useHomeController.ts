@@ -3,6 +3,20 @@ import { getPointsForWin } from "../domain/wordle";
 import { usePlayer } from "../providers";
 import { useWordle } from "./useWordle";
 
+const getDifficultyScoreMultiplier = (
+  difficulty: "easy" | "normal" | "hard",
+): number => {
+  if (difficulty === "easy") {
+    return 1;
+  }
+
+  if (difficulty === "hard") {
+    return 3;
+  }
+
+  return 2;
+};
+
 export default function useHomeController() {
   const { player, increaseScore, increaseWinStreak, resetWinStreak } =
     usePlayer();
@@ -13,11 +27,13 @@ export default function useHomeController() {
   const hydrated = useRef(false);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
   const [showWordsDialog, setShowWordsDialog] = useState(false);
+  const [showHelpDialog, setShowHelpDialog] = useState(false);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
     [current.length, gameOver, guesses.length],
   );
+  const wordListEnabledForDifficulty = player.difficulty === "easy";
 
   useEffect(() => {
     if (!hydrated.current) {
@@ -41,7 +57,10 @@ export default function useHomeController() {
     }
 
     if (won) {
-      increaseScore(getPointsForWin(guesses.length));
+      const difficultyMultiplier = getDifficultyScoreMultiplier(
+        player.difficulty,
+      );
+      increaseScore(getPointsForWin(guesses.length) * difficultyMultiplier);
       increaseWinStreak();
     } else {
       resetWinStreak();
@@ -53,6 +72,7 @@ export default function useHomeController() {
     guesses.length,
     increaseScore,
     increaseWinStreak,
+    player.difficulty,
     resetWinStreak,
     won,
   ]);
@@ -80,28 +100,51 @@ export default function useHomeController() {
   }, []);
 
   const openWordsDialog = useCallback(() => {
+    if (!wordListEnabledForDifficulty) {
+      return;
+    }
+
     setShowWordsDialog(true);
-  }, []);
+  }, [wordListEnabledForDifficulty]);
 
   const closeWordsDialog = useCallback(() => {
     setShowWordsDialog(false);
+  }, []);
+
+  const openHelpDialog = useCallback(() => {
+    setShowHelpDialog(true);
+  }, []);
+
+  const closeHelpDialog = useCallback(() => {
+    setShowHelpDialog(false);
   }, []);
 
   useEffect(() => {
     if (showResumeDialog) {
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
+      setShowHelpDialog(false);
     }
   }, [showResumeDialog]);
+
+  useEffect(() => {
+    if (!wordListEnabledForDifficulty) {
+      setShowWordsDialog(false);
+    }
+  }, [wordListEnabledForDifficulty]);
 
   return {
     ...wordle,
     currentWinStreak: player.streak,
+    wordListEnabledForDifficulty,
     refreshBoard,
     showRefreshDialog,
     showWordsDialog,
+    showHelpDialog,
     openWordsDialog,
     closeWordsDialog,
+    openHelpDialog,
+    closeHelpDialog,
     confirmRefreshBoard,
     cancelRefreshBoard,
   };

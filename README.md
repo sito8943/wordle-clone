@@ -10,6 +10,7 @@ This project persists player scores with Convex and uses `localStorage` as an of
 - Current supported language: `en`.
 - The frontend fetches dictionary words from Convex only when local cache is empty, then stores them in `localStorage` (`wordle:dictionary:en`).
 - In Home, there is a `Words` button next to `Refresh` to open the list of possible words.
+- You can hide/show the words button with `VITE_WORD_LIST_BUTTON_ENABLED` (`true` by default).
 
 ### 1) Create and run Convex backend
 

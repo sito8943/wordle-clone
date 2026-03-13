@@ -35,3 +35,15 @@ export const persistGameState = (state: PersistedGameState): void => {
     // Ignore localStorage write errors.
   }
 };
+
+export const clearPersistedGameState = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(env.wordleGameStorageKey);
+  } catch {
+    // Ignore localStorage write errors.
+  }
+};

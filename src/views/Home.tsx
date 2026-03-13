@@ -1,14 +1,20 @@
 import type { JSX } from "react";
-import { faList, faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCircleQuestion,
+  faList,
+  faRotateRight,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   Board,
   Button,
   FireStreak,
+  HelpDialog,
   Keyboard,
   RefreshConfirmationDialog,
   SessionResumeDialog,
   WordListDialog,
 } from "../components";
+import { env } from "../config";
 import { useHomeController } from "../hooks";
 
 const Home = (): JSX.Element => {
@@ -26,19 +32,25 @@ const Home = (): JSX.Element => {
     showResumeDialog,
     showRefreshDialog,
     showWordsDialog,
+    showHelpDialog,
     continuePreviousBoard,
     startNewBoard,
     currentWinStreak,
     refreshBoard,
     openWordsDialog,
     closeWordsDialog,
+    openHelpDialog,
+    closeHelpDialog,
     confirmRefreshBoard,
     cancelRefreshBoard,
     dictionaryWords,
     dictionaryLoading,
     dictionaryError,
+    wordListEnabledForDifficulty,
   } = useHomeController();
   const animateTileEntry = startAnimationsEnabled && startAnimationSeed > 0;
+  const wordListButtonEnabled =
+    env.wordListButtonEnabled && wordListEnabledForDifficulty;
 
   return (
     <>
@@ -63,26 +75,42 @@ const Home = (): JSX.Element => {
           onConfirm={confirmRefreshBoard}
         />
       )}
-      {!showResumeDialog && showWordsDialog && (
+      {!showResumeDialog && wordListButtonEnabled && showWordsDialog && (
         <WordListDialog
           language="en"
           words={dictionaryWords}
           onClose={closeWordsDialog}
         />
       )}
+      {!showResumeDialog && showHelpDialog && (
+        <HelpDialog onClose={closeHelpDialog} />
+      )}
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-start gap-6 max-sm:gap-2 py-6 max-sm:py-2">
           <div className="w-full max-w-md flex items-center justify-end gap-2">
             <FireStreak streak={currentWinStreak} />
+            {wordListButtonEnabled && (
+              <Button
+                onClick={openWordsDialog}
+                aria-label="Word list"
+                icon={faList}
+                className="mobile-compact-button"
+                hideLabelOnMobile
+                disabled={dictionaryLoading || dictionaryWords.length === 0}
+              >
+                Words
+              </Button>
+            )}
             <Button
-              onClick={openWordsDialog}
-              aria-label="Word list"
-              icon={faList}
+              onClick={openHelpDialog}
+              aria-label="Help"
+              variant="ghost"
+              icon={faCircleQuestion}
+              iconClassName="text-xl"
               className="mobile-compact-button"
               hideLabelOnMobile
-              disabled={dictionaryLoading || dictionaryWords.length === 0}
             >
-              Words
+              Help
             </Button>
             <Button
               onClick={refreshBoard}

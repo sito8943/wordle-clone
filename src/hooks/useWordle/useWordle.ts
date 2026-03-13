@@ -42,6 +42,22 @@ const isEditableKeyboardTarget = (target: EventTarget | null): boolean => {
   );
 };
 
+const isDirectGameKeyboardKey = (key: string): boolean =>
+  key === "Backspace" || key === "Enter" || /^[a-zA-Z]$/.test(key);
+
+const blurRefreshButtonIfFocused = (): void => {
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  if (activeElement.getAttribute("aria-label") !== "Refresh") {
+    return;
+  }
+
+  activeElement.blur();
+};
+
 export default function useWordle() {
   const { wordDictionaryClient } = useApi();
   const cachedWords = useMemo(
@@ -263,6 +279,10 @@ export default function useWordle() {
 
       if (event.ctrlKey || event.metaKey || event.altKey) {
         return;
+      }
+
+      if (isDirectGameKeyboardKey(event.key)) {
+        blurRefreshButtonIfFocused();
       }
 
       handleKey(

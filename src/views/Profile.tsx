@@ -1,7 +1,16 @@
 import { Button } from "../components";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { EditableProfileCard, ProfileCard } from "../components/ProfileCard";
 import { useProfileController } from "../hooks";
 import type { ThemePreference } from "../hooks/useThemePreference";
+import type { PlayerDifficulty } from "../providers/types";
+
+const DIFFICULTY_CHANGE_CONFIRMATION_TITLE = "Change difficulty?";
+const DIFFICULTY_CHANGE_CONFIRMATION_DESCRIPTION =
+  "You have an active game. If you change the difficulty, your current progress will be lost.";
+const DIFFICULTY_CHANGE_CONFIRM_ACTION_LABEL = "Yes, change and restart";
+const DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL = "Cancel";
+const DIFFICULTY_CHANGE_DIALOG_TITLE_ID = "difficulty-change-dialog-title";
 
 const Profile = () => {
   const {
@@ -14,10 +23,30 @@ const Profile = () => {
     toggleStartAnimations,
     themePreference,
     changeThemePreference,
+    difficulty,
+    pendingDifficulty,
+    changeDifficulty,
+    isDifficultyChangeConfirmationOpen,
+    confirmDifficultyChange,
+    cancelDifficultyChange,
+    pendingDifficultyLabel,
   } = useProfileController();
 
   return (
     <main className="page-centered gap-10">
+      {isDifficultyChangeConfirmationOpen && (
+        <ConfirmationDialog
+          title={DIFFICULTY_CHANGE_CONFIRMATION_TITLE}
+          description={`${DIFFICULTY_CHANGE_CONFIRMATION_DESCRIPTION} New difficulty: ${pendingDifficultyLabel(
+            pendingDifficulty,
+          )}.`}
+          confirmActionLabel={DIFFICULTY_CHANGE_CONFIRM_ACTION_LABEL}
+          cancelActionLabel={DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL}
+          dialogTitleId={DIFFICULTY_CHANGE_DIALOG_TITLE_ID}
+          onConfirm={confirmDifficultyChange}
+          onCancel={cancelDifficultyChange}
+        />
+      )}
       <div className="flex gap-4 items-center flex-wrap justify-center">
         <h2 className="page-title">Profile</h2>
         <Button onClick={toggleEditing}>{editing ? "Cancel" : "Edit"}</Button>
@@ -34,7 +63,7 @@ const Profile = () => {
       )}
       <section id="settings" className="flex flex-col gap-4">
         <h2 className="page-title">Settings</h2>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-4 items-center flex-wrap">
           <Button
             onClick={toggleStartAnimations}
             variant="outline"
@@ -58,6 +87,31 @@ const Profile = () => {
             <option value="light">Light</option>
             <option value="dark">Dark</option>
           </select>
+        </div>
+        <div className="max-w-xl rounded-lg border border-neutral-300 bg-white/60 p-3 text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800/40 dark:text-neutral-100">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="difficulty-mode" className="text-sm font-semibold">
+              Difficulty
+            </label>
+            <select
+              id="difficulty-mode"
+              aria-label="Difficulty"
+              value={difficulty}
+              onChange={(event) =>
+                changeDifficulty(event.target.value as PlayerDifficulty)
+              }
+              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            >
+              <option value="easy">Easy</option>
+              <option value="normal">Normal</option>
+              <option value="hard">Hard</option>
+            </select>
+            <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
+              <li>Easy shows the word list.</li>
+              <li>Normal hides the word list.</li>
+              <li>Hard shows a timer.</li>
+            </ul>
+          </div>
         </div>
       </section>
     </main>

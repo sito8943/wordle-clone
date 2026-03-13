@@ -1,4 +1,4 @@
-import type { Player } from "./types";
+import type { Player, PlayerDifficulty } from "./types";
 import { DEFAULT_PLAYER } from "./constants";
 
 export const normalizePlayerName = (value: string): string => {
@@ -18,6 +18,17 @@ const normalizeCounter = (value: unknown): number => {
   return Math.max(0, Math.floor(value));
 };
 
+const isPlayerDifficulty = (value: unknown): value is PlayerDifficulty =>
+  value === "easy" || value === "normal" || value === "hard";
+
+const normalizePlayerDifficulty = (value: unknown): PlayerDifficulty => {
+  if (!isPlayerDifficulty(value)) {
+    return DEFAULT_PLAYER.difficulty;
+  }
+
+  return value;
+};
+
 export const normalizePlayer = (value: Partial<Player> | null): Player => {
   if (!value) {
     return DEFAULT_PLAYER;
@@ -30,5 +41,6 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
         : DEFAULT_PLAYER.name,
     score: normalizeCounter(value.score),
     streak: normalizeCounter(value.streak),
+    difficulty: normalizePlayerDifficulty(value.difficulty),
   };
 };

@@ -8,6 +8,7 @@ const Button = ({
   color = "primary",
   icon,
   hideLabelOnMobile = false,
+  iconClassName = "",
   className,
   children,
   ...props
@@ -18,7 +19,13 @@ const Button = ({
 
   return (
     <button type={type} className={classes} {...props}>
-      {icon ? <FontAwesomeIcon icon={icon} aria-hidden="true" /> : null}
+      {icon ? (
+        <FontAwesomeIcon
+          icon={icon}
+          aria-hidden="true"
+          className={iconClassName}
+        />
+      ) : null}
       {children ? (
         <span className={hideLabelOnMobile ? "max-sm:hidden" : undefined}>
           {children}

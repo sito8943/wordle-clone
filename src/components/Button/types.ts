@@ -10,5 +10,6 @@ export type ButtonProps = Omit<
   variant?: ButtonVariant;
   color?: ButtonColor;
   icon?: IconProp;
+  iconClassName?: string;
   hideLabelOnMobile?: boolean;
 };
