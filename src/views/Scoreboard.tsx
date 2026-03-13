@@ -91,13 +91,7 @@ const Scoreboard = (): JSX.Element => {
                 >
                   <td className="scoreboard-cell font-semibold text-xs">
                     <div className="flex flex-col">
-                      <span>#{entry.displayRank}</span>
-                      {entry.isPinnedCurrentClient &&
-                        entry.realRank !== null && (
-                          <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
-                            Real #{entry.realRank}
-                          </span>
-                        )}
+                      <span>#{entry.realRank ?? entry.displayRank}</span>
                     </div>
                   </td>
                   <td className="scoreboard-cell">{entry.nick}</td>
