@@ -6,6 +6,7 @@ import { Keyboard } from "./Keyboard";
 import { Navbar } from "./Navbar";
 import { RefreshConfirmationDialog } from "./RefreshConfirmationDialog";
 import { SessionResumeDialog } from "./SessionResumeDialog";
+import { WordListDialog } from "./WordListDialog";
 export {
   Board,
   Button,
@@ -16,4 +17,5 @@ export {
   Navbar,
   RefreshConfirmationDialog,
   SessionResumeDialog,
+  WordListDialog,
 };

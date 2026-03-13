@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import { faList, faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import {
   Board,
   Button,
@@ -7,6 +7,7 @@ import {
   Keyboard,
   RefreshConfirmationDialog,
   SessionResumeDialog,
+  WordListDialog,
 } from "../components";
 import { useHomeController } from "../hooks";
 
@@ -24,12 +25,18 @@ const Home = (): JSX.Element => {
     keyboardEntryAnimationEnabled,
     showResumeDialog,
     showRefreshDialog,
+    showWordsDialog,
     continuePreviousBoard,
     startNewBoard,
     currentWinStreak,
     refreshBoard,
+    openWordsDialog,
+    closeWordsDialog,
     confirmRefreshBoard,
     cancelRefreshBoard,
+    dictionaryWords,
+    dictionaryLoading,
+    dictionaryError,
   } = useHomeController();
   const animateTileEntry = startAnimationsEnabled && startAnimationSeed > 0;
 
@@ -56,10 +63,27 @@ const Home = (): JSX.Element => {
           onConfirm={confirmRefreshBoard}
         />
       )}
+      {!showResumeDialog && showWordsDialog && (
+        <WordListDialog
+          language="en"
+          words={dictionaryWords}
+          onClose={closeWordsDialog}
+        />
+      )}
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-start gap-6 max-sm:gap-2 py-6 max-sm:py-2">
           <div className="w-full max-w-md flex items-center justify-end gap-2">
             <FireStreak streak={currentWinStreak} />
+            <Button
+              onClick={openWordsDialog}
+              aria-label="Word list"
+              icon={faList}
+              className="mobile-compact-button"
+              hideLabelOnMobile
+              disabled={dictionaryLoading || dictionaryWords.length === 0}
+            >
+              Words
+            </Button>
             <Button
               onClick={refreshBoard}
               aria-label="Refresh"
@@ -70,6 +94,18 @@ const Home = (): JSX.Element => {
               Refresh
             </Button>
           </div>
+
+          {dictionaryLoading && (
+            <p className="rounded border border-sky-300 bg-sky-100 px-3 py-2 text-sm text-sky-900 dark:border-sky-700 dark:bg-sky-950/40 dark:text-sky-200">
+              Loading word list...
+            </p>
+          )}
+
+          {!dictionaryLoading && dictionaryError && (
+            <p className="rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-900 dark:border-red-700 dark:bg-red-950/40 dark:text-red-200">
+              {dictionaryError}
+            </p>
+          )}
 
           <Board
             key={`board-${startAnimationSeed}`}

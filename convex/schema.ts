@@ -14,4 +14,11 @@ export default defineSchema({
     .index("by_created_at", ["createdAt"])
     .index("by_score", ["score"])
     .index("by_client_record_id", ["clientRecordId"]),
+  words: defineTable({
+    language: v.string(),
+    value: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_language", ["language"])
+    .index("by_language_and_value", ["language", "value"]),
 });

@@ -14,7 +14,14 @@ import {
   shouldAskToResume,
   validateGuessInput,
 } from "../../domain/wordle";
-import { getRandomWord } from "../../utils/words";
+import { WORDS_DEFAULT_LANGUAGE } from "../../api/words";
+import { useApi } from "../../providers";
+import {
+  getRandomWord,
+  isValidWord,
+  loadWordDictionaryFromCache,
+  setWordDictionary,
+} from "../../utils/words";
 import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
   markStartAnimationAsSeen,
@@ -36,6 +43,11 @@ const isEditableKeyboardTarget = (target: EventTarget | null): boolean => {
 };
 
 export default function useWordle() {
+  const { wordDictionaryClient } = useApi();
+  const cachedWords = useMemo(
+    () => loadWordDictionaryFromCache(WORDS_DEFAULT_LANGUAGE),
+    [],
+  );
   const currentSessionId = useMemo(getOrCreateSessionId, []);
   const initialAnswer = useMemo(getRandomWord, []);
   const initialGameState = useMemo(
@@ -59,6 +71,11 @@ export default function useWordle() {
   const [keyboardEntryAnimationEnabled] = useState(() =>
     shouldAnimateKeyboardEntryOnSession(animationsDisabled),
   );
+  const [dictionaryWords, setDictionaryWords] = useState(cachedWords);
+  const [dictionaryLoading, setDictionaryLoading] = useState(
+    cachedWords.length === 0,
+  );
+  const [dictionaryError, setDictionaryError] = useState<string | null>(null);
 
   const [gameState, setGameState] = useState(initialGameState);
 
@@ -68,6 +85,77 @@ export default function useWordle() {
   );
 
   const { answer, guesses, current, gameOver } = gameState;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDictionary = async () => {
+      try {
+        const remoteWords = await wordDictionaryClient.loadWords(
+          WORDS_DEFAULT_LANGUAGE,
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        if (remoteWords.length > 0) {
+          const normalizedWords = setWordDictionary(
+            remoteWords,
+            WORDS_DEFAULT_LANGUAGE,
+          );
+          setDictionaryWords(normalizedWords);
+          setDictionaryError(null);
+        } else {
+          setDictionaryWords(cachedWords);
+          if (cachedWords.length === 0) {
+            setDictionaryError("Word list unavailable.");
+          }
+        }
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setDictionaryWords(cachedWords);
+        if (cachedWords.length === 0) {
+          setDictionaryError("Word list unavailable.");
+        }
+      } finally {
+        if (!cancelled) {
+          setDictionaryLoading(false);
+        }
+      }
+    };
+
+    void loadDictionary();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cachedWords, wordDictionaryClient]);
+
+  useEffect(() => {
+    if (dictionaryLoading) {
+      return;
+    }
+
+    if (dictionaryWords.length === 0) {
+      return;
+    }
+
+    setGameState((previous) => {
+      if (hasAttemptedRow(previous) || previous.current.length > 0) {
+        return previous;
+      }
+
+      if (isValidWord(previous.answer)) {
+        return previous;
+      }
+
+      return createInitialGameState(currentSessionId, getRandomWord());
+    });
+  }, [currentSessionId, dictionaryLoading, dictionaryWords]);
 
   useEffect(() => {
     persistGameState(gameState);
@@ -201,5 +289,8 @@ export default function useWordle() {
     showResumeDialog,
     continuePreviousBoard,
     startNewBoard,
+    dictionaryWords,
+    dictionaryLoading,
+    dictionaryError,
   };
 }

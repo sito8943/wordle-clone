@@ -1,4 +1,4 @@
-export const WORDS = [
+export const EN_WORDS = [
   "about",
   "above",
   "abuse",

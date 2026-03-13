@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { ScoreClient } from "../api/score";
+import type { WordDictionaryClient } from "../api/words";
 
 export type Player = {
   name: string;
@@ -17,6 +18,7 @@ export type PlayerContextType = {
 
 export type ApiContextType = {
   scoreClient: ScoreClient;
+  wordDictionaryClient: WordDictionaryClient;
   convexEnabled: boolean;
 };
 

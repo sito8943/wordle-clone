@@ -4,6 +4,13 @@
 
 This project persists player scores with Convex and uses `localStorage` as an offline fallback.
 
+## Convex words dictionary
+
+- The Wordle dictionary is now stored in Convex (`words` table), grouped by `language`.
+- Current supported language: `en`.
+- The frontend fetches dictionary words from Convex only when local cache is empty, then stores them in `localStorage` (`wordle:dictionary:en`).
+- In Home, there is a `Words` button next to `Refresh` to open the list of possible words.
+
 ### 1) Create and run Convex backend
 
 ```bash

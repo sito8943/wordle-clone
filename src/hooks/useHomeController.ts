@@ -12,6 +12,7 @@ export default function useHomeController() {
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
+  const [showWordsDialog, setShowWordsDialog] = useState(false);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -78,9 +79,18 @@ export default function useHomeController() {
     setShowRefreshDialog(false);
   }, []);
 
+  const openWordsDialog = useCallback(() => {
+    setShowWordsDialog(true);
+  }, []);
+
+  const closeWordsDialog = useCallback(() => {
+    setShowWordsDialog(false);
+  }, []);
+
   useEffect(() => {
     if (showResumeDialog) {
       setShowRefreshDialog(false);
+      setShowWordsDialog(false);
     }
   }, [showResumeDialog]);
 
@@ -89,6 +99,9 @@ export default function useHomeController() {
     currentWinStreak: player.streak,
     refreshBoard,
     showRefreshDialog,
+    showWordsDialog,
+    openWordsDialog,
+    closeWordsDialog,
     confirmRefreshBoard,
     cancelRefreshBoard,
   };
