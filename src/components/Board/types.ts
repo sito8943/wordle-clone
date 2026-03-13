@@ -8,6 +8,9 @@ export type BoardPropsType = {
   animateTileEntry?: boolean;
   isLoss?: boolean;
   shakePulse?: number;
+  activeRowHintStatuses?: Partial<Record<number, HintTileStatus>>;
+  hintRevealPulse?: number;
+  hintRevealTileIndex?: number | null;
 };
 
 export type RowPropsType = {
@@ -19,9 +22,12 @@ export type RowPropsType = {
   isActiveRow?: boolean;
   animateTileEntry?: boolean;
   isLoss?: boolean;
+  hintRevealPulse?: number;
+  hintRevealTileIndex?: number | null;
 };
 
 export type Status = BoardCellStatus;
+export type HintTileStatus = Extract<Status, "correct" | "present">;
 
 export type TilePropsType = {
   letter?: string;
@@ -30,4 +36,6 @@ export type TilePropsType = {
   animateEntry?: boolean;
   isActive?: boolean;
   isLoss?: boolean;
+  isHintReveal?: boolean;
+  hintRevealPulse?: number;
 };

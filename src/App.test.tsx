@@ -329,6 +329,108 @@ describe("App", () => {
     });
   });
 
+  it("shows hint button in easy and normal, but hides it in hard", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+
+    renderApp();
+
+    expect(screen.getByRole("button", { name: "Hint" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Difficulty"), {
+      target: { value: "hard" },
+    });
+    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Hint" })).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Difficulty"), {
+      target: { value: "easy" },
+    });
+    fireEvent.click(screen.getByRole("link", { name: "Home" }));
+
+    expect(await screen.findByRole("button", { name: "Hint" })).toBeTruthy();
+  });
+
+  it("uses two green hints in easy mode and then disables the hint button", () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "easy",
+      }),
+    );
+
+    renderApp();
+
+    const hintButton = screen.getByRole("button", { name: "Hint" });
+    expect((hintButton as HTMLButtonElement).disabled).toBe(false);
+
+    fireEvent.click(hintButton);
+    expect(screen.getByRole("gridcell", { name: "A, correct" })).toBeTruthy();
+
+    fireEvent.click(hintButton);
+    expect(screen.getByRole("gridcell", { name: "P, correct" })).toBeTruthy();
+    expect((hintButton as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("uses one yellow hint in normal mode and resets hints on new board", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+
+    renderApp();
+
+    const hintButton = screen.getByRole("button", { name: "Hint" });
+    fireEvent.click(hintButton);
+
+    expect(screen.getByRole("gridcell", { name: "P, present" })).toBeTruthy();
+    expect((hintButton as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    fireEvent.click(screen.getByRole("button", { name: "Yes, refresh game" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Refresh current game?" }),
+      ).toBeNull();
+    });
+
+    await waitFor(() => {
+      expect(
+        (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
+          .disabled,
+      ).toBe(false);
+    });
+  });
+
   it("shows a hard mode timer and decreases it on each tick", async () => {
     vi.useFakeTimers();
     localStorage.setItem(

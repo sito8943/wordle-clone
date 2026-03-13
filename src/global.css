@@ -128,6 +128,26 @@ h1,
   }
 }
 
+@keyframes tile-hint-reveal-blur {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.92);
+  }
+
+  65% {
+    opacity: 1;
+    filter: blur(1px);
+    transform: scale(1.03);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
 @keyframes tile-active-border-glow {
   0%,
   100% {
@@ -318,6 +338,10 @@ h1,
   animation: tile-enter-with-delay 260ms ease-out both;
 }
 
+.tile-hint-reveal-animation {
+  animation: tile-hint-reveal-blur 320ms ease-out both;
+}
+
 .tile-active-border-animation {
   animation: tile-active-border-glow 3.25s ease-in-out infinite;
   border-color: #2563eb;
@@ -416,6 +440,7 @@ h1,
   .board-entry-animation,
   .keyboard-entry-animation,
   .tile-entry-animation,
+  .tile-hint-reveal-animation,
   .board-shake-pulse-animation,
   .hard-mode-clock-boost-animation {
     animation: none;

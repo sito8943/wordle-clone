@@ -13,6 +13,7 @@ import {
   removeLetter,
   shouldAskToResume,
   validateGuessInput,
+  WORD_LENGTH,
 } from "../../domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "../../api/words";
 import { useApi } from "../../providers";
@@ -23,10 +24,15 @@ import {
   setWordDictionary,
 } from "../../utils/words";
 import { useAnimationsPreference } from "../useAnimationsPreference";
-import { MESSAGE_VISIBILITY_DURATION_MS } from "./constants";
-import type { UseWordleOptions } from "./types";
+import {
+  MESSAGE_VISIBILITY_DURATION_MS,
+  NO_PRESENT_HINT_AVAILABLE_MESSAGE,
+  ROW_ALREADY_FULL_MESSAGE,
+} from "./constants";
+import type { HintTileStatus, UseWordleOptions } from "./types";
 import {
   blurRefreshButtonIfFocused,
+  getPresentHintLetter,
   isDirectGameKeyboardKey,
   isEditableKeyboardTarget,
   markStartAnimationAsSeen,
@@ -76,6 +82,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const [message, setMessage] = useState("");
   const [showResumeDialog, setShowResumeDialog] = useState(() =>
     shouldAskToResume(gameState, currentSessionId),
+  );
+  const [activeRowHintStatuses, setActiveRowHintStatuses] = useState<
+    Record<number, HintTileStatus>
+  >({});
+  const [hintRevealPulse, setHintRevealPulse] = useState(0);
+  const [hintRevealTileIndex, setHintRevealTileIndex] = useState<number | null>(
+    null,
   );
 
   const { sessionId, answer, guesses, current, gameOver } = gameState;
@@ -168,6 +181,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
     setTimeout(() => setMessage(""), MESSAGE_VISIBILITY_DURATION_MS);
   }, []);
 
+  const resetActiveHints = useCallback(() => {
+    setActiveRowHintStatuses({});
+    setHintRevealPulse(0);
+    setHintRevealTileIndex(null);
+  }, []);
+
   const checkInput = useCallback(
     (input: string) => {
       const validation = validateGuessInput(input, answer, {
@@ -179,18 +198,73 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return;
       }
 
+      resetActiveHints();
       setGameState((prev) => applyGuess(prev, validation.guess));
     },
-    [allowUnknownWords, answer, showMessage],
+    [allowUnknownWords, answer, resetActiveHints, showMessage],
   );
 
   const removeCurrentLetter = useCallback(() => {
+    if (current.length === 0) {
+      return;
+    }
+
+    const removedIndex = current.length - 1;
+
     setGameState((prev) => removeLetter(prev));
-  }, []);
+    setActiveRowHintStatuses((previous) => {
+      if (!(removedIndex in previous)) {
+        return previous;
+      }
+
+      const next = { ...previous };
+      delete next[removedIndex];
+      return next;
+    });
+
+    if (hintRevealTileIndex === removedIndex) {
+      setHintRevealTileIndex(null);
+    }
+  }, [current.length, hintRevealTileIndex]);
 
   const addCurrentLetter = useCallback((letter: string) => {
     setGameState((prev) => addLetter(prev, letter));
   }, []);
+
+  const revealHint = useCallback(
+    (hintStatus: HintTileStatus): boolean => {
+      if (gameOver || showResumeDialog) {
+        return false;
+      }
+
+      if (current.length >= WORD_LENGTH) {
+        showMessage(ROW_ALREADY_FULL_MESSAGE);
+        return false;
+      }
+
+      const nextIndex = current.length;
+      const letter =
+        hintStatus === "correct"
+          ? answer[nextIndex]
+          : getPresentHintLetter(answer, nextIndex);
+
+      if (!letter) {
+        showMessage(NO_PRESENT_HINT_AVAILABLE_MESSAGE);
+        return false;
+      }
+
+      setGameState((previous) => addLetter(previous, letter));
+      setActiveRowHintStatuses((previous) => ({
+        ...previous,
+        [nextIndex]: hintStatus,
+      }));
+      setHintRevealTileIndex(nextIndex);
+      setHintRevealPulse((previous) => previous + 1);
+
+      return true;
+    },
+    [answer, current.length, gameOver, showMessage, showResumeDialog],
+  );
 
   const handleKey = useCallback(
     (key: string) => {
@@ -225,7 +299,8 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const continuePreviousBoard = useCallback(() => {
     setGameState((prev) => ({ ...prev, sessionId: currentSessionId }));
     setShowResumeDialog(false);
-  }, [currentSessionId]);
+    resetActiveHints();
+  }, [currentSessionId, resetActiveHints]);
 
   const triggerStartAnimation = useCallback(() => {
     if (animationsDisabled) {
@@ -241,8 +316,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
     setBoardVersion((previous) => previous + 1);
     setShowResumeDialog(false);
     setMessage("");
+    resetActiveHints();
     triggerStartAnimation();
-  }, [currentSessionId, triggerStartAnimation]);
+  }, [currentSessionId, resetActiveHints, triggerStartAnimation]);
 
   const startNewBoard = useCallback(() => {
     resetBoard();
@@ -310,5 +386,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
     dictionaryWords,
     dictionaryLoading,
     dictionaryError,
+    revealHint,
+    activeRowHintStatuses,
+    hintRevealPulse,
+    hintRevealTileIndex,
   };
 }

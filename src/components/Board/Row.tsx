@@ -10,6 +10,8 @@ export function Row({
   isActiveRow = false,
   animateTileEntry = false,
   isLoss = false,
+  hintRevealPulse = 0,
+  hintRevealTileIndex = null,
 }: RowPropsType) {
   const rowScaleClass = isActiveRow
     ? "scale-[1.05]"
@@ -39,6 +41,8 @@ export function Row({
           animateEntry={animateTileEntry}
           isActive={activeTileIndex === index}
           isLoss={isLoss}
+          isHintReveal={hintRevealTileIndex === index}
+          hintRevealPulse={hintRevealPulse}
         />
       ))}
     </div>

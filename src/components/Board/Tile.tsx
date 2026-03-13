@@ -8,6 +8,8 @@ export function Tile({
   animateEntry = false,
   isActive = false,
   isLoss = false,
+  isHintReveal = false,
+  hintRevealPulse = 0,
 }: TilePropsType) {
   const tileStyle =
     isLoss &&
@@ -18,6 +20,8 @@ export function Tile({
   const tileEntryStyle = animateEntry
     ? { animationDelay: `${animationOrder * TILE_ENTRY_STAGGER_MS}ms` }
     : undefined;
+  const letterRevealClass =
+    isHintReveal && hintRevealPulse > 0 ? "tile-hint-reveal-animation" : "";
   return (
     <div
       role="gridcell"
@@ -31,7 +35,7 @@ export function Tile({
           className="tile-active-border-animation pointer-events-none absolute inset-0 rounded-lg border-2 border-primary"
         />
       ) : null}
-      <p className="times-new-roman">{letter}</p>
+      <p className={`times-new-roman ${letterRevealClass}`}>{letter}</p>
     </div>
   );
 }

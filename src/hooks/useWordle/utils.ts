@@ -95,3 +95,26 @@ export const blurRefreshButtonIfFocused = (): void => {
 
   activeElement.blur();
 };
+
+export const getPresentHintLetter = (
+  answer: string,
+  currentIndex: number,
+): string | null => {
+  if (currentIndex < 0 || currentIndex >= answer.length) {
+    return null;
+  }
+
+  const currentAnswerLetter = answer[currentIndex];
+  const seen = new Set<string>();
+
+  for (const letter of answer) {
+    if (letter === currentAnswerLetter || seen.has(letter)) {
+      continue;
+    }
+
+    seen.add(letter);
+    return letter;
+  }
+
+  return null;
+};

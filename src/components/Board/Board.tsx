@@ -12,6 +12,9 @@ export function Board({
   animateTileEntry = false,
   isLoss = false,
   shakePulse = 0,
+  activeRowHintStatuses = {},
+  hintRevealPulse = 0,
+  hintRevealTileIndex = null,
 }: BoardPropsType) {
   const [isShaking, setIsShaking] = useState(false);
 
@@ -33,7 +36,7 @@ export function Board({
 
   const rows = buildBoardRows(guesses, current, gameOver);
   const activeRowIndex = !gameOver ? guesses.length : -1;
-  const boardClassName = `space-y-1.5 sm:space-y-2 ${
+  const boardClassName = `space-y-1.5 sm:space-y-2 mt-4 ${
     animateEntry ? "board-entry-animation" : ""
   }`;
   const boardWrapperClassName = `mx-auto w-fit ${
@@ -44,6 +47,13 @@ export function Board({
     <div className={boardWrapperClassName}>
       <div role="grid" aria-label="Wordle board" className={boardClassName}>
         {rows.map((row, index) => {
+          const rowStatuses =
+            index === activeRowIndex
+              ? row.statuses.map(
+                  (status, cellIndex) =>
+                    activeRowHintStatuses[cellIndex] ?? status,
+                )
+              : row.statuses;
           const activeTileIndex =
             index === activeRowIndex && current.length < row.letters.length
               ? current.length
@@ -53,13 +63,17 @@ export function Board({
             <Row
               key={index}
               letters={row.letters}
-              statuses={row.statuses}
+              statuses={rowStatuses}
               startTileIndex={index * row.letters.length}
               activeTileIndex={activeTileIndex}
               isPastRow={index < guesses.length}
               isActiveRow={index === activeRowIndex}
               animateTileEntry={animateTileEntry}
               isLoss={isLoss}
+              hintRevealPulse={hintRevealPulse}
+              hintRevealTileIndex={
+                index === activeRowIndex ? hintRevealTileIndex : null
+              }
             />
           );
         })}

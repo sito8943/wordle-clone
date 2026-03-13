@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleQuestion,
   faClock,
+  faLightbulb,
   faList,
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
@@ -56,6 +57,13 @@ const Home = (): JSX.Element => {
     hardModeClockBoostScale,
     hardModeFinalStretchProgressPercent,
     boardShakePulse,
+    useHint,
+    hintsRemaining,
+    hintsEnabledForDifficulty,
+    hintButtonDisabled,
+    activeRowHintStatuses,
+    hintRevealPulse,
+    hintRevealTileIndex,
   } = useHomeController();
   const animateTileEntry = startAnimationsEnabled && startAnimationSeed > 0;
   const wordListButtonEnabled =
@@ -96,18 +104,34 @@ const Home = (): JSX.Element => {
       )}
       <main className="flex flex-1 flex-col">
         <section className="flex flex-1 flex-col items-center justify-start gap-6 max-sm:gap-2 py-6 max-sm:py-2">
-          <div className="w-full max-w-md flex items-center justify-end gap-2">
+          <div className="w-full flex items-center justify-end gap-2">
             <FireStreak streak={currentWinStreak} />
             {wordListButtonEnabled && (
               <Button
                 onClick={openWordsDialog}
                 aria-label="Word list"
+                variant="ghost"
                 icon={faList}
+                iconClassName="text-xl"
                 className="mobile-compact-button"
                 hideLabelOnMobile
                 disabled={dictionaryLoading || dictionaryWords.length === 0}
               >
                 Words
+              </Button>
+            )}
+            {hintsEnabledForDifficulty && (
+              <Button
+                onClick={useHint}
+                aria-label="Hint"
+                variant="ghost"
+                color={!hintButtonDisabled ? "primary" : "secondary"}
+                icon={faLightbulb}
+                className="mobile-compact-button"
+                hideLabelOnMobile
+                disabled={hintButtonDisabled}
+              >
+                Hint ({hintsRemaining})
               </Button>
             )}
             <Button
@@ -193,6 +217,9 @@ const Home = (): JSX.Element => {
             isLoss={gameOver && !won}
             animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
             shakePulse={boardShakePulse}
+            activeRowHintStatuses={activeRowHintStatuses}
+            hintRevealPulse={hintRevealPulse}
+            hintRevealTileIndex={hintRevealTileIndex}
           />
 
           {gameOver && (
