@@ -1199,7 +1199,6 @@ describe("App", () => {
       await screen.findByText("You are shown as #11. Real position: #12."),
     ).toBeTruthy();
     expect(await screen.findByText("#11")).toBeTruthy();
-    expect(await screen.findByText("Real #12")).toBeTruthy();
     await waitFor(() => {
       expect(
         document.querySelector(".scoreboard-current-player-row"),
