@@ -1,6 +1,5 @@
-import { KEYBOARD_ROWS, getKeyStatuses } from "../../domain/wordle";
-import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constants";
 import type { KeyboardProps } from "./types";
+import useKeyboardController from "./useKeyboardController";
 
 export function Keyboard({
   guesses,
@@ -9,8 +8,7 @@ export function Keyboard({
   onEntryAnimationEnd,
   isLoss = false,
 }: KeyboardProps) {
-  const keyStatuses = getKeyStatuses(guesses);
-  const keyStyleMap = isLoss ? KEY_STYLE_ON_LOSS : KEY_STYLE;
+  const { rows, keyStyleMap } = useKeyboardController({ guesses, isLoss });
 
   return (
     <>
@@ -23,25 +21,13 @@ export function Keyboard({
           animateEntry ? "keyboard-entry-animation" : ""
         }`}
       >
-        {KEYBOARD_ROWS.map((row, ri) => (
+        {rows.map((row, ri) => (
           <div
             key={ri}
             className="mb-1.5 flex justify-center gap-1.5 last:mb-0 sm:mb-2 sm:gap-2"
           >
-            {row.map((key) => {
-              const status = keyStatuses[key];
-              const keyStyle = status
-                ? keyStyleMap[status]
-                : keyStyleMap.default;
-              const isWide = key === "ENTER" || key === "BACKSPACE";
-              const displayKey = key === "BACKSPACE" ? "⌫" : key;
-              const ariaLabel =
-                key === "BACKSPACE"
-                  ? "Delete letter"
-                  : key === "ENTER"
-                    ? "Submit guess"
-                    : `Letter ${key}`;
-
+            {row.map(({ key, status, isWide, displayKey, ariaLabel }) => {
+              const keyStyle = keyStyleMap[status];
               return (
                 <button
                   key={key}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHouse,
@@ -6,54 +6,13 @@ import {
   faTrophy,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
-import { useLocation } from "react-router";
-import { env } from "../../config";
-import { useApi, usePlayer } from "../../providers";
+import { useNavbarController } from "../../hooks";
 import NavLink from "./NavLink";
 import { getScoreboardToneClassName } from "./utils";
-import { TOP_TEN_LIMIT } from "./constants";
 
 const Navbar = () => {
-  const { scoreClient } = useApi();
-  const { player } = usePlayer();
-  const location = useLocation();
-
-  const [currentClientRank, setCurrentClientRank] = useState<number | null>(
-    null,
-  );
-  const [isCurrentClientRankLoading, setIsCurrentClientRankLoading] =
-    useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadCurrentClientRank = async () => {
-      setIsCurrentClientRankLoading(true);
-
-      try {
-        const result = await scoreClient.listTopScores(
-          Math.max(env.scoreLimit, TOP_TEN_LIMIT),
-        );
-        if (!cancelled) {
-          setCurrentClientRank(result.currentClientRank);
-        }
-      } catch {
-        if (!cancelled) {
-          setCurrentClientRank(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsCurrentClientRankLoading(false);
-        }
-      }
-    };
-
-    void loadCurrentClientRank();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [location.pathname, player.score, scoreClient]);
+  const { currentClientRank, isCurrentClientRankLoading, rankTone } =
+    useNavbarController();
 
   const positionLabel = useMemo(
     () =>
@@ -71,8 +30,6 @@ const Navbar = () => {
       ),
     [isCurrentClientRankLoading, currentClientRank],
   );
-  const rankTone = isCurrentClientRankLoading ? null : currentClientRank;
-
   const links = useMemo(
     () => [
       { to: "/", label: "Home", icon: faHouse },

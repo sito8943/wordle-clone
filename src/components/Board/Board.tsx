@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { buildBoardRows } from "../../domain/wordle";
-import { BOARD_SHAKE_DURATION_MS } from "./constants";
 import { Row } from "./Row";
 import type { BoardPropsType } from "./types";
+import useBoardController from "./useBoardController";
 
 export function Board({
   guesses,
@@ -16,26 +14,14 @@ export function Board({
   hintRevealPulse = 0,
   hintRevealTileIndex = null,
 }: BoardPropsType) {
-  const [isShaking, setIsShaking] = useState(false);
-
-  useEffect(() => {
-    if (shakePulse <= 0) {
-      return;
-    }
-
-    setIsShaking(true);
-
-    const timeoutId = window.setTimeout(() => {
-      setIsShaking(false);
-    }, BOARD_SHAKE_DURATION_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [shakePulse]);
-
-  const rows = buildBoardRows(guesses, current, gameOver);
-  const activeRowIndex = !gameOver ? guesses.length : -1;
+  const { rows, isShaking } = useBoardController({
+    guesses,
+    current,
+    gameOver,
+    shakePulse,
+    activeRowHintStatuses,
+    hintRevealTileIndex,
+  });
   const boardClassName = `space-y-1.5 sm:space-y-2 mt-4 ${
     animateEntry ? "board-entry-animation" : ""
   }`;
@@ -46,34 +32,20 @@ export function Board({
   return (
     <div className={boardWrapperClassName}>
       <div role="grid" aria-label="Wordle board" className={boardClassName}>
-        {rows.map((row, index) => {
-          const rowStatuses =
-            index === activeRowIndex
-              ? row.statuses.map(
-                  (status, cellIndex) =>
-                    activeRowHintStatuses[cellIndex] ?? status,
-                )
-              : row.statuses;
-          const activeTileIndex =
-            index === activeRowIndex && current.length < row.letters.length
-              ? current.length
-              : null;
-
+        {rows.map((row) => {
           return (
             <Row
-              key={index}
+              key={row.key}
               letters={row.letters}
-              statuses={rowStatuses}
-              startTileIndex={index * row.letters.length}
-              activeTileIndex={activeTileIndex}
-              isPastRow={index < guesses.length}
-              isActiveRow={index === activeRowIndex}
+              statuses={row.statuses}
+              startTileIndex={row.startTileIndex}
+              activeTileIndex={row.activeTileIndex}
+              isPastRow={row.isPastRow}
+              isActiveRow={row.isActiveRow}
               animateTileEntry={animateTileEntry}
               isLoss={isLoss}
               hintRevealPulse={hintRevealPulse}
-              hintRevealTileIndex={
-                index === activeRowIndex ? hintRevealTileIndex : null
-              }
+              hintRevealTileIndex={row.hintRevealTileIndex}
             />
           );
         })}

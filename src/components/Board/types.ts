@@ -26,6 +26,17 @@ export type RowPropsType = {
   hintRevealTileIndex?: number | null;
 };
 
+export type BoardRowViewModel = {
+  key: number;
+  letters: string[];
+  statuses: BoardCellStatus[];
+  startTileIndex: number;
+  activeTileIndex: number | null;
+  isPastRow: boolean;
+  isActiveRow: boolean;
+  hintRevealTileIndex: number | null;
+};
+
 export type Status = BoardCellStatus;
 export type HintTileStatus = Extract<Status, "correct" | "present">;
 
