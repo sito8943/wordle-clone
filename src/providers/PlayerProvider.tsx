@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocalStorage } from "../hooks/";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
-import type { Player, PlayerDifficulty, ProviderProps } from "./types";
+import type {
+  Player,
+  PlayerDifficulty,
+  PlayerKeyboardPreference,
+  ProviderProps,
+} from "./types";
 import { useApi } from "./useApi";
 import { normalizePlayer, normalizePlayerName } from "./utils";
 
@@ -29,7 +34,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         previous.name === normalized.name &&
         previous.score === normalized.score &&
         previous.streak === normalized.streak &&
-        previous.difficulty === normalized.difficulty
+        previous.difficulty === normalized.difficulty &&
+        previous.keyboardPreference === normalized.keyboardPreference
       ) {
         return previous;
       }
@@ -105,7 +111,45 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [setStoredPlayer],
   );
 
+  const updatePlayerKeyboardPreference = useCallback(
+    (preference: PlayerKeyboardPreference) => {
+      setStoredPlayer((prev) => {
+        const normalized = normalizePlayer(prev);
+        if (normalized.keyboardPreference === preference) {
+          if (prev.keyboardPreference === preference) {
+            return prev;
+          }
+
+          return normalized;
+        }
+
+        return { ...normalized, keyboardPreference: preference };
+      });
+    },
+    [setStoredPlayer],
+  );
+
   const { name, score, streak } = player;
+  const contextValue = useMemo(
+    () => ({
+      player,
+      updatePlayer,
+      updatePlayerDifficulty,
+      updatePlayerKeyboardPreference,
+      increaseScore,
+      increaseWinStreak,
+      resetWinStreak,
+    }),
+    [
+      player,
+      updatePlayer,
+      updatePlayerDifficulty,
+      updatePlayerKeyboardPreference,
+      increaseScore,
+      increaseWinStreak,
+      resetWinStreak,
+    ],
+  );
 
   useEffect(() => {
     if (!didMountRef.current) {
@@ -127,16 +171,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   }, [name, score, streak, scoreClient]);
 
   return (
-    <PlayerContext.Provider
-      value={{
-        player,
-        updatePlayer,
-        updatePlayerDifficulty,
-        increaseScore,
-        increaseWinStreak,
-        resetWinStreak,
-      }}
-    >
+    <PlayerContext.Provider value={contextValue}>
       {children}
     </PlayerContext.Provider>
   );

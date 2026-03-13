@@ -3,7 +3,10 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { EditableProfileCard, ProfileCard } from "../components/ProfileCard";
 import { useProfileController } from "../hooks";
 import type { ThemePreference } from "../hooks/useThemePreference";
-import type { PlayerDifficulty } from "../providers/types";
+import type {
+  PlayerDifficulty,
+  PlayerKeyboardPreference,
+} from "../providers/types";
 import {
   DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL,
   DIFFICULTY_CHANGE_CONFIRM_ACTION_LABEL,
@@ -23,6 +26,8 @@ const Profile = () => {
     toggleStartAnimations,
     themePreference,
     changeThemePreference,
+    keyboardPreference,
+    changeKeyboardPreference,
     difficulty,
     pendingDifficulty,
     changeDifficulty,
@@ -90,6 +95,28 @@ const Profile = () => {
         </div>
         <div className="max-w-xl rounded-lg border border-neutral-300 bg-white/60 p-3 text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800/40 dark:text-neutral-100">
           <div className="flex flex-col gap-2">
+            <label htmlFor="keyboard-mode" className="text-sm font-semibold">
+              Keyboard
+            </label>
+            <select
+              id="keyboard-mode"
+              aria-label="Keyboard mode"
+              value={keyboardPreference}
+              onChange={(event) =>
+                changeKeyboardPreference(
+                  event.target.value as PlayerKeyboardPreference,
+                )
+              }
+              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            >
+              <option value="onscreen">On-screen keyboard</option>
+              <option value="native">Device keyboard (mobile)</option>
+            </select>
+            <p className="text-xs text-neutral-600 dark:text-neutral-300">
+              Device keyboard is shown on mobile. Desktop keeps the on-screen
+              keyboard.
+            </p>
+
             <label htmlFor="difficulty-mode" className="text-sm font-semibold">
               Difficulty
             </label>

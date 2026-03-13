@@ -5,6 +5,9 @@ import App from "./App.tsx";
 import { ErrorBoundary, ErrorFallback } from "./components";
 import { ApiProvider, PlayerProvider } from "./providers/";
 
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto-slab/500.css';
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary

@@ -1,4 +1,8 @@
-import type { Player, PlayerDifficulty } from "./types";
+import type {
+  Player,
+  PlayerDifficulty,
+  PlayerKeyboardPreference,
+} from "./types";
 import { DEFAULT_PLAYER } from "./constants";
 
 export const normalizePlayerName = (value: string): string => {
@@ -32,6 +36,21 @@ const normalizePlayerDifficulty = (value: unknown): PlayerDifficulty => {
   return value;
 };
 
+const isPlayerKeyboardPreference = (
+  value: unknown,
+): value is PlayerKeyboardPreference =>
+  value === "onscreen" || value === "native";
+
+const normalizePlayerKeyboardPreference = (
+  value: unknown,
+): PlayerKeyboardPreference => {
+  if (!isPlayerKeyboardPreference(value)) {
+    return DEFAULT_PLAYER.keyboardPreference;
+  }
+
+  return value;
+};
+
 export const normalizePlayer = (value: Partial<Player> | null): Player => {
   if (!value) {
     return DEFAULT_PLAYER;
@@ -45,5 +64,8 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     score: normalizeCounter(value.score),
     streak: normalizeCounter(value.streak),
     difficulty: normalizePlayerDifficulty(value.difficulty),
+    keyboardPreference: normalizePlayerKeyboardPreference(
+      value.keyboardPreference,
+    ),
   };
 };

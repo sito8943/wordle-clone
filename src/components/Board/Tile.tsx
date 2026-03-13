@@ -35,7 +35,7 @@ export function Tile({
           className="tile-active-border-animation pointer-events-none absolute inset-0 rounded-lg border-2 border-primary"
         />
       ) : null}
-      <p className={`times-new-roman ${letterRevealClass}`}>{letter}</p>
+      <p className={`slab ${letterRevealClass}`}>{letter}</p>
     </div>
   );
 }

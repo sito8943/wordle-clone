@@ -292,6 +292,32 @@ describe("App", () => {
     });
   });
 
+  it("lets user change keyboard mode from profile", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const keyboardModeSelect = screen.getByLabelText(
+      "Keyboard mode",
+    ) as HTMLSelectElement;
+    expect(keyboardModeSelect.value).toBe("onscreen");
+
+    fireEvent.change(keyboardModeSelect, { target: { value: "native" } });
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.keyboardPreference).toBe("native");
+    });
+  });
+
   it("shows word list button only in easy difficulty", async () => {
     localStorage.setItem(
       "player",

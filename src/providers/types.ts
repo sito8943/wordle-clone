@@ -7,14 +7,19 @@ export type Player = {
   score: number;
   streak: number;
   difficulty: PlayerDifficulty;
+  keyboardPreference: PlayerKeyboardPreference;
 };
 
 export type PlayerDifficulty = "easy" | "normal" | "hard" | "insane";
+export type PlayerKeyboardPreference = "onscreen" | "native";
 
 export type PlayerContextType = {
   player: Player;
   updatePlayer: (name: string) => void;
   updatePlayerDifficulty: (difficulty: PlayerDifficulty) => void;
+  updatePlayerKeyboardPreference: (
+    preference: PlayerKeyboardPreference,
+  ) => void;
   increaseScore: (points: number) => void;
   increaseWinStreak: () => void;
   resetWinStreak: () => void;

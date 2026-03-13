@@ -10,7 +10,10 @@ import {
 } from "../useThemePreference";
 import { useApi, usePlayer } from "../../providers";
 import { normalizePlayerName } from "../../providers/utils";
-import type { PlayerDifficulty } from "../../providers/types";
+import type {
+  PlayerDifficulty,
+  PlayerKeyboardPreference,
+} from "../../providers/types";
 import {
   PROFILE_CONFIGURATION_SAVED_MESSAGE,
   PROFILE_NAME_NOT_AVAILABLE_MESSAGE,
@@ -20,7 +23,12 @@ import { getPlayerDifficultyLabel, hasActivePersistedGame } from "./utils";
 
 export default function useProfileController() {
   const { scoreClient } = useApi();
-  const { player, updatePlayer, updatePlayerDifficulty } = usePlayer();
+  const {
+    player,
+    updatePlayer,
+    updatePlayerDifficulty,
+    updatePlayerKeyboardPreference,
+  } = usePlayer();
   const { startAnimationsEnabled, toggleAnimationsDisabled } =
     useAnimationsPreference();
   const { themePreference, setThemePreference } = useThemePreference();
@@ -65,6 +73,17 @@ export default function useProfileController() {
       setThemePreference(nextPreference);
     },
     [setThemePreference],
+  );
+
+  const changeKeyboardPreference = useCallback(
+    (nextPreference: PlayerKeyboardPreference) => {
+      if (nextPreference === player.keyboardPreference) {
+        return;
+      }
+
+      updatePlayerKeyboardPreference(nextPreference);
+    },
+    [player.keyboardPreference, updatePlayerKeyboardPreference],
   );
 
   const changeDifficulty = useCallback(
@@ -120,6 +139,8 @@ export default function useProfileController() {
     toggleStartAnimations,
     themePreference,
     changeThemePreference,
+    keyboardPreference: player.keyboardPreference,
+    changeKeyboardPreference,
     changeDifficulty,
     isDifficultyChangeConfirmationOpen,
     confirmDifficultyChange,
