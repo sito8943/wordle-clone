@@ -42,3 +42,18 @@ npm run dev
 - Each browser tab has its own session id in `sessionStorage` (`wordle:session-id`).
 - Same tab + refresh: the game restores automatically.
 - New tab + existing in-progress board from another tab session: the app shows a dialog asking whether to continue that previous board or start a new one.
+
+## PWA
+
+- The app is configured as a Progressive Web App using `vite-plugin-pwa`.
+- Production builds generate `manifest.webmanifest` and a service worker with pre-cached static assets.
+- PWA icons are under `public/` (`pwa-192x192.png`, `pwa-512x512.png`, and maskable variants).
+
+### Test installability locally
+
+```bash
+npm run build
+npm run preview
+```
+
+Then open the preview URL in Chrome/Edge and use the install button in the address bar.
