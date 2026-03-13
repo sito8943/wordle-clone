@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Outlet } from "react-router";
-import { InitialPlayerDialog, Navbar } from "../components";
+import { Footer, InitialPlayerDialog, Navbar } from "../components";
 import { useAnimationsPreference, useThemePreference } from "../hooks";
 import { useApi, usePlayer } from "../providers";
 import { normalizePlayerName } from "../providers/utils";
@@ -51,6 +51,7 @@ const View = () => {
         <Navbar />
         <Outlet />
       </div>
+      <Footer />
       {showInitialPlayerDialog ? (
         <InitialPlayerDialog
           initialName={player.name}
