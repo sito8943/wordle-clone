@@ -1,40 +1,10 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
-
-export interface ErrorBoundaryFallbackProps {
-  error: Error;
-  reset: () => void;
-  boundaryName?: string;
-}
-
-type ErrorBoundaryFallback =
-  | ReactNode
-  | ((props: ErrorBoundaryFallbackProps) => ReactNode);
-
-interface ErrorBoundaryProps {
-  children: ReactNode;
-  name?: string;
-  fallback?: ErrorBoundaryFallback;
-  resetKeys?: ReadonlyArray<unknown>;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
-}
-
-interface ErrorBoundaryState {
-  error: Error | null;
-}
-
-interface ErrorFallbackProps {
-  title?: string;
-  description?: string;
-  actionLabel?: string;
-  onAction?: () => void;
-}
-
-const hasResetKeysChanged = (
-  previous: ReadonlyArray<unknown> = [],
-  next: ReadonlyArray<unknown> = [],
-): boolean =>
-  previous.length !== next.length ||
-  previous.some((value, index) => !Object.is(value, next[index]));
+import { Component, type ErrorInfo } from "react";
+import type {
+  ErrorBoundaryProps,
+  ErrorBoundaryState,
+  ErrorFallbackProps,
+} from "./types";
+import { hasResetKeysChanged } from "./utils";
 
 export const ErrorFallback = ({
   title = "Something went wrong.",
