@@ -1,0 +1,2 @@
+export const HARD_MODE_TOTAL_SECONDS = 60;
+export const HARD_MODE_FINAL_STRETCH_SECONDS = 15;

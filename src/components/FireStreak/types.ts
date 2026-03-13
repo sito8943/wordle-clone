@@ -11,6 +11,8 @@ export type FireStreakProps = {
   noLabel?: boolean;
 };
 
+export type FireVisualState = 0 | 1 | 2 | 3;
+
 export type FireVisualConfig = {
   scale: number;
   opacity: number;

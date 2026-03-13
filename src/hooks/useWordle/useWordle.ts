@@ -23,42 +23,19 @@ import {
   setWordDictionary,
 } from "../../utils/words";
 import { useAnimationsPreference } from "../useAnimationsPreference";
+import { MESSAGE_VISIBILITY_DURATION_MS } from "./constants";
+import type { UseWordleOptions } from "./types";
 import {
+  blurRefreshButtonIfFocused,
+  isDirectGameKeyboardKey,
+  isEditableKeyboardTarget,
   markStartAnimationAsSeen,
   shouldAnimateKeyboardEntryOnSession,
   shouldAnimateOnFirstSessionView,
 } from "./utils";
 
-const isEditableKeyboardTarget = (target: EventTarget | null): boolean => {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  return (
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT" ||
-    target.isContentEditable
-  );
-};
-
-const isDirectGameKeyboardKey = (key: string): boolean =>
-  key === "Backspace" || key === "Enter" || /^[a-zA-Z]$/.test(key);
-
-const blurRefreshButtonIfFocused = (): void => {
-  const activeElement = document.activeElement;
-  if (!(activeElement instanceof HTMLButtonElement)) {
-    return;
-  }
-
-  if (activeElement.getAttribute("aria-label") !== "Refresh") {
-    return;
-  }
-
-  activeElement.blur();
-};
-
-export default function useWordle() {
+export default function useWordle(options: UseWordleOptions = {}) {
+  const { allowUnknownWords = false } = options;
   const { wordDictionaryClient } = useApi();
   const cachedWords = useMemo(
     () => loadWordDictionaryFromCache(WORDS_DEFAULT_LANGUAGE),
@@ -94,13 +71,14 @@ export default function useWordle() {
   const [dictionaryError, setDictionaryError] = useState<string | null>(null);
 
   const [gameState, setGameState] = useState(initialGameState);
+  const [boardVersion, setBoardVersion] = useState(0);
 
   const [message, setMessage] = useState("");
   const [showResumeDialog, setShowResumeDialog] = useState(() =>
     shouldAskToResume(gameState, currentSessionId),
   );
 
-  const { answer, guesses, current, gameOver } = gameState;
+  const { sessionId, answer, guesses, current, gameOver } = gameState;
 
   useEffect(() => {
     let cancelled = false;
@@ -187,12 +165,14 @@ export default function useWordle() {
 
   const showMessage = useCallback((text: string) => {
     setMessage(text);
-    setTimeout(() => setMessage(""), 1800);
+    setTimeout(() => setMessage(""), MESSAGE_VISIBILITY_DURATION_MS);
   }, []);
 
   const checkInput = useCallback(
     (input: string) => {
-      const validation = validateGuessInput(input, answer);
+      const validation = validateGuessInput(input, answer, {
+        allowUnknownWords,
+      });
 
       if (!validation.ok) {
         showMessage(validation.message);
@@ -201,7 +181,7 @@ export default function useWordle() {
 
       setGameState((prev) => applyGuess(prev, validation.guess));
     },
-    [answer, showMessage],
+    [allowUnknownWords, answer, showMessage],
   );
 
   const removeCurrentLetter = useCallback(() => {
@@ -258,6 +238,7 @@ export default function useWordle() {
 
   const resetBoard = useCallback(() => {
     setGameState(createInitialGameState(currentSessionId, getRandomWord()));
+    setBoardVersion((previous) => previous + 1);
     setShowResumeDialog(false);
     setMessage("");
     triggerStartAnimation();
@@ -270,6 +251,20 @@ export default function useWordle() {
   const refresh = useCallback(() => {
     resetBoard();
   }, [resetBoard]);
+
+  const forceLoss = useCallback(() => {
+    setGameState((previous) => {
+      if (previous.gameOver) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        current: "",
+        gameOver: true,
+      };
+    });
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -295,6 +290,7 @@ export default function useWordle() {
   }, [handleKey]);
 
   return {
+    sessionId,
     answer,
     guesses,
     current,
@@ -306,6 +302,8 @@ export default function useWordle() {
     startAnimationSeed,
     startAnimationsEnabled: !animationsDisabled,
     keyboardEntryAnimationEnabled,
+    boardVersion,
+    forceLoss,
     showResumeDialog,
     continuePreviousBoard,
     startNewBoard,

@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -57,6 +58,7 @@ const mockSystemTheme = (mode: "light" | "dark") => {
 
 describe("App", () => {
   afterEach(() => {
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -325,6 +327,168 @@ describe("App", () => {
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "Word list" })).toBeNull();
     });
+  });
+
+  it("shows a hard mode timer and decreases it on each tick", async () => {
+    vi.useFakeTimers();
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "hard",
+      }),
+    );
+
+    try {
+      renderApp();
+
+      expect(screen.getByLabelText("Hard timer: 60 seconds")).toBeTruthy();
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByLabelText("Hard timer: 60 seconds")).toBeTruthy();
+      fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByLabelText("Hard timer: 59 seconds")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("pauses and restores hard mode timer when navigating away and back", () => {
+    vi.useFakeTimers();
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "hard",
+      }),
+    );
+    sessionStorage.setItem("wordle:session-id", "session-hard");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-hard",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: false,
+      }),
+    );
+
+    try {
+      renderApp();
+
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      expect(screen.getByLabelText("Hard timer: 57 seconds")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+      expect(screen.getByRole("heading", { name: "Profile" })).toBeTruthy();
+      expect(screen.queryByLabelText(/Hard timer:/)).toBeNull();
+
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      fireEvent.click(screen.getByRole("link", { name: "Home" }));
+
+      expect(screen.getByLabelText("Hard timer: 57 seconds")).toBeTruthy();
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByLabelText("Hard timer: 56 seconds")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("shows final-stretch bar and shakes board in hard mode under 15 seconds", async () => {
+    vi.useFakeTimers();
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "hard",
+      }),
+    );
+
+    try {
+      renderApp();
+      fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
+
+      act(() => {
+        vi.advanceTimersByTime(45000);
+      });
+
+      const countdown = screen.getByRole("progressbar", {
+        name: "Hard mode countdown",
+      });
+      expect(countdown.getAttribute("aria-valuenow")).toBe("15");
+
+      expect(
+        screen.getByRole("grid", { name: "Wordle board" }).parentElement
+          ?.className,
+      ).toContain("board-shake-pulse-animation");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("marks timeout as a loss and keeps the board until player refreshes", async () => {
+    vi.useFakeTimers();
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "hard",
+      }),
+    );
+
+    try {
+      renderApp();
+      fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
+
+      act(() => {
+        vi.advanceTimersByTime(60000);
+      });
+
+      expect(screen.getByText("The word was: APPLE")).toBeTruthy();
+      expect(screen.queryByLabelText(/Hard timer:/)).toBeNull();
+
+      fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+      const board = screen.getByRole("grid", { name: "Wordle board" });
+      expect(board.className).toContain("board-entry-animation");
+      expect(board.parentElement?.className).not.toContain(
+        "board-shake-pulse-animation",
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("asks confirmation when changing difficulty with an active game and cancels cleanly", async () => {
@@ -746,6 +910,56 @@ describe("App", () => {
 
     const status = await screen.findByRole("status");
     expect(status.textContent).toBe("Not enough letters");
+  });
+
+  it("rejects unknown words in normal difficulty", async () => {
+    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["Z", "Z", "Z", "Z", "Z"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    const status = await screen.findByRole("status");
+    expect(status.textContent).toBe("Not in word list");
+    expect(screen.queryByRole("gridcell", { name: "Z, absent" })).toBeNull();
+  });
+
+  it("accepts unknown words in hard difficulty and counts the attempt", async () => {
+    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "hard",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["Z", "Z", "Z", "Z", "Z"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("gridcell", { name: "Z, absent" }).length,
+      ).toBe(5);
+    });
   });
 
   it("finishes a winning round and allows refreshing the board", async () => {

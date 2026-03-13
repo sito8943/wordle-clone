@@ -263,8 +263,49 @@ h1,
   }
 }
 
+@keyframes hard-mode-clock-boost {
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(calc(1 + var(--hard-mode-clock-boost-scale, 0.1)));
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes board-shake-pulse {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-4px);
+  }
+
+  40% {
+    transform: translateX(4px);
+  }
+
+  60% {
+    transform: translateX(-3px);
+  }
+
+  80% {
+    transform: translateX(3px);
+  }
+}
+
 .board-entry-animation {
   animation: smooth-entry 360ms ease-out both;
+}
+
+.board-shake-pulse-animation {
+  animation: board-shake-pulse 220ms ease-in-out;
 }
 
 .keyboard-entry-animation {
@@ -316,6 +357,10 @@ h1,
   fill: #f97316;
   opacity: 0;
   animation: ember-rise 1.4s ease-in-out infinite;
+}
+
+.hard-mode-clock-boost-animation {
+  animation: hard-mode-clock-boost 420ms cubic-bezier(0.2, 0.85, 0.32, 1.15);
 }
 
 .fire-streak-icon-active .fire-ember-2 {
@@ -370,7 +415,9 @@ h1,
 @media (prefers-reduced-motion: reduce) {
   .board-entry-animation,
   .keyboard-entry-animation,
-  .tile-entry-animation {
+  .tile-entry-animation,
+  .board-shake-pulse-animation,
+  .hard-mode-clock-boost-animation {
     animation: none;
     opacity: 1;
     transform: none;

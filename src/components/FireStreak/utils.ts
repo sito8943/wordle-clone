@@ -1,3 +1,5 @@
+import type { FireVisualState } from "./types";
+
 export const sanitizeCounter = (value: number): number => {
   if (!Number.isFinite(value)) {
     return 0;
@@ -5,8 +7,6 @@ export const sanitizeCounter = (value: number): number => {
 
   return Math.max(0, Math.floor(value));
 };
-
-export type FireVisualState = 0 | 1 | 2 | 3;
 
 export const getFireVisualState = (streak: number): FireVisualState => {
   const safeStreak = sanitizeCounter(streak);

@@ -1,6 +1,8 @@
-import type { JSX } from "react";
+import type { CSSProperties, JSX } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleQuestion,
+  faClock,
   faList,
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
@@ -47,6 +49,13 @@ const Home = (): JSX.Element => {
     dictionaryLoading,
     dictionaryError,
     wordListEnabledForDifficulty,
+    showHardModeTimer,
+    showHardModeFinalStretchBar,
+    hardModeSecondsLeft,
+    hardModeTickPulse,
+    hardModeClockBoostScale,
+    hardModeFinalStretchProgressPercent,
+    boardShakePulse,
   } = useHomeController();
   const animateTileEntry = startAnimationsEnabled && startAnimationSeed > 0;
   const wordListButtonEnabled =
@@ -112,6 +121,28 @@ const Home = (): JSX.Element => {
             >
               Help
             </Button>
+            {showHardModeTimer && (
+              <div
+                role="status"
+                aria-live="polite"
+                aria-label={`Hard timer: ${hardModeSecondsLeft} seconds`}
+                className="mobile-compact-button inline-flex items-center gap-2 rounded border border-blue-300 bg-blue-100/90 px-3 py-2 text-sm font-bold text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
+              >
+                <span
+                  key={hardModeTickPulse}
+                  className="hard-mode-clock-boost-animation inline-flex"
+                  style={
+                    {
+                      "--hard-mode-clock-boost-scale":
+                        hardModeClockBoostScale.toString(),
+                    } as CSSProperties
+                  }
+                >
+                  <FontAwesomeIcon icon={faClock} aria-hidden="true" />
+                </span>
+                <span>{hardModeSecondsLeft}s</span>
+              </div>
+            )}
             <Button
               onClick={refreshBoard}
               aria-label="Refresh"
@@ -135,6 +166,24 @@ const Home = (): JSX.Element => {
             </p>
           )}
 
+          {showHardModeFinalStretchBar && (
+            <div
+              role="progressbar"
+              aria-label="Hard mode countdown"
+              aria-valuemin={0}
+              aria-valuemax={15}
+              aria-valuenow={hardModeSecondsLeft}
+              className="w-full max-w-md"
+            >
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-200/80 dark:bg-blue-950/50">
+                <div
+                  className="h-full rounded-full bg-blue-500 transition-[width] duration-1000 ease-linear dark:bg-blue-400"
+                  style={{ width: `${hardModeFinalStretchProgressPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <Board
             key={`board-${startAnimationSeed}`}
             guesses={guesses}
@@ -143,6 +192,7 @@ const Home = (): JSX.Element => {
             animateTileEntry={animateTileEntry}
             isLoss={gameOver && !won}
             animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
+            shakePulse={boardShakePulse}
           />
 
           {gameOver && (

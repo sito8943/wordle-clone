@@ -1,12 +1,10 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { ConvexGateway } from "../api/convex/ConvexGateway";
 import { ScoreClient } from "../api/score";
 import { WordDictionaryClient } from "../api/words";
 import { env } from "../config";
-import type { ApiContextType, ProviderProps } from "./types";
-
-const ApiContext = createContext<ApiContextType | undefined>(undefined);
+import { ApiContext } from "./ApiContext";
+import type { ProviderProps } from "./types";
 
 const ApiProvider = ({ children }: ProviderProps) => {
   const convexUrl = env.mode === "test" ? undefined : env.convexUrl;
@@ -32,11 +30,4 @@ const ApiProvider = ({ children }: ProviderProps) => {
   );
 };
 
-const useApi = () => {
-  const context = useContext(ApiContext);
-  if (context === undefined)
-    throw new Error("useApi must be used within an ApiProvider");
-  return context;
-};
-
-export { ApiProvider, useApi };
+export { ApiProvider };

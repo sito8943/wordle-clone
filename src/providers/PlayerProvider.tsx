@@ -1,24 +1,10 @@
-/* eslint-disable react-refresh/only-export-components */
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocalStorage } from "../hooks/";
-import { useApi } from "./ApiProvider";
+import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
-import type {
-  Player,
-  PlayerContextType,
-  PlayerDifficulty,
-  ProviderProps,
-} from "./types";
+import type { Player, PlayerDifficulty, ProviderProps } from "./types";
+import { useApi } from "./useApi";
 import { normalizePlayer, normalizePlayerName } from "./utils";
-
-const PlayerContext = createContext({} as PlayerContextType);
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
@@ -156,12 +142,4 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 };
 
-const usePlayer = () => {
-  const context = useContext(PlayerContext);
-
-  if (context === undefined)
-    throw new Error("configContext must be used within a Provider");
-  return context;
-};
-
-export { PlayerProvider, usePlayer };
+export { PlayerProvider };

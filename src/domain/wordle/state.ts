@@ -88,12 +88,13 @@ export const isWon = (state: PersistedGameState): boolean =>
 export const validateGuessInput = (
   input: string,
   answer: string,
+  options: { allowUnknownWords?: boolean } = {},
 ): GuessValidationResult => {
   if (input.length < WORD_LENGTH) {
     return { ok: false, message: "Not enough letters" };
   }
 
-  if (!isValidWord(input)) {
+  if (!options.allowUnknownWords && !isValidWord(input)) {
     return { ok: false, message: "Not in word list" };
   }
 

@@ -1,28 +1,22 @@
 import { useCallback, useState } from "react";
-import type { PersistedGameState } from "../domain/wordle";
 import {
   clearPersistedGameState,
   readPersistedGameState,
-} from "../domain/wordle";
-import { useAnimationsPreference } from "./useAnimationsPreference";
-import { useThemePreference, type ThemePreference } from "./useThemePreference";
-import { useApi, usePlayer } from "../providers";
-import { normalizePlayerName } from "../providers/utils";
-import type { PlayerDifficulty } from "../providers/types";
-
-const hasActivePersistedGame = (value: unknown): boolean => {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const maybeState = value as Partial<PersistedGameState>;
-
-  return (
-    maybeState.gameOver === false &&
-    Array.isArray(maybeState.guesses) &&
-    maybeState.guesses.length > 0
-  );
-};
+} from "../../domain/wordle";
+import { useAnimationsPreference } from "../useAnimationsPreference";
+import {
+  useThemePreference,
+  type ThemePreference,
+} from "../useThemePreference";
+import { useApi, usePlayer } from "../../providers";
+import { normalizePlayerName } from "../../providers/utils";
+import type { PlayerDifficulty } from "../../providers/types";
+import {
+  PROFILE_CONFIGURATION_SAVED_MESSAGE,
+  PROFILE_NAME_NOT_AVAILABLE_MESSAGE,
+  PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
+} from "./constants";
+import { getPlayerDifficultyLabel, hasActivePersistedGame } from "./utils";
 
 export default function useProfileController() {
   const { scoreClient } = useApi();
@@ -46,14 +40,17 @@ export default function useProfileController() {
       if (normalizedName !== player.name) {
         const isAvailable = await scoreClient.isNickAvailable(normalizedName);
         if (!isAvailable) {
-          return "Name is not available.";
+          return PROFILE_NAME_NOT_AVAILABLE_MESSAGE;
         }
       }
 
       updatePlayer(normalizedName);
       setEditing(false);
-      setSavedMessage("Configuration saved.");
-      setTimeout(() => setSavedMessage(""), 1800);
+      setSavedMessage(PROFILE_CONFIGURATION_SAVED_MESSAGE);
+      setTimeout(
+        () => setSavedMessage(""),
+        PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
+      );
       return null;
     },
     [player.name, scoreClient, updatePlayer],
@@ -106,17 +103,8 @@ export default function useProfileController() {
   const pendingDifficultyValue = pendingDifficulty ?? player.difficulty;
 
   const pendingDifficultyLabel = useCallback(
-    (difficulty: PlayerDifficulty): string => {
-      if (difficulty === "easy") {
-        return "Easy";
-      }
-
-      if (difficulty === "hard") {
-        return "Hard";
-      }
-
-      return "Normal";
-    },
+    (difficulty: PlayerDifficulty): string =>
+      getPlayerDifficultyLabel(difficulty),
     [],
   );
 

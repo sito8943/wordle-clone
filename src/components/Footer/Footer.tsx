@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-
-const SCROLL_VISIBILITY_THRESHOLD = 20;
+import {
+  FOOTER_COPYRIGHT_LABEL,
+  FOOTER_GITHUB_ARIA_LABEL,
+  FOOTER_GITHUB_REPOSITORY_URL,
+  FOOTER_PORTFOLIO_URL,
+  SCROLL_VISIBILITY_THRESHOLD,
+} from "./constants";
 
 const Footer = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -28,18 +33,18 @@ const Footer = () => {
     >
       <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3 rounded-lg border border-neutral-300 bg-neutral-100/95 px-4 py-2 text-sm text-neutral-800 shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-200">
         <a
-          href="https://sito8943.com?utm_source=wordle-clone&utm_medium=footer&utm_campaign=portfolio-link"
+          href={FOOTER_PORTFOLIO_URL}
           target="_blank"
           rel="noreferrer"
           className="underline decoration-neutral-400 underline-offset-4 hover:decoration-current"
         >
-          Made by @sito8943
+          {FOOTER_COPYRIGHT_LABEL}
         </a>
         <a
-          href="https://github.com/sito8943/wordle-clone"
+          href={FOOTER_GITHUB_REPOSITORY_URL}
           target="_blank"
           rel="noreferrer"
-          aria-label="GitHub repository"
+          aria-label={FOOTER_GITHUB_ARIA_LABEL}
           className="rounded p-1 text-neutral-700 transition-colors hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-700 dark:text-neutral-300 dark:hover:text-white dark:focus-visible:outline-neutral-300"
         >
           <svg

@@ -7,6 +7,7 @@ export type BoardPropsType = {
   animateEntry?: boolean;
   animateTileEntry?: boolean;
   isLoss?: boolean;
+  shakePulse?: number;
 };
 
 export type RowPropsType = {

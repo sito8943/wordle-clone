@@ -1,5 +1,5 @@
 import type { FireVisualConfig } from "./types";
-import type { FireVisualState } from "./utils";
+import type { FireVisualState } from "./types";
 
 export const FIRE_VISUAL_CONFIG: Record<FireVisualState, FireVisualConfig> = {
   0: {

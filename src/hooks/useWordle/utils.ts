@@ -64,3 +64,34 @@ export const shouldAnimateKeyboardEntryOnSession = (
   markKeyboardAnimationAsSeen();
   return true;
 };
+
+export const isEditableKeyboardTarget = (
+  target: EventTarget | null,
+): boolean => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  );
+};
+
+export const isDirectGameKeyboardKey = (key: string): boolean =>
+  key === "Backspace" || key === "Enter" || /^[a-zA-Z]$/.test(key);
+
+export const blurRefreshButtonIfFocused = (): void => {
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  if (activeElement.getAttribute("aria-label") !== "Refresh") {
+    return;
+  }
+
+  activeElement.blur();
+};
