@@ -32,6 +32,7 @@ export type StoredScore = {
   score: number;
   streak: number;
   createdAt: number;
+  mutation?: string;
 };
 
 export type RemoteScore = {

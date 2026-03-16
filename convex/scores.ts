@@ -189,6 +189,124 @@ export const addScore = mutation({
   },
 });
 
+export const updateScore = mutation({
+  args: {
+    clientId: v.optional(v.string()),
+    clientRecordId: v.optional(v.string()),
+    nick: v.string(),
+    score: v.number(),
+    streak: v.optional(v.number()),
+    createdAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const nick = normalizeNick(args.nick);
+    const score = Math.max(0, Math.floor(args.score));
+    const streak = Math.max(0, Math.floor(args.streak ?? 0));
+    const createdAt = args.createdAt ?? Date.now();
+
+    if (args.clientRecordId) {
+      const existing = await ctx.db
+        .query("scores")
+        .withIndex("by_client_record_id", (query) =>
+          query.eq("clientRecordId", args.clientRecordId),
+        )
+        .first();
+
+      if (existing) {
+        const scores = (await ctx.db
+          .query("scores")
+          .collect()) as ScoreRecord[];
+        assertNickAvailable(
+          scores,
+          nick,
+          args.clientId ?? existing.clientId,
+          existing._id,
+        );
+
+        const nextScore = score;
+        const nextCreatedAt = createdAt;
+        const nextStreak = streak;
+        const nextClientId = args.clientId ?? existing.clientId;
+
+        if (
+          existing.nick !== nick ||
+          existing.score !== nextScore ||
+          (existing.streak ?? 0) !== nextStreak ||
+          existing.createdAt !== nextCreatedAt ||
+          existing.clientId !== nextClientId
+        ) {
+          await ctx.db.patch(existing._id, {
+            clientId: nextClientId,
+            nick,
+            score: nextScore,
+            streak: nextStreak,
+            createdAt: nextCreatedAt,
+          });
+        }
+
+        return existing._id;
+      }
+    }
+
+    if (args.clientId) {
+      const existingForClient = await ctx.db
+        .query("scores")
+        .withIndex("by_client_id", (query) =>
+          query.eq("clientId", args.clientId),
+        )
+        .first();
+      const scores = (await ctx.db.query("scores").collect()) as ScoreRecord[];
+      assertNickAvailable(scores, nick, args.clientId, existingForClient?._id);
+
+      if (existingForClient) {
+        const nextScore = score;
+        const nextCreatedAt = createdAt;
+        const nextStreak = streak;
+        const nextClientRecordId =
+          args.clientRecordId ?? existingForClient.clientRecordId;
+
+        if (
+          existingForClient.nick !== nick ||
+          existingForClient.score !== nextScore ||
+          (existingForClient.streak ?? 0) !== nextStreak ||
+          existingForClient.createdAt !== nextCreatedAt ||
+          existingForClient.clientRecordId !== nextClientRecordId
+        ) {
+          await ctx.db.patch(existingForClient._id, {
+            nick,
+            score: nextScore,
+            streak: nextStreak,
+            createdAt: nextCreatedAt,
+            clientRecordId: nextClientRecordId,
+          });
+        }
+
+        return existingForClient._id;
+      }
+
+      return ctx.db.insert("scores", {
+        clientId: args.clientId,
+        clientRecordId: args.clientRecordId,
+        nick,
+        score,
+        streak,
+        createdAt,
+      });
+    }
+
+    const scores = (await ctx.db.query("scores").collect()) as ScoreRecord[];
+    assertNickAvailable(scores, nick);
+
+    return ctx.db.insert("scores", {
+      clientRecordId: args.clientRecordId,
+      nick,
+      score,
+      streak,
+      createdAt,
+    });
+  },
+});
+
 export const isNickAvailable = query({
   args: {
     nick: v.string(),

@@ -6,6 +6,7 @@ import { useWordle } from "../useWordle";
 import { useHardModeTimer } from "./useHardModeTimer";
 import { useHintController } from "./useHintController";
 import { getDifficultyScoreMultiplier } from "./utils";
+import { UPDATE_SCORE_MUTATION } from "../../api/score/constants";
 
 export default function useHomeController() {
   const { scoreClient } = useApi();
@@ -204,12 +205,15 @@ export default function useHomeController() {
           ? nextPlayer.streak
           : player.streak;
 
-      void scoreClient.recordScore({
-        nick: nextNick,
-        score: nextScore,
-        streak: nextStreak,
-        overwriteExisting: true,
-      });
+      void scoreClient.recordScore(
+        {
+          nick: nextNick,
+          score: nextScore,
+          streak: nextStreak,
+          overwriteExisting: true,
+        },
+        UPDATE_SCORE_MUTATION,
+      );
 
       replacePlayer(nextPlayer);
       setShowDeveloperConsoleDialog(false);

@@ -8,6 +8,7 @@ import {
   SCOREBOARD_CACHE_KEY,
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PENDING_KEY,
+  UPDATE_SCORE_MUTATION,
 } from "./constants";
 import type {
   RecordScoreInput,
@@ -31,7 +32,10 @@ class ScoreClient {
     this.clientId = this.getOrCreateClientId();
   }
 
-  async recordScore(input: RecordScoreInput): Promise<void> {
+  async recordScore(
+    input: RecordScoreInput,
+    mutation: string = ADD_SCORE_MUTATION,
+  ): Promise<void> {
     const currentRecord = this.getCurrentClientStoredScore();
     const overwriteExisting = input.overwriteExisting === true;
     const normalizedInputScore = this.normalizeScore(input.score);
@@ -61,12 +65,12 @@ class ScoreClient {
     this.addToCache(record, overwriteExisting);
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
-      this.addToPending(record, overwriteExisting);
+      this.addToPending(record, overwriteExisting, mutation);
       return;
     }
 
     try {
-      await this.gateway.mutation(ADD_SCORE_MUTATION, {
+      await this.gateway.mutation(mutation, {
         clientRecordId: record.localId,
         clientId: this.clientId,
         nick: record.nick,
@@ -78,7 +82,7 @@ class ScoreClient {
       if (!this.gateway.isNetworkError(error)) {
         throw error;
       }
-      this.addToPending(record, overwriteExisting);
+      this.addToPending(record, overwriteExisting, mutation);
     }
   }
 
@@ -196,14 +200,19 @@ class ScoreClient {
       }
 
       try {
-        await this.gateway.mutation(ADD_SCORE_MUTATION, {
-          clientRecordId: entry.localId,
-          clientId: this.clientId,
-          nick: entry.nick,
-          score: entry.score,
-          streak: entry.streak,
-          createdAt: entry.createdAt,
-        });
+        await this.gateway.mutation(
+          entry.mutation === UPDATE_SCORE_MUTATION
+            ? UPDATE_SCORE_MUTATION
+            : ADD_SCORE_MUTATION,
+          {
+            clientRecordId: entry.localId,
+            clientId: this.clientId,
+            nick: entry.nick,
+            score: entry.score,
+            streak: entry.streak,
+            createdAt: entry.createdAt,
+          },
+        );
       } catch (error) {
         if (!this.gateway.isNetworkError(error)) {
           throw error;
@@ -335,13 +344,23 @@ class ScoreClient {
     this.writeScores(SCOREBOARD_CACHE_KEY, cache.slice(0, 200));
   }
 
-  private addToPending(entry: StoredScore, overwriteExisting = false): void {
+  private addToPending(
+    entry: StoredScore,
+    overwriteExisting = false,
+    mutation = ADD_SCORE_MUTATION,
+  ): void {
+    const normalizedMutation =
+      mutation === UPDATE_SCORE_MUTATION
+        ? UPDATE_SCORE_MUTATION
+        : ADD_SCORE_MUTATION;
+    const pendingEntry = { ...entry, mutation: normalizedMutation };
     const baseEntries = overwriteExisting
       ? this.readScores(SCOREBOARD_PENDING_KEY).filter(
-          (stored) => this.nickKey(stored.nick) !== this.nickKey(entry.nick),
+          (stored) =>
+            this.nickKey(stored.nick) !== this.nickKey(pendingEntry.nick),
         )
       : this.readScores(SCOREBOARD_PENDING_KEY);
-    const pending = this.dedupeStoredByNick([...baseEntries, entry]);
+    const pending = this.dedupeStoredByNick([...baseEntries, pendingEntry]);
     this.writeScores(SCOREBOARD_PENDING_KEY, pending);
   }
 
@@ -455,6 +474,8 @@ class ScoreClient {
       score: this.normalizeScore(candidate.score),
       streak: this.normalizeStreak(candidate.streak ?? 0),
       createdAt: candidate.createdAt,
+      mutation:
+        typeof candidate.mutation === "string" ? candidate.mutation : undefined,
     };
   }
 
