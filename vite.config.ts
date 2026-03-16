@@ -12,7 +12,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["vite.svg", "apple-touch-icon.png"],
       manifest: {
-        id: "/",
+        id: "./",
         name: "Wordle Clone",
         short_name: "Wordle",
         description:
@@ -20,8 +20,8 @@ export default defineConfig({
         theme_color: "#2563eb",
         background_color: "#f5f5f5",
         display: "standalone",
-        start_url: "/",
-        scope: "/",
+        start_url: "./",
+        scope: "./",
         icons: [
           {
             src: "pwa-192x192.png",
