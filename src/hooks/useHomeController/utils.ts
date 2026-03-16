@@ -1,13 +1,9 @@
 import type { PlayerDifficulty } from "../../providers/types";
 import {
-  EASY_MODE_HINT_LIMIT,
   HARD_MODE_FINAL_STRETCH_SECONDS,
-  HARD_MODE_HINT_LIMIT,
   HARD_MODE_TOTAL_SECONDS,
-  NORMAL_MODE_HINT_LIMIT,
 } from "./constants";
 import type { HardModeTimerSnapshot } from "./types";
-import type { HintTileStatus } from "../useWordle/types";
 
 let hardModeTimerSnapshot: HardModeTimerSnapshot | null = null;
 
@@ -27,38 +23,6 @@ export const getDifficultyScoreMultiplier = (
   }
 
   return 2;
-};
-
-export const getHintsLimitByDifficulty = (
-  difficulty: PlayerDifficulty,
-): number => {
-  if (difficulty === "easy") {
-    return EASY_MODE_HINT_LIMIT;
-  }
-
-  if (difficulty === "hard") {
-    return HARD_MODE_HINT_LIMIT;
-  }
-
-  if (difficulty === "insane") {
-    return HARD_MODE_HINT_LIMIT;
-  }
-
-  return NORMAL_MODE_HINT_LIMIT;
-};
-
-export const getHintStatusByDifficulty = (
-  difficulty: PlayerDifficulty,
-): HintTileStatus | null => {
-  if (difficulty === "easy") {
-    return "correct";
-  }
-
-  if (difficulty === "normal") {
-    return "present";
-  }
-
-  return null;
 };
 
 export const getHardModeClockBoostScale = (secondsLeft: number): number => {

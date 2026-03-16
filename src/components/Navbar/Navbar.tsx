@@ -47,7 +47,7 @@ const Navbar = () => {
   );
 
   return (
-    <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 flex">
+    <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 sm:px-10 flex">
       <h1 className="text-center text-3xl max-sm:text-xl font-black tracking-[0.28em] text-black dark:text-neutral-100">
         WORDLE
       </h1>

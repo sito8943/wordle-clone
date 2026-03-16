@@ -4,7 +4,7 @@ import {
   applyGuess,
   createInitialGameState,
   getOrCreateSessionId,
-  hasAttemptedRow,
+  hasInProgressGame,
   isLetterKey,
   isWon,
   normalizePersistedGameState,
@@ -12,6 +12,7 @@ import {
   readPersistedGameState,
   removeLetter,
   shouldAskToResume,
+  type PersistedGameState,
   validateGuessInput,
   WORD_LENGTH,
 } from "../../domain/wordle";
@@ -62,7 +63,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
     shouldAnimateOnFirstSessionView(
       animationsDisabled,
-      hasAttemptedRow(initialGameState),
+      hasInProgressGame(initialGameState),
     )
       ? 1
       : 0,
@@ -92,6 +93,17 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
 
   const { sessionId, answer, guesses, current, gameOver } = gameState;
+
+  const setGameStateAndPersist = useCallback(
+    (updater: (previous: PersistedGameState) => PersistedGameState) => {
+      setGameState((previous) => {
+        const next = updater(previous);
+        persistGameState(next);
+        return next;
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -152,7 +164,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     }
 
     setGameState((previous) => {
-      if (hasAttemptedRow(previous) || previous.current.length > 0) {
+      if (hasInProgressGame(previous)) {
         return previous;
       }
 
@@ -163,10 +175,6 @@ export default function useWordle(options: UseWordleOptions = {}) {
       return createInitialGameState(currentSessionId, getRandomWord());
     });
   }, [currentSessionId, dictionaryLoading, dictionaryWords]);
-
-  useEffect(() => {
-    persistGameState(gameState);
-  }, [gameState]);
 
   useEffect(() => {
     if (shouldAskToResume(gameState, currentSessionId)) {
@@ -199,9 +207,15 @@ export default function useWordle(options: UseWordleOptions = {}) {
       }
 
       resetActiveHints();
-      setGameState((prev) => applyGuess(prev, validation.guess));
+      setGameStateAndPersist((prev) => applyGuess(prev, validation.guess));
     },
-    [allowUnknownWords, answer, resetActiveHints, showMessage],
+    [
+      allowUnknownWords,
+      answer,
+      resetActiveHints,
+      setGameStateAndPersist,
+      showMessage,
+    ],
   );
 
   const removeCurrentLetter = useCallback(() => {
@@ -211,7 +225,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
     const removedIndex = current.length - 1;
 
-    setGameState((prev) => removeLetter(prev));
+    setGameStateAndPersist((prev) => removeLetter(prev));
     setActiveRowHintStatuses((previous) => {
       if (!(removedIndex in previous)) {
         return previous;
@@ -225,11 +239,14 @@ export default function useWordle(options: UseWordleOptions = {}) {
     if (hintRevealTileIndex === removedIndex) {
       setHintRevealTileIndex(null);
     }
-  }, [current.length, hintRevealTileIndex]);
+  }, [current.length, hintRevealTileIndex, setGameStateAndPersist]);
 
-  const addCurrentLetter = useCallback((letter: string) => {
-    setGameState((prev) => addLetter(prev, letter));
-  }, []);
+  const addCurrentLetter = useCallback(
+    (letter: string) => {
+      setGameStateAndPersist((prev) => addLetter(prev, letter));
+    },
+    [setGameStateAndPersist],
+  );
 
   const revealHint = useCallback(
     (hintStatus: HintTileStatus): boolean => {
@@ -253,7 +270,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return false;
       }
 
-      setGameState((previous) => addLetter(previous, letter));
+      setGameStateAndPersist((previous) => addLetter(previous, letter));
       setActiveRowHintStatuses((previous) => ({
         ...previous,
         [nextIndex]: hintStatus,
@@ -263,7 +280,14 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
       return true;
     },
-    [answer, current.length, gameOver, showMessage, showResumeDialog],
+    [
+      answer,
+      current.length,
+      gameOver,
+      setGameStateAndPersist,
+      showMessage,
+      showResumeDialog,
+    ],
   );
 
   const handleKey = useCallback(
@@ -297,10 +321,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
 
   const continuePreviousBoard = useCallback(() => {
-    setGameState((prev) => ({ ...prev, sessionId: currentSessionId }));
+    setGameStateAndPersist((prev) => ({
+      ...prev,
+      sessionId: currentSessionId,
+    }));
     setShowResumeDialog(false);
     resetActiveHints();
-  }, [currentSessionId, resetActiveHints]);
+  }, [currentSessionId, resetActiveHints, setGameStateAndPersist]);
 
   const triggerStartAnimation = useCallback(() => {
     if (animationsDisabled) {
@@ -312,13 +339,20 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [animationsDisabled]);
 
   const resetBoard = useCallback(() => {
-    setGameState(createInitialGameState(currentSessionId, getRandomWord()));
+    setGameStateAndPersist(() =>
+      createInitialGameState(currentSessionId, getRandomWord()),
+    );
     setBoardVersion((previous) => previous + 1);
     setShowResumeDialog(false);
     setMessage("");
     resetActiveHints();
     triggerStartAnimation();
-  }, [currentSessionId, resetActiveHints, triggerStartAnimation]);
+  }, [
+    currentSessionId,
+    resetActiveHints,
+    setGameStateAndPersist,
+    triggerStartAnimation,
+  ]);
 
   const startNewBoard = useCallback(() => {
     resetBoard();
@@ -329,7 +363,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [resetBoard]);
 
   const forceLoss = useCallback(() => {
-    setGameState((previous) => {
+    setGameStateAndPersist((previous) => {
       if (previous.gameOver) {
         return previous;
       }
@@ -340,7 +374,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
         gameOver: true,
       };
     });
-  }, []);
+  }, [setGameStateAndPersist]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

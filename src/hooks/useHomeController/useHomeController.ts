@@ -1,20 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getPointsForWin, WORD_LENGTH } from "../../domain/wordle";
+import { getPointsForWin } from "../../domain/wordle";
 import { usePlayer } from "../../providers";
-import { HARD_MODE_FINAL_STRETCH_SECONDS } from "./constants";
-import {
-  clearHardModeTimerSnapshot,
-  getDefaultHardModeTimerSnapshot,
-  getDifficultyScoreMultiplier,
-  getHintStatusByDifficulty,
-  getHardModeClockBoostScale,
-  getHardModeFinalStretchProgressPercent,
-  getHintsLimitByDifficulty,
-  getInitialHardModeTimerSnapshot,
-  isWithinHardModeFinalStretch,
-  setHardModeTimerSnapshot,
-} from "./utils";
 import { useWordle } from "../useWordle";
+import { useHardModeTimer } from "./useHardModeTimer";
+import { useHintController } from "./useHintController";
+import { getDifficultyScoreMultiplier } from "./utils";
 
 export default function useHomeController() {
   const { player, increaseScore, increaseWinStreak, resetWinStreak } =
@@ -25,6 +15,7 @@ export default function useHomeController() {
   });
   const {
     sessionId,
+    answer,
     won,
     guesses,
     current,
@@ -33,66 +24,44 @@ export default function useHomeController() {
     forceLoss,
     showResumeDialog,
     boardVersion,
+    startNewBoard: startNewWordleBoard,
     revealHint,
-    activeRowHintStatuses,
-    hintRevealPulse,
-    hintRevealTileIndex,
   } = wordle;
   const hardModeEnabled = player.difficulty === "insane";
-  const hintsLimit = getHintsLimitByDifficulty(player.difficulty);
-  const hasInProgressGameAtMount =
-    !gameOver && (guesses.length > 0 || current.length > 0);
-  const initialHardModeTimerSnapshot = getInitialHardModeTimerSnapshot(
-    sessionId,
-    hardModeEnabled,
-    hasInProgressGameAtMount,
-  );
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
-  const skipInitialHardModeReset = useRef(true);
-  const hardModeEnabledRef = useRef(hardModeEnabled);
-  const hardModeTimerStateRef = useRef(initialHardModeTimerSnapshot);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
   const [showWordsDialog, setShowWordsDialog] = useState(false);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
-  const [hardModeSecondsLeft, setHardModeSecondsLeft] = useState(
-    initialHardModeTimerSnapshot.secondsLeft,
-  );
-  const [hardModeTimerStarted, setHardModeTimerStarted] = useState(
-    initialHardModeTimerSnapshot.timerStarted,
-  );
-  const [hardModeTickPulse, setHardModeTickPulse] = useState(0);
-  const [boardShakePulse, setBoardShakePulse] = useState(0);
-  const [hintsUsed, setHintsUsed] = useState(0);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
     [current.length, gameOver, guesses.length],
   );
+  const hasInProgressGameAtMount = hasActiveGame;
   const wordListEnabledForDifficulty = player.difficulty === "easy";
-  const hintsRemaining = Math.max(0, hintsLimit - hintsUsed);
-  const hintsEnabledForDifficulty = hintsLimit > 0;
-  const hintButtonDisabled =
-    hintsRemaining <= 0 ||
-    showResumeDialog ||
-    gameOver ||
-    current.length >= WORD_LENGTH;
-  const showHardModeTimer = hardModeEnabled && !showResumeDialog && !gameOver;
-  const hardModeTimerRunning = showHardModeTimer && hardModeTimerStarted;
-  const showHardModeFinalStretchBar =
-    showHardModeTimer && hardModeSecondsLeft <= HARD_MODE_FINAL_STRETCH_SECONDS;
-  const hardModeFinalStretchProgressPercent =
-    getHardModeFinalStretchProgressPercent(hardModeSecondsLeft);
-  const hardModeClockBoostScale = useMemo(
-    () => getHardModeClockBoostScale(hardModeSecondsLeft),
-    [hardModeSecondsLeft],
-  );
-  const effectiveBoardShakePulse =
-    hardModeTimerRunning && isWithinHardModeFinalStretch(hardModeSecondsLeft)
-      ? boardShakePulse
-      : 0;
-
+  const {
+    showHardModeTimer,
+    showHardModeFinalStretchBar,
+    hardModeSecondsLeft,
+    hardModeTimerStarted,
+    hardModeTickPulse,
+    hardModeClockBoostScale,
+    hardModeFinalStretchProgressPercent,
+    boardShakePulse,
+    resetHardModeTimer,
+  } = useHardModeTimer({
+    sessionId,
+    hardModeEnabled,
+    hasInProgressGameAtMount,
+    boardVersion,
+    showResumeDialog,
+    gameOver,
+    guessesLength: guesses.length,
+    currentLength: current.length,
+    forceLoss,
+  });
   useEffect(() => {
     if (!hydrated.current) {
       hydrated.current = true;
@@ -135,25 +104,33 @@ export default function useHomeController() {
     won,
   ]);
 
-  const resetHardModeTimer = useCallback(() => {
-    const defaultHardModeTimerSnapshot =
-      getDefaultHardModeTimerSnapshot(sessionId);
-
-    setHardModeSecondsLeft(defaultHardModeTimerSnapshot.secondsLeft);
-    setHardModeTimerStarted(defaultHardModeTimerSnapshot.timerStarted);
-    setHardModeTickPulse(0);
-    setBoardShakePulse(0);
-    hardModeTimerStateRef.current = defaultHardModeTimerSnapshot;
-
-    if (hardModeEnabled) {
-      setHardModeTimerSnapshot(defaultHardModeTimerSnapshot);
-    }
-  }, [hardModeEnabled, sessionId]);
+  const {
+    hintsRemaining,
+    hintsEnabledForDifficulty,
+    hintButtonDisabled,
+    useHint,
+    resetHints,
+  } = useHintController({
+    answer,
+    difficulty: player.difficulty,
+    hasInProgressGameAtMount,
+    showResumeDialog,
+    gameOver,
+    currentLength: current.length,
+    revealHint,
+  });
 
   const refreshBoardNow = useCallback(() => {
+    resetHints();
     resetHardModeTimer();
     refresh();
-  }, [refresh, resetHardModeTimer]);
+  }, [refresh, resetHardModeTimer, resetHints]);
+
+  const startNewBoard = useCallback(() => {
+    resetHints();
+    resetHardModeTimer();
+    startNewWordleBoard();
+  }, [resetHardModeTimer, resetHints, startNewWordleBoard]);
 
   const refreshBoard = useCallback(() => {
     if (hasActiveGame) {
@@ -207,114 +184,6 @@ export default function useHomeController() {
     }
   }, [wordListEnabledForDifficulty]);
 
-  useEffect(() => {
-    hardModeTimerStateRef.current = {
-      sessionId,
-      secondsLeft: hardModeSecondsLeft,
-      timerStarted: hardModeTimerStarted,
-    };
-  }, [hardModeSecondsLeft, hardModeTimerStarted, sessionId]);
-
-  useEffect(() => {
-    hardModeEnabledRef.current = hardModeEnabled;
-
-    if (!hardModeEnabled) {
-      clearHardModeTimerSnapshot();
-    }
-  }, [hardModeEnabled]);
-
-  useEffect(() => {
-    return () => {
-      if (!hardModeEnabledRef.current) {
-        return;
-      }
-
-      setHardModeTimerSnapshot({ ...hardModeTimerStateRef.current });
-    };
-  }, []);
-
-  useEffect(() => {
-    if (skipInitialHardModeReset.current) {
-      skipInitialHardModeReset.current = false;
-      return;
-    }
-
-    resetHardModeTimer();
-  }, [boardVersion, hardModeEnabled, resetHardModeTimer]);
-
-  useEffect(() => {
-    setHintsUsed(0);
-  }, [boardVersion]);
-
-  useEffect(() => {
-    setHintsUsed(0);
-  }, [player.difficulty]);
-
-  useEffect(() => {
-    if (
-      hardModeTimerStarted ||
-      !showHardModeTimer ||
-      (guesses.length === 0 && current.length === 0)
-    ) {
-      return;
-    }
-
-    setHardModeTimerStarted(true);
-  }, [current.length, guesses.length, hardModeTimerStarted, showHardModeTimer]);
-
-  useEffect(() => {
-    if (!hardModeTimerRunning) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setHardModeSecondsLeft((previous) => {
-        if (previous <= 0) {
-          return 0;
-        }
-
-        const next = previous - 1;
-        setHardModeTickPulse((pulse) => pulse + 1);
-
-        if (next <= HARD_MODE_FINAL_STRETCH_SECONDS && next > 0) {
-          setBoardShakePulse((pulse) => pulse + 1);
-        }
-
-        return next;
-      });
-    }, 1000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [hardModeTimerRunning]);
-
-  useEffect(() => {
-    if (!hardModeTimerRunning || hardModeSecondsLeft > 0) {
-      return;
-    }
-
-    forceLoss();
-  }, [forceLoss, hardModeSecondsLeft, hardModeTimerRunning]);
-
-  const useHint = useCallback(() => {
-    if (hintButtonDisabled) {
-      return;
-    }
-
-    const hintStatus = getHintStatusByDifficulty(player.difficulty);
-    if (!hintStatus) {
-      return;
-    }
-
-    const revealed = revealHint(hintStatus);
-    if (!revealed) {
-      return;
-    }
-
-    setHintsUsed((previous) => previous + 1);
-  }, [hintButtonDisabled, player.difficulty, revealHint]);
-
   return {
     ...wordle,
     currentWinStreak: player.streak,
@@ -326,14 +195,12 @@ export default function useHomeController() {
     hardModeTickPulse,
     hardModeClockBoostScale,
     hardModeFinalStretchProgressPercent,
-    boardShakePulse: effectiveBoardShakePulse,
+    boardShakePulse,
     useHint,
     hintsRemaining,
     hintsEnabledForDifficulty,
     hintButtonDisabled,
-    activeRowHintStatuses,
-    hintRevealPulse,
-    hintRevealTileIndex,
+    startNewBoard,
     refreshBoard,
     showRefreshDialog,
     showWordsDialog,

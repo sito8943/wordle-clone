@@ -1,5 +1,5 @@
 import { env } from "../../config";
-import { hasAttemptedRow } from "./state";
+import { hasInProgressGame } from "./state";
 import type { PersistedGameState } from "./types";
 
 export const readPersistedGameState = (): unknown => {
@@ -25,7 +25,7 @@ export const persistGameState = (state: PersistedGameState): void => {
   }
 
   try {
-    if (hasAttemptedRow(state)) {
+    if (hasInProgressGame(state)) {
       localStorage.setItem(env.wordleGameStorageKey, JSON.stringify(state));
       return;
     }

@@ -10,6 +10,9 @@ import type {
 export const hasAttemptedRow = (state: PersistedGameState): boolean =>
   state.guesses.length > 0;
 
+export const hasInProgressGame = (state: PersistedGameState): boolean =>
+  state.guesses.length > 0 || state.current.length > 0;
+
 export const createInitialGameState = (
   sessionId: string,
   answer: string,
@@ -63,7 +66,7 @@ export const normalizePersistedGameState = (
         gameOver: maybe.gameOver,
       };
 
-      if (!hasAttemptedRow(normalized)) {
+      if (!hasInProgressGame(normalized)) {
         return createInitialGameState(sessionId, initialAnswer);
       }
 
@@ -80,7 +83,7 @@ export const shouldAskToResume = (
 ): boolean =>
   state.sessionId !== currentSessionId &&
   !state.gameOver &&
-  hasAttemptedRow(state);
+  hasInProgressGame(state);
 
 export const isWon = (state: PersistedGameState): boolean =>
   state.guesses.some((guess) => guess.word === state.answer);
