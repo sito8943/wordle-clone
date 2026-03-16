@@ -49,16 +49,16 @@ class ScoreClient {
         ? this.normalizeStreak(input.streak)
         : (currentRecord?.streak ?? 0);
     const createdAt =
-      input.createdAt ??
-      (currentRecord
+      currentRecord
         ? overwriteExisting
-          ? score === currentRecord.score && streak === currentRecord.streak
-            ? currentRecord.createdAt
-            : Date.now()
+          ? (input.createdAt ??
+            (score === currentRecord.score && streak === currentRecord.streak
+              ? currentRecord.createdAt
+              : Date.now()))
           : score <= currentRecord.score
             ? currentRecord.createdAt
-            : Date.now()
-        : Date.now());
+            : (input.createdAt ?? Date.now())
+        : (input.createdAt ?? Date.now());
 
     const record: StoredScore = {
       localId: currentRecord?.localId ?? this.createLocalId(createdAt),
@@ -585,7 +585,9 @@ class ScoreClient {
   }
 
   private dedupeCurrentClientEntries(entries: ScoreEntry[]): ScoreEntry[] {
-    const currentClientEntries = entries.filter((entry) => entry.isCurrentClient);
+    const currentClientEntries = entries.filter(
+      (entry) => entry.isCurrentClient,
+    );
 
     if (currentClientEntries.length <= 1) {
       return entries;
@@ -622,7 +624,9 @@ class ScoreClient {
       preferred = candidate;
     }
 
-    return entries.filter((entry) => !entry.isCurrentClient || entry === preferred);
+    return entries.filter(
+      (entry) => !entry.isCurrentClient || entry === preferred,
+    );
   }
 
   private isNickAvailableInLocalData(nick: string): boolean {
