@@ -1752,6 +1752,60 @@ describe("App", () => {
     });
   });
 
+  it("clears consumed hints when starting a new game from resume dialog", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+    sessionStorage.setItem("wordle:session-id", "session-b");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: false,
+      }),
+    );
+    localStorage.setItem(
+      HINT_USAGE_STORAGE_KEY,
+      JSON.stringify({
+        answer: "APPLE",
+        hintsUsed: 1,
+      }),
+    );
+
+    renderApp();
+
+    expect(
+      screen.getByRole("dialog", { name: "Resume previous game?" }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Start new game" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Resume previous game?" }),
+      ).toBeNull();
+    });
+
+    expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeNull();
+    expect(
+      (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+  });
+
   it("asks to continue when there are typed letters from another tab session", async () => {
     sessionStorage.setItem("wordle:session-id", "session-b");
     localStorage.setItem(

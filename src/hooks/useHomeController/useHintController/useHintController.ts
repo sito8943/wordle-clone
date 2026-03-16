@@ -41,11 +41,8 @@ export const useHintController = ({
     if (persistedHintsUsed <= 0) {
       return;
     }
-    console.log("render", persistedHintsUsed);
     setHintsUsed(persistedHintsUsed);
   }, []);
-
-  console.log(hintsRemaining, hintsLimit, hintsUsed);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -56,7 +53,7 @@ export const useHintController = ({
       if (event.key !== HINT_USAGE_STORAGE_KEY) {
         return;
       }
-      console.log("event", getHintsUsedForAnswer(answer));
+
       setHintsUsed(getHintsUsedForAnswer(answer));
     };
 
@@ -67,7 +64,6 @@ export const useHintController = ({
   }, [answer]);
 
   const resetHints = useCallback(() => {
-    console.log("reset");
     setHintsUsed(0);
     clearHintUsageSnapshot();
   }, []);

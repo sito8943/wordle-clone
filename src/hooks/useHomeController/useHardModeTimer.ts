@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HARD_MODE_FINAL_STRETCH_SECONDS } from "./constants";
-import type {
-  UseHardModeTimerParams,
-  UseHardModeTimerResult,
-} from "./types";
+import type { UseHardModeTimerParams, UseHardModeTimerResult } from "./types";
 import {
   clearHardModeTimerSnapshot,
   getDefaultHardModeTimerSnapshot,
@@ -117,12 +114,7 @@ export const useHardModeTimer = ({
     }
 
     setHardModeTimerStarted(true);
-  }, [
-    currentLength,
-    guessesLength,
-    hardModeTimerStarted,
-    showHardModeTimer,
-  ]);
+  }, [currentLength, guessesLength, hardModeTimerStarted, showHardModeTimer]);
 
   useEffect(() => {
     if (!hardModeTimerRunning) {

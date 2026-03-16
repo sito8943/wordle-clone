@@ -59,51 +59,6 @@ const isHintUsageSnapshot = (value: unknown): value is HintUsageSnapshot => {
   );
 };
 
-export const getDefaultHintUsageSnapshot = (
-  answer: string,
-): HintUsageSnapshot => ({
-  answer,
-  hintsUsed: 0,
-});
-
-export const getInitialHintUsageSnapshot = (
-  answer: string,
-  hasActiveGame: boolean,
-): HintUsageSnapshot => {
-  const fallback = getDefaultHintUsageSnapshot(answer);
-
-  if (typeof window === "undefined") {
-    return fallback;
-  }
-
-  if (!hasActiveGame) {
-    return fallback;
-  }
-
-  try {
-    const raw = localStorage.getItem(HINT_USAGE_STORAGE_KEY);
-    if (!raw) {
-      return fallback;
-    }
-
-    const parsed: unknown = JSON.parse(raw);
-    if (!isHintUsageSnapshot(parsed)) {
-      return fallback;
-    }
-
-    if (parsed.answer !== answer) {
-      return fallback;
-    }
-
-    return {
-      ...parsed,
-      hintsUsed: normalizeHintsUsed(parsed.hintsUsed),
-    };
-  } catch {
-    return fallback;
-  }
-};
-
 export const getHintsUsedForAnswer = (answer: string): number => {
   if (typeof window === "undefined") {
     return 0;

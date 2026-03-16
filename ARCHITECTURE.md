@@ -11,16 +11,20 @@
 ## Runtime Composition
 
 1. `src/main.tsx` bootstraps app with:
+
 - `ErrorBoundary`
 - `ApiProvider`
 - `PlayerProvider`
 - `App` (router)
+
 2. `src/App.tsx` renders `RouterProvider` inside `Suspense`.
 3. `src/routes.tsx` maps:
+
 - `/` -> `Home`
 - `/profile` -> `Profile`
 - `/scoreboard` -> `Scoreboard`
 - fallback -> `NotFound`
+
 4. `src/layouts/View.tsx` provides shared shell (navbar/footer/content outlet).
 
 ## Layered Structure
@@ -77,9 +81,11 @@
 
 1. `Home` view consumes `useHomeController`.
 2. `useHomeController` composes:
+
 - player preferences from `usePlayer`
 - gameplay state/actions from `useWordle`
 - difficulty-specific rules (hints, scoring multiplier, hard-mode timer)
+
 3. `useWordle` delegates core transitions to domain functions and persists game state.
 4. UI components (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
 

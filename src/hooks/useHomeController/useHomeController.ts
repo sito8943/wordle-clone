@@ -24,14 +24,10 @@ export default function useHomeController() {
     forceLoss,
     showResumeDialog,
     boardVersion,
+    startNewBoard: startNewWordleBoard,
     revealHint,
-    activeRowHintStatuses,
-    hintRevealPulse,
-    hintRevealTileIndex,
   } = wordle;
   const hardModeEnabled = player.difficulty === "insane";
-  const hasInProgressGameAtMount =
-    !gameOver && (guesses.length > 0 || current.length > 0);
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
@@ -43,6 +39,7 @@ export default function useHomeController() {
     () => !gameOver && (guesses.length > 0 || current.length > 0),
     [current.length, gameOver, guesses.length],
   );
+  const hasInProgressGameAtMount = hasActiveGame;
   const wordListEnabledForDifficulty = player.difficulty === "easy";
   const {
     showHardModeTimer,
@@ -129,6 +126,12 @@ export default function useHomeController() {
     refresh();
   }, [refresh, resetHardModeTimer, resetHints]);
 
+  const startNewBoard = useCallback(() => {
+    resetHints();
+    resetHardModeTimer();
+    startNewWordleBoard();
+  }, [resetHardModeTimer, resetHints, startNewWordleBoard]);
+
   const refreshBoard = useCallback(() => {
     if (hasActiveGame) {
       setShowRefreshDialog(true);
@@ -197,9 +200,7 @@ export default function useHomeController() {
     hintsRemaining,
     hintsEnabledForDifficulty,
     hintButtonDisabled,
-    activeRowHintStatuses,
-    hintRevealPulse,
-    hintRevealTileIndex,
+    startNewBoard,
     refreshBoard,
     showRefreshDialog,
     showWordsDialog,

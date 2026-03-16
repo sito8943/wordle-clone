@@ -209,7 +209,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
       resetActiveHints();
       setGameStateAndPersist((prev) => applyGuess(prev, validation.guess));
     },
-    [allowUnknownWords, answer, resetActiveHints, setGameStateAndPersist, showMessage],
+    [
+      allowUnknownWords,
+      answer,
+      resetActiveHints,
+      setGameStateAndPersist,
+      showMessage,
+    ],
   );
 
   const removeCurrentLetter = useCallback(() => {
@@ -235,9 +241,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
     }
   }, [current.length, hintRevealTileIndex, setGameStateAndPersist]);
 
-  const addCurrentLetter = useCallback((letter: string) => {
-    setGameStateAndPersist((prev) => addLetter(prev, letter));
-  }, [setGameStateAndPersist]);
+  const addCurrentLetter = useCallback(
+    (letter: string) => {
+      setGameStateAndPersist((prev) => addLetter(prev, letter));
+    },
+    [setGameStateAndPersist],
+  );
 
   const revealHint = useCallback(
     (hintStatus: HintTileStatus): boolean => {
@@ -312,7 +321,10 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
 
   const continuePreviousBoard = useCallback(() => {
-    setGameStateAndPersist((prev) => ({ ...prev, sessionId: currentSessionId }));
+    setGameStateAndPersist((prev) => ({
+      ...prev,
+      sessionId: currentSessionId,
+    }));
     setShowResumeDialog(false);
     resetActiveHints();
   }, [currentSessionId, resetActiveHints, setGameStateAndPersist]);

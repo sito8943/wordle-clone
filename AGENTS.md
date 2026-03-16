@@ -25,9 +25,11 @@ This file defines how agents should work inside this repository.
 
 1. Read `ARCHITECTURE.md` before modifying code.
 2. Locate the owning layer first:
+
 - Domain/state logic -> `src/domain/wordle/*`
 - UI flow + side effects -> controller hooks
 - Pure rendering -> `src/views/*` or `src/components/*`
+
 3. Implement the smallest valid change.
 4. Run targeted tests first, then broader validation if needed.
 5. Keep docs updated when storage contracts, data flow, or project structure changes.
