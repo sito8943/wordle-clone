@@ -15,6 +15,7 @@ import {
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
   WORDLE_START_ANIMATION_SESSION_KEY,
 } from "./domain/wordle";
+import { HINT_USAGE_SESSION_STORAGE_KEY } from "./hooks/useHomeController/constants";
 import { THEME_PREFERENCE_STORAGE_KEY } from "./hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "./providers";
 
@@ -491,6 +492,51 @@ describe("App", () => {
         (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
           .disabled,
       ).toBe(false);
+    });
+  });
+
+  it("keeps hints used disabled state after page refresh", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+    sessionStorage.setItem("wordle:session-id", "session-hint-refresh");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-hint-refresh",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    const hintButton = await screen.findByRole("button", { name: "Hint" });
+    fireEvent.click(hintButton);
+    expect((hintButton as HTMLButtonElement).disabled).toBe(true);
+    expect(sessionStorage.getItem(HINT_USAGE_SESSION_STORAGE_KEY)).toBeTruthy();
+
+    cleanup();
+    renderApp();
+
+    await waitFor(() => {
+      expect(
+        (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
+          .disabled,
+      ).toBe(true);
     });
   });
 

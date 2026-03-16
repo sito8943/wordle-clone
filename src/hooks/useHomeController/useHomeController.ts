@@ -10,8 +10,10 @@ import {
   getHardModeClockBoostScale,
   getHardModeFinalStretchProgressPercent,
   getHintsLimitByDifficulty,
+  getInitialHintUsageSnapshot,
   getInitialHardModeTimerSnapshot,
   isWithinHardModeFinalStretch,
+  setHintUsageSnapshot,
   setHardModeTimerSnapshot,
 } from "./utils";
 import { useWordle } from "../useWordle";
@@ -25,6 +27,7 @@ export default function useHomeController() {
   });
   const {
     sessionId,
+    answer,
     won,
     guesses,
     current,
@@ -42,6 +45,11 @@ export default function useHomeController() {
   const hintsLimit = getHintsLimitByDifficulty(player.difficulty);
   const hasInProgressGameAtMount =
     !gameOver && (guesses.length > 0 || current.length > 0);
+  const initialHintUsageSnapshot = getInitialHintUsageSnapshot(
+    sessionId,
+    answer,
+    hasInProgressGameAtMount,
+  );
   const initialHardModeTimerSnapshot = getInitialHardModeTimerSnapshot(
     sessionId,
     hardModeEnabled,
@@ -51,6 +59,8 @@ export default function useHomeController() {
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
   const skipInitialHardModeReset = useRef(true);
+  const skipInitialHintsBoardReset = useRef(true);
+  const skipInitialHintsDifficultyReset = useRef(true);
   const hardModeEnabledRef = useRef(hardModeEnabled);
   const hardModeTimerStateRef = useRef(initialHardModeTimerSnapshot);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
@@ -64,7 +74,9 @@ export default function useHomeController() {
   );
   const [hardModeTickPulse, setHardModeTickPulse] = useState(0);
   const [boardShakePulse, setBoardShakePulse] = useState(0);
-  const [hintsUsed, setHintsUsed] = useState(0);
+  const [hintsUsed, setHintsUsed] = useState(
+    initialHintUsageSnapshot.hintsUsed,
+  );
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -216,6 +228,14 @@ export default function useHomeController() {
   }, [hardModeSecondsLeft, hardModeTimerStarted, sessionId]);
 
   useEffect(() => {
+    setHintUsageSnapshot({
+      sessionId,
+      answer,
+      hintsUsed,
+    });
+  }, [answer, hintsUsed, sessionId]);
+
+  useEffect(() => {
     hardModeEnabledRef.current = hardModeEnabled;
 
     if (!hardModeEnabled) {
@@ -243,10 +263,20 @@ export default function useHomeController() {
   }, [boardVersion, hardModeEnabled, resetHardModeTimer]);
 
   useEffect(() => {
+    if (skipInitialHintsBoardReset.current) {
+      skipInitialHintsBoardReset.current = false;
+      return;
+    }
+
     setHintsUsed(0);
   }, [boardVersion]);
 
   useEffect(() => {
+    if (skipInitialHintsDifficultyReset.current) {
+      skipInitialHintsDifficultyReset.current = false;
+      return;
+    }
+
     setHintsUsed(0);
   }, [player.difficulty]);
 
@@ -312,8 +342,22 @@ export default function useHomeController() {
       return;
     }
 
-    setHintsUsed((previous) => previous + 1);
-  }, [hintButtonDisabled, player.difficulty, revealHint]);
+    setHintsUsed((previous) => {
+      const nextHintsUsed = previous + 1;
+      setHintUsageSnapshot({
+        sessionId,
+        answer,
+        hintsUsed: nextHintsUsed,
+      });
+      return nextHintsUsed;
+    });
+  }, [
+    answer,
+    hintButtonDisabled,
+    player.difficulty,
+    revealHint,
+    sessionId,
+  ]);
 
   return {
     ...wordle,
