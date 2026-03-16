@@ -1,24 +1,26 @@
 import type { JSX } from "react";
 import { Board, ErrorBoundary, ErrorFallback } from "../../components";
-import type { HomeBoardSectionProps } from "./types";
+import { useHomeView } from "./useHomeView";
 
-const HomeBoardSection = ({
-  guesses,
-  current,
-  gameOver,
-  won,
-  answer,
-  startAnimationSeed,
-  startAnimationsEnabled,
-  boardShakePulse,
-  showHardModeFinalStretchBar,
-  hardModeSecondsLeft,
-  hardModeFinalStretchProgressPercent,
-  animateTileEntry,
-  activeRowHintStatuses,
-  hintRevealPulse,
-  hintRevealTileIndex,
-}: HomeBoardSectionProps): JSX.Element => {
+const HomeBoardSection = (): JSX.Element => {
+  const { controller, animateTileEntry } = useHomeView();
+  const {
+    guesses,
+    current,
+    gameOver,
+    won,
+    answer,
+    startAnimationSeed,
+    startAnimationsEnabled,
+    boardShakePulse,
+    showHardModeFinalStretchBar,
+    hardModeSecondsLeft,
+    hardModeFinalStretchProgressPercent,
+    activeRowHintStatuses,
+    hintRevealPulse,
+    hintRevealTileIndex,
+  } = controller;
+
   return (
     <ErrorBoundary
       name="home-board"

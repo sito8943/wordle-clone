@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "skills": {
+    "adapt": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "1b1db5d2fb133511785345f0fcb0c9d12a805b04a2789028d8890ebe448aad12"
+    },
+    "animate": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "08a073eb451af8dacdb1574ebc412854e40eea1de1eab96b5637e60c94e36d6d"
+    },
+    "audit": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "49cbdf9ca35de3c03d060363207d70fd40b6ec7390e67710887ca43976244b2c"
+    },
+    "clarify": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "028f83c9bbb870046cbb0e01df6c81b72cd5311b893f74db95d3c799a615277a"
+    },
+    "colorize": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "c5e41825e8f9ecd52a2b9feac300868f86917371d8e471228cfc1f169dce8676"
+    },
+    "delight": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "7da96bdd3a6eba4156e4f722804c16d636d4b85e4445f7af960742bafbe489ad"
+    },
+    "extract": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "b01b8be227a2a094e4b65f340c5a767bdbfd27d8bf2ccee4f75c203e44a5a592"
+    },
+    "frontend-design": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "b7146ef043e1d612023eadc58f0984cbb76f2beabba787d3189e53810b96ccc9"
+    },
+    "normalize": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "9952c84ee754979cd340d74a01173be3e39a1297c5c0907de1dc71d902e00901"
+    },
+    "optimize": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "278796e7d0b6febea9a53705f741f47d473cc4725684a5e0bd75fd4a99791b1c"
+    },
+    "teach-impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "90b126d03395f5159f8463e7d402fe1580d93b514adb83f9d0c3774ae40e7c9e"
+    }
+  }
+}

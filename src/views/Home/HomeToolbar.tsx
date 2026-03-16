@@ -8,28 +8,31 @@ import {
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak } from "../../components";
-import type { HomeToolbarProps, NativeKeyboardClockStyle } from "./types";
+import { useHomeView } from "./useHomeView";
+import type { NativeKeyboardClockStyle } from "./types";
 
-const HomeToolbar = ({
-  currentWinStreak,
-  wordListButtonEnabled,
-  dictionaryLoading,
-  dictionaryWordsCount,
-  openWordsDialog,
-  hintsEnabledForDifficulty,
-  useHint,
-  hintButtonDisabled,
-  hintsRemaining,
-  openHelpDialog,
-  developerConsoleEnabled,
-  openDeveloperConsoleDialog,
-  showHardModeTimer,
-  hardModeSecondsLeft,
-  hardModeTickPulse,
-  hardModeClockBoostScale,
-  refreshBoard,
-  dictionaryError,
-}: HomeToolbarProps): JSX.Element => {
+const HomeToolbar = (): JSX.Element => {
+  const { controller, wordListButtonEnabled, developerConsoleEnabled } =
+    useHomeView();
+  const {
+    currentWinStreak,
+    dictionaryLoading,
+    dictionaryWords,
+    openWordsDialog,
+    hintsEnabledForDifficulty,
+    useHint,
+    hintButtonDisabled,
+    hintsRemaining,
+    openHelpDialog,
+    openDeveloperConsoleDialog,
+    showHardModeTimer,
+    hardModeSecondsLeft,
+    hardModeTickPulse,
+    hardModeClockBoostScale,
+    refreshBoard,
+    dictionaryError,
+  } = controller;
+
   return (
     <>
       <div className="w-full flex items-center justify-end gap-2">
@@ -43,7 +46,7 @@ const HomeToolbar = ({
             iconClassName="text-xl"
             className="mobile-compact-button"
             hideLabelOnMobile
-            disabled={dictionaryLoading || dictionaryWordsCount === 0}
+            disabled={dictionaryLoading || dictionaryWords.length === 0}
           >
             Words
           </Button>

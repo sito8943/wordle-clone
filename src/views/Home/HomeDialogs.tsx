@@ -1,6 +1,5 @@
 import type { JSX } from "react";
 import {
-  DeveloperConsoleDialog,
   ErrorBoundary,
   ErrorFallback,
   HelpDialog,
@@ -8,28 +7,27 @@ import {
   SessionResumeDialog,
   WordListDialog,
 } from "../../components";
-import type { HomeDialogsProps } from "./types";
+import HomeDeveloperConsoleDialog from "./HomeDeveloperConsoleDialog";
+import { useHomeView } from "./useHomeView";
 
-const HomeDialogs = ({
-  message,
-  showResumeDialog,
-  showRefreshDialog,
-  showWordsDialog,
-  showHelpDialog,
-  showDeveloperConsoleDialog,
-  continuePreviousBoard,
-  startNewBoard,
-  cancelRefreshBoard,
-  confirmRefreshBoard,
-  wordListButtonEnabled,
-  dictionaryWords,
-  closeWordsDialog,
-  closeHelpDialog,
-  developerConsoleEnabled,
-  player,
-  closeDeveloperConsoleDialog,
-  submitDeveloperPlayer,
-}: HomeDialogsProps): JSX.Element => {
+const HomeDialogs = (): JSX.Element => {
+  const { controller, wordListButtonEnabled } = useHomeView();
+  const {
+    message,
+    showResumeDialog,
+    showRefreshDialog,
+    showWordsDialog,
+    showHelpDialog,
+    showDeveloperConsoleDialog,
+    continuePreviousBoard,
+    startNewBoard,
+    cancelRefreshBoard,
+    confirmRefreshBoard,
+    dictionaryWords,
+    closeWordsDialog,
+    closeHelpDialog,
+  } = controller;
+
   return (
     <ErrorBoundary
       name="home-overlays"
@@ -83,15 +81,7 @@ const HomeDialogs = ({
         {!showResumeDialog && showHelpDialog && (
           <HelpDialog onClose={closeHelpDialog} />
         )}
-        {!showResumeDialog &&
-          developerConsoleEnabled &&
-          showDeveloperConsoleDialog && (
-            <DeveloperConsoleDialog
-              player={player}
-              onClose={closeDeveloperConsoleDialog}
-              onSubmit={submitDeveloperPlayer}
-            />
-          )}
+        <HomeDeveloperConsoleDialog />
       </>
     </ErrorBoundary>
   );
