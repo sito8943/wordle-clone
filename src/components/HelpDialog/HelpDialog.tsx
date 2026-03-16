@@ -44,7 +44,10 @@ const HelpDialog = ({ onClose }: HelpDialogProps) => {
           <section>
             <h3 className="text-base font-semibold">Rules</h3>
             <ul className="mt-2 list-disc pl-5 space-y-1">
-              <li>Each guess must be a valid 5-letter word.</li>
+              <li>Each guess must be 5 letters long.</li>
+              <li>Press Enter to submit your guess.</li>
+              <li>Easy, Normal, and Hard accept non-dictionary words.</li>
+              <li>Insane only accepts words from the dictionary.</li>
               <li>Green tile: correct letter in the correct position.</li>
               <li>Yellow tile: correct letter in the wrong position.</li>
               <li>Gray tile: letter is not in the word.</li>
