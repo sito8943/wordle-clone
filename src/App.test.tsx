@@ -497,6 +497,25 @@ describe("App", () => {
     expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeNull();
   });
 
+  it("uses current letters to choose a non-repeated present hint when possible", () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hint" }));
+
+    expect(screen.getByRole("gridcell", { name: "L, present" })).toBeTruthy();
+  });
+
   it("keeps hints used disabled state after page refresh", async () => {
     localStorage.setItem(
       "player",
@@ -855,6 +874,41 @@ describe("App", () => {
       expect(player.difficulty).toBe("normal");
     });
     expect(localStorage.getItem(env.wordleGameStorageKey)).toBeTruthy();
+  });
+
+  it("asks confirmation when changing difficulty with typed letters before submit", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-active",
+        answer: "APPLE",
+        guesses: [],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("link", { name: "Profile" }));
+    expect(
+      await screen.findByRole("heading", { name: "Profile" }),
+    ).toBeTruthy();
+
+    const difficultySelect = screen.getByLabelText(
+      "Difficulty",
+    ) as HTMLSelectElement;
+    expect(difficultySelect.value).toBe("normal");
+
+    fireEvent.change(difficultySelect, { target: { value: "hard" } });
+
+    expect(
+      await screen.findByRole("dialog", { name: "Change difficulty?" }),
+    ).toBeTruthy();
   });
 
   it("resets active game after confirming difficulty change", async () => {

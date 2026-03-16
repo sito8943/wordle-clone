@@ -99,13 +99,16 @@ export const blurRefreshButtonIfFocused = (): void => {
 export const getPresentHintLetter = (
   answer: string,
   currentIndex: number,
+  currentGuess: string,
 ): string | null => {
   if (currentIndex < 0 || currentIndex >= answer.length) {
     return null;
   }
 
   const currentAnswerLetter = answer[currentIndex];
+  const guessedLetters = new Set(currentGuess.toUpperCase().split(""));
   const seen = new Set<string>();
+  let fallback: string | null = null;
 
   for (const letter of answer) {
     if (letter === currentAnswerLetter || seen.has(letter)) {
@@ -113,8 +116,14 @@ export const getPresentHintLetter = (
     }
 
     seen.add(letter);
-    return letter;
+    if (!guessedLetters.has(letter)) {
+      return letter;
+    }
+
+    if (!fallback) {
+      fallback = letter;
+    }
   }
 
-  return null;
+  return fallback;
 };

@@ -7,11 +7,13 @@ export const hasActivePersistedGame = (value: unknown): boolean => {
   }
 
   const maybeState = value as Partial<PersistedGameState>;
+  const hasAttemptedGuess =
+    Array.isArray(maybeState.guesses) && maybeState.guesses.length > 0;
+  const hasTypedLetters =
+    typeof maybeState.current === "string" && maybeState.current.length > 0;
 
   return (
-    maybeState.gameOver === false &&
-    Array.isArray(maybeState.guesses) &&
-    maybeState.guesses.length > 0
+    maybeState.gameOver === false && (hasAttemptedGuess || hasTypedLetters)
   );
 };
 

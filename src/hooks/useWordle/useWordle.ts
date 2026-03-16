@@ -263,7 +263,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       const letter =
         hintStatus === "correct"
           ? answer[nextIndex]
-          : getPresentHintLetter(answer, nextIndex);
+          : getPresentHintLetter(answer, nextIndex, current);
 
       if (!letter) {
         showMessage(NO_PRESENT_HINT_AVAILABLE_MESSAGE);
@@ -282,7 +282,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     },
     [
       answer,
-      current.length,
+      current,
       gameOver,
       setGameStateAndPersist,
       showMessage,
