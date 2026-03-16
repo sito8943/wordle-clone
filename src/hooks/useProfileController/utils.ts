@@ -12,7 +12,9 @@ export const hasActivePersistedGame = (value: unknown): boolean => {
   const hasTypedLetters =
     typeof maybeState.current === "string" && maybeState.current.length > 0;
 
-  return maybeState.gameOver === false && (hasAttemptedGuess || hasTypedLetters);
+  return (
+    maybeState.gameOver === false && (hasAttemptedGuess || hasTypedLetters)
+  );
 };
 
 export const getPlayerDifficultyLabel = (
