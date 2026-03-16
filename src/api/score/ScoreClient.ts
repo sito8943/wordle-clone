@@ -48,17 +48,16 @@ class ScoreClient {
       typeof input.streak === "number"
         ? this.normalizeStreak(input.streak)
         : (currentRecord?.streak ?? 0);
-    const createdAt =
-      currentRecord
-        ? overwriteExisting
-          ? (input.createdAt ??
-            (score === currentRecord.score && streak === currentRecord.streak
-              ? currentRecord.createdAt
-              : Date.now()))
-          : score <= currentRecord.score
+    const createdAt = currentRecord
+      ? overwriteExisting
+        ? (input.createdAt ??
+          (score === currentRecord.score && streak === currentRecord.streak
             ? currentRecord.createdAt
-            : (input.createdAt ?? Date.now())
-        : (input.createdAt ?? Date.now());
+            : Date.now()))
+        : score <= currentRecord.score
+          ? currentRecord.createdAt
+          : (input.createdAt ?? Date.now())
+      : (input.createdAt ?? Date.now());
 
     const record: StoredScore = {
       localId: currentRecord?.localId ?? this.createLocalId(createdAt),
