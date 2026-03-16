@@ -1,17 +1,19 @@
 import { useDialogCloseTransition } from "../../hooks";
 import { Button } from "../Button";
+import { Dialog } from "../Dialog";
 import { DIALOG_CLOSE_DURATION_MS } from "./constants";
 import type { ConfirmationDialogProps } from "./types";
 import { getDialogTransitionClasses } from "./utils";
 
 const ConfirmationDialog = ({
+  visible,
+  onClose,
   title,
   description,
   confirmActionLabel,
   cancelActionLabel,
   dialogTitleId,
   onConfirm,
-  onCancel,
 }: ConfirmationDialogProps) => {
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
@@ -20,35 +22,28 @@ const ConfirmationDialog = ({
     getDialogTransitionClasses(isClosing);
 
   return (
-    <div className={`dialog-backdrop z-20 ${backdropAnimationClassName}`}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={dialogTitleId}
-        className={`dialog-panel ${panelAnimationClassName}`}
-      >
-        <h2 id={dialogTitleId} className="dialog-title">
-          {title}
-        </h2>
-        <p className="dialog-description">{description}</p>
-
-        <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <Button
-            onClick={() => closeWithAction(onConfirm)}
-            disabled={isClosing}
-          >
-            {confirmActionLabel}
-          </Button>
-          <Button
-            onClick={() => closeWithAction(onCancel)}
-            variant="outline"
-            disabled={isClosing}
-          >
-            {cancelActionLabel}
-          </Button>
-        </div>
+    <Dialog
+      visible={visible}
+      onClose={() => closeWithAction(onClose)}
+      titleId={dialogTitleId}
+      title={title}
+      description={description}
+      backdropAnimationClassName={backdropAnimationClassName}
+      panelAnimationClassName={panelAnimationClassName}
+    >
+      <div className="mt-5 flex flex-wrap justify-end gap-3">
+        <Button onClick={() => closeWithAction(onConfirm)} disabled={isClosing}>
+          {confirmActionLabel}
+        </Button>
+        <Button
+          onClick={() => closeWithAction(onClose)}
+          variant="outline"
+          disabled={isClosing}
+        >
+          {cancelActionLabel}
+        </Button>
       </div>
-    </div>
+    </Dialog>
   );
 };
 

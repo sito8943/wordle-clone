@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useDialogCloseTransition } from "../../hooks";
 import { Button } from "../Button";
+import { Dialog } from "../Dialog";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
@@ -16,6 +17,8 @@ import {
 import type { InitialPlayerDialogProps } from "./types";
 
 const InitialPlayerDialog = ({
+  visible,
+  onClose,
   initialName,
   onConfirm,
   onValidateName,
@@ -63,56 +66,51 @@ const InitialPlayerDialog = ({
   };
 
   return (
-    <div className={`dialog-backdrop z-30 ${backdropAnimationClassName}`}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={INITIAL_PLAYER_DIALOG_TITLE_ID}
-        className={`dialog-panel ${panelAnimationClassName}`}
-      >
-        <h2 id={INITIAL_PLAYER_DIALOG_TITLE_ID} className="dialog-title">
-          {INITIAL_PLAYER_DIALOG_TITLE}
-        </h2>
-        <p className="dialog-description">
-          {INITIAL_PLAYER_DIALOG_DESCRIPTION}
-        </p>
+    <Dialog
+      visible={visible}
+      onClose={onClose}
+      titleId={INITIAL_PLAYER_DIALOG_TITLE_ID}
+      title={INITIAL_PLAYER_DIALOG_TITLE}
+      description={INITIAL_PLAYER_DIALOG_DESCRIPTION}
+      zIndexClassName="z-30"
+      backdropAnimationClassName={backdropAnimationClassName}
+      panelAnimationClassName={panelAnimationClassName}
+    >
+      <form className="mt-4" onSubmit={handleSubmit}>
+        <label
+          htmlFor={INITIAL_PLAYER_DIALOG_INPUT_ID}
+          className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
+        >
+          Player name
+        </label>
+        <input
+          ref={nameInputRef}
+          id={INITIAL_PLAYER_DIALOG_INPUT_ID}
+          type="text"
+          value={name}
+          disabled={isClosing || isSubmitting}
+          maxLength={30}
+          onChange={(
+            event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
+          ) => {
+            setName(event.target.value);
+            if (error) {
+              setError("");
+            }
+            event.stopPropagation();
+          }}
+          className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+        />
 
-        <form className="mt-4" onSubmit={handleSubmit}>
-          <label
-            htmlFor={INITIAL_PLAYER_DIALOG_INPUT_ID}
-            className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
-          >
-            Player name
-          </label>
-          <input
-            ref={nameInputRef}
-            id={INITIAL_PLAYER_DIALOG_INPUT_ID}
-            type="text"
-            value={name}
-            disabled={isClosing || isSubmitting}
-            maxLength={30}
-            onChange={(
-              event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
-            ) => {
-              setName(event.target.value);
-              if (error) {
-                setError("");
-              }
-              event.stopPropagation();
-            }}
-            className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
-          />
+        {error ? <p className="mt-2 input-error-text">{error}</p> : null}
 
-          {error ? <p className="mt-2 input-error-text">{error}</p> : null}
-
-          <div className="mt-5 flex justify-end">
-            <Button type="submit" disabled={isClosing || isSubmitting}>
-              {INITIAL_PLAYER_DIALOG_PRIMARY_ACTION_LABEL}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="mt-5 flex justify-end">
+          <Button type="submit" disabled={isClosing || isSubmitting}>
+            {INITIAL_PLAYER_DIALOG_PRIMARY_ACTION_LABEL}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 };
 

@@ -9,17 +9,19 @@ import {
 import type { RefreshConfirmationDialogProps } from "./types";
 
 const RefreshConfirmationDialog = ({
+  visible,
+  onClose,
   onConfirm,
-  onCancel,
 }: RefreshConfirmationDialogProps) => (
   <ConfirmationDialog
+    visible={visible}
+    onClose={onClose}
     title={REFRESH_CONFIRMATION_DIALOG_TITLE}
     description={REFRESH_CONFIRMATION_DIALOG_DESCRIPTION}
     confirmActionLabel={REFRESH_CONFIRMATION_DIALOG_CONFIRM_ACTION_LABEL}
     cancelActionLabel={REFRESH_CONFIRMATION_DIALOG_CANCEL_ACTION_LABEL}
     dialogTitleId={REFRESH_CONFIRMATION_DIALOG_TITLE_ID}
     onConfirm={onConfirm}
-    onCancel={onCancel}
   />
 );
 

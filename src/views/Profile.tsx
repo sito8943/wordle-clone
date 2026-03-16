@@ -39,8 +39,10 @@ const Profile = () => {
 
   return (
     <main className="page-centered gap-10">
-      {isDifficultyChangeConfirmationOpen && (
+      {isDifficultyChangeConfirmationOpen ? (
         <ConfirmationDialog
+          visible={isDifficultyChangeConfirmationOpen}
+          onClose={cancelDifficultyChange}
           title={DIFFICULTY_CHANGE_CONFIRMATION_TITLE}
           description={`${DIFFICULTY_CHANGE_CONFIRMATION_DESCRIPTION} New difficulty: ${pendingDifficultyLabel(
             pendingDifficulty,
@@ -49,9 +51,8 @@ const Profile = () => {
           cancelActionLabel={DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL}
           dialogTitleId={DIFFICULTY_CHANGE_DIALOG_TITLE_ID}
           onConfirm={confirmDifficultyChange}
-          onCancel={cancelDifficultyChange}
         />
-      )}
+      ) : null}
       <div className="flex gap-4 items-center flex-wrap justify-center">
         <h2 className="page-title">Profile</h2>
         <Button onClick={toggleEditing}>{editing ? "Cancel" : "Edit"}</Button>

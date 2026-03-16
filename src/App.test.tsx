@@ -9,6 +9,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { ScoreClient, type TopScoresResult } from "./api/score";
+import { UPDATE_SCORE_MUTATION } from "./api/score/constants";
 import { env } from "./config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
@@ -38,6 +39,9 @@ const renderApp = () =>
     </ApiProvider>,
   );
 
+const defaultEnvMode = env.mode;
+const defaultEnvConvexUrl = env.convexUrl;
+
 const mockSystemTheme = (mode: "light" | "dark") => {
   const prefersDark = mode === "dark";
 
@@ -64,6 +68,8 @@ describe("App", () => {
   });
 
   beforeEach(() => {
+    env.mode = defaultEnvMode;
+    env.convexUrl = defaultEnvConvexUrl;
     localStorage.clear();
     sessionStorage.clear();
     document.documentElement.classList.remove("dark");
@@ -319,6 +325,146 @@ describe("App", () => {
     });
   });
 
+  it("hides developer console button outside development mode", () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    expect(
+      screen.queryByRole("button", { name: "Developer console" }),
+    ).toBeNull();
+  });
+
+  it("shows developer console in develpment mode and updates current player", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+    env.mode = "develpment";
+    const recordScoreSpy = vi
+      .spyOn(ScoreClient.prototype, "recordScore")
+      .mockResolvedValue();
+
+    try {
+      renderApp();
+
+      fireEvent.click(
+        await screen.findByRole("button", { name: "Developer console" }),
+      );
+
+      expect(
+        await screen.findByRole("dialog", { name: "Developer console" }),
+      ).toBeTruthy();
+
+      fireEvent.change(screen.getByLabelText("Player name"), {
+        target: { value: "DevUser" },
+      });
+      fireEvent.change(screen.getByLabelText("Score"), {
+        target: { value: "42" },
+      });
+      fireEvent.change(screen.getByLabelText("Streak"), {
+        target: { value: "7" },
+      });
+      fireEvent.change(screen.getByLabelText("Difficulty"), {
+        target: { value: "hard" },
+      });
+      fireEvent.change(screen.getByLabelText("Keyboard mode"), {
+        target: { value: "native" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("dialog", { name: "Developer console" }),
+        ).toBeNull();
+      });
+      await waitFor(() => {
+        const player = JSON.parse(localStorage.getItem("player") || "{}");
+        expect(player.name).toBe("DevUser");
+        expect(player.score).toBe(42);
+        expect(player.streak).toBe(7);
+        expect(player.difficulty).toBe("hard");
+        expect(player.keyboardPreference).toBe("native");
+      });
+
+      expect(recordScoreSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nick: "DevUser",
+          score: 42,
+          streak: 7,
+          overwriteExisting: true,
+        }),
+        UPDATE_SCORE_MUTATION,
+      );
+      expect(screen.getByLabelText("Streak: 7")).toBeTruthy();
+    } finally {
+      recordScoreSpy.mockRestore();
+    }
+  });
+
+  it("syncs scoreboard with score overrides from developer console", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 80, streak: 5 }),
+    );
+    localStorage.setItem("wordle:scoreboard:client-id", "dev-client");
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "dev-row",
+          clientId: "dev-client",
+          nick: "Player",
+          score: 80,
+          streak: 5,
+          createdAt: 1000,
+        },
+      ]),
+    );
+    env.mode = "develpment";
+    env.convexUrl = undefined;
+
+    renderApp();
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Developer console" }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: "Developer console" }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Score"), {
+      target: { value: "12" },
+    });
+    fireEvent.change(screen.getByLabelText("Streak"), {
+      target: { value: "1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Developer console" }),
+      ).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
+    expect(
+      await screen.findByRole("heading", { name: "Scoreboard" }),
+    ).toBeTruthy();
+
+    await waitFor(() => {
+      const currentRow = document.querySelector(
+        ".scoreboard-current-player-row",
+      );
+      expect(currentRow).toBeTruthy();
+      expect(currentRow?.textContent).toContain("12");
+    });
+  });
+
   it("shows word list button only in easy difficulty", async () => {
     localStorage.setItem(
       "player",
@@ -480,7 +626,9 @@ describe("App", () => {
     expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
-    fireEvent.click(screen.getByRole("button", { name: "Yes, refresh game" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Yes, refresh game" }),
+    );
 
     await waitFor(() => {
       expect(
@@ -1188,7 +1336,14 @@ describe("App", () => {
       screen.getByText("Insane only accepts words from the dictionary."),
     ).toBeTruthy();
     expect(
-      screen.getByText("Final score = base points x difficulty multiplier."),
+      screen.getByText(
+        "Streak bonus adds your current streak value to each win.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Final score = base points + difficulty bonus + streak bonus.",
+      ),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
@@ -1198,7 +1353,7 @@ describe("App", () => {
     });
   });
 
-  it("applies easy difficulty score multiplier on win", async () => {
+  it("applies easy difficulty bonus and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1218,11 +1373,11 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(6);
+      expect(player.score).toBe(7);
     });
   });
 
-  it("applies hard difficulty score multiplier on win", async () => {
+  it("applies hard difficulty bonus and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1242,11 +1397,11 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(18);
+      expect(player.score).toBe(9);
     });
   });
 
-  it("applies insane difficulty score multiplier on win", async () => {
+  it("applies insane difficulty bonus and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1266,7 +1421,32 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(24);
+      expect(player.score).toBe(10);
+    });
+  });
+
+  it("uses current streak as bonus on win", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 3,
+        difficulty: "easy",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.score).toBe(10);
+      expect(player.streak).toBe(4);
     });
   });
 
@@ -1421,7 +1601,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(12);
+      expect(player.score).toBe(8);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
@@ -1479,7 +1659,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(12);
+      expect(player.score).toBe(8);
     });
 
     fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));

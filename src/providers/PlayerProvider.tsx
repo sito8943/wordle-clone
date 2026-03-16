@@ -54,6 +54,18 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [setStoredPlayer],
   );
 
+  const replacePlayer = useCallback(
+    (nextPlayer: Partial<Player>) => {
+      setStoredPlayer((prev) =>
+        normalizePlayer({
+          ...normalizePlayer(prev),
+          ...nextPlayer,
+        }),
+      );
+    },
+    [setStoredPlayer],
+  );
+
   const increaseScore = useCallback(
     (points: number) => {
       const safePoints =
@@ -134,6 +146,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     () => ({
       player,
       updatePlayer,
+      replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
       increaseScore,
@@ -143,6 +156,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [
       player,
       updatePlayer,
+      replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
       increaseScore,

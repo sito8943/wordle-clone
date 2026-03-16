@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConvexGateway } from "../convex/ConvexGateway";
 import { ScoreClient } from "./ScoreClient";
-import { SCOREBOARD_CACHE_KEY, SCOREBOARD_CLIENT_ID_KEY } from "./constants";
+import {
+  SCOREBOARD_CACHE_KEY,
+  SCOREBOARD_CLIENT_ID_KEY,
+  UPDATE_SCORE_MUTATION,
+} from "./constants";
 import type { ScoreClientGatewayOverrides } from "./types";
 
 const createStorage = (): Storage => {
@@ -178,6 +182,73 @@ describe("ScoreClient", () => {
     expect(result.scores).toHaveLength(1);
     expect(result.scores[0].score).toBe(10);
     expect(result.scores[0].streak).toBe(0);
+  });
+
+  it("overwrites current client score when requested", async () => {
+    const client = new ScoreClient(createGateway(), storage);
+
+    await client.recordScore({
+      nick: "Sito",
+      score: 25,
+      streak: 4,
+      createdAt: 1000,
+    });
+    await client.recordScore({
+      nick: "Sito",
+      score: 3,
+      streak: 1,
+      createdAt: 2000,
+      overwriteExisting: true,
+    });
+
+    const result = await client.listTopScores(10);
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].score).toBe(3);
+    expect(result.scores[0].streak).toBe(1);
+    expect(result.scores[0].createdAt).toBe(2000);
+  });
+
+  it("syncs pending overwrite scores using update mutation", async () => {
+    const networkError = new Error("Network offline");
+    const mutation = vi
+      .fn()
+      .mockRejectedValueOnce(networkError)
+      .mockResolvedValueOnce(undefined);
+    const query = vi.fn().mockResolvedValue([]);
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation,
+        isNetworkError: (error) => error === networkError,
+      }),
+      storage,
+    );
+
+    await client.recordScore(
+      {
+        nick: "Sito",
+        score: 3,
+        streak: 1,
+        createdAt: 2000,
+        overwriteExisting: true,
+      },
+      UPDATE_SCORE_MUTATION,
+    );
+
+    await client.listTopScores(10);
+
+    expect(mutation).toHaveBeenNthCalledWith(
+      2,
+      UPDATE_SCORE_MUTATION,
+      expect.objectContaining({
+        nick: "Sito",
+        score: 3,
+        streak: 1,
+        createdAt: 2000,
+      }),
+    );
   });
 
   it("returns current client rank metadata from remote response", async () => {

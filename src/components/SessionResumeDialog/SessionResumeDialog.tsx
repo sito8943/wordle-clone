@@ -9,17 +9,19 @@ import {
 import type { SessionResumeDialogProps } from "./types";
 
 const SessionResumeDialog = ({
-  onContinue,
+  visible,
+  onClose,
   onStartNew,
 }: SessionResumeDialogProps) => (
   <ConfirmationDialog
+    visible={visible}
+    onClose={onClose}
     title={DEFAULT_RESUME_DIALOG_TITLE}
     description={DEFAULT_RESUME_DIALOG_DESCRIPTION}
     confirmActionLabel={DEFAULT_RESUME_DIALOG_PRIMARY_ACTION_LABEL}
     cancelActionLabel={DEFAULT_RESUME_DIALOG_SECONDARY_ACTION_LABEL}
     dialogTitleId={DEFAULT_RESUME_DIALOG_TITLE_ID}
     onConfirm={onStartNew}
-    onCancel={onContinue}
   />
 );
 

@@ -1,4 +1,5 @@
 export type SessionResumeDialogProps = {
-  onContinue: () => void;
+  visible: boolean;
+  onClose: () => void;
   onStartNew: () => void;
 };
