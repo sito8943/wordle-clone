@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { UPDATE_SCORE_MUTATION } from "../api/score/constants";
 import { useLocalStorage } from "../hooks/";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
@@ -177,7 +178,17 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     const scoreChanged = score !== previous.score;
     const streakChanged = streak !== previous.streak;
 
-    if (nameChanged || scoreChanged || streakChanged) {
+    if (nameChanged) {
+      void scoreClient.recordScore(
+        {
+          nick: name,
+          score,
+          streak,
+          overwriteExisting: true,
+        },
+        UPDATE_SCORE_MUTATION,
+      );
+    } else if (scoreChanged || streakChanged) {
       void scoreClient.recordScore({ nick: name, score, streak });
     }
 
