@@ -10,8 +10,7 @@ export default function useHomeController() {
   const { player, increaseScore, increaseWinStreak, resetWinStreak } =
     usePlayer();
   const wordle = useWordle({
-    allowUnknownWords:
-      player.difficulty === "hard" || player.difficulty === "insane",
+    allowUnknownWords: player.difficulty !== "insane",
   });
   const {
     sessionId,
