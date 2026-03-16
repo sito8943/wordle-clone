@@ -17,6 +17,8 @@ import {
 import type { InitialPlayerDialogProps } from "./types";
 
 const InitialPlayerDialog = ({
+  visible,
+  onClose,
   initialName,
   onConfirm,
   onValidateName,
@@ -65,6 +67,8 @@ const InitialPlayerDialog = ({
 
   return (
     <Dialog
+      visible={visible}
+      onClose={onClose}
       titleId={INITIAL_PLAYER_DIALOG_TITLE_ID}
       title={INITIAL_PLAYER_DIALOG_TITLE}
       description={INITIAL_PLAYER_DIALOG_DESCRIPTION}

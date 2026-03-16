@@ -624,7 +624,9 @@ describe("App", () => {
     expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
-    fireEvent.click(screen.getByRole("button", { name: "Yes, refresh game" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Yes, refresh game" }),
+    );
 
     await waitFor(() => {
       expect(

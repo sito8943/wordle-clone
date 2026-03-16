@@ -1,12 +1,6 @@
-import { useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { Outlet, useLocation } from "react-router";
-import {
-  ErrorBoundary,
-  ErrorFallback,
-  Footer,
-  InitialPlayerDialog,
-  Navbar,
-} from "../components";
+import { ErrorBoundary, ErrorFallback, Footer, Navbar } from "../components";
 import { useAnimationsPreference, useThemePreference } from "../hooks";
 import { useApi, usePlayer } from "../providers";
 import { normalizePlayerName } from "../providers/utils";
@@ -15,6 +9,10 @@ import {
   INITIAL_PLAYER_NAME_VALIDATION_ERROR,
 } from "./constants";
 import { shouldAskForInitialPlayerName } from "./utils";
+
+const InitialPlayerDialog = lazy(
+  () => import("../components/InitialPlayerDialog/InitialPlayerDialog"),
+);
 
 const View = () => {
   const { scoreClient } = useApi();
@@ -74,13 +72,17 @@ const View = () => {
         </ErrorBoundary>
       </div>
       <Footer />
-      {showInitialPlayerDialog ? (
-        <InitialPlayerDialog
-          initialName={player.name}
-          onConfirm={confirmInitialPlayerName}
-          onValidateName={validateInitialPlayerName}
-        />
-      ) : null}
+      <Suspense fallback={null}>
+        {showInitialPlayerDialog ? (
+          <InitialPlayerDialog
+            visible={showInitialPlayerDialog}
+            onClose={() => undefined}
+            initialName={player.name}
+            onConfirm={confirmInitialPlayerName}
+            onValidateName={validateInitialPlayerName}
+          />
+        ) : null}
+      </Suspense>
     </div>
   );
 };

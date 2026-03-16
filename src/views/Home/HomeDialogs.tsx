@@ -1,14 +1,23 @@
-import type { JSX } from "react";
-import {
-  ErrorBoundary,
-  ErrorFallback,
-  HelpDialog,
-  RefreshConfirmationDialog,
-  SessionResumeDialog,
-  WordListDialog,
-} from "../../components";
-import HomeDeveloperConsoleDialog from "./HomeDeveloperConsoleDialog";
+import { lazy, Suspense, type JSX } from "react";
+import { ErrorBoundary, ErrorFallback } from "../../components";
 import { useHomeView } from "./useHomeView";
+
+const SessionResumeDialog = lazy(
+  () => import("../../components/SessionResumeDialog/SessionResumeDialog"),
+);
+const RefreshConfirmationDialog = lazy(
+  () =>
+    import(
+      "../../components/RefreshConfirmationDialog/RefreshConfirmationDialog"
+    ),
+);
+const WordListDialog = lazy(
+  () => import("../../components/WordListDialog/WordListDialog"),
+);
+const HelpDialog = lazy(() => import("../../components/HelpDialog/HelpDialog"));
+const HomeDeveloperConsoleDialog = lazy(
+  () => import("./HomeDeveloperConsoleDialog"),
+);
 
 const HomeDialogs = (): JSX.Element => {
   const { controller, wordListButtonEnabled } = useHomeView();
@@ -26,7 +35,15 @@ const HomeDialogs = (): JSX.Element => {
     dictionaryWords,
     closeWordsDialog,
     closeHelpDialog,
+    closeDeveloperConsoleDialog,
   } = controller;
+  const resumeDialogVisible = showResumeDialog;
+  const refreshDialogVisible = !showResumeDialog && showRefreshDialog;
+  const wordListDialogVisible =
+    !showResumeDialog && wordListButtonEnabled && showWordsDialog;
+  const helpDialogVisible = !showResumeDialog && showHelpDialog;
+  const developerConsoleDialogVisible =
+    !showResumeDialog && showDeveloperConsoleDialog;
 
   return (
     <ErrorBoundary
@@ -59,29 +76,39 @@ const HomeDialogs = (): JSX.Element => {
             {message}
           </div>
         )}
-        {showResumeDialog && (
-          <SessionResumeDialog
-            onContinue={continuePreviousBoard}
-            onStartNew={startNewBoard}
-          />
-        )}
-        {!showResumeDialog && showRefreshDialog && (
-          <RefreshConfirmationDialog
-            onCancel={cancelRefreshBoard}
-            onConfirm={confirmRefreshBoard}
-          />
-        )}
-        {!showResumeDialog && wordListButtonEnabled && showWordsDialog && (
-          <WordListDialog
-            language="en"
-            words={dictionaryWords}
-            onClose={closeWordsDialog}
-          />
-        )}
-        {!showResumeDialog && showHelpDialog && (
-          <HelpDialog onClose={closeHelpDialog} />
-        )}
-        <HomeDeveloperConsoleDialog />
+        <Suspense fallback={null}>
+          {resumeDialogVisible ? (
+            <SessionResumeDialog
+              visible={resumeDialogVisible}
+              onClose={continuePreviousBoard}
+              onStartNew={startNewBoard}
+            />
+          ) : null}
+          {refreshDialogVisible ? (
+            <RefreshConfirmationDialog
+              visible={refreshDialogVisible}
+              onClose={cancelRefreshBoard}
+              onConfirm={confirmRefreshBoard}
+            />
+          ) : null}
+          {wordListDialogVisible ? (
+            <WordListDialog
+              visible={wordListDialogVisible}
+              language="en"
+              words={dictionaryWords}
+              onClose={closeWordsDialog}
+            />
+          ) : null}
+          {helpDialogVisible ? (
+            <HelpDialog visible={helpDialogVisible} onClose={closeHelpDialog} />
+          ) : null}
+          {developerConsoleDialogVisible ? (
+            <HomeDeveloperConsoleDialog
+              visible={developerConsoleDialogVisible}
+              onClose={closeDeveloperConsoleDialog}
+            />
+          ) : null}
+        </Suspense>
       </>
     </ErrorBoundary>
   );

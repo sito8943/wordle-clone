@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 
 export type DialogProps = {
+  visible: boolean;
+  onClose: () => void;
   titleId: string;
   title: string;
   description?: string;

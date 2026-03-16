@@ -9,7 +9,12 @@ import { Dialog } from "../Dialog";
 import { WORD_LIST_DIALOG_TITLE_ID } from "./constants";
 import type { WordListDialogProps } from "./types";
 
-const WordListDialog = ({ language, words, onClose }: WordListDialogProps) => {
+const WordListDialog = ({
+  visible,
+  language,
+  words,
+  onClose,
+}: WordListDialogProps) => {
   const [query, setQuery] = useState("");
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
@@ -28,6 +33,8 @@ const WordListDialog = ({ language, words, onClose }: WordListDialogProps) => {
 
   return (
     <Dialog
+      visible={visible}
+      onClose={() => closeWithAction(onClose)}
       titleId={WORD_LIST_DIALOG_TITLE_ID}
       title="Possible words"
       description={`${language.toUpperCase()} • ${filteredWords.length}/${words.length}`}

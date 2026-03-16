@@ -32,8 +32,7 @@ export type UseNativeKeyboardInputResult = {
 
 export type NativeKeyboardClockStyle = CSSProperties;
 
-export type HomeDeveloperConsoleDialogContentProps = {
-  player: Player;
+export type HomeDeveloperConsoleDialogProps = {
+  visible: boolean;
   onClose: () => void;
-  onSubmit: (nextPlayer: Partial<Player>) => void;
 };

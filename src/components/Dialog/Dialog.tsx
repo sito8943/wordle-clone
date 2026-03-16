@@ -1,4 +1,5 @@
-import type { JSX } from "react";
+import { useEffect, type JSX } from "react";
+import { createPortal } from "react-dom";
 import type { DialogProps } from "./types";
 
 const joinClassNames = (...classNames: Array<string | undefined>): string => {
@@ -6,6 +7,8 @@ const joinClassNames = (...classNames: Array<string | undefined>): string => {
 };
 
 const Dialog = ({
+  visible,
+  onClose,
   titleId,
   title,
   description,
@@ -15,7 +18,30 @@ const Dialog = ({
   zIndexClassName = "z-20",
   backdropAnimationClassName,
   panelAnimationClassName,
-}: DialogProps): JSX.Element => {
+}: DialogProps): JSX.Element | null => {
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      onClose();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose, visible]);
+
+  if (!visible || typeof document === "undefined") {
+    return null;
+  }
+
   const backdropClassName = joinClassNames(
     "dialog-backdrop",
     zIndexClassName,
@@ -27,13 +53,16 @@ const Dialog = ({
     panelAnimationClassName,
   );
 
-  return (
-    <div className={backdropClassName}>
+  return createPortal(
+    <div className={backdropClassName} onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         className={panelClassNameWithAnimations}
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
       >
         <div
           className={
@@ -54,7 +83,8 @@ const Dialog = ({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

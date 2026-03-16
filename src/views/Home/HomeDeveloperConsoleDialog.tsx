@@ -1,4 +1,10 @@
-import { useState, type ChangeEvent, type FormEvent, type JSX } from "react";
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type JSX,
+} from "react";
 import { Button, Dialog } from "../../components";
 import { useDialogCloseTransition } from "../../hooks";
 import {
@@ -17,14 +23,17 @@ import {
   DEVELOPER_CONSOLE_STREAK_INPUT_ID,
   DEVELOPER_CONSOLE_SUBMIT_ACTION_LABEL,
 } from "./constants";
-import type { HomeDeveloperConsoleDialogContentProps } from "./types";
+import type { HomeDeveloperConsoleDialogProps } from "./types";
 import { useHomeView } from "./useHomeView";
 
-const HomeDeveloperConsoleDialogContent = ({
-  player,
+const HomeDeveloperConsoleDialog = ({
+  visible,
   onClose,
-  onSubmit,
-}: HomeDeveloperConsoleDialogContentProps): JSX.Element => {
+}: HomeDeveloperConsoleDialogProps): JSX.Element => {
+  const { controller, player, developerConsoleEnabled } = useHomeView();
+  const { showResumeDialog, submitDeveloperPlayer } = controller;
+  const canRenderDialog = visible && developerConsoleEnabled && !showResumeDialog;
+
   const [name, setName] = useState(player.name);
   const [score, setScore] = useState(player.score.toString());
   const [streak, setStreak] = useState(player.streak.toString());
@@ -38,6 +47,18 @@ const HomeDeveloperConsoleDialogContent = ({
   const { backdropAnimationClassName, panelAnimationClassName } =
     getDialogTransitionClasses(isClosing);
 
+  useEffect(() => {
+    if (!canRenderDialog) {
+      return;
+    }
+
+    setName(player.name);
+    setScore(player.score.toString());
+    setStreak(player.streak.toString());
+    setDifficulty(player.difficulty);
+    setKeyboardPreference(player.keyboardPreference);
+  }, [canRenderDialog, player]);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -46,7 +67,7 @@ const HomeDeveloperConsoleDialogContent = ({
     }
 
     closeWithAction(() =>
-      onSubmit({
+      submitDeveloperPlayer({
         name,
         score: Number(score),
         streak: Number(streak),
@@ -58,6 +79,8 @@ const HomeDeveloperConsoleDialogContent = ({
 
   return (
     <Dialog
+      visible={canRenderDialog}
+      onClose={() => closeWithAction(onClose)}
       titleId={DEVELOPER_CONSOLE_DIALOG_TITLE_ID}
       title={DEVELOPER_CONSOLE_DIALOG_TITLE}
       description={DEVELOPER_CONSOLE_DIALOG_DESCRIPTION}
@@ -189,32 +212,6 @@ const HomeDeveloperConsoleDialogContent = ({
         </div>
       </form>
     </Dialog>
-  );
-};
-
-const HomeDeveloperConsoleDialog = (): JSX.Element | null => {
-  const { controller, player, developerConsoleEnabled } = useHomeView();
-  const {
-    showResumeDialog,
-    showDeveloperConsoleDialog,
-    closeDeveloperConsoleDialog,
-    submitDeveloperPlayer,
-  } = controller;
-
-  if (
-    showResumeDialog ||
-    !developerConsoleEnabled ||
-    !showDeveloperConsoleDialog
-  ) {
-    return null;
-  }
-
-  return (
-    <HomeDeveloperConsoleDialogContent
-      player={player}
-      onClose={closeDeveloperConsoleDialog}
-      onSubmit={submitDeveloperPlayer}
-    />
   );
 };
 

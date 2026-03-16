@@ -6,13 +6,14 @@ import type { ConfirmationDialogProps } from "./types";
 import { getDialogTransitionClasses } from "./utils";
 
 const ConfirmationDialog = ({
+  visible,
+  onClose,
   title,
   description,
   confirmActionLabel,
   cancelActionLabel,
   dialogTitleId,
   onConfirm,
-  onCancel,
 }: ConfirmationDialogProps) => {
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
@@ -22,6 +23,8 @@ const ConfirmationDialog = ({
 
   return (
     <Dialog
+      visible={visible}
+      onClose={() => closeWithAction(onClose)}
       titleId={dialogTitleId}
       title={title}
       description={description}
@@ -33,7 +36,7 @@ const ConfirmationDialog = ({
           {confirmActionLabel}
         </Button>
         <Button
-          onClick={() => closeWithAction(onCancel)}
+          onClick={() => closeWithAction(onClose)}
           variant="outline"
           disabled={isClosing}
         >

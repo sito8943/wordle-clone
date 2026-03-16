@@ -8,7 +8,7 @@ import { Dialog } from "../Dialog";
 import { HELP_DIALOG_TITLE_ID } from "./constants";
 import type { HelpDialogProps } from "./types";
 
-const HelpDialog = ({ onClose }: HelpDialogProps) => {
+const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
   );
@@ -17,6 +17,8 @@ const HelpDialog = ({ onClose }: HelpDialogProps) => {
 
   return (
     <Dialog
+      visible={visible}
+      onClose={() => closeWithAction(onClose)}
       titleId={HELP_DIALOG_TITLE_ID}
       title="How to play"
       description="Guess the hidden 5-letter word in up to 6 attempts."
