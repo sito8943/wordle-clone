@@ -1180,6 +1180,13 @@ describe("App", () => {
     expect(
       screen.getByText("Guess the hidden 5-letter word in up to 6 attempts."),
     ).toBeTruthy();
+    expect(screen.getByText("Press Enter to submit your guess.")).toBeTruthy();
+    expect(
+      screen.getByText("Easy, Normal, and Hard accept non-dictionary words."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Insane only accepts words from the dictionary."),
+    ).toBeTruthy();
     expect(
       screen.getByText("Final score = base points x difficulty multiplier."),
     ).toBeTruthy();
