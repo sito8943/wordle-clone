@@ -48,6 +48,8 @@
 
 - `useWordle`: core board session state + keyboard handling + hint reveal behavior.
 - `useHomeController`: Home orchestration (dialogs, refresh flow, hints counter, hard mode timer).
+- `useHomeController/useHintController/*`: isolated hint module (`constants`, `utils`, `types`, `useHintController`, `index`) with hint limits and persistence policy.
+- `useHomeController/useHardModeTimer`: insane mode timer lifecycle and effects.
 - `useProfileController`, `useNavbarController`, `useScoreboardController`: view-specific orchestration.
 - Shared utility hooks:
 - `useLocalStorage`
@@ -63,9 +65,10 @@
 
 - `sessionStorage`
 - `wordle:session-id`: tab session id used by wordle session handling.
-- `wordle:hint-usage`: snapshot for hint usage (`sessionId + answer + hintsUsed`) to keep hint limits after reload.
 - `localStorage`
 - `wordle:game`: persisted in-progress game payload (managed in domain storage helpers).
+  - It is persisted as soon as there is in-progress input (submitted rows or typed letters in `current`).
+- `wordle:hint-usage`: snapshot for hint usage (`sessionId + answer + hintsUsed`) to keep hint limits after reload.
 - `player`: player profile and score/streak metadata.
 - `wordle:dictionary:en`: cached dictionary words.
 - additional feature keys for theme/animations/scoreboard caches.

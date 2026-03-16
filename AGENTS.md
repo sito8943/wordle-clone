@@ -12,6 +12,8 @@ This file defines how agents should work inside this repository.
 - Keep business rules in `src/domain/wordle/*`; avoid embedding game logic in views.
 - Keep orchestration in controller hooks (`src/hooks/useHomeController`, `src/hooks/useWordle`, `src/hooks/useProfileController`).
 - Keep UI components presentational when possible (`src/components/*`).
+- Keep type declarations in `types.ts` files for each module/folder.
+- Do not declare reusable module-level `type`/`interface` blocks inside implementation files when a `types.ts` exists.
 - Do not bypass providers:
 - Use `usePlayer` for player state updates.
 - Use `useApi` for external data clients.

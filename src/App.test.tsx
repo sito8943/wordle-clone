@@ -15,7 +15,7 @@ import {
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
   WORDLE_START_ANIMATION_SESSION_KEY,
 } from "./domain/wordle";
-import { HINT_USAGE_SESSION_STORAGE_KEY } from "./hooks/useHomeController/constants";
+import { HINT_USAGE_STORAGE_KEY } from "./hooks/useHomeController/useHintController";
 import { THEME_PREFERENCE_STORAGE_KEY } from "./hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "./providers";
 
@@ -477,6 +477,7 @@ describe("App", () => {
 
     expect(screen.getByRole("gridcell", { name: "P, present" })).toBeTruthy();
     expect((hintButton as HTMLButtonElement).disabled).toBe(true);
+    expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
     fireEvent.click(screen.getByRole("button", { name: "Yes, refresh game" }));
@@ -493,6 +494,7 @@ describe("App", () => {
           .disabled,
       ).toBe(false);
     });
+    expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeNull();
   });
 
   it("keeps hints used disabled state after page refresh", async () => {
@@ -527,9 +529,107 @@ describe("App", () => {
     const hintButton = await screen.findByRole("button", { name: "Hint" });
     fireEvent.click(hintButton);
     expect((hintButton as HTMLButtonElement).disabled).toBe(true);
-    expect(sessionStorage.getItem(HINT_USAGE_SESSION_STORAGE_KEY)).toBeTruthy();
+    expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeTruthy();
 
     cleanup();
+    renderApp();
+
+    await waitFor(() => {
+      expect(
+        (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
+          .disabled,
+      ).toBe(true);
+    });
+  });
+
+  it("keeps hint consumed after reload before first submitted row", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+    sessionStorage.setItem("wordle:session-id", "session-hint-first-row");
+    localStorage.removeItem(env.wordleGameStorageKey);
+    localStorage.removeItem(HINT_USAGE_STORAGE_KEY);
+
+    renderApp();
+
+    const hintButton = await screen.findByRole("button", { name: "Hint" });
+    fireEvent.click(hintButton);
+    expect((hintButton as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole("gridcell", { name: "P, present" })).toBeTruthy();
+
+    cleanup();
+    renderApp();
+
+    await waitFor(() => {
+      expect(
+        (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
+          .disabled,
+      ).toBe(true);
+    });
+    expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
+  });
+
+  it("shares consumed hint across tabs even with different session ids", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+      }),
+    );
+    sessionStorage.setItem("wordle:session-id", "session-hint-a");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-hint-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: false,
+      }),
+    );
+    localStorage.removeItem(HINT_USAGE_STORAGE_KEY);
+
+    renderApp();
+
+    const firstTabHintButton = await screen.findByRole("button", {
+      name: "Hint",
+    });
+    fireEvent.click(firstTabHintButton);
+    expect((firstTabHintButton as HTMLButtonElement).disabled).toBe(true);
+
+    cleanup();
+
+    sessionStorage.setItem("wordle:session-id", "session-hint-b");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-hint-b",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "",
+        gameOver: false,
+      }),
+    );
+
     renderApp();
 
     await waitFor(() => {
@@ -1601,6 +1701,25 @@ describe("App", () => {
     expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
   });
 
+  it("restores typed letters after reload before first submitted row", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-a");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
+    expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
+  });
+
   it("asks to continue if a saved board belongs to another tab session", async () => {
     sessionStorage.setItem("wordle:session-id", "session-b");
     localStorage.setItem(
@@ -1633,7 +1752,7 @@ describe("App", () => {
     });
   });
 
-  it("does not ask to continue when no row has been attempted", async () => {
+  it("asks to continue when there are typed letters from another tab session", async () => {
     sessionStorage.setItem("wordle:session-id", "session-b");
     localStorage.setItem(
       env.wordleGameStorageKey,
@@ -1649,9 +1768,27 @@ describe("App", () => {
     renderApp();
 
     expect(
+      screen.getByRole("dialog", { name: "Resume previous game?" }),
+    ).toBeTruthy();
+  });
+
+  it("does not ask to continue when there is no in-progress board", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-b");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [],
+        current: "",
+        gameOver: false,
+      }),
+    );
+
+    renderApp();
+
+    expect(
       screen.queryByRole("dialog", { name: "Resume previous game?" }),
     ).toBeNull();
-    expect(screen.queryByRole("gridcell", { name: "A, typing" })).toBeNull();
-    expect(screen.queryByRole("gridcell", { name: "P, typing" })).toBeNull();
   });
 });
