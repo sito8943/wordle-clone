@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getTotalPointsForWin } from "../../domain/wordle";
-import { usePlayer } from "../../providers";
+import { useApi, usePlayer } from "../../providers";
 import type { Player } from "../../providers/types";
 import { useWordle } from "../useWordle";
 import { useHardModeTimer } from "./useHardModeTimer";
@@ -8,6 +8,7 @@ import { useHintController } from "./useHintController";
 import { getDifficultyScoreMultiplier } from "./utils";
 
 export default function useHomeController() {
+  const { scoreClient } = useApi();
   const {
     player,
     replacePlayer,
@@ -194,10 +195,26 @@ export default function useHomeController() {
 
   const submitDeveloperPlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
+      const nextNick =
+        typeof nextPlayer.name === "string" ? nextPlayer.name : player.name;
+      const nextScore =
+        typeof nextPlayer.score === "number" ? nextPlayer.score : player.score;
+      const nextStreak =
+        typeof nextPlayer.streak === "number"
+          ? nextPlayer.streak
+          : player.streak;
+
+      void scoreClient.recordScore({
+        nick: nextNick,
+        score: nextScore,
+        streak: nextStreak,
+        overwriteExisting: true,
+      });
+
       replacePlayer(nextPlayer);
       setShowDeveloperConsoleDialog(false);
     },
-    [replacePlayer],
+    [player.name, player.score, player.streak, replacePlayer, scoreClient],
   );
 
   useEffect(() => {

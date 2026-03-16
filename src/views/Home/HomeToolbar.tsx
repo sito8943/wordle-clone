@@ -79,7 +79,7 @@ const HomeToolbar = ({
             aria-label="Developer console"
             variant="outline"
             color="secondary"
-            className="mobile-compact-button"
+            className="mobile-compact-button fixed bottom-40 right-2"
           >
             Dev
           </Button>

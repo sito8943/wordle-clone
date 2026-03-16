@@ -15,6 +15,7 @@ export type RecordScoreInput = {
   score: number;
   streak?: number;
   createdAt?: number;
+  overwriteExisting?: boolean;
 };
 
 export type TopScoresResult = {

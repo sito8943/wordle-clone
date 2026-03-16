@@ -33,16 +33,19 @@ class ScoreClient {
 
   async recordScore(input: RecordScoreInput): Promise<void> {
     const currentRecord = this.getCurrentClientStoredScore();
+    const overwriteExisting = input.overwriteExisting === true;
     const normalizedInputScore = this.normalizeScore(input.score);
-    const score = currentRecord
-      ? Math.max(currentRecord.score, normalizedInputScore)
-      : normalizedInputScore;
+    const score = overwriteExisting
+      ? normalizedInputScore
+      : currentRecord
+        ? Math.max(currentRecord.score, normalizedInputScore)
+        : normalizedInputScore;
     const streak =
       typeof input.streak === "number"
         ? this.normalizeStreak(input.streak)
         : (currentRecord?.streak ?? 0);
     const createdAt =
-      currentRecord && score <= currentRecord.score
+      !overwriteExisting && currentRecord && score <= currentRecord.score
         ? currentRecord.createdAt
         : (input.createdAt ?? Date.now());
 
@@ -55,10 +58,10 @@ class ScoreClient {
       createdAt,
     };
 
-    this.addToCache(record);
+    this.addToCache(record, overwriteExisting);
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
-      this.addToPending(record);
+      this.addToPending(record, overwriteExisting);
       return;
     }
 
@@ -75,7 +78,7 @@ class ScoreClient {
       if (!this.gateway.isNetworkError(error)) {
         throw error;
       }
-      this.addToPending(record);
+      this.addToPending(record, overwriteExisting);
     }
   }
 
@@ -321,20 +324,24 @@ class ScoreClient {
     };
   }
 
-  private addToCache(entry: StoredScore): void {
-    const cache = this.dedupeStoredByNick([
-      ...this.readScores(SCOREBOARD_CACHE_KEY),
-      entry,
-    ]);
+  private addToCache(entry: StoredScore, overwriteExisting = false): void {
+    const baseEntries = overwriteExisting
+      ? this.readScores(SCOREBOARD_CACHE_KEY).filter(
+          (stored) => this.nickKey(stored.nick) !== this.nickKey(entry.nick),
+        )
+      : this.readScores(SCOREBOARD_CACHE_KEY);
+    const cache = this.dedupeStoredByNick([...baseEntries, entry]);
 
     this.writeScores(SCOREBOARD_CACHE_KEY, cache.slice(0, 200));
   }
 
-  private addToPending(entry: StoredScore): void {
-    const pending = this.dedupeStoredByNick([
-      ...this.readScores(SCOREBOARD_PENDING_KEY),
-      entry,
-    ]);
+  private addToPending(entry: StoredScore, overwriteExisting = false): void {
+    const baseEntries = overwriteExisting
+      ? this.readScores(SCOREBOARD_PENDING_KEY).filter(
+          (stored) => this.nickKey(stored.nick) !== this.nickKey(entry.nick),
+        )
+      : this.readScores(SCOREBOARD_PENDING_KEY);
+    const pending = this.dedupeStoredByNick([...baseEntries, entry]);
     this.writeScores(SCOREBOARD_PENDING_KEY, pending);
   }
 

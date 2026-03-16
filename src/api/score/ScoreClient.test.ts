@@ -180,6 +180,31 @@ describe("ScoreClient", () => {
     expect(result.scores[0].streak).toBe(0);
   });
 
+  it("overwrites current client score when requested", async () => {
+    const client = new ScoreClient(createGateway(), storage);
+
+    await client.recordScore({
+      nick: "Sito",
+      score: 25,
+      streak: 4,
+      createdAt: 1000,
+    });
+    await client.recordScore({
+      nick: "Sito",
+      score: 3,
+      streak: 1,
+      createdAt: 2000,
+      overwriteExisting: true,
+    });
+
+    const result = await client.listTopScores(10);
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].score).toBe(3);
+    expect(result.scores[0].streak).toBe(1);
+    expect(result.scores[0].createdAt).toBe(2000);
+  });
+
   it("returns current client rank metadata from remote response", async () => {
     const query = vi.fn().mockResolvedValue({
       scores: [{ id: "remote-a", nick: "ANA", score: 20, createdAt: 1000 }],

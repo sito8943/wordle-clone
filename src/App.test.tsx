@@ -39,6 +39,7 @@ const renderApp = () =>
   );
 
 const defaultEnvMode = env.mode;
+const defaultEnvConvexUrl = env.convexUrl;
 
 const mockSystemTheme = (mode: "light" | "dark") => {
   const prefersDark = mode === "dark";
@@ -67,6 +68,7 @@ describe("App", () => {
 
   beforeEach(() => {
     env.mode = defaultEnvMode;
+    env.convexUrl = defaultEnvConvexUrl;
     localStorage.clear();
     sessionStorage.clear();
     document.documentElement.classList.remove("dark");
@@ -388,10 +390,77 @@ describe("App", () => {
         expect(player.keyboardPreference).toBe("native");
       });
 
+      expect(recordScoreSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nick: "DevUser",
+          score: 42,
+          streak: 7,
+          overwriteExisting: true,
+        }),
+      );
       expect(screen.getByLabelText("Streak: 7")).toBeTruthy();
     } finally {
       recordScoreSpy.mockRestore();
     }
+  });
+
+  it("syncs scoreboard with score overrides from developer console", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 80, streak: 5 }),
+    );
+    localStorage.setItem("wordle:scoreboard:client-id", "dev-client");
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "dev-row",
+          clientId: "dev-client",
+          nick: "Player",
+          score: 80,
+          streak: 5,
+          createdAt: 1000,
+        },
+      ]),
+    );
+    env.mode = "develpment";
+    env.convexUrl = undefined;
+
+    renderApp();
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Developer console" }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: "Developer console" }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Score"), {
+      target: { value: "12" },
+    });
+    fireEvent.change(screen.getByLabelText("Streak"), {
+      target: { value: "1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Developer console" }),
+      ).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
+    expect(
+      await screen.findByRole("heading", { name: "Scoreboard" }),
+    ).toBeTruthy();
+
+    await waitFor(() => {
+      const currentRow = document.querySelector(
+        ".scoreboard-current-player-row",
+      );
+      expect(currentRow).toBeTruthy();
+      expect(currentRow?.textContent).toContain("12");
+    });
   });
 
   it("shows word list button only in easy difficulty", async () => {
@@ -1263,7 +1332,9 @@ describe("App", () => {
       screen.getByText("Insane only accepts words from the dictionary."),
     ).toBeTruthy();
     expect(
-      screen.getByText("Streak bonus adds your current streak value to each win."),
+      screen.getByText(
+        "Streak bonus adds your current streak value to each win.",
+      ),
     ).toBeTruthy();
     expect(
       screen.getByText(
