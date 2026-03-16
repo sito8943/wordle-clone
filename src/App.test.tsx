@@ -9,6 +9,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { ScoreClient, type TopScoresResult } from "./api/score";
+import { UPDATE_SCORE_MUTATION } from "./api/score/constants";
 import { env } from "./config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
@@ -351,7 +352,7 @@ describe("App", () => {
       renderApp();
 
       fireEvent.click(
-        screen.getByRole("button", { name: "Developer console" }),
+        await screen.findByRole("button", { name: "Developer console" }),
       );
 
       expect(
@@ -397,6 +398,7 @@ describe("App", () => {
           streak: 7,
           overwriteExisting: true,
         }),
+        UPDATE_SCORE_MUTATION,
       );
       expect(screen.getByLabelText("Streak: 7")).toBeTruthy();
     } finally {

@@ -32,7 +32,8 @@ const HomeDeveloperConsoleDialog = ({
 }: HomeDeveloperConsoleDialogProps): JSX.Element => {
   const { controller, player, developerConsoleEnabled } = useHomeView();
   const { showResumeDialog, submitDeveloperPlayer } = controller;
-  const canRenderDialog = visible && developerConsoleEnabled && !showResumeDialog;
+  const canRenderDialog =
+    visible && developerConsoleEnabled && !showResumeDialog;
 
   const [name, setName] = useState(player.name);
   const [score, setScore] = useState(player.score.toString());

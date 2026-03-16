@@ -63,7 +63,9 @@ describe("Dialog", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("dialog", { name: "Test dialog" }).parentElement!);
+    fireEvent.click(
+      screen.getByRole("dialog", { name: "Test dialog" }).parentElement!,
+    );
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });

@@ -7,9 +7,7 @@ const SessionResumeDialog = lazy(
 );
 const RefreshConfirmationDialog = lazy(
   () =>
-    import(
-      "../../components/RefreshConfirmationDialog/RefreshConfirmationDialog"
-    ),
+    import("../../components/RefreshConfirmationDialog/RefreshConfirmationDialog"),
 );
 const WordListDialog = lazy(
   () => import("../../components/WordListDialog/WordListDialog"),
