@@ -1,5 +1,6 @@
 import { Board } from "./Board";
 import { Button } from "./Button";
+import { DeveloperConsoleDialog } from "./DeveloperConsoleDialog";
 import { ErrorBoundary, ErrorFallback } from "./ErrorBoundary";
 import { Footer } from "./Footer";
 import { Fire, FireStreak } from "./FireStreak";
@@ -14,6 +15,7 @@ import { WordListDialog } from "./WordListDialog";
 export {
   Board,
   Button,
+  DeveloperConsoleDialog,
   ErrorBoundary,
   ErrorFallback,
   Footer,

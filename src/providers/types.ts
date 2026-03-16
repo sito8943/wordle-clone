@@ -16,6 +16,7 @@ export type PlayerKeyboardPreference = "onscreen" | "native";
 export type PlayerContextType = {
   player: Player;
   updatePlayer: (name: string) => void;
+  replacePlayer: (nextPlayer: Partial<Player>) => void;
   updatePlayerDifficulty: (difficulty: PlayerDifficulty) => void;
   updatePlayerKeyboardPreference: (
     preference: PlayerKeyboardPreference,

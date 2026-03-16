@@ -38,6 +38,8 @@ const renderApp = () =>
     </ApiProvider>,
   );
 
+const defaultEnvMode = env.mode;
+
 const mockSystemTheme = (mode: "light" | "dark") => {
   const prefersDark = mode === "dark";
 
@@ -64,6 +66,7 @@ describe("App", () => {
   });
 
   beforeEach(() => {
+    env.mode = defaultEnvMode;
     localStorage.clear();
     sessionStorage.clear();
     document.documentElement.classList.remove("dark");
@@ -317,6 +320,78 @@ describe("App", () => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.keyboardPreference).toBe("native");
     });
+  });
+
+  it("hides developer console button outside development mode", () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    expect(
+      screen.queryByRole("button", { name: "Developer console" }),
+    ).toBeNull();
+  });
+
+  it("shows developer console in develpment mode and updates current player", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+    env.mode = "develpment";
+    const recordScoreSpy = vi
+      .spyOn(ScoreClient.prototype, "recordScore")
+      .mockResolvedValue();
+
+    try {
+      renderApp();
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Developer console" }),
+      );
+
+      expect(
+        await screen.findByRole("dialog", { name: "Developer console" }),
+      ).toBeTruthy();
+
+      fireEvent.change(screen.getByLabelText("Player name"), {
+        target: { value: "DevUser" },
+      });
+      fireEvent.change(screen.getByLabelText("Score"), {
+        target: { value: "42" },
+      });
+      fireEvent.change(screen.getByLabelText("Streak"), {
+        target: { value: "7" },
+      });
+      fireEvent.change(screen.getByLabelText("Difficulty"), {
+        target: { value: "hard" },
+      });
+      fireEvent.change(screen.getByLabelText("Keyboard mode"), {
+        target: { value: "native" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("dialog", { name: "Developer console" }),
+        ).toBeNull();
+      });
+      await waitFor(() => {
+        const player = JSON.parse(localStorage.getItem("player") || "{}");
+        expect(player.name).toBe("DevUser");
+        expect(player.score).toBe(42);
+        expect(player.streak).toBe(7);
+        expect(player.difficulty).toBe("hard");
+        expect(player.keyboardPreference).toBe("native");
+      });
+
+      expect(screen.getByLabelText("Streak: 7")).toBeTruthy();
+    } finally {
+      recordScoreSpy.mockRestore();
+    }
   });
 
   it("shows word list button only in easy difficulty", async () => {
@@ -1188,7 +1263,12 @@ describe("App", () => {
       screen.getByText("Insane only accepts words from the dictionary."),
     ).toBeTruthy();
     expect(
-      screen.getByText("Final score = base points x difficulty multiplier."),
+      screen.getByText("Streak bonus adds your current streak value to each win."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Final score = base points + difficulty bonus + streak bonus.",
+      ),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
@@ -1198,7 +1278,7 @@ describe("App", () => {
     });
   });
 
-  it("applies easy difficulty score multiplier on win", async () => {
+  it("applies easy difficulty bonus and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1218,11 +1298,11 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(6);
+      expect(player.score).toBe(7);
     });
   });
 
-  it("applies hard difficulty score multiplier on win", async () => {
+  it("applies hard difficulty bonus and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1242,11 +1322,11 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(18);
+      expect(player.score).toBe(9);
     });
   });
 
-  it("applies insane difficulty score multiplier on win", async () => {
+  it("applies insane difficulty bonus and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1266,7 +1346,32 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(24);
+      expect(player.score).toBe(10);
+    });
+  });
+
+  it("uses current streak as bonus on win", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 3,
+        difficulty: "easy",
+      }),
+    );
+
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.score).toBe(10);
+      expect(player.streak).toBe(4);
     });
   });
 
@@ -1421,7 +1526,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(12);
+      expect(player.score).toBe(8);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
@@ -1479,7 +1584,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(12);
+      expect(player.score).toBe(8);
     });
 
     fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));

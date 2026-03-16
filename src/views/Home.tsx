@@ -17,6 +17,7 @@ import {
 import {
   Board,
   Button,
+  DeveloperConsoleDialog,
   ErrorBoundary,
   ErrorFallback,
   FireStreak,
@@ -47,6 +48,7 @@ const Home = (): JSX.Element => {
     showRefreshDialog,
     showWordsDialog,
     showHelpDialog,
+    showDeveloperConsoleDialog,
     continuePreviousBoard,
     startNewBoard,
     currentWinStreak,
@@ -55,6 +57,9 @@ const Home = (): JSX.Element => {
     closeWordsDialog,
     openHelpDialog,
     closeHelpDialog,
+    openDeveloperConsoleDialog,
+    closeDeveloperConsoleDialog,
+    submitDeveloperPlayer,
     confirmRefreshBoard,
     cancelRefreshBoard,
     dictionaryWords,
@@ -79,6 +84,8 @@ const Home = (): JSX.Element => {
   const animateTileEntry = startAnimationsEnabled && startAnimationSeed > 0;
   const wordListButtonEnabled =
     env.wordListButtonEnabled && wordListEnabledForDifficulty;
+  const developerConsoleEnabled =
+    env.mode === "development" || env.mode === "develpment";
   const preferNativeKeyboard = player.keyboardPreference === "native";
   const nativeKeyboardInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -153,6 +160,7 @@ const Home = (): JSX.Element => {
           showRefreshDialog,
           showWordsDialog,
           showHelpDialog,
+          showDeveloperConsoleDialog,
         ]}
         fallback={({ reset }) => (
           <div className="px-3 pb-2">
@@ -197,6 +205,15 @@ const Home = (): JSX.Element => {
           {!showResumeDialog && showHelpDialog && (
             <HelpDialog onClose={closeHelpDialog} />
           )}
+          {!showResumeDialog &&
+            developerConsoleEnabled &&
+            showDeveloperConsoleDialog && (
+              <DeveloperConsoleDialog
+                player={player}
+                onClose={closeDeveloperConsoleDialog}
+                onSubmit={submitDeveloperPlayer}
+              />
+            )}
         </>
       </ErrorBoundary>
       <main className="flex flex-1 flex-col">
@@ -242,6 +259,17 @@ const Home = (): JSX.Element => {
             >
               Help
             </Button>
+            {developerConsoleEnabled && (
+              <Button
+                onClick={openDeveloperConsoleDialog}
+                aria-label="Developer console"
+                variant="outline"
+                color="secondary"
+                className="mobile-compact-button"
+              >
+                Dev
+              </Button>
+            )}
             {showHardModeTimer && (
               <div
                 role="status"

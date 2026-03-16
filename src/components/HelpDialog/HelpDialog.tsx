@@ -58,11 +58,14 @@ const HelpDialog = ({ onClose }: HelpDialogProps) => {
             <h3 className="text-base font-semibold">Scoring</h3>
             <ul className="mt-2 list-disc pl-5 space-y-1">
               <li>Base points are the remaining attempts after a win.</li>
-              <li>Easy: x1 points per remaining attempt.</li>
-              <li>Normal: x2 points per remaining attempt.</li>
-              <li>Hard: x3 points per remaining attempt.</li>
-              <li>Insane: x4 points per remaining attempt.</li>
-              <li>Final score = base points x difficulty multiplier.</li>
+              <li>Streak bonus adds your current streak value to each win.</li>
+              <li>Easy: +1 difficulty bonus.</li>
+              <li>Normal: +2 difficulty bonus.</li>
+              <li>Hard: +3 difficulty bonus.</li>
+              <li>Insane: +4 difficulty bonus.</li>
+              <li>
+                Final score = base points + difficulty bonus + streak bonus.
+              </li>
             </ul>
           </section>
         </div>
