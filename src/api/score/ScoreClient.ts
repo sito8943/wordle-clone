@@ -49,9 +49,16 @@ class ScoreClient {
         ? this.normalizeStreak(input.streak)
         : (currentRecord?.streak ?? 0);
     const createdAt =
-      !overwriteExisting && currentRecord && score <= currentRecord.score
-        ? currentRecord.createdAt
-        : (input.createdAt ?? Date.now());
+      input.createdAt ??
+      (currentRecord
+        ? overwriteExisting
+          ? score === currentRecord.score && streak === currentRecord.streak
+            ? currentRecord.createdAt
+            : Date.now()
+          : score <= currentRecord.score
+            ? currentRecord.createdAt
+            : Date.now()
+        : Date.now());
 
     const record: StoredScore = {
       localId: currentRecord?.localId ?? this.createLocalId(createdAt),
@@ -230,7 +237,9 @@ class ScoreClient {
   }
 
   private localScoresRanked(): ScoreEntry[] {
-    return this.dedupeStoredByNick(this.readScores(SCOREBOARD_CACHE_KEY))
+    return this.dedupeStoredByLocalId(
+      this.dedupeStoredByNick(this.readScores(SCOREBOARD_CACHE_KEY)),
+    )
       .sort(scoreSorter)
       .map((entry) => this.toLocalScoreEntry(entry));
   }
@@ -251,7 +260,9 @@ class ScoreClient {
       this.toLocalScoreEntry(entry),
     );
 
-    return this.dedupeScoreEntriesByNick([...remoteEntries, ...pendingEntries])
+    return this.dedupeCurrentClientEntries(
+      this.dedupeScoreEntriesByNick([...remoteEntries, ...pendingEntries]),
+    )
       .sort((a, b) => scoreSorter(a, b))
       .slice(0, limit);
   }
@@ -336,7 +347,7 @@ class ScoreClient {
   private addToCache(entry: StoredScore, overwriteExisting = false): void {
     const baseEntries = overwriteExisting
       ? this.readScores(SCOREBOARD_CACHE_KEY).filter(
-          (stored) => this.nickKey(stored.nick) !== this.nickKey(entry.nick),
+          (stored) => !this.shouldReplaceStoredEntryOnOverwrite(stored, entry),
         )
       : this.readScores(SCOREBOARD_CACHE_KEY);
     const cache = this.dedupeStoredByNick([...baseEntries, entry]);
@@ -357,11 +368,23 @@ class ScoreClient {
     const baseEntries = overwriteExisting
       ? this.readScores(SCOREBOARD_PENDING_KEY).filter(
           (stored) =>
-            this.nickKey(stored.nick) !== this.nickKey(pendingEntry.nick),
+            !this.shouldReplaceStoredEntryOnOverwrite(stored, pendingEntry),
         )
       : this.readScores(SCOREBOARD_PENDING_KEY);
     const pending = this.dedupeStoredByNick([...baseEntries, pendingEntry]);
     this.writeScores(SCOREBOARD_PENDING_KEY, pending);
+  }
+
+  private shouldReplaceStoredEntryOnOverwrite(
+    stored: StoredScore,
+    nextEntry: StoredScore,
+  ): boolean {
+    const sameNick = this.nickKey(stored.nick) === this.nickKey(nextEntry.nick);
+    const sameClient =
+      Boolean(nextEntry.clientId) && stored.clientId === nextEntry.clientId;
+    const sameLocalId = stored.localId === nextEntry.localId;
+
+    return sameNick || sameClient || sameLocalId;
   }
 
   private readScores(key: string): StoredScore[] {
@@ -500,6 +523,16 @@ class ScoreClient {
     return [...byNick.values()];
   }
 
+  private dedupeStoredByLocalId(entries: StoredScore[]): StoredScore[] {
+    const byLocalId = new Map<string, StoredScore>();
+
+    for (const entry of entries) {
+      byLocalId.set(entry.localId, entry);
+    }
+
+    return [...byLocalId.values()];
+  }
+
   private getCurrentClientStoredScore(): StoredScore | null {
     const entries = [
       ...this.readScores(SCOREBOARD_CACHE_KEY),
@@ -549,6 +582,47 @@ class ScoreClient {
     }
 
     return [...byNick.values()];
+  }
+
+  private dedupeCurrentClientEntries(entries: ScoreEntry[]): ScoreEntry[] {
+    const currentClientEntries = entries.filter((entry) => entry.isCurrentClient);
+
+    if (currentClientEntries.length <= 1) {
+      return entries;
+    }
+
+    let preferred = currentClientEntries[0];
+
+    for (let index = 1; index < currentClientEntries.length; index += 1) {
+      const candidate = currentClientEntries[index];
+
+      if (candidate.score > preferred.score) {
+        preferred = candidate;
+        continue;
+      }
+
+      if (candidate.score < preferred.score) {
+        continue;
+      }
+
+      if (candidate.createdAt > preferred.createdAt) {
+        preferred = candidate;
+        continue;
+      }
+
+      if (candidate.createdAt < preferred.createdAt) {
+        continue;
+      }
+
+      if (candidate.source === "local" && preferred.source !== "local") {
+        preferred = candidate;
+        continue;
+      }
+
+      preferred = candidate;
+    }
+
+    return entries.filter((entry) => !entry.isCurrentClient || entry === preferred);
   }
 
   private isNickAvailableInLocalData(nick: string): boolean {

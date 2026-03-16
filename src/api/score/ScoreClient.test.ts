@@ -65,7 +65,9 @@ describe("ScoreClient", () => {
       streak: 2,
       createdAt: 2000,
     });
-    await client.recordScore({
+    storage.setItem(SCOREBOARD_CLIENT_ID_KEY, "other-client");
+    const otherClient = new ScoreClient(createGateway(), storage);
+    await otherClient.recordScore({
       nick: "ANA",
       score: 12,
       streak: 4,
@@ -207,6 +209,62 @@ describe("ScoreClient", () => {
     expect(result.scores[0].score).toBe(3);
     expect(result.scores[0].streak).toBe(1);
     expect(result.scores[0].createdAt).toBe(2000);
+  });
+
+  it("replaces old nick rows for the current client on overwrite", async () => {
+    const client = new ScoreClient(createGateway(), storage);
+
+    await client.recordScore({
+      nick: "Sito",
+      score: 25,
+      streak: 4,
+      createdAt: 1000,
+    });
+    await client.recordScore({
+      nick: "Sito #2",
+      score: 25,
+      streak: 4,
+      overwriteExisting: true,
+    });
+
+    const result = await client.listTopScores(10);
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].nick).toBe("Sito #2");
+    expect(result.scores[0].createdAt).toBe(1000);
+  });
+
+  it("deduplicates legacy local rows for the same local record", async () => {
+    const clientId = "client-me";
+    storage.setItem(SCOREBOARD_CLIENT_ID_KEY, clientId);
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "shared-local-id",
+          clientId,
+          nick: "Old Nick",
+          score: 20,
+          streak: 3,
+          createdAt: 1000,
+        },
+        {
+          localId: "shared-local-id",
+          clientId,
+          nick: "New Nick",
+          score: 20,
+          streak: 3,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    const client = new ScoreClient(createGateway(), storage);
+    const result = await client.listTopScores(10);
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].nick).toBe("New Nick");
+    expect(result.currentClientEntry?.nick).toBe("New Nick");
   });
 
   it("syncs pending overwrite scores using update mutation", async () => {
