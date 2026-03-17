@@ -17,7 +17,7 @@ import {
   WORD_LENGTH,
 } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
-import { useApi } from "@providers";
+import useDictionaryQuery from "../useDictionaryQuery";
 import {
   getRandomWord,
   isValidWord,
@@ -43,10 +43,25 @@ import {
 
 export default function useWordle(options: UseWordleOptions = {}) {
   const { allowUnknownWords = false } = options;
-  const { wordDictionaryClient } = useApi();
   const cachedWords = useMemo(
     () => loadWordDictionaryFromCache(WORDS_DEFAULT_LANGUAGE),
     [],
+  );
+  const { data: dictionaryData, isLoading: dictionaryLoading } =
+    useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, cachedWords);
+  const dictionaryWords = useMemo(
+    () =>
+      dictionaryData && dictionaryData.length > 0
+        ? dictionaryData
+        : cachedWords,
+    [cachedWords, dictionaryData],
+  );
+  const dictionaryError = useMemo(
+    () =>
+      !dictionaryLoading && dictionaryWords.length === 0
+        ? "Word list unavailable."
+        : null,
+    [dictionaryLoading, dictionaryWords.length],
   );
   const currentSessionId = useMemo(getOrCreateSessionId, []);
   const initialAnswer = useMemo(getRandomWord, []);
@@ -71,11 +86,6 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const [keyboardEntryAnimationEnabled] = useState(() =>
     shouldAnimateKeyboardEntryOnSession(animationsDisabled),
   );
-  const [dictionaryWords, setDictionaryWords] = useState(cachedWords);
-  const [dictionaryLoading, setDictionaryLoading] = useState(
-    cachedWords.length === 0,
-  );
-  const [dictionaryError, setDictionaryError] = useState<string | null>(null);
 
   const [gameState, setGameState] = useState(initialGameState);
   const [boardVersion, setBoardVersion] = useState(0);
@@ -106,53 +116,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
 
   useEffect(() => {
-    let cancelled = false;
+    if (dictionaryWords.length === 0) {
+      return;
+    }
 
-    const loadDictionary = async () => {
-      try {
-        const remoteWords = await wordDictionaryClient.loadWords(
-          WORDS_DEFAULT_LANGUAGE,
-        );
-
-        if (cancelled) {
-          return;
-        }
-
-        if (remoteWords.length > 0) {
-          const normalizedWords = setWordDictionary(
-            remoteWords,
-            WORDS_DEFAULT_LANGUAGE,
-          );
-          setDictionaryWords(normalizedWords);
-          setDictionaryError(null);
-        } else {
-          setDictionaryWords(cachedWords);
-          if (cachedWords.length === 0) {
-            setDictionaryError("Word list unavailable.");
-          }
-        }
-      } catch {
-        if (cancelled) {
-          return;
-        }
-
-        setDictionaryWords(cachedWords);
-        if (cachedWords.length === 0) {
-          setDictionaryError("Word list unavailable.");
-        }
-      } finally {
-        if (!cancelled) {
-          setDictionaryLoading(false);
-        }
-      }
-    };
-
-    void loadDictionary();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [cachedWords, wordDictionaryClient]);
+    setWordDictionary(dictionaryWords, WORDS_DEFAULT_LANGUAGE);
+  }, [dictionaryWords]);
 
   useEffect(() => {
     if (dictionaryLoading) {

@@ -1,47 +1,40 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ScoreEntry, ScoreSource } from "@api/score";
 import { env } from "@config";
 import { useApi } from "@providers";
+import { queryKeys } from "./queryKeys";
+import useTopScoresQuery from "./useTopScoresQuery";
 import type { ScoreboardRowEntry } from "./types";
 import { formatDate } from "./utils";
 
 export default function useScoreboardController() {
-  const { scoreClient, convexEnabled } = useApi();
-
-  const [scores, setScores] = useState<ScoreEntry[]>([]);
-  const [source, setSource] = useState<ScoreSource>("local");
-  const [currentClientRank, setCurrentClientRank] = useState<number | null>(
-    null,
+  const { convexEnabled } = useApi();
+  const queryClient = useQueryClient();
+  const {
+    data,
+    isLoading,
+    error: topScoresError,
+    refetch,
+  } = useTopScoresQuery(env.scoreLimit);
+  const scores = useMemo<ScoreEntry[]>(
+    () => data?.scores ?? [],
+    [data?.scores],
   );
-  const [currentClientEntry, setCurrentClientEntry] =
-    useState<ScoreEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const source: ScoreSource = data?.source ?? "local";
+  const currentClientRank = data?.currentClientRank ?? null;
+  const currentClientEntry = data?.currentClientEntry ?? null;
+  const error =
+    topScoresError instanceof Error
+      ? topScoresError.message
+      : topScoresError
+        ? "Failed to load scoreboard."
+        : "";
 
-  const loadScores = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const result = await scoreClient.listTopScores(env.scoreLimit);
-      setScores(result.scores);
-      setSource(result.source);
-      setCurrentClientRank(result.currentClientRank);
-      setCurrentClientEntry(result.currentClientEntry);
-    } catch (currentError) {
-      const message =
-        currentError instanceof Error
-          ? currentError.message
-          : "Failed to load scoreboard.";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [scoreClient]);
-
-  useEffect(() => {
-    void loadScores();
-  }, [loadScores]);
+  const refresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
+    await refetch();
+  }, [queryClient, refetch]);
 
   const visibleScores = useMemo<ScoreboardRowEntry[]>(() => {
     const topRows: ScoreboardRowEntry[] = scores.map((score, index) => ({
@@ -81,11 +74,11 @@ export default function useScoreboardController() {
   return {
     convexEnabled,
     source,
-    loading,
+    loading: isLoading,
     error,
     scores: visibleScores,
     currentClientRank,
     currentClientOutsideTop,
-    refresh: loadScores,
+    refresh,
   };
 }

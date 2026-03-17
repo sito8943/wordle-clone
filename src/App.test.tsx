@@ -2,7 +2,6 @@ import {
   act,
   cleanup,
   fireEvent,
-  render,
   screen,
   waitFor,
 } from "@testing-library/react";
@@ -19,6 +18,7 @@ import {
 import { HINT_USAGE_STORAGE_KEY } from "@hooks/useHomeController/useHintController";
 import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "@providers";
+import { renderWithQueryClient } from "./test/utils";
 
 vi.mock("./utils/words", async () => {
   const actual =
@@ -31,7 +31,7 @@ vi.mock("./utils/words", async () => {
 });
 
 const renderApp = () =>
-  render(
+  renderWithQueryClient(
     <ApiProvider>
       <PlayerProvider>
         <App />

@@ -22,5 +22,6 @@
     "@components/InitialPlayerDialog",
     "@utils/words",
     "@utils/checker",
-    "@providers/Player"
+    "@providers/Player",
+    "@providers/Api"
   ]
