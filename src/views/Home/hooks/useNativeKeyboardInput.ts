@@ -7,7 +7,7 @@ import type {
 import {
   extractNativeKeyboardLetters,
   toWordleKeyFromNativeKeyboardEvent,
-} from "./utils";
+} from "../utils";
 
 export const useNativeKeyboardInput = ({
   enabled,

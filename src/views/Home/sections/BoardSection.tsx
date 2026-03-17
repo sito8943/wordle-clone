@@ -1,9 +1,9 @@
 import type { JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
-import { Board } from "./Board";
-import { useHomeView } from "./useHomeView";
+import { Board } from "../components";
+import { useHomeView } from "../providers";
 
-const HomeBoardSection = (): JSX.Element => {
+const BoardSection = (): JSX.Element => {
   const { controller, animateTileEntry } = useHomeView();
   const {
     guesses,
@@ -89,4 +89,4 @@ const HomeBoardSection = (): JSX.Element => {
   );
 };
 
-export default HomeBoardSection;
+export default BoardSection;

@@ -3,10 +3,6 @@ import { ConfirmationDialog } from "@components/Dialogs/ConfirmationDialog";
 import { EditableProfileCard, ProfileCard } from "./ProfileCard";
 import { useProfileController } from "@hooks";
 import type { ThemePreference } from "@hooks/useThemePreference";
-import type {
-  PlayerDifficulty,
-  PlayerKeyboardPreference,
-} from "@providers/types";
 import {
   DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL,
   DIFFICULTY_CHANGE_CONFIRM_ACTION_LABEL,
@@ -14,6 +10,10 @@ import {
   DIFFICULTY_CHANGE_CONFIRMATION_TITLE,
   DIFFICULTY_CHANGE_DIALOG_TITLE_ID,
 } from "./constants";
+import type {
+  PlayerKeyboardPreference,
+  PlayerDifficulty,
+} from "@domain/wordle";
 
 const Profile = () => {
   const {

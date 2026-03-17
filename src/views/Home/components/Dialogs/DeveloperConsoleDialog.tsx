@@ -22,11 +22,11 @@ import {
   DEVELOPER_CONSOLE_SCORE_INPUT_ID,
   DEVELOPER_CONSOLE_STREAK_INPUT_ID,
   DEVELOPER_CONSOLE_SUBMIT_ACTION_LABEL,
-} from "./constants";
-import type { HomeDeveloperConsoleDialogProps } from "./types";
-import { useHomeView } from "./useHomeView";
+} from "../../constants";
+import type { HomeDeveloperConsoleDialogProps } from "../../hooks/types";
+import { useHomeView } from "../../providers/useHomeView";
 
-const HomeDeveloperConsoleDialog = ({
+const DeveloperConsoleDialog = ({
   visible,
   onClose,
 }: HomeDeveloperConsoleDialogProps): JSX.Element => {
@@ -216,4 +216,4 @@ const HomeDeveloperConsoleDialog = ({
   );
 };
 
-export default HomeDeveloperConsoleDialog;
+export default DeveloperConsoleDialog;

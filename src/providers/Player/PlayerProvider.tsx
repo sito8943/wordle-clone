@@ -6,7 +6,11 @@ import { DEFAULT_PLAYER } from "./constants";
 import type { ProviderProps } from "../types";
 import { useApi } from "../Api";
 import { normalizePlayer, normalizePlayerName } from "./utils";
-import type { Player, PlayerDifficulty, PlayerKeyboardPreference } from "@domain/wordle";
+import type {
+  Player,
+  PlayerDifficulty,
+  PlayerKeyboardPreference,
+} from "@domain/wordle";
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();

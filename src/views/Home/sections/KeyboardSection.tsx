@@ -1,10 +1,10 @@
 import type { JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
-import { Keyboard } from "./Keyboard";
-import { useHomeView } from "./useHomeView";
-import { useNativeKeyboardInput } from "./useNativeKeyboardInput";
+import { Keyboard } from "../components";
+import { useHomeView } from "../providers/";
+import { useNativeKeyboardInput } from "../hooks/";
 
-const HomeKeyboardSection = (): JSX.Element => {
+const KeyboardSection = (): JSX.Element => {
   const { controller, preferNativeKeyboard } = useHomeView();
   const {
     guesses,
@@ -91,4 +91,4 @@ const HomeKeyboardSection = (): JSX.Element => {
   );
 };
 
-export default HomeKeyboardSection;
+export default KeyboardSection;

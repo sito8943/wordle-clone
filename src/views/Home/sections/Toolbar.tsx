@@ -8,10 +8,10 @@ import {
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak } from "@components";
-import { useHomeView } from "./useHomeView";
+import { useHomeView } from "../providers/";
 import type { NativeKeyboardClockStyle } from "./types";
 
-const HomeToolbar = (): JSX.Element => {
+const Toolbar = (): JSX.Element => {
   const { controller, wordListButtonEnabled, developerConsoleEnabled } =
     useHomeView();
   const {
@@ -135,4 +135,4 @@ const HomeToolbar = (): JSX.Element => {
   );
 };
 
-export default HomeToolbar;
+export default Toolbar;
