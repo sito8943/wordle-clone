@@ -2,6 +2,7 @@ import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
 } from "@domain/wordle";
+import type { DifficultySectionProps } from "./types";
 import {
   PROFILE_DIFFICULTY_LABEL,
   PROFILE_DIFFICULTY_MODE_ARIA_LABEL,
@@ -13,8 +14,7 @@ import {
   PROFILE_KEYBOARD_MODE_DESCRIPTION,
   PROFILE_KEYBOARD_MODE_INPUT_ID,
   PROFILE_KEYBOARD_OPTIONS,
-} from "../../constants";
-import type { DifficultySectionProps } from "./types";
+} from "@views/Profile/constants";
 
 const DifficultySection = ({
   keyboardPreference,

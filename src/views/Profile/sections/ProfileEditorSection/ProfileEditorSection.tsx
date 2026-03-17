@@ -1,4 +1,4 @@
-import { EditableProfileCard, ProfileCard } from "../../components";
+import { EditableProfileCard, ProfileCard } from "@views/Profile/components";
 import type { ProfileEditorSectionProps } from "./types";
 
 const ProfileEditorSection = ({

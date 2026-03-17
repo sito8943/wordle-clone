@@ -1,16 +1,16 @@
 import { Button } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
-import {
-  PROFILE_ANIMATION_DISABLED_LABEL,
-  PROFILE_ANIMATION_ENABLED_LABEL,
-  PROFILE_SETTINGS_TITLE,
-  PROFILE_THEME_LABEL,
-  PROFILE_THEME_MODE_ARIA_LABEL,
-  PROFILE_THEME_MODE_INPUT_ID,
-  PROFILE_THEME_OPTIONS,
-} from "../../constants";
 import { DifficultySection } from "../DifficultySection";
 import type { SettingsSectionProps } from "./types";
+import {
+  PROFILE_SETTINGS_TITLE,
+  PROFILE_ANIMATION_ENABLED_LABEL,
+  PROFILE_ANIMATION_DISABLED_LABEL,
+  PROFILE_THEME_MODE_INPUT_ID,
+  PROFILE_THEME_LABEL,
+  PROFILE_THEME_MODE_ARIA_LABEL,
+  PROFILE_THEME_OPTIONS,
+} from "@views/Profile/constants";
 
 const SettingsSection = ({
   startAnimationsEnabled,

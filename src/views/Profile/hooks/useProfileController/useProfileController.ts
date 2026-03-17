@@ -5,11 +5,6 @@ import {
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
 } from "@domain/wordle";
-import { useAnimationsPreference } from "../useAnimationsPreference";
-import {
-  useThemePreference,
-  type ThemePreference,
-} from "../useThemePreference";
 import { useApi, usePlayer } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
 
@@ -19,6 +14,8 @@ import {
   PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
 } from "./constants";
 import { getPlayerDifficultyLabel, hasActivePersistedGame } from "./utils";
+import { useAnimationsPreference, useThemePreference } from "@hooks";
+import type { ThemePreference } from "@hooks/useThemePreference";
 
 export default function useProfileController() {
   const { scoreClient } = useApi();

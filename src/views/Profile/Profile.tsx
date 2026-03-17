@@ -1,10 +1,10 @@
-import { useProfileController } from "@hooks";
 import {
   DifficultyChangeDialog,
   ProfileEditorSection,
   ProfileHeader,
   SettingsSection,
 } from "./sections";
+import { useProfileController } from "./hooks";
 
 const Profile = () => {
   const {

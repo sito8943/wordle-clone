@@ -1,10 +1,10 @@
 import { Button } from "@components";
+import type { ProfileHeaderProps } from "./types";
 import {
+  PROFILE_PAGE_TITLE,
   PROFILE_CANCEL_ACTION_LABEL,
   PROFILE_EDIT_ACTION_LABEL,
-  PROFILE_PAGE_TITLE,
-} from "../../constants";
-import type { ProfileHeaderProps } from "./types";
+} from "@views/Profile/constants";
 
 const ProfileHeader = ({ editing, onToggleEditing }: ProfileHeaderProps) => {
   return (

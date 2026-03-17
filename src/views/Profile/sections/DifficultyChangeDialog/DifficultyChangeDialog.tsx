@@ -1,4 +1,6 @@
 import { ConfirmationDialog } from "@components";
+
+import type { DifficultyChangeDialogProps } from "./types";
 import {
   DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL,
   DIFFICULTY_CHANGE_CONFIRM_ACTION_LABEL,
@@ -6,8 +8,7 @@ import {
   DIFFICULTY_CHANGE_CONFIRMATION_TITLE,
   DIFFICULTY_CHANGE_DIALOG_TITLE_ID,
   DIFFICULTY_CHANGE_NEW_DIFFICULTY_PREFIX,
-} from "../../constants";
-import type { DifficultyChangeDialogProps } from "./types";
+} from "@views/Profile/constants";
 
 const DifficultyChangeDialog = ({
   visible,
