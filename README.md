@@ -1,59 +1,107 @@
 # Wordle Clone
 
-## Convex scoreboard integration
+React + TypeScript Wordle clone with:
 
-This project persists player scores with Convex and uses `localStorage` as an offline fallback.
+- Difficulty modes and scoring/streak system
+- Profile and scoreboard routes
+- Convex-backed online scoreboard and dictionary
+- Local offline fallbacks and resume flow
+- PWA support (installable app)
 
-## Convex words dictionary
+## Requirements
 
-- The Wordle dictionary is now stored in Convex (`words` table), grouped by `language`.
-- Current supported language: `en`.
-- The frontend fetches dictionary words from Convex only when local cache is empty, then stores them in `localStorage` (`wordle:dictionary:en`).
-- In Home, there is a `Words` button next to `Refresh` to open the list of possible words.
-- You can hide/show the words button with `VITE_WORD_LIST_BUTTON_ENABLED` (`true` by default).
+- Node.js `22.12.0` (see `.nvmrc`)
+- npm
 
-### 1) Create and run Convex backend
+## Quick Start
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. (Optional) Start Convex backend:
 
 ```bash
 npm run convex:dev
 ```
 
-This command initializes the Convex project (first run), generates `convex/_generated/*`, and starts the Convex dev backend.
-
-### 2) Frontend environment
-
-Create a `.env.local` file:
+3. Create `.env.local` (or copy `.env.example`) and set:
 
 ```bash
 VITE_CONVEX_URL=https://YOUR-DEPLOYMENT.convex.cloud
+VITE_WORD_LIST_BUTTON_ENABLED=true
 ```
 
-If `VITE_CONVEX_URL` is missing, the app still works and stores scoreboard data only in `localStorage`.
-
-### 3) Run app
+4. Run the app:
 
 ```bash
 npm run dev
 ```
 
-## Game persistence behavior
+If `VITE_CONVEX_URL` is not set, the app still works with local-only behavior for scoreboard and dictionary cache.
 
-- The current board is saved in `localStorage` (`wordle:game`).
-- Each browser tab has its own session id in `sessionStorage` (`wordle:session-id`).
-- Same tab + refresh: the game restores automatically.
-- New tab + existing in-progress board from another tab session: the app shows a dialog asking whether to continue that previous board or start a new one.
+## Environment Variables
+
+- `VITE_CONVEX_URL` (optional): Convex deployment URL.
+- `VITE_WORD_LIST_BUTTON_ENABLED` (optional, default `true`): enables/disables the **Words** button UI.
+
+Notes:
+- The **Words** button is only shown in **Easy** difficulty.
+- The button is disabled while dictionary data is loading or unavailable.
+
+## Available Scripts
+
+- `npm run dev`: start Vite dev server.
+- `npm run build`: production build.
+- `npm run preview`: preview production build locally.
+- `npm run test`: run tests with Vitest.
+- `npm run coverage`: run tests with coverage.
+- `npm run lint`: run typecheck + eslint + prettier check + depcheck.
+- `npm run convex:dev`: start Convex dev backend.
+- `npm run convex:deploy`: deploy Convex functions/schema.
+
+## Persistence Behavior
+
+- `sessionStorage`
+  - `wordle:session-id`: per-tab session id.
+- `localStorage`
+  - `wordle:game`: in-progress game state.
+  - `wordle:hint-usage`: hint usage snapshot.
+  - `wordle:dictionary:en`: cached dictionary.
+  - `player`: player profile and score/streak metadata.
+  - `wordle:scoreboard:*`: scoreboard cache/pending/client metadata.
+
+Resume rules:
+- Same tab + refresh restores the current board automatically.
+- New tab + in-progress board from another tab session prompts to continue or start fresh.
+
+## Dictionary + Word List
+
+- Dictionary words are stored in Convex (`words` table) by language.
+- Current language is `en`.
+- The app reads cached words first and only fetches from Convex when cache is empty.
+- The fetched dictionary is cached locally in `wordle:dictionary:en`.
 
 ## PWA
 
-- The app is configured as a Progressive Web App using `vite-plugin-pwa`.
-- Production builds generate `manifest.webmanifest` and a service worker with pre-cached static assets.
-- PWA icons are under `public/` (`pwa-192x192.png`, `pwa-512x512.png`, and maskable variants).
+- Powered by `vite-plugin-pwa`.
+- Production build generates `manifest.webmanifest` and service worker assets.
+- Icons live in `public/` (`pwa-192x192.png`, `pwa-512x512.png`, and maskable variants).
 
-### Test installability locally
+Local installability check:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-Then open the preview URL in Chrome/Edge and use the install button in the address bar.
+Open the preview URL in Chrome/Edge and use the install button in the address bar.
+
+## Architecture
+
+For architecture and layering rules, see:
+
+- `ARCHITECTURE.md`
+- `AGENTS.md`
