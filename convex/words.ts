@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { EN_WORDS } from "./data/wordsEn";
 
@@ -32,6 +33,33 @@ const assertLanguageSupported = (language: string): string => {
   return normalized;
 };
 
+const djb2Hash = (words: string[]): number => {
+  let hash = 5381;
+  const str = words.join(",");
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+    hash = hash >>> 0;
+  }
+  return hash;
+};
+
+const upsertWordsMeta = async (
+  ctx: MutationCtx,
+  language: string,
+  checksum: number,
+) => {
+  const existing = await ctx.db
+    .query("wordsMeta")
+    .withIndex("by_language", (q) => q.eq("language", language))
+    .unique();
+
+  if (existing) {
+    await ctx.db.patch(existing._id, { checksum, updatedAt: Date.now() });
+  } else {
+    await ctx.db.insert("wordsMeta", { language, checksum, updatedAt: Date.now() });
+  }
+};
+
 export const ensureLanguageSeeded = mutation({
   args: {
     language: v.optional(v.string()),
@@ -63,6 +91,8 @@ export const ensureLanguageSeeded = mutation({
       });
     }
 
+    await upsertWordsMeta(ctx, language, djb2Hash(seedWords));
+
     return {
       language,
       inserted: seedWords.length,
@@ -86,28 +116,18 @@ export const listByLanguage = query({
   },
 });
 
-const djb2Hash = (words: string[]): number => {
-  let hash = 5381;
-  const str = words.join(",");
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
-    hash = hash >>> 0; // keep as unsigned 32-bit
-  }
-  return hash;
-};
-
-export const getWordsChecksum = query({
+export const getLanguageChecksum = query({
   args: {
     language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
-    const rows = await ctx.db
-      .query("words")
+    const meta = await ctx.db
+      .query("wordsMeta")
       .withIndex("by_language", (q) => q.eq("language", language))
-      .collect();
+      .unique();
 
-    const words = normalizeWords(rows.map((row) => row.value));
-    return { checksum: djb2Hash(words), count: words.length };
+    if (!meta) return null;
+    return { checksum: meta.checksum, updatedAt: meta.updatedAt };
   },
 });

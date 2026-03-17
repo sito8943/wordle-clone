@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
+import { vi } from "vitest";
 import type { TopScoresResult } from "@api/score";
 import type { ReactElement, ReactNode } from "react";
 import { ApiContext } from "@providers/Api/ApiContext";
@@ -44,7 +45,16 @@ const createMockScoreClient = (
 
 const createMockWordDictionaryClient = (
   loadWords: ApiContextType["wordDictionaryClient"]["loadWords"],
-) => ({ loadWords }) as unknown as ApiContextType["wordDictionaryClient"];
+  overrides: Partial<ApiContextType["wordDictionaryClient"]> = {},
+) =>
+  ({
+    loadWords,
+    fetchRemoteChecksum: vi.fn().mockResolvedValue(null),
+    getStoredChecksum: vi.fn().mockReturnValue(null),
+    clearCache: vi.fn(),
+    getCachedWords: vi.fn().mockReturnValue([]),
+    ...overrides,
+  }) as unknown as ApiContextType["wordDictionaryClient"];
 
 const createHookWrapper = (
   queryClient: QueryClient,

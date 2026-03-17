@@ -4,4 +4,4 @@ export const WORDS_DEFAULT_LANGUAGE = "en";
 
 export const WORDS_ENSURE_MUTATION = "words:ensureLanguageSeeded";
 export const WORDS_LIST_BY_LANGUAGE_QUERY = "words:listByLanguage";
-export const WORDS_CHECKSUM_QUERY = "words:getWordsChecksum";
+export const WORDS_LANGUAGE_CHECKSUM_QUERY = "words:getLanguageChecksum";

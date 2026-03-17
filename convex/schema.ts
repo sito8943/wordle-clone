@@ -21,4 +21,9 @@ export default defineSchema({
   })
     .index("by_language", ["language"])
     .index("by_language_and_value", ["language", "value"]),
+  wordsMeta: defineTable({
+    language: v.string(),
+    checksum: v.number(),
+    updatedAt: v.number(),
+  }).index("by_language", ["language"]),
 });

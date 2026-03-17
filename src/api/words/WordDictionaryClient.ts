@@ -2,13 +2,15 @@ import { ConvexGateway } from "../convex/ConvexGateway";
 import {
   WORDS_CACHE_KEY_PREFIX,
   WORDS_CHECKSUM_KEY_PREFIX,
-  WORDS_CHECKSUM_QUERY,
   WORDS_DEFAULT_LANGUAGE,
   WORDS_ENSURE_MUTATION,
+  WORDS_LANGUAGE_CHECKSUM_QUERY,
   WORDS_LIST_BY_LANGUAGE_QUERY,
 } from "./constants";
 import type { DictionaryLanguage } from "./types";
 import { normalizeWords, resolveStorage } from "./utils";
+
+type RemoteChecksum = { checksum: number; updatedAt: number };
 
 class WordDictionaryClient {
   private readonly gateway: ConvexGateway;
@@ -24,73 +26,16 @@ class WordDictionaryClient {
   ): string[] {
     try {
       const raw = this.storage.getItem(this.getCacheKey(language));
-      if (!raw) {
-        return [];
-      }
-
+      if (!raw) return [];
       return normalizeWords(JSON.parse(raw));
     } catch {
       return [];
     }
   }
 
-  async loadWords(
+  getStoredChecksum(
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
-  ): Promise<string[]> {
-    const cachedWords = this.getCachedWords(language);
-    console.log(cachedWords);
-    if (!this.gateway.isConfigured || !this.isOnline()) {
-      return cachedWords;
-    }
-
-    try {
-      await this.gateway.mutation(WORDS_ENSURE_MUTATION, { language });
-
-      if (cachedWords.length > 0) {
-        const needsRefresh = await this.checksumMismatch(language);
-        if (!needsRefresh) {
-          return cachedWords;
-        }
-      }
-
-      const remoteWords = await this.gateway.query<unknown>(
-        WORDS_LIST_BY_LANGUAGE_QUERY,
-        { language },
-      );
-      const normalizedRemoteWords = normalizeWords(remoteWords);
-
-      if (normalizedRemoteWords.length === 0) {
-        return cachedWords;
-      }
-
-      this.persistWords(language, normalizedRemoteWords);
-      return normalizedRemoteWords;
-    } catch (error) {
-      if (!this.gateway.isNetworkError(error)) {
-        throw error;
-      }
-
-      return cachedWords;
-    }
-  }
-
-  private async checksumMismatch(
-    language: DictionaryLanguage,
-  ): Promise<boolean> {
-    try {
-      const remote = await this.gateway.query<{
-        checksum: number;
-        count: number;
-      }>(WORDS_CHECKSUM_QUERY, { language });
-      console.log(remote);
-      const stored = this.getStoredChecksum(language);
-      return stored !== remote.checksum;
-    } catch {
-      return false;
-    }
-  }
-
-  private getStoredChecksum(language: DictionaryLanguage): number | null {
+  ): number | null {
     try {
       const raw = this.storage.getItem(this.getChecksumKey(language));
       if (!raw) return null;
@@ -100,22 +45,65 @@ class WordDictionaryClient {
     }
   }
 
-  private persistWords(language: DictionaryLanguage, words: string[]): void {
-    this.storage.setItem(this.getCacheKey(language), JSON.stringify(words));
-    this.storage.setItem(
-      this.getChecksumKey(language),
-      JSON.stringify(this.computeLocalChecksum(words)),
+  async fetchRemoteChecksum(
+    language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
+  ): Promise<RemoteChecksum | null> {
+    return this.gateway.query<RemoteChecksum | null>(
+      WORDS_LANGUAGE_CHECKSUM_QUERY,
+      { language },
     );
   }
 
-  private computeLocalChecksum(words: string[]): number {
-    let hash = 5381;
-    const str = words.join(",");
-    for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
-      hash = hash >>> 0;
+  clearCache(language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE): void {
+    this.storage.removeItem(this.getCacheKey(language));
+    this.storage.removeItem(this.getChecksumKey(language));
+  }
+
+  async loadWords(
+    language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
+  ): Promise<string[]> {
+    const cachedWords = this.getCachedWords(language);
+
+    if (cachedWords.length > 0) {
+      return cachedWords;
     }
-    return hash;
+
+    if (!this.gateway.isConfigured || !this.isOnline()) {
+      return cachedWords;
+    }
+
+    try {
+      await this.gateway.mutation(WORDS_ENSURE_MUTATION, { language });
+
+      const [remoteWords, remoteChecksum] = await Promise.all([
+        this.gateway.query<unknown>(WORDS_LIST_BY_LANGUAGE_QUERY, { language }),
+        this.fetchRemoteChecksum(language),
+      ]);
+
+      const normalizedRemoteWords = normalizeWords(remoteWords);
+
+      if (normalizedRemoteWords.length === 0) {
+        return cachedWords;
+      }
+
+      this.storage.setItem(
+        this.getCacheKey(language),
+        JSON.stringify(normalizedRemoteWords),
+      );
+      if (remoteChecksum) {
+        this.storage.setItem(
+          this.getChecksumKey(language),
+          JSON.stringify(remoteChecksum.checksum),
+        );
+      }
+
+      return normalizedRemoteWords;
+    } catch (error) {
+      if (!this.gateway.isNetworkError(error)) {
+        throw error;
+      }
+      return cachedWords;
+    }
   }
 
   private getCacheKey(language: DictionaryLanguage): string {
@@ -127,10 +115,7 @@ class WordDictionaryClient {
   }
 
   private isOnline(): boolean {
-    if (typeof navigator === "undefined") {
-      return true;
-    }
-
+    if (typeof navigator === "undefined") return true;
     return navigator.onLine;
   }
 }
