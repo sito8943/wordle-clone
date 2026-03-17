@@ -31,7 +31,7 @@ h1,
   }
 
   .input-error-text {
-    @apply text-sm text-red-700;
+    @apply text-sm text-red-700 dark:text-red-500;
   }
 
   .scoreboard-notice {

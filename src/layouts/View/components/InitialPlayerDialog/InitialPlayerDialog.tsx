@@ -81,7 +81,7 @@ const InitialPlayerDialog = ({
           htmlFor={INITIAL_PLAYER_DIALOG_INPUT_ID}
           className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
         >
-          Player name
+          Player nick name
         </label>
         <input
           ref={nameInputRef}
