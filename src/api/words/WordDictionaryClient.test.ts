@@ -43,8 +43,10 @@ const createGateway = (overrides: Partial<ConvexGateway> = {}): ConvexGateway =>
   ({
     isConfigured: true,
     query: vi.fn().mockImplementation((queryName: string) => {
-      if (queryName === WORDS_LANGUAGE_CHECKSUM_QUERY) return Promise.resolve(REMOTE_CHECKSUM);
-      if (queryName === WORDS_LIST_BY_LANGUAGE_QUERY) return Promise.resolve(REMOTE_WORDS);
+      if (queryName === WORDS_LANGUAGE_CHECKSUM_QUERY)
+        return Promise.resolve(REMOTE_CHECKSUM);
+      if (queryName === WORDS_LIST_BY_LANGUAGE_QUERY)
+        return Promise.resolve(REMOTE_WORDS);
       return Promise.resolve(null);
     }),
     mutation: vi.fn().mockResolvedValue(undefined),

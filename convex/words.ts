@@ -56,7 +56,11 @@ const upsertWordsMeta = async (
   if (existing) {
     await ctx.db.patch(existing._id, { checksum, updatedAt: Date.now() });
   } else {
-    await ctx.db.insert("wordsMeta", { language, checksum, updatedAt: Date.now() });
+    await ctx.db.insert("wordsMeta", {
+      language,
+      checksum,
+      updatedAt: Date.now(),
+    });
   }
 };
 
