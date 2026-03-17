@@ -7,12 +7,21 @@ permissions:
   checks: write
   contents: read
   pull-requests: write
+env:
+  VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
+  VITE_WORD_LIST_BUTTON_ENABLED: ${{ vars.VITE_WORD_LIST_BUTTON_ENABLED }}
 jobs:
   build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Create .env for production build
+        run: |
+          {
+            echo "VITE_CONVEX_URL=${VITE_CONVEX_URL}"
+            echo "VITE_WORD_LIST_BUTTON_ENABLED=${VITE_WORD_LIST_BUTTON_ENABLED:-true}"
+          } > .env
       - run: npm ci && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
