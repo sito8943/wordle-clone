@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import type { TileStatus } from "../../../utils/types";
+import type { TileStatus } from "@utils/types";
 import { Board } from "./Board";
 
 describe("Board", () => {

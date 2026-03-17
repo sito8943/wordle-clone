@@ -1,9 +1,9 @@
 import { lazy, Suspense, useCallback, useState } from "react";
 import { Outlet, useLocation } from "react-router";
-import { ErrorBoundary, ErrorFallback, Footer, Navbar } from "../components";
-import { useAnimationsPreference, useThemePreference } from "../hooks";
-import { useApi, usePlayer } from "../providers";
-import { normalizePlayerName } from "../providers/utils";
+import { ErrorBoundary, ErrorFallback, Footer, Navbar } from "@components";
+import { useAnimationsPreference, useThemePreference } from "@hooks";
+import { useApi, usePlayer } from "@providers";
+import { normalizePlayerName } from "@providers/utils";
 import {
   INITIAL_PLAYER_NAME_NOT_AVAILABLE_ERROR,
   INITIAL_PLAYER_NAME_VALIDATION_ERROR,
@@ -11,7 +11,7 @@ import {
 import { shouldAskForInitialPlayerName } from "./utils";
 
 const InitialPlayerDialog = lazy(
-  () => import("../components/InitialPlayerDialog/InitialPlayerDialog"),
+  () => import("@components/InitialPlayerDialog/InitialPlayerDialog"),
 );
 
 const View = () => {

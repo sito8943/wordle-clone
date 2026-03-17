@@ -1,4 +1,4 @@
-import type { PlayerDifficulty } from "../../../providers/types";
+import type { PlayerDifficulty } from "@providers/types";
 import type { HintTileStatus } from "../../useWordle/types";
 
 export type HintUsageSnapshot = {

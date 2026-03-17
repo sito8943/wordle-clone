@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { useDialogCloseTransition } from "../../hooks";
+import { useDialogCloseTransition } from "@hooks";
 import { Button } from "../Button";
 import { Dialog } from "../Dialogs/Dialog";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
-} from "../ConfirmationDialog";
+} from "@components/Dialogs/ConfirmationDialog";
 import {
   INITIAL_PLAYER_DIALOG_DESCRIPTION,
   INITIAL_PLAYER_DIALOG_EMPTY_NAME_ERROR,

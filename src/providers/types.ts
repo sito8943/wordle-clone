@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { ScoreClient } from "../api/score";
-import type { WordDictionaryClient } from "../api/words";
+import type { ScoreClient } from "@api/score";
+import type { WordDictionaryClient } from "@api/words";
 
 export type Player = {
   name: string;

@@ -1,18 +1,15 @@
 import { lazy, Suspense, type JSX } from "react";
-import { ErrorBoundary, ErrorFallback } from "../../../components";
+import { ErrorBoundary, ErrorFallback } from "@components";
 import { useHomeView } from "./useHomeView";
 
 const SessionResumeDialog = lazy(
-  () => import("../SessionResumeDialog/SessionResumeDialog"),
+  () => import("./SessionResumeDialog/SessionResumeDialog"),
 );
 const RefreshConfirmationDialog = lazy(
-  () =>
-    import("../RefreshConfirmationDialog/RefreshConfirmationDialog"),
+  () => import("./RefreshConfirmationDialog/RefreshConfirmationDialog"),
 );
-const WordListDialog = lazy(
-  () => import("../WordListDialog/WordListDialog"),
-);
-const HelpDialog = lazy(() => import("../HelpDialog/HelpDialog"));
+const WordListDialog = lazy(() => import("./WordListDialog/WordListDialog"));
+const HelpDialog = lazy(() => import("./HelpDialog/HelpDialog"));
 const HomeDeveloperConsoleDialog = lazy(
   () => import("./HomeDeveloperConsoleDialog"),
 );

@@ -2,9 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./global.css";
 import App from "./App.tsx";
-import { ErrorBoundary, ErrorFallback } from "./components";
-import { ApiProvider, PlayerProvider } from "./providers/";
-import { loadFontsAsync } from "./utils/loadFontsAsync";
+import { ErrorBoundary, ErrorFallback } from "@components";
+import { ApiProvider, PlayerProvider } from "@providers";
+import { loadFontsAsync } from "@utils/loadFontsAsync";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

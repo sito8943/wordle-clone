@@ -1,5 +1,5 @@
-import { WORDS_DEFAULT_LANGUAGE } from "../api/words";
-import type { DictionaryLanguage } from "../api/words";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
+import type { DictionaryLanguage } from "@api/words";
 
 const FALLBACK_WORD = "apple";
 

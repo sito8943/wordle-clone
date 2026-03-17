@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { KEYBOARD_ROWS, getKeyStatuses } from "../../../domain/wordle";
+import { KEYBOARD_ROWS, getKeyStatuses } from "@domain/wordle";
 import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constants";
 import type { KeyboardProps, KeyboardRowModel } from "./types";
 

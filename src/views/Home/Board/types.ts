@@ -1,4 +1,4 @@
-import type { BoardCellStatus, GuessResult } from "../../../domain/wordle";
+import type { BoardCellStatus, GuessResult } from "@domain/wordle";
 
 export type BoardPropsType = {
   guesses: GuessResult[];

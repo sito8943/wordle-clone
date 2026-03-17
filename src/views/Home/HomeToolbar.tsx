@@ -7,7 +7,7 @@ import {
   faList,
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button, FireStreak } from "../../../components";
+import { Button, FireStreak } from "@components";
 import { useHomeView } from "./useHomeView";
 import type { NativeKeyboardClockStyle } from "./types";
 

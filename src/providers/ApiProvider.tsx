@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { ConvexGateway } from "../api/convex/ConvexGateway";
-import { ScoreClient } from "../api/score";
-import { WordDictionaryClient } from "../api/words";
-import { env } from "../config";
+import { ConvexGateway } from "@api/convex/ConvexGateway";
+import { ScoreClient } from "@api/score";
+import { WordDictionaryClient } from "@api/words";
+import { env } from "@config";
 import { ApiContext } from "./ApiContext";
 import type { ProviderProps } from "./types";
 

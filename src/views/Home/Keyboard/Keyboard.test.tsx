@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { TileStatus } from "../../../utils/types";
+import type { TileStatus } from "@utils/types";
 import { Keyboard } from ".";
 
 describe("Keyboard", () => {

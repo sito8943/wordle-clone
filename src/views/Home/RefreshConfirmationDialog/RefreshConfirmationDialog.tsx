@@ -1,4 +1,4 @@
-import { ConfirmationDialog } from "../../../components/ConfirmationDialog";
+import { ConfirmationDialog } from "@components/Dialogs/ConfirmationDialog";
 import {
   REFRESH_CONFIRMATION_DIALOG_CANCEL_ACTION_LABEL,
   REFRESH_CONFIRMATION_DIALOG_CONFIRM_ACTION_LABEL,

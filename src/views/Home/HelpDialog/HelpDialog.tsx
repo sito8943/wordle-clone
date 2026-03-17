@@ -1,10 +1,10 @@
-import { useDialogCloseTransition } from "../../../hooks";
+import { useDialogCloseTransition } from "@hooks";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
-} from "../../../components/ConfirmationDialog";
-import { Button } from "../../../components/Button";
-import { Dialog } from "../../../components/Dialogs/Dialog";
+} from "@components/Dialogs/ConfirmationDialog";
+import { Button } from "@components/Button";
+import { Dialog } from "@components/Dialogs/Dialog";
 import { HELP_DIALOG_TITLE_ID } from "./constants";
 import type { HelpDialogProps } from "./types";
 

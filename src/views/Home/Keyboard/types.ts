@@ -1,5 +1,5 @@
-import type { GuessResult } from "../../../hooks";
-import type { TileStatus } from "../../../utils/types";
+import type { GuessResult } from "@hooks";
+import type { TileStatus } from "@utils/types";
 
 export interface KeyboardProps {
   guesses: GuessResult[];

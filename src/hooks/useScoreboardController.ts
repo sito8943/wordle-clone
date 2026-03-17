@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ScoreEntry, ScoreSource } from "../api/score";
-import { env } from "../config";
-import { useApi } from "../providers";
+import type { ScoreEntry, ScoreSource } from "@api/score";
+import { env } from "@config";
+import { useApi } from "@providers";
 import type { ScoreboardRowEntry } from "./types";
 import { formatDate } from "./utils";
 

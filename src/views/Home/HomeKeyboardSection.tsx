@@ -1,6 +1,6 @@
 import type { JSX } from "react";
-import { ErrorBoundary, ErrorFallback } from "../../../components";
-import { Keyboard } from "../Keyboard";
+import { ErrorBoundary, ErrorFallback } from "@components";
+import { Keyboard } from "./Keyboard";
 import { useHomeView } from "./useHomeView";
 import { useNativeKeyboardInput } from "./useNativeKeyboardInput";
 

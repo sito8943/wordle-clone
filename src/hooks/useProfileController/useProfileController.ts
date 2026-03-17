@@ -2,18 +2,18 @@ import { useCallback, useState } from "react";
 import {
   clearPersistedGameState,
   readPersistedGameState,
-} from "../../domain/wordle";
+} from "@domain/wordle";
 import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
   useThemePreference,
   type ThemePreference,
 } from "../useThemePreference";
-import { useApi, usePlayer } from "../../providers";
-import { normalizePlayerName } from "../../providers/utils";
+import { useApi, usePlayer } from "@providers";
+import { normalizePlayerName } from "@providers/utils";
 import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
-} from "../../providers/types";
+} from "@providers/types";
 import {
   PROFILE_CONFIGURATION_SAVED_MESSAGE,
   PROFILE_NAME_NOT_AVAILABLE_MESSAGE,

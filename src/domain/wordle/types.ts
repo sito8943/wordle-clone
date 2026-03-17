@@ -1,4 +1,4 @@
-import type { TileStatus } from "../../utils/types";
+import type { TileStatus } from "@utils/types";
 
 export type GuessResult = {
   word: string;

@@ -5,12 +5,12 @@ import {
   type FormEvent,
   type JSX,
 } from "react";
-import { Button, Dialog } from "../../../components";
-import { useDialogCloseTransition } from "../../../hooks";
+import { Button, Dialog } from "@components";
+import { useDialogCloseTransition } from "@hooks";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
-} from "../../../components/ConfirmationDialog";
+} from "@components/Dialogs/ConfirmationDialog";
 import {
   DEVELOPER_CONSOLE_CANCEL_ACTION_LABEL,
   DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID,

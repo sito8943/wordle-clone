@@ -1,6 +1,6 @@
 import type { JSX } from "react";
-import { ErrorBoundary, ErrorFallback } from "../../../components";
-import { Board } from "../Board";
+import { ErrorBoundary, ErrorFallback } from "@components";
+import { Board } from "./Board";
 import { useHomeView } from "./useHomeView";
 
 const HomeBoardSection = (): JSX.Element => {

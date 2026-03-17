@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { buildBoardRows } from "../../../domain/wordle";
+import { buildBoardRows } from "@domain/wordle";
 import { BOARD_SHAKE_DURATION_MS } from "./constants";
 import type { BoardPropsType, BoardRowViewModel } from "./types";
 

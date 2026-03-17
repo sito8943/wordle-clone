@@ -6,7 +6,7 @@ import {
   faTrophy,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
-import { useNavbarController } from "../../hooks";
+import { useNavbarController } from "@hooks";
 import NavLink from "./NavLink";
 import { getScoreboardToneClassName } from "./utils";
 

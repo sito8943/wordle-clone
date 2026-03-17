@@ -1,4 +1,4 @@
-import type { TileStatus } from "../../utils/types";
+import type { TileStatus } from "@utils/types";
 import { KEY_STATUS_PRIORITY } from "./constants";
 import type { GuessResult } from "./types";
 

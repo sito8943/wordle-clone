@@ -1,4 +1,4 @@
-import type { PlayerDifficulty } from "../../providers/types";
+import type { PlayerDifficulty } from "@providers/types";
 import {
   HARD_MODE_FINAL_STRETCH_SECONDS,
   HARD_MODE_TOTAL_SECONDS,

@@ -1,4 +1,4 @@
-import { ConfirmationDialog } from "../../../components/ConfirmationDialog";
+import { ConfirmationDialog } from "@components/Dialogs/ConfirmationDialog";
 import {
   DEFAULT_RESUME_DIALOG_DESCRIPTION,
   DEFAULT_RESUME_DIALOG_PRIMARY_ACTION_LABEL,

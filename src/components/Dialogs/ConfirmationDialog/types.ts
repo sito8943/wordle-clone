@@ -1,6 +1,6 @@
 import type { DialogProps } from "../Dialog";
 
-export interface ConfirmationDialogProps extends DialogProps {
+export interface ConfirmationDialogProps extends Omit<DialogProps, "titleId"> {
   confirmActionLabel: string;
   cancelActionLabel: string;
   dialogTitleId: string;

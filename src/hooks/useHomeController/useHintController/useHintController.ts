@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WORD_LENGTH } from "../../../domain/wordle";
+import { WORD_LENGTH } from "@domain/wordle";
 import { HINT_USAGE_STORAGE_KEY } from "./constants";
 import type { UseHintControllerParams, UseHintControllerResult } from "./types";
 import {

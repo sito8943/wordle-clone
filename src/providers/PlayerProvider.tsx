@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { UPDATE_SCORE_MUTATION } from "../api/score/constants";
-import { useLocalStorage } from "../hooks/";
+import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
+import { useLocalStorage } from "@hooks";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
 import type {

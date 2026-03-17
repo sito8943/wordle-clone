@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { RouterProvider } from "react-router";
-import { SplashScreen } from "./components";
+import { SplashScreen } from "@components";
 import routes from "./routes";
 
 function App() {
