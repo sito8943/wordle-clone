@@ -3,8 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import Scoreboard from "./Scoreboard";
 import { useScoreboardController } from "./hooks";
 
-vi.mock("@hooks", async () => {
-  const actual = await vi.importActual<typeof import("@hooks")>("@hooks");
+vi.mock("./hooks", async () => {
+  const actual =
+    await vi.importActual<typeof import("./hooks")>("./hooks");
   return { ...actual, useScoreboardController: vi.fn() };
 });
 
