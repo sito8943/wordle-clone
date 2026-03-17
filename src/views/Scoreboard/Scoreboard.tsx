@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import { Button, ErrorBoundary, ErrorFallback, FireStreak } from "@components";
-import { useScoreboardController } from "@hooks";
+import { useScoreboardController } from "./hooks";
 
 const Scoreboard = (): JSX.Element => {
   const {

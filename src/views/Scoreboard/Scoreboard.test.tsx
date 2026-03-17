@@ -1,13 +1,12 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import Scoreboard from "./Scoreboard";
+import { useScoreboardController } from "./hooks";
 
 vi.mock("@hooks", async () => {
   const actual = await vi.importActual<typeof import("@hooks")>("@hooks");
   return { ...actual, useScoreboardController: vi.fn() };
 });
-
-import { useScoreboardController } from "@hooks";
 
 const mockController = (overrides = {}) => {
   vi.mocked(useScoreboardController).mockReturnValue({
