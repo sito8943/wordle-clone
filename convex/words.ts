@@ -85,3 +85,29 @@ export const listByLanguage = query({
     return normalizeWords(rows.map((row) => row.value));
   },
 });
+
+const djb2Hash = (words: string[]): number => {
+  let hash = 5381;
+  const str = words.join(",");
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+    hash = hash >>> 0; // keep as unsigned 32-bit
+  }
+  return hash;
+};
+
+export const getWordsChecksum = query({
+  args: {
+    language: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
+    const rows = await ctx.db
+      .query("words")
+      .withIndex("by_language", (q) => q.eq("language", language))
+      .collect();
+
+    const words = normalizeWords(rows.map((row) => row.value));
+    return { checksum: djb2Hash(words), count: words.length };
+  },
+});

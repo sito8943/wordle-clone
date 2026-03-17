@@ -49,6 +49,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
   const { data: dictionaryData, isLoading: dictionaryLoading } =
     useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, cachedWords);
+
+  console.log("load words", dictionaryData);
+
   const dictionaryWords = useMemo(
     () =>
       dictionaryData && dictionaryData.length > 0
