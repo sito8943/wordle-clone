@@ -1,10 +1,7 @@
 import { useEffect, type JSX } from "react";
 import { createPortal } from "react-dom";
 import type { DialogProps } from "./types";
-
-const joinClassNames = (...classNames: Array<string | undefined>): string => {
-  return classNames.filter(Boolean).join(" ");
-};
+import { joinClassNames } from "./utils";
 
 const Dialog = ({
   visible,

@@ -1,5 +1,5 @@
 import { Button } from "./Button";
-import { Dialog } from "./Dialog";
+import { Dialog } from "./Dialogs/Dialog";
 import { ErrorBoundary, ErrorFallback } from "./ErrorBoundary";
 import { Footer } from "./Footer";
 import { Fire, FireStreak } from "./FireStreak";

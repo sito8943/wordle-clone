@@ -1,6 +1,6 @@
 import { Button } from "../../../components";
 import { ConfirmationDialog } from "../../../components/ConfirmationDialog";
-import { EditableProfileCard, ProfileCard } from "../ProfileCard";
+import { EditableProfileCard, ProfileCard } from "../../../features/profile/ProfileCard";
 import { useProfileController } from "../../../hooks";
 import type { ThemePreference } from "../../../hooks/useThemePreference";
 import type {

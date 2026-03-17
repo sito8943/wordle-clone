@@ -119,24 +119,20 @@ Current implemented direction:
 
 ```text
 src/
-  features/
-    home/
-      page/
+  views/
+    Home/
+      Home/
       Board/
       Keyboard/
       HelpDialog/
       RefreshConfirmationDialog/
       SessionResumeDialog/
       WordListDialog/
-    profile/
-      page/
+    Profile/
+      Profile/
       ProfileCard/
-    scoreboard/
-      page/
-  views/
-    Home/
-    Profile.tsx
-    Scoreboard.tsx
+    Scoreboard/
+      Scoreboard/
   components/
     Button/
     Dialog/
@@ -181,7 +177,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 
 - Integration-heavy app tests: `src/App.test.tsx`
 - Shared component tests: `src/components/**/**.test.tsx`
-- Feature modlet tests: `src/features/**/**.test.ts(x)`
+- Views modlet tests: `src/views/**/**.test.ts(x)`
 - Domain/API unit tests in their own folders.
 
 ## Change Boundaries
