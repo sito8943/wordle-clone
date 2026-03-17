@@ -6,11 +6,20 @@ on:
   push:
     branches:
       - main
+env:
+  VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
+  VITE_WORD_LIST_BUTTON_ENABLED: ${{ vars.VITE_WORD_LIST_BUTTON_ENABLED }}
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Create .env for production build
+        run: |
+          {
+            echo "VITE_CONVEX_URL=${VITE_CONVEX_URL}"
+            echo "VITE_WORD_LIST_BUTTON_ENABLED=${VITE_WORD_LIST_BUTTON_ENABLED:-true}"
+          } > .env
       - run: npm ci && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
