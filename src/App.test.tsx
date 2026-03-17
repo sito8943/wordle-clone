@@ -81,6 +81,10 @@ describe("App", () => {
   });
 
   it("renders the main navigation", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
+    );
     renderApp();
 
     expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
@@ -134,13 +138,17 @@ describe("App", () => {
   });
 
   it("asks for the player name on first app launch", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
     renderApp();
 
     expect(
       await screen.findByRole("dialog", { name: "Welcome to Wordle" }),
     ).toBeTruthy();
 
-    const nameInput = screen.getByLabelText("Player name");
+    const nameInput = screen.getByLabelText("Player nick name");
     fireEvent.change(nameInput, { target: { value: "Ana" } });
     fireEvent.click(screen.getByRole("button", { name: "Start playing" }));
 
@@ -158,6 +166,10 @@ describe("App", () => {
 
   it("prevents duplicated player name on first app launch", async () => {
     localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+    localStorage.setItem(
       "wordle:scoreboard:cache",
       JSON.stringify([
         {
@@ -173,7 +185,7 @@ describe("App", () => {
 
     renderApp();
 
-    const nameInput = await screen.findByLabelText("Player name");
+    const nameInput = await screen.findByLabelText("Player nick name");
     fireEvent.change(nameInput, { target: { value: "Ana" } });
     fireEvent.click(screen.getByRole("button", { name: "Start playing" }));
 
@@ -1109,9 +1121,13 @@ describe("App", () => {
   });
 
   it("does not type on the board while writing the initial player name", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
     renderApp();
 
-    const nameInput = await screen.findByLabelText("Player name");
+    const nameInput = await screen.findByLabelText("Player nick name");
     fireEvent.keyDown(nameInput, { key: "A" });
 
     expect(screen.queryByRole("gridcell", { name: "A, typing" })).toBeNull();
