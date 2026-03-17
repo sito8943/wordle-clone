@@ -4,8 +4,7 @@ import Scoreboard from "./Scoreboard";
 import { useScoreboardController } from "./hooks";
 
 vi.mock("./hooks", async () => {
-  const actual =
-    await vi.importActual<typeof import("./hooks")>("./hooks");
+  const actual = await vi.importActual<typeof import("./hooks")>("./hooks");
   return { ...actual, useScoreboardController: vi.fn() };
 });
 
