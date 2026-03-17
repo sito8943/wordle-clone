@@ -16,10 +16,10 @@ import {
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
   WORDLE_START_ANIMATION_SESSION_KEY,
 } from "@domain/wordle";
-import { HINT_USAGE_STORAGE_KEY } from "@hooks/useHomeController/useHintController";
 import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
+import { HINT_USAGE_STORAGE_KEY } from "@views/Home/hooks/useHintController";
 
 vi.mock("./utils/words", async () => {
   const actual =

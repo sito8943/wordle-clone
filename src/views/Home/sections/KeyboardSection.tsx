@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { Keyboard } from "../components";
 import { useHomeView } from "../providers/";
-import { useNativeKeyboardInput } from "../hooks/";
+import { useNativeKeyboardInput } from "../hooks";
 
 const KeyboardSection = (): JSX.Element => {
   const { controller, preferNativeKeyboard } = useHomeView();

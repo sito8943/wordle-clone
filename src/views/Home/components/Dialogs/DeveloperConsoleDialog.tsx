@@ -11,21 +11,21 @@ import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
 } from "@components/Dialogs/ConfirmationDialog";
+import type { HomeDeveloperConsoleDialogProps } from "@views/Home/hooks/useNativeKeyboardingInput/types";
+import { useHomeView } from "@views/Home/providers";
 import {
   DEVELOPER_CONSOLE_CANCEL_ACTION_LABEL,
-  DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID,
   DEVELOPER_CONSOLE_DIALOG_DESCRIPTION,
   DEVELOPER_CONSOLE_DIALOG_TITLE,
   DEVELOPER_CONSOLE_DIALOG_TITLE_ID,
+  DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID,
   DEVELOPER_CONSOLE_KEYBOARD_INPUT_ID,
   DEVELOPER_CONSOLE_NAME_INPUT_ID,
   DEVELOPER_CONSOLE_REFRESH_CHECKSUM_ACTION_LABEL,
   DEVELOPER_CONSOLE_SCORE_INPUT_ID,
   DEVELOPER_CONSOLE_STREAK_INPUT_ID,
   DEVELOPER_CONSOLE_SUBMIT_ACTION_LABEL,
-} from "../../constants";
-import type { HomeDeveloperConsoleDialogProps } from "../../hooks/types";
-import { useHomeView } from "../../providers/useHomeView";
+} from "@views/Home/constants";
 
 const DeveloperConsoleDialog = ({
   visible,

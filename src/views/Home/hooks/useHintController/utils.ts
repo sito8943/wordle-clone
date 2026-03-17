@@ -1,5 +1,4 @@
 import type { PlayerDifficulty } from "@domain/wordle";
-import type { HintTileStatus } from "../../useWordle/types";
 import {
   EASY_MODE_HINT_LIMIT,
   HARD_MODE_HINT_LIMIT,
@@ -7,6 +6,7 @@ import {
   NORMAL_MODE_HINT_LIMIT,
 } from "./constants";
 import type { HintUsageSnapshot } from "./types";
+import type { HintTileStatus } from "@hooks/useWordle/types";
 
 export const getHintsLimitByDifficulty = (
   difficulty: PlayerDifficulty,

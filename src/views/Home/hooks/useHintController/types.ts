@@ -1,5 +1,5 @@
 import type { PlayerDifficulty } from "@domain/wordle";
-import type { HintTileStatus } from "../../useWordle/types";
+import type { HintTileStatus } from "@hooks/useWordle/types";
 
 export type HintUsageSnapshot = {
   answer: string;

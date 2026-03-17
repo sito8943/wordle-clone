@@ -1,9 +1,9 @@
 import { useMemo, type JSX } from "react";
 import { env } from "@config";
-import { useHomeController } from "@hooks";
 import { usePlayer } from "@providers";
 import { HomeViewContext } from "./HomeViewContext";
 import type { HomeViewProviderProps } from "./types";
+import { useHomeController } from "../hooks";
 
 const HomeViewProvider = ({ children }: HomeViewProviderProps): JSX.Element => {
   const controller = useHomeController();

@@ -1,6 +1,6 @@
 import type { Player } from "@domain/wordle";
-import type { useHomeController } from "@hooks";
 import type { ReactNode } from "react";
+import type { useHomeController } from "../hooks";
 
 export type HomeViewContextValue = {
   controller: HomeControllerState;
