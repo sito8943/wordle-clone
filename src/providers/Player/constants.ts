@@ -2,7 +2,7 @@ import type {
   Player,
   PlayerDifficulty,
   PlayerKeyboardPreference,
-} from "./types";
+} from "@domain/wordle";
 
 export const DEFAULT_PLAYER_DIFFICULTY: PlayerDifficulty = "normal";
 export const DEFAULT_PLAYER_KEYBOARD_PREFERENCE: PlayerKeyboardPreference =

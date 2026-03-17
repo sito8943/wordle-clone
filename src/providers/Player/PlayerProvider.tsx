@@ -3,14 +3,10 @@ import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { useLocalStorage } from "@hooks";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
-import type {
-  Player,
-  PlayerDifficulty,
-  PlayerKeyboardPreference,
-  ProviderProps,
-} from "./types";
-import { useApi } from "./useApi";
+import type { ProviderProps } from "../types";
+import { useApi } from "../Api";
 import { normalizePlayer, normalizePlayerName } from "./utils";
+import type { Player, PlayerDifficulty, PlayerKeyboardPreference } from "@domain/wordle";
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();

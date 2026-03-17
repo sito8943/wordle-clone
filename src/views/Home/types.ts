@@ -1,6 +1,6 @@
 import type { CSSProperties, KeyboardEvent, ReactNode, RefObject } from "react";
 import type useHomeController from "@hooks/useHomeController/useHomeController";
-import type { Player } from "@providers/types";
+import type { Player } from "@providers/Player";
 
 export type HomeControllerState = ReturnType<typeof useHomeController>;
 

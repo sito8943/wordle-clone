@@ -1,6 +1,5 @@
-import { ApiProvider } from "./ApiProvider";
-import { PlayerProvider } from "./PlayerProvider";
-import { useApi } from "./useApi";
-import { usePlayer } from "./usePlayer";
+import { ApiProvider, useApi } from "./Api";
+import { PlayerProvider, usePlayer } from "./Player";
 
-export { ApiProvider, PlayerProvider, useApi, usePlayer };
+export { ApiProvider, useApi };
+export { PlayerProvider, usePlayer };

@@ -4,7 +4,7 @@ import { ScoreClient } from "@api/score";
 import { WordDictionaryClient } from "@api/words";
 import { env } from "@config";
 import { ApiContext } from "./ApiContext";
-import type { ProviderProps } from "./types";
+import type { ProviderProps } from "../types";
 
 const ApiProvider = ({ children }: ProviderProps) => {
   const convexUrl = env.mode === "test" ? undefined : env.convexUrl;

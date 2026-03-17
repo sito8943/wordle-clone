@@ -2,7 +2,7 @@ import type {
   Player,
   PlayerDifficulty,
   PlayerKeyboardPreference,
-} from "./types";
+} from "@domain/wordle";
 import { DEFAULT_PLAYER } from "./constants";
 
 export const normalizePlayerName = (value: string): string => {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useDialogCloseTransition } from "@hooks";
-import { Button } from "../Button";
-import { Dialog } from "../Dialogs/Dialog";
+import { Button } from "../../../../components/Button";
+import { Dialog } from "../../../../components/Dialogs/Dialog";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,

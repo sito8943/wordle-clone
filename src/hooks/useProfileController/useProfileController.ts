@@ -9,7 +9,7 @@ import {
   type ThemePreference,
 } from "../useThemePreference";
 import { useApi, usePlayer } from "@providers";
-import { normalizePlayerName } from "@providers/utils";
+import { normalizePlayerName } from "@providers/Player/utils";
 import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
