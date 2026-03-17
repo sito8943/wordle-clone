@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import Button from "@components/Button/Button";
 import type { EditableProfileCardPropsTypes } from "./types";
+import {
+  PROFILE_EMPTY_NAME_ERROR_MESSAGE,
+  PROFILE_NAME_LABEL,
+  PROFILE_SAVE_ACTION_LABEL,
+  PROFILE_SAVING_ACTION_LABEL,
+  PROFILE_SCORE_LABEL,
+} from "../constants";
 
 const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   const [name, setName] = useState(props.name);
@@ -10,7 +17,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length === 0) {
-      setError("Name cannot be empty.");
+      setError(PROFILE_EMPTY_NAME_ERROR_MESSAGE);
       return;
     }
 
@@ -34,7 +41,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   return (
     <form onSubmit={handleSubmit} className="profile-card-container">
       <div className="profile-card-field-row">
-        <label htmlFor="name">Name:</label>
+        <label htmlFor="name">{PROFILE_NAME_LABEL}</label>
         <input
           className="profile-card-field-input"
           id="name"
@@ -47,7 +54,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
       </div>
       {error && <p className="input-error-text">{error}</p>}
       <div className="profile-card-field-row">
-        <label htmlFor="score">Score:</label>
+        <label htmlFor="score">{PROFILE_SCORE_LABEL}</label>
         <input
           className="profile-card-field-input"
           id="score"
@@ -57,7 +64,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
         />
       </div>
       <Button type="submit" className="self-start" disabled={isSubmitting}>
-        {isSubmitting ? "Saving..." : "Save"}
+        {isSubmitting ? PROFILE_SAVING_ACTION_LABEL : PROFILE_SAVE_ACTION_LABEL}
       </Button>
     </form>
   );
