@@ -3,10 +3,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ScoreEntry, ScoreSource } from "@api/score";
 import { env } from "@config";
 import { useApi } from "@providers";
-import { queryKeys } from "./queryKeys";
-import useTopScoresQuery from "./useTopScoresQuery";
+import { queryKeys } from "@hooks";
+import { formatDate } from "@hooks/utils";
 import type { ScoreboardRowEntry } from "./types";
-import { formatDate } from "./utils";
+import useTopScoresQuery from "./useTopScoresQuery";
 
 export default function useScoreboardController() {
   const { convexEnabled } = useApi();

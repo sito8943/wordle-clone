@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 import { env } from "@config";
 import { useApi, usePlayer } from "@providers";
-import { NAVBAR_TOP_TEN_LIMIT } from "./useNavbarController.constants";
+import { NAVBAR_TOP_TEN_LIMIT } from "./constants";
 
 const useNavbarController = () => {
   const { scoreClient } = useApi();

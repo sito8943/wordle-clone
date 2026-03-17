@@ -1,13 +1,13 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import useScoreboardController from "./useScoreboardController";
-import { queryKeys } from "./queryKeys";
+import { queryKeys } from "../../../hooks/queryKeys";
 import {
   createHookWrapper,
   createMockScoreClient,
   createTestApiContextValue,
   createTestQueryClient,
-} from "../test/utils";
+} from "../../../test/utils";
 
 describe("useScoreboardController", () => {
   afterEach(() => {
