@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, act } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  act,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import HelpDialog from "./HelpDialog";
 

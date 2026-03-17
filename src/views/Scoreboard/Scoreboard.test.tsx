@@ -14,7 +14,7 @@ const mockController = (overrides = {}) => {
     convexEnabled: false,
     source: "local",
     loading: false,
-    error: null,
+    error: "",
     scores: [],
     currentClientRank: null,
     currentClientOutsideTop: false,
