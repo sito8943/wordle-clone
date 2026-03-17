@@ -1,4 +1,4 @@
-import type { TileStatus } from "../../utils/types";
+import type { TileStatus } from "@utils/types";
 
 export const WORD_LENGTH = 5;
 export const MAX_GUESSES = 6;

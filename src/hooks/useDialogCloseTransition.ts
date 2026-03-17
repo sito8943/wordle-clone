@@ -27,6 +27,8 @@ const useDialogCloseTransition = (
 
       setIsClosing(true);
       closeTimeoutRef.current = window.setTimeout(() => {
+        closeTimeoutRef.current = null;
+        setIsClosing(false);
         action();
       }, closeDurationMs);
     },

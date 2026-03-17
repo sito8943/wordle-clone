@@ -60,10 +60,94 @@
 - `useThemePreference`
 - `useAnimationsPreference`
 
-### 5) UI (`src/views` + `src/components`)
+### 5) UI (`src/features` + `src/views` + `src/components`)
 
-- Views are route-level containers.
-- Components implement reusable UI blocks (board, keyboard, dialogs, navbar, profile card, etc.).
+- `src/features/*` contains feature-scoped page modules and modlets.
+- `src/views/*` stays as thin route wrappers that delegate to feature entry points.
+- `src/components/*` is reserved for truly shared/presentational UI modules.
+
+## Modlet-Based Feature Pattern
+
+To improve cohesion and maintainability, feature orchestration and UI should follow a **modlet-based pattern**.
+
+A **modlet** is a small, cohesive, feature-scoped module with a single responsibility.
+It colocates the minimal files needed for one behavior or UI unit instead of spreading related code across broad global folders.
+
+A modlet may contain:
+
+- UI components
+- local hooks/controllers
+- feature-specific types/model helpers
+- small API adapters
+- tests
+- styles
+- an `index.ts` file exposing its public API
+
+### Modlet Rules
+
+1. Organize by feature first, then by technical role.
+   - Related files should stay together.
+   - Avoid scattering one feature across global `hooks`, `components`, and `views` folders unless the code is truly shared.
+
+2. Use small modlets with one responsibility.
+   - Split large controllers or large components into smaller modules.
+   - Each modlet should represent one coherent behavior or UI block.
+
+3. Separate shared modules from feature-specific modules.
+   - Reusable generic UI can remain in shared locations.
+   - Feature-specific code should stay inside its own feature scope.
+
+4. Expose a minimal public API.
+   - Other parts of the app should import from the modlet's `index.ts`, not from its internal files.
+
+5. Prefer composition over monolithic route files.
+   - Route views should compose modlets instead of owning all orchestration directly.
+
+### How Modlets Fit This Architecture
+
+- `src/domain` remains the place for pure business logic.
+- `src/api` remains the place for backend and gateway integration.
+- `src/providers` remains the place for global composition and cross-app state.
+- `src/hooks` remains the controller/orchestration layer.
+- `src/views` remains route wrappers.
+- `src/components` should only hold shared UI.
+- `src/features` is the default place for feature-specific UI modlets.
+
+This means route features such as Home, Profile, and Scoreboard should prefer internal feature folders with colocated modlets instead of relying on broad global buckets for feature-specific controllers and UI.
+
+Current implemented direction:
+
+```text
+src/
+  views/
+    Home/
+      Home/
+      Board/
+      Keyboard/
+      HelpDialog/
+      RefreshConfirmationDialog/
+      SessionResumeDialog/
+      WordListDialog/
+    Profile/
+      Profile/
+      ProfileCard/
+    Scoreboard/
+      Scoreboard/
+  components/
+    Button/
+    Dialog/
+    ErrorBoundary/
+    Footer/
+    FireStreak/
+    Navbar/
+    InitialPlayerDialog/
+    SplashScreen/
+  domain/
+  api/
+  providers/
+```
+
+This is an evolution of the current layered architecture, not a replacement for it. The main change is to reduce feature scattering by colocating feature-specific orchestration and UI.
 
 ## Current Persistence Contracts
 
@@ -79,7 +163,7 @@
 
 ## Data Flow (Home Gameplay)
 
-1. `Home` view consumes `useHomeController`.
+1. `Home` route wrapper delegates to `src/features/home/page`.
 2. `useHomeController` composes:
 
 - player preferences from `usePlayer`
@@ -87,12 +171,13 @@
 - difficulty-specific rules (hints, scoring multiplier, hard-mode timer)
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
-4. UI components (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
+4. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
 
 ## Testing Layout
 
 - Integration-heavy app tests: `src/App.test.tsx`
-- Component tests: `src/components/**/**.test.tsx`
+- Shared component tests: `src/components/**/**.test.tsx`
+- Views modlet tests: `src/views/**/**.test.ts(x)`
 - Domain/API unit tests in their own folders.
 
 ## Change Boundaries

@@ -15,15 +15,15 @@ import {
   type PersistedGameState,
   validateGuessInput,
   WORD_LENGTH,
-} from "../../domain/wordle";
-import { WORDS_DEFAULT_LANGUAGE } from "../../api/words";
-import { useApi } from "../../providers";
+} from "@domain/wordle";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
+import { useApi } from "@providers";
 import {
   getRandomWord,
   isValidWord,
   loadWordDictionaryFromCache,
   setWordDictionary,
-} from "../../utils/words";
+} from "@utils/words";
 import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
   MESSAGE_VISIBILITY_DURATION_MS,

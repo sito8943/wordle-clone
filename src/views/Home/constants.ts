@@ -1,5 +1,3 @@
-export const NATIVE_KEYBOARD_AUTO_FOCUS_DELAY_MS = 120;
-
 export const DEVELOPER_CONSOLE_DIALOG_TITLE = "Developer console";
 export const DEVELOPER_CONSOLE_DIALOG_DESCRIPTION =
   "Update current player values for local development.";

@@ -1,4 +1,4 @@
-import { env } from "../../config";
+import { env } from "@config";
 import { hasInProgressGame } from "./state";
 import type { PersistedGameState } from "./types";
 

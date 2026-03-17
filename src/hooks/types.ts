@@ -1,6 +1,6 @@
-import type { ScoreEntry } from "../api/score";
+import type { ScoreEntry } from "@api/score";
 
-export type { GuessResult } from "../domain/wordle";
+export type { GuessResult } from "@domain/wordle";
 
 export type ViewScoreEntry = ScoreEntry & { formattedDate: string };
 

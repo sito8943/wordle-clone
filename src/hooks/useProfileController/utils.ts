@@ -1,5 +1,4 @@
-import type { PersistedGameState } from "../../domain/wordle";
-import type { PlayerDifficulty } from "../../providers/types";
+import type { PersistedGameState, PlayerDifficulty } from "@domain/wordle";
 
 export const hasActivePersistedGame = (value: unknown): boolean => {
   if (!value || typeof value !== "object") {

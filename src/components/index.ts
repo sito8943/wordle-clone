@@ -1,32 +1,7 @@
-import { Board } from "./Board";
 import { Button } from "./Button";
-import { Dialog } from "./Dialog";
 import { ErrorBoundary, ErrorFallback } from "./ErrorBoundary";
-import { Footer } from "./Footer";
 import { Fire, FireStreak } from "./FireStreak";
-import { HelpDialog } from "./HelpDialog";
-import { InitialPlayerDialog } from "./InitialPlayerDialog";
-import { Keyboard } from "./Keyboard";
-import { Navbar } from "./Navbar";
-import { RefreshConfirmationDialog } from "./RefreshConfirmationDialog";
-import { SessionResumeDialog } from "./SessionResumeDialog";
 import { SplashScreen } from "./SplashScreen";
-import { WordListDialog } from "./WordListDialog";
-export {
-  Board,
-  Button,
-  Dialog,
-  ErrorBoundary,
-  ErrorFallback,
-  Footer,
-  Fire,
-  FireStreak,
-  HelpDialog,
-  InitialPlayerDialog,
-  Keyboard,
-  Navbar,
-  RefreshConfirmationDialog,
-  SessionResumeDialog,
-  SplashScreen,
-  WordListDialog,
-};
+export { Button, ErrorBoundary, ErrorFallback, Fire, FireStreak, SplashScreen };
+
+export * from "./Dialogs";

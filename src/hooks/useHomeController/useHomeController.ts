@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getTotalPointsForWin } from "../../domain/wordle";
-import { useApi, usePlayer } from "../../providers";
-import type { Player } from "../../providers/types";
+import { getTotalPointsForWin, type Player } from "@domain/wordle";
+import { useApi, usePlayer } from "@providers";
 import { useWordle } from "../useWordle";
 import { useHardModeTimer } from "./useHardModeTimer";
 import { useHintController } from "./useHintController";
 import { getDifficultyScoreMultiplier } from "./utils";
-import { UPDATE_SCORE_MUTATION } from "../../api/score/constants";
+import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 
 export default function useHomeController() {
   const { scoreClient } = useApi();

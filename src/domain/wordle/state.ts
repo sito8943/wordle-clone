@@ -1,5 +1,5 @@
-import { checkGuess } from "../../utils/checker";
-import { isValidWord } from "../../utils/words";
+import { checkGuess } from "@utils/checker";
+import { isValidWord } from "@utils/words";
 import { MAX_GUESSES, WORD_LENGTH } from "./constants";
 import type {
   GuessResult,

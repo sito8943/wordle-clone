@@ -8,21 +8,21 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
-import { ScoreClient, type TopScoresResult } from "./api/score";
-import { UPDATE_SCORE_MUTATION } from "./api/score/constants";
-import { env } from "./config";
+import { ScoreClient, type TopScoresResult } from "@api/score";
+import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
+import { env } from "@config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
   WORDLE_START_ANIMATION_SESSION_KEY,
-} from "./domain/wordle";
-import { HINT_USAGE_STORAGE_KEY } from "./hooks/useHomeController/useHintController";
-import { THEME_PREFERENCE_STORAGE_KEY } from "./hooks/useThemePreference";
-import { ApiProvider, PlayerProvider } from "./providers";
+} from "@domain/wordle";
+import { HINT_USAGE_STORAGE_KEY } from "@hooks/useHomeController/useHintController";
+import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
+import { ApiProvider, PlayerProvider } from "@providers";
 
 vi.mock("./utils/words", async () => {
   const actual =
-    await vi.importActual<typeof import("./utils/words")>("./utils/words");
+    await vi.importActual<typeof import("@utils/words")>("./utils/words");
 
   return {
     ...actual,

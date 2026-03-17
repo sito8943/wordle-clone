@@ -1,7 +1,7 @@
 import {
   WORDLE_START_ANIMATION_SESSION_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
-} from "../../domain/wordle";
+} from "@domain/wordle";
 
 export const hasSeenStartAnimationInSession = (): boolean => {
   if (typeof window === "undefined") {
