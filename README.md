@@ -60,6 +60,8 @@ Notes:
 - `npm run test`: run tests with Vitest.
 - `npm run coverage`: run tests with coverage.
 - `npm run lint`: run typecheck + eslint + prettier check + depcheck.
+- `npm run lint-prettier`: validate formatting with Prettier.
+- `npm run prettier`: format the project with Prettier.
 - `npm run convex:dev`: start Convex dev backend.
 - `npm run convex:deploy`: deploy Convex functions/schema.
 
