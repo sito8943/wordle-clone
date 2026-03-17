@@ -48,6 +48,7 @@ If `VITE_CONVEX_URL` is not set, the app still works with local-only behavior fo
 - `VITE_WORD_LIST_BUTTON_ENABLED` (optional, default `true`): enables/disables the **Words** button UI.
 
 Notes:
+
 - The **Words** button is only shown in **Easy** difficulty.
 - The button is disabled while dictionary data is loading or unavailable.
 
@@ -74,6 +75,7 @@ Notes:
   - `wordle:scoreboard:*`: scoreboard cache/pending/client metadata.
 
 Resume rules:
+
 - Same tab + refresh restores the current board automatically.
 - New tab + in-progress board from another tab session prompts to continue or start fresh.
 

@@ -16,7 +16,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "convex:dev": "convex dev",
-    "convex:deploy": "convex deploy"
+    "convex:deploy": "convex deploy",
+    "firebase:deploy": "firebase deploy --only hosting:sito-wordle"
   },
   "dependencies": {
     "@fontsource-variable/roboto": "^5.2.10",
