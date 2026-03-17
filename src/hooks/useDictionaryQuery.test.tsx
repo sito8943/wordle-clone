@@ -2,6 +2,7 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import useDictionaryQuery from "./useDictionaryQuery";
+import { queryKeys } from "./queryKeys";
 import {
   createHookWrapper,
   createMockWordDictionaryClient,
@@ -106,10 +107,11 @@ describe("useDictionaryQuery", () => {
       expect(clearCache).not.toHaveBeenCalled();
     });
 
-    it("clears cache and triggers re-fetch when checksum mismatches", async () => {
+    it("clears cache and invalidates dictionary query when checksum mismatches", async () => {
       const clearCache = vi.fn();
       const loadWords = vi.fn().mockResolvedValue(["apple"]);
       const queryClient = createTestQueryClient();
+      const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
       const wrapper = createHookWrapper(
         queryClient,
         createTestApiContextValue({
@@ -128,7 +130,12 @@ describe("useDictionaryQuery", () => {
       await waitFor(() =>
         expect(clearCache).toHaveBeenCalledWith(WORDS_DEFAULT_LANGUAGE),
       );
-      await waitFor(() => expect(loadWords).toHaveBeenCalledTimes(2));
+      await waitFor(() =>
+        expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+          queryKey: queryKeys.dictionaryByLanguage(WORDS_DEFAULT_LANGUAGE),
+        }),
+      );
+      await waitFor(() => expect(loadWords).toHaveBeenCalled());
     });
 
     it("does not clear cache when remote checksum is null", async () => {

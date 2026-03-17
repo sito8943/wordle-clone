@@ -11,3 +11,5 @@ export const DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID =
 export const DEVELOPER_CONSOLE_KEYBOARD_INPUT_ID = "developer-console-keyboard";
 export const DEVELOPER_CONSOLE_SUBMIT_ACTION_LABEL = "Apply";
 export const DEVELOPER_CONSOLE_CANCEL_ACTION_LABEL = "Cancel";
+export const DEVELOPER_CONSOLE_REFRESH_CHECKSUM_ACTION_LABEL =
+  "Refresh remote checksum";

@@ -131,3 +131,30 @@ export const getLanguageChecksum = query({
     return { checksum: meta.checksum, updatedAt: meta.updatedAt };
   },
 });
+
+export const refreshLanguageChecksum = mutation({
+  args: {
+    language: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
+    const rows = await ctx.db
+      .query("words")
+      .withIndex("by_language", (q) => q.eq("language", language))
+      .collect();
+    const checksum = djb2Hash(normalizeWords(rows.map((row) => row.value)));
+    const updatedAt = Date.now();
+    const meta = await ctx.db
+      .query("wordsMeta")
+      .withIndex("by_language", (q) => q.eq("language", language))
+      .unique();
+
+    if (meta) {
+      await ctx.db.patch(meta._id, { checksum, updatedAt });
+    } else {
+      await ctx.db.insert("wordsMeta", { language, checksum, updatedAt });
+    }
+
+    return { language, checksum, updatedAt, total: rows.length };
+  },
+});

@@ -6,6 +6,7 @@ import {
   WORDS_CHECKSUM_KEY_PREFIX,
   WORDS_LANGUAGE_CHECKSUM_QUERY,
   WORDS_LIST_BY_LANGUAGE_QUERY,
+  WORDS_REFRESH_CHECKSUM_MUTATION,
 } from "./constants";
 
 const LANGUAGE = "en";
@@ -106,6 +107,23 @@ describe("WordDictionaryClient", () => {
       const result = await client.fetchRemoteChecksum(LANGUAGE);
 
       expect(query).toHaveBeenCalledWith(WORDS_LANGUAGE_CHECKSUM_QUERY, {
+        language: LANGUAGE,
+      });
+      expect(result).toEqual(REMOTE_CHECKSUM);
+    });
+  });
+
+  describe("refreshRemoteChecksum", () => {
+    it("calls the gateway mutation with language and returns refreshed checksum", async () => {
+      const mutation = vi.fn().mockResolvedValue(REMOTE_CHECKSUM);
+      const client = new WordDictionaryClient(
+        createGateway({ mutation }),
+        storage,
+      );
+
+      const result = await client.refreshRemoteChecksum(LANGUAGE);
+
+      expect(mutation).toHaveBeenCalledWith(WORDS_REFRESH_CHECKSUM_MUTATION, {
         language: LANGUAGE,
       });
       expect(result).toEqual(REMOTE_CHECKSUM);

@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { ScoreClient, type TopScoresResult } from "@api/score";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
+import { WORDS_DEFAULT_LANGUAGE, WordDictionaryClient } from "@api/words";
 import { env } from "@config";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
@@ -475,6 +476,43 @@ describe("App", () => {
       expect(currentRow).toBeTruthy();
       expect(currentRow?.textContent).toContain("12");
     });
+  });
+
+  it("refreshes remote dictionary checksum from developer console", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+    env.mode = "develpment";
+    const refreshRemoteChecksumSpy = vi
+      .spyOn(WordDictionaryClient.prototype, "refreshRemoteChecksum")
+      .mockResolvedValue({ checksum: 10101, updatedAt: 123 });
+
+    try {
+      renderApp();
+
+      fireEvent.click(
+        await screen.findByRole("button", { name: "Developer console" }),
+      );
+      expect(
+        await screen.findByRole("dialog", { name: "Developer console" }),
+      ).toBeTruthy();
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Refresh remote checksum" }),
+      );
+
+      await waitFor(() => {
+        expect(refreshRemoteChecksumSpy).toHaveBeenCalledWith(
+          WORDS_DEFAULT_LANGUAGE,
+        );
+      });
+      expect(
+        await screen.findByText("Remote checksum updated to 10101."),
+      ).toBeTruthy();
+    } finally {
+      refreshRemoteChecksumSpy.mockRestore();
+    }
   });
 
   it("shows word list button only in easy difficulty", async () => {

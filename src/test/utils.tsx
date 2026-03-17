@@ -50,6 +50,9 @@ const createMockWordDictionaryClient = (
   ({
     loadWords,
     fetchRemoteChecksum: vi.fn().mockResolvedValue(null),
+    refreshRemoteChecksum: vi
+      .fn()
+      .mockResolvedValue({ checksum: 0, updatedAt: 0 }),
     getStoredChecksum: vi.fn().mockReturnValue(null),
     clearCache: vi.fn(),
     getCachedWords: vi.fn().mockReturnValue([]),

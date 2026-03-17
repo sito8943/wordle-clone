@@ -19,6 +19,7 @@ import {
   DEVELOPER_CONSOLE_DIALOG_TITLE_ID,
   DEVELOPER_CONSOLE_KEYBOARD_INPUT_ID,
   DEVELOPER_CONSOLE_NAME_INPUT_ID,
+  DEVELOPER_CONSOLE_REFRESH_CHECKSUM_ACTION_LABEL,
   DEVELOPER_CONSOLE_SCORE_INPUT_ID,
   DEVELOPER_CONSOLE_STREAK_INPUT_ID,
   DEVELOPER_CONSOLE_SUBMIT_ACTION_LABEL,
@@ -31,7 +32,14 @@ const DeveloperConsoleDialog = ({
   onClose,
 }: HomeDeveloperConsoleDialogProps): JSX.Element => {
   const { controller, player, developerConsoleEnabled } = useHomeView();
-  const { showResumeDialog, submitDeveloperPlayer } = controller;
+  const {
+    showResumeDialog,
+    submitDeveloperPlayer,
+    refreshRemoteDictionaryChecksum,
+    isRefreshingDictionaryChecksum,
+    dictionaryChecksumMessage,
+    dictionaryChecksumMessageKind,
+  } = controller;
   const canRenderDialog =
     visible && developerConsoleEnabled && !showResumeDialog;
 
@@ -197,6 +205,38 @@ const DeveloperConsoleDialog = ({
               <option value="native">Device keyboard (mobile)</option>
             </select>
           </div>
+        </div>
+
+        <div className="rounded-md border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900">
+          <p className="text-xs text-neutral-700 dark:text-neutral-300">
+            Recompute checksum from current Convex words and patch existing
+            words metadata.
+          </p>
+          <div className="mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isClosing || isRefreshingDictionaryChecksum}
+              onClick={() => {
+                void refreshRemoteDictionaryChecksum();
+              }}
+            >
+              {isRefreshingDictionaryChecksum
+                ? "Refreshing..."
+                : DEVELOPER_CONSOLE_REFRESH_CHECKSUM_ACTION_LABEL}
+            </Button>
+          </div>
+          {dictionaryChecksumMessage && (
+            <p
+              className={`mt-2 text-sm ${
+                dictionaryChecksumMessageKind === "error"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-emerald-700 dark:text-emerald-400"
+              }`}
+            >
+              {dictionaryChecksumMessage}
+            </p>
+          )}
         </div>
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">

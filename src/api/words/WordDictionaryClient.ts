@@ -4,6 +4,7 @@ import {
   WORDS_CHECKSUM_KEY_PREFIX,
   WORDS_DEFAULT_LANGUAGE,
   WORDS_ENSURE_MUTATION,
+  WORDS_REFRESH_CHECKSUM_MUTATION,
   WORDS_LANGUAGE_CHECKSUM_QUERY,
   WORDS_LIST_BY_LANGUAGE_QUERY,
 } from "./constants";
@@ -57,6 +58,15 @@ class WordDictionaryClient {
   clearCache(language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE): void {
     this.storage.removeItem(this.getCacheKey(language));
     this.storage.removeItem(this.getChecksumKey(language));
+  }
+
+  async refreshRemoteChecksum(
+    language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
+  ): Promise<RemoteChecksum> {
+    return this.gateway.mutation<RemoteChecksum>(
+      WORDS_REFRESH_CHECKSUM_MUTATION,
+      { language },
+    );
   }
 
   async loadWords(

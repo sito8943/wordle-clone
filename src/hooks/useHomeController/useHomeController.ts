@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getTotalPointsForWin, type Player } from "@domain/wordle";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useApi, usePlayer } from "@providers";
 import { useWordle } from "../useWordle";
 import { useHardModeTimer } from "./useHardModeTimer";
@@ -8,7 +9,7 @@ import { getDifficultyScoreMultiplier } from "./utils";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 
 export default function useHomeController() {
-  const { scoreClient } = useApi();
+  const { scoreClient, wordDictionaryClient } = useApi();
   const {
     player,
     replacePlayer,
@@ -42,6 +43,13 @@ export default function useHomeController() {
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showDeveloperConsoleDialog, setShowDeveloperConsoleDialog] =
     useState(false);
+  const [isRefreshingDictionaryChecksum, setIsRefreshingDictionaryChecksum] =
+    useState(false);
+  const [dictionaryChecksumMessage, setDictionaryChecksumMessage] = useState<
+    string | null
+  >(null);
+  const [dictionaryChecksumMessageKind, setDictionaryChecksumMessageKind] =
+    useState<"success" | "error" | null>(null);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -186,12 +194,43 @@ export default function useHomeController() {
   }, []);
 
   const openDeveloperConsoleDialog = useCallback(() => {
+    setDictionaryChecksumMessage(null);
+    setDictionaryChecksumMessageKind(null);
     setShowDeveloperConsoleDialog(true);
   }, []);
 
   const closeDeveloperConsoleDialog = useCallback(() => {
     setShowDeveloperConsoleDialog(false);
   }, []);
+
+  const refreshRemoteDictionaryChecksum = useCallback(async () => {
+    if (isRefreshingDictionaryChecksum) {
+      return;
+    }
+
+    setIsRefreshingDictionaryChecksum(true);
+    setDictionaryChecksumMessage(null);
+    setDictionaryChecksumMessageKind(null);
+
+    try {
+      const refreshed = await wordDictionaryClient.refreshRemoteChecksum(
+        WORDS_DEFAULT_LANGUAGE,
+      );
+      setDictionaryChecksumMessage(
+        `Remote checksum updated to ${refreshed.checksum}.`,
+      );
+      setDictionaryChecksumMessageKind("success");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not refresh remote dictionary checksum.";
+      setDictionaryChecksumMessage(message);
+      setDictionaryChecksumMessageKind("error");
+    } finally {
+      setIsRefreshingDictionaryChecksum(false);
+    }
+  }, [isRefreshingDictionaryChecksum, wordDictionaryClient]);
 
   const submitDeveloperPlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -264,6 +303,10 @@ export default function useHomeController() {
     openDeveloperConsoleDialog,
     closeDeveloperConsoleDialog,
     submitDeveloperPlayer,
+    refreshRemoteDictionaryChecksum,
+    isRefreshingDictionaryChecksum,
+    dictionaryChecksumMessage,
+    dictionaryChecksumMessageKind,
     confirmRefreshBoard,
     cancelRefreshBoard,
   };
