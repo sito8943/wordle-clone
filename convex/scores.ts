@@ -89,9 +89,22 @@ type ScoreRecord = {
   createdAt: number;
 };
 
+type ScoreIndexRangeBuilder = {
+  eq: (field: string, value: string) => ScoreIndexRangeBuilder;
+};
+
+type ScoreQueryBuilder = {
+  collect: () => Promise<ScoreRecord[]>;
+  first: () => Promise<ScoreRecord | null>;
+  withIndex: (
+    indexName: string,
+    buildRange: (query: ScoreIndexRangeBuilder) => ScoreIndexRangeBuilder,
+  ) => ScoreQueryBuilder;
+};
+
 type ScoresCtx = {
   db: {
-    query: (...args: unknown[]) => any;
+    query: (tableName: string) => ScoreQueryBuilder;
     insert: (...args: unknown[]) => Promise<string>;
     patch: (...args: unknown[]) => Promise<void>;
   };

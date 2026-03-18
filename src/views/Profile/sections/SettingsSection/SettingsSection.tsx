@@ -1,7 +1,6 @@
 import { Button } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
 import { DifficultySection } from "../DifficultySection";
-import type { SettingsSectionProps } from "./types";
 import {
   PROFILE_SETTINGS_TITLE,
   PROFILE_ANIMATION_ENABLED_LABEL,
@@ -11,23 +10,28 @@ import {
   PROFILE_THEME_MODE_ARIA_LABEL,
   PROFILE_THEME_OPTIONS,
 } from "@views/Profile/constants";
+import { useProfileView } from "@views/Profile/providers";
 
-const SettingsSection = ({
-  startAnimationsEnabled,
-  onToggleStartAnimations,
-  themePreference,
-  onChangeThemePreference,
-  keyboardPreference,
-  onChangeKeyboardPreference,
-  difficulty,
-  onChangeDifficulty,
-}: SettingsSectionProps) => {
+const SettingsSection = () => {
+  const {
+    controller: {
+      startAnimationsEnabled,
+      toggleStartAnimations,
+      themePreference,
+      changeThemePreference,
+      keyboardPreference,
+      changeKeyboardPreference,
+      difficulty,
+      changeDifficulty,
+    },
+  } = useProfileView();
+
   return (
     <section id="settings" className="flex flex-col gap-4">
       <h2 className="page-title">{PROFILE_SETTINGS_TITLE}</h2>
       <div className="flex gap-4 items-center flex-wrap">
         <Button
-          onClick={onToggleStartAnimations}
+          onClick={toggleStartAnimations}
           variant="outline"
           color="neutral"
         >
@@ -46,7 +50,7 @@ const SettingsSection = ({
           aria-label={PROFILE_THEME_MODE_ARIA_LABEL}
           value={themePreference}
           onChange={(event) =>
-            onChangeThemePreference(event.target.value as ThemePreference)
+            changeThemePreference(event.target.value as ThemePreference)
           }
           className="rounded border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
         >
@@ -59,9 +63,9 @@ const SettingsSection = ({
       </div>
       <DifficultySection
         keyboardPreference={keyboardPreference}
-        onChangeKeyboardPreference={onChangeKeyboardPreference}
+        onChangeKeyboardPreference={changeKeyboardPreference}
         difficulty={difficulty}
-        onChangeDifficulty={onChangeDifficulty}
+        onChangeDifficulty={changeDifficulty}
       />
     </section>
   );

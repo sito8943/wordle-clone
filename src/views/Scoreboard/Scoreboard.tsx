@@ -29,6 +29,8 @@ const Scoreboard = (): JSX.Element => {
           onClick={() => void refresh()}
           aria-label="Refresh scores"
           icon={faRotateRight}
+          variant="ghost"
+          iconClassName="text-lg"
           className="mobile-compact-button"
           hideLabelOnMobile
         >

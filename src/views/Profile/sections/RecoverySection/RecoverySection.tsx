@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { Button } from "@components";
-import type { RecoverySectionProps } from "./types";
 import {
   PROFILE_RECOVERY_ACTION_LABEL,
   PROFILE_RECOVERY_INPUT_ID,
   PROFILE_RECOVERY_INPUT_LABEL,
   PROFILE_RECOVERY_SECTION_TITLE,
 } from "@views/Profile/constants";
+import { useProfileView } from "@views/Profile/providers";
 
-const RecoverySection = ({ onSubmit }: RecoverySectionProps) => {
+const RecoverySection = () => {
+  const {
+    controller: { submitRecoveryCode },
+  } = useProfileView();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,7 +19,7 @@ const RecoverySection = ({ onSubmit }: RecoverySectionProps) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
-    const submitError = await onSubmit(code);
+    const submitError = await submitRecoveryCode(code);
     setIsSubmitting(false);
 
     if (submitError) {
