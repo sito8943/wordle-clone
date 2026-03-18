@@ -105,4 +105,44 @@ describe("Profile integration", () => {
       expect(localStorage.getItem(env.wordleGameStorageKey)).toBeNull();
     });
   });
+
+  it("recovers a profile from the profile view using a recovery code", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Local",
+        code: "",
+        score: 5,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
+    vi.spyOn(ScoreClient.prototype, "recoverPlayerByCode").mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Recovered",
+      playerCode: "ZX90",
+      score: 44,
+      streak: 6,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+
+    renderProfile();
+
+    fireEvent.change(screen.getByLabelText("Recovery code"), {
+      target: { value: "zx90" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Load profile" }));
+
+    await waitFor(() => {
+      const storedPlayer = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(storedPlayer.name).toBe("Recovered");
+      expect(storedPlayer.code).toBe("ZX90");
+      expect(storedPlayer.score).toBe(44);
+    });
+  });
 });

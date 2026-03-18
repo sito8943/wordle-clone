@@ -2,6 +2,7 @@ import {
   DifficultyChangeDialog,
   ProfileEditorSection,
   ProfileHeader,
+  RecoverySection,
   SettingsSection,
 } from "./sections";
 import { useProfileController } from "./hooks";
@@ -13,6 +14,7 @@ const Profile = () => {
     savedMessage,
     toggleEditing,
     submitProfile,
+    submitRecoveryCode,
     code,
     startAnimationsEnabled,
     toggleStartAnimations,
@@ -58,6 +60,7 @@ const Profile = () => {
         difficulty={difficulty}
         onChangeDifficulty={changeDifficulty}
       />
+      <RecoverySection onSubmit={submitRecoveryCode} />
     </main>
   );
 };

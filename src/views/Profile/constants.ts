@@ -7,6 +7,12 @@ export const PROFILE_CODE_LABEL = "Recovery code:";
 export const PROFILE_SCORE_LABEL = "Score:";
 export const PROFILE_CODE_HELP =
   "Use this 4-character code to recover your profile on another browser.";
+export const PROFILE_RECOVERY_SECTION_TITLE = "Recover profile";
+export const PROFILE_RECOVERY_INPUT_LABEL = "Recovery code";
+export const PROFILE_RECOVERY_INPUT_ID = "profile-recovery-code";
+export const PROFILE_RECOVERY_ACTION_LABEL = "Load profile";
+export const PROFILE_RECOVERY_EMPTY_CODE_ERROR = "Recovery code cannot be empty.";
+export const PROFILE_RECOVERY_SUCCESS_MESSAGE = "Profile recovered successfully.";
 export const PROFILE_SAVE_ACTION_LABEL = "Save";
 export const PROFILE_SAVING_ACTION_LABEL = "Saving...";
 export const PROFILE_EMPTY_NAME_ERROR_MESSAGE = "Name cannot be empty.";
