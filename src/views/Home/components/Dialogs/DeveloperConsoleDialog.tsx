@@ -5,11 +5,8 @@ import {
   type FormEvent,
   type JSX,
 } from "react";
-import { Button, Dialog } from "@components";
-import { useDialogCloseTransition } from "@hooks";
-import {
-  DIALOG_CLOSE_DURATION_MS,
-} from "@components/Dialogs/ConfirmationDialog";
+import { Button, Dialog, useDialogCloseTransition } from "@components";
+import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog";
 import type { HomeDeveloperConsoleDialogProps } from "@views/Home/hooks/useNativeKeyboardingInput/types";
 import { useHomeView } from "@views/Home/providers";
 import {

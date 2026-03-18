@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { useDialogCloseTransition } from "@hooks";
 import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog";
 import {
   INITIAL_PLAYER_DIALOG_DESCRIPTION,
@@ -10,7 +9,7 @@ import {
   INITIAL_PLAYER_DIALOG_TITLE_ID,
 } from "./constants";
 import type { InitialPlayerDialogProps } from "./types";
-import { Button, Dialog } from "@components";
+import { Button, Dialog, useDialogCloseTransition } from "@components";
 
 const InitialPlayerDialog = ({
   visible,

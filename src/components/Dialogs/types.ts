@@ -1,5 +1,3 @@
-export type { GuessResult } from "@domain/wordle";
-
 export type DialogCloseAction = () => void;
 
 export type UseDialogCloseTransitionResult = {

@@ -1,6 +1,5 @@
-import { useDialogCloseTransition } from "@hooks";
 import { Button } from "@components/Button";
-import { Dialog } from "@components/Dialogs/Dialog";
+import { Dialog, useDialogCloseTransition } from "@components/Dialogs";
 import { DIALOG_CLOSE_DURATION_MS } from "./constants";
 import type { ConfirmationDialogProps } from "./types";
 

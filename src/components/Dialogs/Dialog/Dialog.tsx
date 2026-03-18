@@ -5,7 +5,7 @@ import { joinClassNames } from "./utils";
 import { Button } from "@components/Button";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useDialogCloseTransition } from "@hooks";
+import useDialogCloseTransition from "../useDialogCloseTransition";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,

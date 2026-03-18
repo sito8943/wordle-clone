@@ -1,4 +1,4 @@
-import type { GuessResult } from "@hooks";
+import type { GuessResult } from "@domain/wordle";
 import type { TileStatus } from "@utils/types";
 
 export interface KeyboardProps {
