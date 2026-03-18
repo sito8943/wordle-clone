@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
-import { useLocalStorage } from "@hooks";
+import { queryKeys, useLocalStorage } from "@hooks";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
 import type { ProviderProps } from "../types";
@@ -14,6 +15,7 @@ import type {
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
+  const queryClient = useQueryClient();
 
   const [storedPlayer, setStoredPlayer] = useLocalStorage<Player>(
     "player",
@@ -76,8 +78,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         difficulty: remoteProfile.difficulty,
         keyboardPreference: remoteProfile.keyboardPreference,
       });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
     },
-    [scoreClient, setStoredPlayer, storedPlayer],
+    [queryClient, scoreClient, setStoredPlayer, storedPlayer],
   );
 
   const recoverPlayer = useCallback(
@@ -93,8 +96,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         difficulty: remoteProfile.difficulty,
         keyboardPreference: remoteProfile.keyboardPreference,
       });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
     },
-    [scoreClient, setStoredPlayer],
+    [queryClient, scoreClient, setStoredPlayer],
   );
 
   const replacePlayer = useCallback(

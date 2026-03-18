@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 
 const mockListTopScores = vi.fn();
+const mockPlayer = { score: 0, code: "", name: "Player" };
 
 vi.mock("react-router", () => ({
   useLocation: () => ({ pathname: "/" }),
@@ -9,7 +10,7 @@ vi.mock("react-router", () => ({
 
 vi.mock("@providers", () => ({
   useApi: () => ({ scoreClient: { listTopScores: mockListTopScores } }),
-  usePlayer: () => ({ player: { score: 0 } }),
+  usePlayer: () => ({ player: mockPlayer }),
 }));
 
 // Import after mocks are registered
@@ -18,6 +19,9 @@ const { default: useNavbarController } = await import("./useNavbarController");
 describe("useNavbarController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPlayer.score = 0;
+    mockPlayer.code = "";
+    mockPlayer.name = "Player";
     mockListTopScores.mockResolvedValue({
       scores: [],
       source: "local",
@@ -67,5 +71,24 @@ describe("useNavbarController", () => {
 
     expect(result.current.currentClientRank).toBeNull();
     expect(result.current.rankTone).toBeNull();
+  });
+
+  it("reloads the current client rank when the player identity changes", async () => {
+    const { rerender } = renderHook(() => useNavbarController());
+
+    await waitFor(() => {
+      expect(mockListTopScores).toHaveBeenCalled();
+    });
+    const initialCallCount = mockListTopScores.mock.calls.length;
+
+    mockPlayer.code = "AB12";
+    mockPlayer.name = "Recovered";
+    rerender();
+
+    await waitFor(() => {
+      expect(mockListTopScores.mock.calls.length).toBeGreaterThan(
+        initialCallCount,
+      );
+    });
   });
 });

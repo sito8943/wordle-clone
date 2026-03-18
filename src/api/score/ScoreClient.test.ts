@@ -494,4 +494,44 @@ describe("ScoreClient", () => {
       }),
     ]);
   });
+
+  it("requests top scores using the recovered profile identity", async () => {
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        id: "remote-player",
+        clientId: "previous-browser",
+        clientRecordId: "remote-record",
+        nick: "Recovered",
+        playerCode: "ZX90",
+        score: 40,
+        streak: 7,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      })
+      .mockResolvedValueOnce({
+        scores: [],
+        currentClientRank: null,
+        currentClientEntry: null,
+      });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    const profile = await client.recoverPlayerByCode("zx90");
+    client.adoptRecoveredIdentity(profile);
+    await client.listTopScores(10);
+
+    expect(query).toHaveBeenNthCalledWith(2, "scores:listTopScores", {
+      limit: 10,
+      clientId: expect.any(String),
+      clientRecordId: "remote-record",
+    });
+  });
 });

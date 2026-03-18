@@ -210,6 +210,7 @@ class ScoreClient {
 
   async listTopScores(limit = DEFAULT_LIMIT): Promise<TopScoresResult> {
     const safeLimit = this.normalizeLimit(limit);
+    const identity = this.readProfileIdentity();
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
       const localScores = this.localScoresRanked();
@@ -227,7 +228,11 @@ class ScoreClient {
     try {
       const remoteResponse = await this.gateway.query<
         RemoteScoresResponse | RemoteScore[]
-      >(LIST_TOP_SCORES_QUERY, { limit: safeLimit, clientId: this.clientId });
+      >(LIST_TOP_SCORES_QUERY, {
+        limit: safeLimit,
+        clientId: this.clientId,
+        clientRecordId: identity?.clientRecordId,
+      });
       const parsedResponse = this.parseRemoteScoresResponse(remoteResponse);
       const mergedScores = this.mergeRemoteAndPending(
         parsedResponse.scores,

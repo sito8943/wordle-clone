@@ -44,7 +44,7 @@ const useNavbarController = () => {
     return () => {
       cancelled = true;
     };
-  }, [location.pathname, player.score, scoreClient]);
+  }, [location.pathname, player.code, player.name, player.score, scoreClient]);
 
   const rankTone = useMemo(
     () => (isCurrentClientRankLoading ? null : currentClientRank),

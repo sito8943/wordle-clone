@@ -492,6 +492,7 @@ export const listTopScores = query({
   args: {
     limit: v.optional(v.number()),
     clientId: v.optional(v.string()),
+    clientRecordId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const limit = Math.max(
@@ -512,10 +513,18 @@ export const listTopScores = query({
     }
 
     const sortedScores = [...byNick.values()].sort(scoreSorter);
-    const currentClientIndex =
-      typeof args.clientId === "string" && args.clientId.length > 0
-        ? sortedScores.findIndex((score) => score.clientId === args.clientId)
-        : -1;
+    const currentProfile = await resolveProfileRecord(
+      ctx,
+      args.clientRecordId,
+      args.clientId,
+    );
+    const currentClientIndex = currentProfile
+      ? sortedScores.findIndex(
+          (score) =>
+            score._id === currentProfile._id ||
+            score.clientRecordId === currentProfile.clientRecordId,
+        )
+      : -1;
     const currentClientScore =
       currentClientIndex >= 0 ? sortedScores[currentClientIndex] : null;
 
@@ -526,9 +535,9 @@ export const listTopScores = query({
       streak: normalizeStreak(score.streak),
       createdAt: score.createdAt,
       isCurrentClient:
-        typeof args.clientId === "string" &&
-        args.clientId.length > 0 &&
-        score.clientId === args.clientId,
+        currentProfile !== null &&
+        (score._id === currentProfile._id ||
+          score.clientRecordId === currentProfile.clientRecordId),
     }));
 
     return {
