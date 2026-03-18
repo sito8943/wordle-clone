@@ -27,8 +27,8 @@ const SettingsSection = () => {
   } = useProfileView();
 
   return (
-    <section id="settings" className="flex flex-col gap-4">
-      <h2 className="page-title">{PROFILE_SETTINGS_TITLE}</h2>
+    <section id="settings" className="profile-section">
+      <h2 className="profile-section-title">{PROFILE_SETTINGS_TITLE}</h2>
       <div className="flex gap-4 items-center flex-wrap">
         <Button
           onClick={toggleStartAnimations}
@@ -52,7 +52,6 @@ const SettingsSection = () => {
           onChange={(event) =>
             changeThemePreference(event.target.value as ThemePreference)
           }
-          className="rounded border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
         >
           {PROFILE_THEME_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>

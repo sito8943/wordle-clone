@@ -32,10 +32,8 @@ const RecoverySection = () => {
   };
 
   return (
-    <section className="flex w-full max-w-xl flex-col gap-3 rounded-lg border border-neutral-300 bg-white/60 p-4 dark:border-neutral-700 dark:bg-neutral-800/40">
-      <h2 className="text-lg font-semibold">
-        {PROFILE_RECOVERY_SECTION_TITLE}
-      </h2>
+    <section className="profile-section">
+      <h2 className="profile-section-title">{PROFILE_RECOVERY_SECTION_TITLE}</h2>
       <form
         className="flex flex-col gap-3 sm:flex-row sm:items-end"
         onSubmit={handleSubmit}
@@ -43,7 +41,7 @@ const RecoverySection = () => {
         <div className="flex-1">
           <label
             htmlFor={PROFILE_RECOVERY_INPUT_ID}
-            className="block text-sm font-semibold"
+            className="profile-field-label"
           >
             {PROFILE_RECOVERY_INPUT_LABEL}
           </label>
@@ -59,7 +57,7 @@ const RecoverySection = () => {
                 setError("");
               }
             }}
-            className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm uppercase tracking-[0.3em] text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            className="profile-card-field-input mt-1 uppercase tracking-[0.3em]"
           />
         </div>
         <Button type="submit" disabled={isSubmitting}>

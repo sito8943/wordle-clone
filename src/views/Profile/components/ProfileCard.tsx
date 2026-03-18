@@ -8,9 +8,11 @@ import {
 
 const ProfileCard = (props: ProfileCardPropsTypes) => {
   return (
-    <div className="profile-card-container">
+    <div className="profile-section profile-card-container">
       <div className="profile-card-field-row">
-        <label htmlFor="name">{PROFILE_NAME_LABEL}</label>
+        <label htmlFor="name" className="profile-field-label">
+          {PROFILE_NAME_LABEL}
+        </label>
         <input
           className="profile-card-field-input"
           id="name"
@@ -20,7 +22,9 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
         />
       </div>
       <div className="profile-card-field-row">
-        <label htmlFor="score">{PROFILE_SCORE_LABEL}</label>
+        <label htmlFor="score" className="profile-field-label">
+          {PROFILE_SCORE_LABEL}
+        </label>
         <input
           className="profile-card-field-input"
           id="score"
@@ -30,7 +34,9 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
         />
       </div>
       <div className="profile-card-field-row">
-        <label htmlFor="code">{PROFILE_CODE_LABEL}</label>
+        <label htmlFor="code" className="profile-field-label">
+          {PROFILE_CODE_LABEL}
+        </label>
         <input
           className="profile-card-field-input"
           id="code"
@@ -39,9 +45,7 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
           readOnly
         />
       </div>
-      <p className="text-sm text-neutral-600 dark:text-neutral-300">
-        {PROFILE_CODE_HELP}
-      </p>
+      <p className="profile-help-text">{PROFILE_CODE_HELP}</p>
     </div>
   );
 };
