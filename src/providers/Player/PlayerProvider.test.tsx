@@ -2,6 +2,7 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { ApiContext } from "@providers/Api/ApiContext";
+import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
 import { usePlayer } from "./usePlayer";
 import { DEFAULT_PLAYER } from "./constants";
@@ -17,7 +18,24 @@ afterEach(() => {
 });
 
 const makeWrapper =
-  (recordScore = vi.fn().mockResolvedValue(undefined)) =>
+  ({
+    recordScore = vi.fn().mockResolvedValue(undefined),
+    upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      playerCode: "AB12",
+      score: input.score,
+      streak: input.streak ?? 0,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    })),
+  }: {
+    recordScore?: ApiContextType["scoreClient"]["recordScore"];
+    upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
+  } = {}) =>
   ({ children }: { children: ReactNode }) => {
     const apiValue = createTestApiContextValue({
       scoreClient: createMockScoreClient(
@@ -27,11 +45,9 @@ const makeWrapper =
           currentClientRank: null,
           currentClientEntry: null,
         }),
+        { recordScore, upsertPlayerProfile },
       ) as never,
     });
-    // Patch recordScore on the scoreClient mock
-    (apiValue.scoreClient as unknown as Record<string, unknown>).recordScore =
-      recordScore;
 
     return (
       <ApiContext.Provider value={apiValue}>
@@ -74,25 +90,26 @@ describe("PlayerProvider", () => {
     expect(result.current.player.difficulty).toBe("hard");
   });
 
-  it("updatePlayer changes the player name", () => {
+  it("updatePlayer changes the player name and stores a recovery code", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
     });
 
-    act(() => {
-      result.current.updatePlayer("Carlos");
+    await act(async () => {
+      await result.current.updatePlayer("Carlos");
     });
 
     expect(result.current.player.name).toBe("Carlos");
+    expect(result.current.player.code).toBe("AB12");
   });
 
-  it("updatePlayer trims and normalizes the name", () => {
+  it("updatePlayer trims and normalizes the name", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
     });
 
-    act(() => {
-      result.current.updatePlayer("  Ana  ");
+    await act(async () => {
+      await result.current.updatePlayer("  Ana  ");
     });
 
     expect(result.current.player.name).toBe("Ana");
@@ -200,7 +217,11 @@ describe("PlayerProvider", () => {
   it("calls scoreClient.recordScore when score changes", async () => {
     const recordScore = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper(recordScore),
+      wrapper: makeWrapper({ recordScore }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Ana");
     });
 
     act(() => {
@@ -214,22 +235,33 @@ describe("PlayerProvider", () => {
     });
   });
 
-  it("calls scoreClient.recordScore with overwriteExisting when name changes", async () => {
-    const recordScore = vi.fn().mockResolvedValue(undefined);
+  it("calls scoreClient.upsertPlayerProfile when name changes", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      playerCode: "ZX90",
+      score: input.score,
+      streak: input.streak ?? 0,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    }));
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper(recordScore),
+      wrapper: makeWrapper({ upsertPlayerProfile }),
     });
 
-    act(() => {
-      result.current.updatePlayer("NewName");
+    await act(async () => {
+      await result.current.updatePlayer("NewName");
     });
 
     await waitFor(() => {
-      expect(recordScore).toHaveBeenCalledWith(
-        expect.objectContaining({ nick: "NewName", overwriteExisting: true }),
-        expect.any(String),
+      expect(upsertPlayerProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ nick: "NewName" }),
       );
     });
+    expect(result.current.player.code).toBe("ZX90");
   });
 });
 

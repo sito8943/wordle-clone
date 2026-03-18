@@ -1,5 +1,6 @@
 export type ProfileCardPropsTypes = {
   name: string;
+  code: string;
   score: number;
 };
 

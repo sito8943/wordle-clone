@@ -13,6 +13,7 @@ describe("ProfileEditorSection", () => {
         editing={false}
         savedMessage="Configuration saved."
         name="Player"
+        code="AB12"
         score={14}
         onSubmit={vi.fn()}
       />,
@@ -33,6 +34,7 @@ describe("ProfileEditorSection", () => {
         editing
         savedMessage=""
         name="Player"
+        code="AB12"
         score={14}
         onSubmit={vi.fn().mockResolvedValue(null)}
       />,

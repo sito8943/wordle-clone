@@ -10,6 +10,7 @@ export const DEFAULT_PLAYER_KEYBOARD_PREFERENCE: PlayerKeyboardPreference =
 
 export const DEFAULT_PLAYER: Player = {
   name: "Player",
+  code: "",
   score: 0,
   streak: 0,
   difficulty: DEFAULT_PLAYER_DIFFICULTY,

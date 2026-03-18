@@ -6,14 +6,18 @@ export default defineSchema({
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
+    playerCode: v.optional(v.string()),
     score: v.number(),
     streak: v.optional(v.number()),
+    difficulty: v.optional(v.string()),
+    keyboardPreference: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_client_id", ["clientId"])
     .index("by_created_at", ["createdAt"])
     .index("by_score", ["score"])
-    .index("by_client_record_id", ["clientRecordId"]),
+    .index("by_client_record_id", ["clientRecordId"])
+    .index("by_player_code", ["playerCode"]),
   words: defineTable({
     language: v.string(),
     value: v.string(),

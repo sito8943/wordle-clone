@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Button from "@components/Button/Button";
 import type { EditableProfileCardPropsTypes } from "./types";
 import {
+  PROFILE_CODE_HELP,
+  PROFILE_CODE_LABEL,
   PROFILE_EMPTY_NAME_ERROR_MESSAGE,
   PROFILE_NAME_LABEL,
   PROFILE_SAVE_ACTION_LABEL,
@@ -63,6 +65,19 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
           readOnly
         />
       </div>
+      <div className="profile-card-field-row">
+        <label htmlFor="code">{PROFILE_CODE_LABEL}</label>
+        <input
+          className="profile-card-field-input"
+          id="code"
+          type="text"
+          value={props.code}
+          readOnly
+        />
+      </div>
+      <p className="text-sm text-neutral-600 dark:text-neutral-300">
+        {PROFILE_CODE_HELP}
+      </p>
       <Button type="submit" className="self-start" disabled={isSubmitting}>
         {isSubmitting ? PROFILE_SAVING_ACTION_LABEL : PROFILE_SAVE_ACTION_LABEL}
       </Button>

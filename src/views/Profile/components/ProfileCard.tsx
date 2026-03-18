@@ -1,5 +1,10 @@
 import type { ProfileCardPropsTypes } from "./types";
-import { PROFILE_NAME_LABEL, PROFILE_SCORE_LABEL } from "../constants";
+import {
+  PROFILE_CODE_HELP,
+  PROFILE_CODE_LABEL,
+  PROFILE_NAME_LABEL,
+  PROFILE_SCORE_LABEL,
+} from "../constants";
 
 const ProfileCard = (props: ProfileCardPropsTypes) => {
   return (
@@ -24,6 +29,19 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
           readOnly
         />
       </div>
+      <div className="profile-card-field-row">
+        <label htmlFor="code">{PROFILE_CODE_LABEL}</label>
+        <input
+          className="profile-card-field-input"
+          id="code"
+          type="text"
+          value={props.code}
+          readOnly
+        />
+      </div>
+      <p className="text-sm text-neutral-600 dark:text-neutral-300">
+        {PROFILE_CODE_HELP}
+      </p>
     </div>
   );
 };

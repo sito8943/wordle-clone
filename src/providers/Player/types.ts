@@ -6,7 +6,8 @@ import type {
 
 export type PlayerContextType = {
   player: Player;
-  updatePlayer: (name: string) => void;
+  updatePlayer: (name: string) => Promise<void>;
+  recoverPlayer: (code: string) => Promise<void>;
   replacePlayer: (nextPlayer: Partial<Player>) => void;
   updatePlayerDifficulty: (difficulty: PlayerDifficulty) => void;
   updatePlayerKeyboardPreference: (

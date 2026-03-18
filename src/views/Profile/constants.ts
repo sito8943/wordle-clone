@@ -3,7 +3,10 @@ export const PROFILE_SETTINGS_TITLE = "Settings";
 export const PROFILE_EDIT_ACTION_LABEL = "Edit";
 export const PROFILE_CANCEL_ACTION_LABEL = "Cancel";
 export const PROFILE_NAME_LABEL = "Name:";
+export const PROFILE_CODE_LABEL = "Recovery code:";
 export const PROFILE_SCORE_LABEL = "Score:";
+export const PROFILE_CODE_HELP =
+  "Use this 4-character code to recover your profile on another browser.";
 export const PROFILE_SAVE_ACTION_LABEL = "Save";
 export const PROFILE_SAVING_ACTION_LABEL = "Saving...";
 export const PROFILE_EMPTY_NAME_ERROR_MESSAGE = "Name cannot be empty.";

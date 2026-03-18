@@ -5,6 +5,7 @@ const ProfileEditorSection = ({
   editing,
   savedMessage,
   name,
+  code,
   score,
   onSubmit,
 }: ProfileEditorSectionProps) => {
@@ -16,9 +17,14 @@ const ProfileEditorSection = ({
         </p>
       ) : null}
       {editing ? (
-        <EditableProfileCard name={name} score={score} onSubmit={onSubmit} />
+        <EditableProfileCard
+          name={name}
+          code={code}
+          score={score}
+          onSubmit={onSubmit}
+        />
       ) : (
-        <ProfileCard name={name} score={score} />
+        <ProfileCard name={name} code={code} score={score} />
       )}
     </>
   );

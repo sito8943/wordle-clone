@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ScoreClient } from "@api/score";
 import { env } from "@config";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "../../test/utils";
@@ -18,10 +19,25 @@ describe("Profile integration", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    vi.spyOn(ScoreClient.prototype, "upsertPlayerProfile").mockImplementation(
+      async (input) => ({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: input.nick,
+        playerCode: "AB12",
+        score: input.score,
+        streak: input.streak ?? 0,
+        difficulty: input.difficulty,
+        keyboardPreference: input.keyboardPreference,
+        createdAt: 1000,
+      }),
+    );
   });
 
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   it("edits profile name and confirms difficulty change with active game", async () => {

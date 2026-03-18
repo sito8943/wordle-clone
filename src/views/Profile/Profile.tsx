@@ -13,6 +13,7 @@ const Profile = () => {
     savedMessage,
     toggleEditing,
     submitProfile,
+    code,
     startAnimationsEnabled,
     toggleStartAnimations,
     themePreference,
@@ -43,6 +44,7 @@ const Profile = () => {
         editing={editing}
         savedMessage={savedMessage}
         name={player.name}
+        code={code}
         score={player.score}
         onSubmit={submitProfile}
       />

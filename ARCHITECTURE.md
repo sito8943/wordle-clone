@@ -157,8 +157,9 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:game`: persisted in-progress game payload (managed in domain storage helpers).
   - It is persisted as soon as there is in-progress input (submitted rows or typed letters in `current`).
 - `wordle:hint-usage`: snapshot for hint usage (`sessionId + answer + hintsUsed`) to keep hint limits after reload.
-- `player`: player profile and score/streak metadata.
+- `player`: player profile and score/streak metadata, including recovery `code`.
 - `wordle:dictionary:en`: cached dictionary words.
+- `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - additional feature keys for theme/animations/scoreboard caches.
 
 ## Data Flow (Home Gameplay)
@@ -169,6 +170,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - player preferences from `usePlayer`
 - gameplay state/actions from `useWordle`
 - difficulty-specific rules (hints, scoring multiplier, hard-mode timer)
+ - score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations and keeps the adopted remote player identity in sync for later score writes
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
 4. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
