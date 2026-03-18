@@ -1,40 +1,18 @@
-import { useDialogCloseTransition } from "@hooks";
-import {
-  DIALOG_CLOSE_DURATION_MS,
-  getDialogTransitionClasses,
-} from "@components/Dialogs/ConfirmationDialog";
-import { Button, Dialog } from "@components";
+import { Dialog } from "@components";
 import { HELP_DIALOG_TITLE_ID } from "./constants";
 import type { HelpDialogProps } from "./types";
 
 const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
-  const { isClosing, closeWithAction } = useDialogCloseTransition(
-    DIALOG_CLOSE_DURATION_MS,
-  );
-  const { backdropAnimationClassName, panelAnimationClassName } =
-    getDialogTransitionClasses(isClosing);
-
   return (
     <Dialog
       visible={visible}
-      onClose={() => closeWithAction(onClose)}
+      onClose={onClose}
       titleId={HELP_DIALOG_TITLE_ID}
       title="How to play"
       description="Guess the hidden 5-letter word in up to 6 attempts."
       panelClassName="max-w-2xl"
-      backdropAnimationClassName={backdropAnimationClassName}
-      panelAnimationClassName={panelAnimationClassName}
-      headerAction={
-        <Button
-          onClick={() => closeWithAction(onClose)}
-          variant="outline"
-          disabled={isClosing}
-        >
-          Close
-        </Button>
-      }
     >
-      <div className="mt-4 space-y-4 text-sm text-neutral-800 dark:text-neutral-200">
+      <div className="mt-4 space-y-4 text-sm text-neutral-800 dark:text-neutral-200 overflow-auto">
         <section>
           <h3 className="text-base font-semibold">Rules</h3>
           <ul className="mt-2 list-disc pl-5 space-y-1">

@@ -1,7 +1,7 @@
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export type ButtonVariant = "solid" | "outline" | "ghost";
-export type ButtonColor = "primary" | "secondary" | "neutral";
+export type ButtonColor = "primary" | "secondary" | "neutral" | "danger";
 
 export type ButtonProps = Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,

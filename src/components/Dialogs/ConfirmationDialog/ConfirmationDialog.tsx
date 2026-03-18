@@ -3,7 +3,6 @@ import { Button } from "@components/Button";
 import { Dialog } from "@components/Dialogs/Dialog";
 import { DIALOG_CLOSE_DURATION_MS } from "./constants";
 import type { ConfirmationDialogProps } from "./types";
-import { getDialogTransitionClasses } from "./utils";
 
 const ConfirmationDialog = ({
   visible,
@@ -18,18 +17,14 @@ const ConfirmationDialog = ({
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
   );
-  const { backdropAnimationClassName, panelAnimationClassName } =
-    getDialogTransitionClasses(isClosing);
 
   return (
     <Dialog
       visible={visible}
-      onClose={() => closeWithAction(onClose)}
+      onClose={onClose}
       titleId={dialogTitleId}
       title={title}
       description={description}
-      backdropAnimationClassName={backdropAnimationClassName}
-      panelAnimationClassName={panelAnimationClassName}
     >
       <div className="mt-5 flex flex-wrap justify-end gap-3">
         <Button onClick={() => closeWithAction(onConfirm)} disabled={isClosing}>

@@ -11,7 +11,7 @@ const FireStreak = ({
   const safeStreak = sanitizeCounter(streak);
   const showFlame = safeStreak >= 2;
 
-  const sizeClassName = size === "sm" ? "px-1.5 py-0.5 text-xs" : "px-2 py-1";
+  const sizeClassName = size === "sm" ? "py-0.5 text-xs" : "py-1";
   const iconSize = size === "sm" ? 16 : 20;
   const label = `${noLabel ? "" : "Streak: "}${safeStreak}`;
 

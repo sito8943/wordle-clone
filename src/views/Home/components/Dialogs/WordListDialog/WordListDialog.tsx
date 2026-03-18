@@ -1,10 +1,4 @@
 import { useMemo, useState } from "react";
-import { useDialogCloseTransition } from "@hooks";
-import {
-  DIALOG_CLOSE_DURATION_MS,
-  getDialogTransitionClasses,
-} from "@components/Dialogs/ConfirmationDialog";
-import { Button } from "@components/Button";
 import { Dialog } from "@components/Dialogs/Dialog";
 import { WORD_LIST_DIALOG_TITLE_ID } from "./constants";
 import type { WordListDialogProps } from "./types";
@@ -16,11 +10,7 @@ const WordListDialog = ({
   onClose,
 }: WordListDialogProps) => {
   const [query, setQuery] = useState("");
-  const { isClosing, closeWithAction } = useDialogCloseTransition(
-    DIALOG_CLOSE_DURATION_MS,
-  );
-  const { backdropAnimationClassName, panelAnimationClassName } =
-    getDialogTransitionClasses(isClosing);
+
   const filteredWords = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -34,22 +24,11 @@ const WordListDialog = ({
   return (
     <Dialog
       visible={visible}
-      onClose={() => closeWithAction(onClose)}
+      onClose={onClose}
       titleId={WORD_LIST_DIALOG_TITLE_ID}
       title="Possible words"
       description={`${language.toUpperCase()} • ${filteredWords.length}/${words.length}`}
       panelClassName="max-w-2xl"
-      backdropAnimationClassName={backdropAnimationClassName}
-      panelAnimationClassName={panelAnimationClassName}
-      headerAction={
-        <Button
-          onClick={() => closeWithAction(onClose)}
-          variant="outline"
-          disabled={isClosing}
-        >
-          Close
-        </Button>
-      }
     >
       <div className="mt-4">
         <label

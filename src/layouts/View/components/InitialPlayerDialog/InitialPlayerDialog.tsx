@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useDialogCloseTransition } from "@hooks";
-import { Button } from "../../../../components/Button";
-import { Dialog } from "../../../../components/Dialogs/Dialog";
-import {
-  DIALOG_CLOSE_DURATION_MS,
-  getDialogTransitionClasses,
-} from "@components/Dialogs/ConfirmationDialog";
+import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog";
 import {
   INITIAL_PLAYER_DIALOG_DESCRIPTION,
   INITIAL_PLAYER_DIALOG_EMPTY_NAME_ERROR,
@@ -15,6 +10,7 @@ import {
   INITIAL_PLAYER_DIALOG_TITLE_ID,
 } from "./constants";
 import type { InitialPlayerDialogProps } from "./types";
+import { Button, Dialog } from "@components";
 
 const InitialPlayerDialog = ({
   visible,
@@ -30,8 +26,6 @@ const InitialPlayerDialog = ({
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
   );
-  const { backdropAnimationClassName, panelAnimationClassName } =
-    getDialogTransitionClasses(isClosing);
 
   useEffect(() => {
     nameInputRef.current?.focus();
@@ -73,8 +67,6 @@ const InitialPlayerDialog = ({
       title={INITIAL_PLAYER_DIALOG_TITLE}
       description={INITIAL_PLAYER_DIALOG_DESCRIPTION}
       zIndexClassName="z-30"
-      backdropAnimationClassName={backdropAnimationClassName}
-      panelAnimationClassName={panelAnimationClassName}
     >
       <form className="mt-4" onSubmit={handleSubmit}>
         <label

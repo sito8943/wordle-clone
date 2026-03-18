@@ -2,6 +2,14 @@ import { useEffect, type JSX } from "react";
 import { createPortal } from "react-dom";
 import type { DialogProps } from "./types";
 import { joinClassNames } from "./utils";
+import { Button } from "@components/Button";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useDialogCloseTransition } from "@hooks";
+import {
+  DIALOG_CLOSE_DURATION_MS,
+  getDialogTransitionClasses,
+} from "../ConfirmationDialog";
 
 const Dialog = ({
   visible,
@@ -13,9 +21,16 @@ const Dialog = ({
   headerAction,
   panelClassName,
   zIndexClassName = "z-20",
-  backdropAnimationClassName,
-  panelAnimationClassName,
+  backdropAnimationClassName: customBackdropAnimationClassName,
+  panelAnimationClassName: customPanelAnimationClassName,
 }: DialogProps): JSX.Element | null => {
+  const { isClosing, closeWithAction } = useDialogCloseTransition(
+    DIALOG_CLOSE_DURATION_MS,
+  );
+
+  const { backdropAnimationClassName, panelAnimationClassName } =
+    getDialogTransitionClasses(isClosing);
+
   useEffect(() => {
     if (!visible) {
       return;
@@ -26,14 +41,14 @@ const Dialog = ({
         return;
       }
 
-      onClose();
+      closeWithAction(onClose);
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose, visible]);
+  }, [closeWithAction, onClose, visible]);
 
   if (!visible || typeof document === "undefined") {
     return null;
@@ -42,16 +57,16 @@ const Dialog = ({
   const backdropClassName = joinClassNames(
     "dialog-backdrop",
     zIndexClassName,
-    backdropAnimationClassName,
+    customBackdropAnimationClassName ?? backdropAnimationClassName,
   );
   const panelClassNameWithAnimations = joinClassNames(
     "dialog-panel",
     panelClassName,
-    panelAnimationClassName,
+    customPanelAnimationClassName ?? panelAnimationClassName,
   );
 
   return createPortal(
-    <div className={backdropClassName} onClick={onClose}>
+    <div className={backdropClassName} onClick={() => closeWithAction(onClose)}>
       <div
         role="dialog"
         aria-modal="true"
@@ -76,7 +91,17 @@ const Dialog = ({
               <p className="dialog-description">{description}</p>
             ) : null}
           </div>
-          {headerAction}
+          {headerAction ?? (
+            <Button
+              onClick={() => closeWithAction(onClose)}
+              variant="ghost"
+              color="danger"
+              className="absolute top-2 right-2"
+              disabled={isClosing}
+            >
+              <FontAwesomeIcon icon={faClose} />
+            </Button>
+          )}
         </div>
         {children}
       </div>

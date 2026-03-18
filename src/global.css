@@ -27,7 +27,7 @@ h1,
   }
 
   .mobile-compact-button {
-    @apply max-sm:px-2;
+    @apply max-sm:px-2! max-sm:py-1!;
   }
 
   .input-error-text {
@@ -62,7 +62,7 @@ h1,
   }
 
   .dialog-panel {
-    @apply w-full max-w-md rounded-2xl border border-neutral-300 bg-white p-6 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900;
+    @apply w-full max-h-[90vh] overflow-auto relative max-w-md rounded-2xl border border-neutral-300 bg-white p-6 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900;
   }
 
   .dialog-title {

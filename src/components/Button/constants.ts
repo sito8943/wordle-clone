@@ -14,6 +14,8 @@ export const STYLE_BY_VARIANT: Record<
       "bg-secondary text-white hover:bg-secondary/90 focus-visible:ring-secondary",
     neutral:
       "bg-neutral-900 text-white hover:bg-neutral-700 focus-visible:ring-neutral-500 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+    danger:
+      "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600 dark:bg-red-500 dark:hover:bg-red-400",
   },
   outline: {
     primary:
@@ -22,6 +24,8 @@ export const STYLE_BY_VARIANT: Record<
       "border border-secondary text-secondary hover:bg-secondary/10 focus-visible:ring-secondary dark:text-teal-300 dark:hover:bg-teal-500/15",
     neutral:
       "border border-neutral-300 text-neutral-800 hover:bg-neutral-100 focus-visible:ring-neutral-500 dark:border-neutral-600 dark:text-neutral-100 dark:hover:bg-neutral-800",
+    danger:
+      "border border-red-600 text-red-600 hover:bg-red-50 focus-visible:ring-red-600 dark:border-red-500 dark:text-red-400 dark:hover:bg-red-500/15",
   },
   ghost: {
     primary:
@@ -30,5 +34,7 @@ export const STYLE_BY_VARIANT: Record<
       "text-secondary hover:bg-secondary/10 focus-visible:ring-secondary dark:text-teal-300 dark:hover:bg-teal-500/15",
     neutral:
       "text-neutral-800 hover:bg-neutral-100 focus-visible:ring-neutral-500 dark:text-neutral-100 dark:hover:bg-neutral-800",
+    danger:
+      "text-red-600 hover:bg-red-50 focus-visible:ring-red-600 dark:text-red-400 dark:hover:bg-red-500/15",
   },
 };
