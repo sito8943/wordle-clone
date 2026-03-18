@@ -125,9 +125,7 @@ describe("useHomeController", () => {
     rerender();
 
     expect(increaseScore).toHaveBeenCalledTimes(1);
-    expect(increaseScore).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 2, 2),
-    );
+    expect(increaseScore).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
     expect(increaseWinStreak).toHaveBeenCalledTimes(1);
   });
 

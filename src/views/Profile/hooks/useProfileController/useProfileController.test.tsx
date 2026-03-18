@@ -117,7 +117,9 @@ describe("useProfileController", () => {
     });
 
     expect(updatePlayer).toHaveBeenCalledWith("Ana");
-    expect(result.current.savedMessage).toBe(PROFILE_CONFIGURATION_SAVED_MESSAGE);
+    expect(result.current.savedMessage).toBe(
+      PROFILE_CONFIGURATION_SAVED_MESSAGE,
+    );
 
     act(() => {
       vi.advanceTimersByTime(PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS);
@@ -143,7 +145,9 @@ describe("useProfileController", () => {
     const { result } = renderHook(() => useProfileController());
 
     await act(async () => {
-      await expect(result.current.submitRecoveryCode("ab12")).resolves.toBeNull();
+      await expect(
+        result.current.submitRecoveryCode("ab12"),
+      ).resolves.toBeNull();
     });
 
     expect(recoverPlayer).toHaveBeenCalledWith("ab12");

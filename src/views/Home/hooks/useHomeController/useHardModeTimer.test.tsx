@@ -1,9 +1,6 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  clearHardModeTimerSnapshot,
-  setHardModeTimerSnapshot,
-} from "./utils";
+import { clearHardModeTimerSnapshot, setHardModeTimerSnapshot } from "./utils";
 import { useHardModeTimer } from "./useHardModeTimer";
 
 describe("useHardModeTimer", () => {

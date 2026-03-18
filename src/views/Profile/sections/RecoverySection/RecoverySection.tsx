@@ -33,7 +33,9 @@ const RecoverySection = () => {
 
   return (
     <section className="profile-section">
-      <h2 className="profile-section-title">{PROFILE_RECOVERY_SECTION_TITLE}</h2>
+      <h2 className="profile-section-title">
+        {PROFILE_RECOVERY_SECTION_TITLE}
+      </h2>
       <form
         className="flex flex-col gap-3 sm:flex-row sm:items-end"
         onSubmit={handleSubmit}
