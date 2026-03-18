@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialog } from "@components/Dialogs/Dialog";
 import { WORD_LIST_DIALOG_TITLE_ID } from "./constants";
 import type { WordListDialogProps } from "./types";
@@ -10,6 +10,7 @@ const WordListDialog = ({
   onClose,
 }: WordListDialogProps) => {
   const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredWords = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -20,6 +21,10 @@ const WordListDialog = ({
 
     return words.filter((word) => word.includes(normalizedQuery));
   }, [query, words]);
+
+  useEffect(() => {
+    if (visible) inputRef.current?.focus();
+  }, [visible]);
 
   return (
     <Dialog
@@ -41,6 +46,7 @@ const WordListDialog = ({
           id="word-list-search"
           type="search"
           value={query}
+          ref={inputRef}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Type to filter words"
           className="mt-1 w-full rounded border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none ring-primary/40 focus:ring-2 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
