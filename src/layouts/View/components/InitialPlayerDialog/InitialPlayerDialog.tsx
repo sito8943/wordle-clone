@@ -46,7 +46,9 @@ const InitialPlayerDialog = ({
     recoveryInputRef.current?.focus();
   }, [mode]);
 
-  const handleCreateSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     if (isClosing || isSubmitting) {
@@ -119,8 +121,8 @@ const InitialPlayerDialog = ({
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button
           type="button"
-          variant={mode === "create" ? "solid" : "outline"}
-          color="primary"
+          variant={mode !== "create" ? "solid" : "outline"}
+          color="secondary"
           disabled={isClosing || isSubmitting}
           onClick={() => {
             setMode("create");
@@ -131,7 +133,7 @@ const InitialPlayerDialog = ({
         </Button>
         <Button
           type="button"
-          variant={mode === "recover" ? "solid" : "outline"}
+          variant={mode !== "recover" ? "solid" : "outline"}
           color="secondary"
           disabled={isClosing || isSubmitting}
           onClick={() => {
