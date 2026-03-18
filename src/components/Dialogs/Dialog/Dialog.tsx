@@ -98,6 +98,7 @@ const Dialog = ({
               color="danger"
               className="absolute top-2 right-2"
               disabled={isClosing}
+              aria-label="Close"
             >
               <FontAwesomeIcon icon={faClose} />
             </Button>

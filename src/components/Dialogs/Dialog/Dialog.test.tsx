@@ -1,9 +1,17 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Dialog } from "./index";
 
 describe("Dialog", () => {
+  beforeEach(() => vi.useFakeTimers());
   afterEach(() => {
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -66,6 +74,8 @@ describe("Dialog", () => {
     fireEvent.click(
       screen.getByRole("dialog", { name: "Test dialog" }).parentElement!,
     );
+
+    act(() => vi.runAllTimers());
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });

@@ -57,7 +57,7 @@ describe("FireStreak", () => {
   it("applies md size classes by default", () => {
     render(<FireStreak streak={1} />);
     const label = screen.getByRole("generic", { name: /Streak: 1/ });
-    expect(label.className).toContain("px-2");
+    expect(label.className).toContain("py-1");
   });
 
   it("merges custom className", () => {

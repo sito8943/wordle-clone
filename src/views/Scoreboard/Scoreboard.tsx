@@ -1,6 +1,12 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
-import { Button, ErrorBoundary, ErrorFallback, FireStreak } from "@components";
+import {
+  Alert,
+  Button,
+  ErrorBoundary,
+  ErrorFallback,
+  FireStreak,
+} from "@components";
 import { useScoreboardController } from "./hooks";
 
 const Scoreboard = (): JSX.Element => {
@@ -31,27 +37,27 @@ const Scoreboard = (): JSX.Element => {
       </div>
 
       {!convexEnabled && (
-        <p className="scoreboard-notice scoreboard-notice-amber">
-          Convex is not configured (`VITE_CONVEX_URL`). Using local storage
-          only.
-        </p>
+        <Alert
+          message="Convex is not configured (`VITE_CONVEX_URL`). Using local storage
+          only."
+          color="warning"
+        />
       )}
 
       {convexEnabled && source === "local" && (
-        <p className="scoreboard-notice scoreboard-notice-sky">
-          Offline fallback active. Showing cached local scores.
-        </p>
+        <Alert
+          message="Offline fallback active. Showing cached local scores."
+          color="info"
+        />
       )}
 
-      {error && (
-        <p className="scoreboard-notice scoreboard-notice-red">{error}</p>
-      )}
+      {error && <Alert message={error} color="danger" />}
 
       {currentClientOutsideTop && currentClientRank !== null && (
-        <p className="scoreboard-notice scoreboard-notice-emerald">
-          You are shown as #{scores.length}. Real position: #{currentClientRank}
-          .
-        </p>
+        <Alert
+          message={`You are shown as #${scores.length}. Real position: #${currentClientRank}.`}
+          color="success"
+        />
       )}
 
       <ErrorBoundary

@@ -2,6 +2,15 @@ import { Button } from "./Button";
 import { ErrorBoundary, ErrorFallback } from "./ErrorBoundary";
 import { Fire, FireStreak } from "./FireStreak";
 import { SplashScreen } from "./SplashScreen";
-export { Button, ErrorBoundary, ErrorFallback, Fire, FireStreak, SplashScreen };
+import { Alert } from "./Alert";
+export {
+  Button,
+  ErrorBoundary,
+  ErrorFallback,
+  Fire,
+  FireStreak,
+  SplashScreen,
+  Alert,
+};
 
 export * from "./Dialogs";

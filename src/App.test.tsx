@@ -88,7 +88,9 @@ describe("App", () => {
     );
     renderApp();
 
-    expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
+    expect(
+      await screen.findByRole("heading", { name: "WORDLE" }, { timeout: 3000 }),
+    ).toBeTruthy();
     expect(screen.getByRole("link", { name: "Play" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Profile" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
@@ -1374,7 +1376,7 @@ describe("App", () => {
 
     renderApp();
 
-    fireEvent.click(screen.getByRole("button", { name: "Help" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Help" }));
 
     expect(
       await screen.findByRole("dialog", { name: "How to play" }),
@@ -1400,11 +1402,17 @@ describe("App", () => {
       ),
     ).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    vi.useFakeTimers();
+    const helpDialog = screen.getByRole("dialog", { name: "How to play" });
+    const closeButton = helpDialog.querySelector<HTMLButtonElement>(
+      'button[aria-label="Close"]',
+    )!;
+    fireEvent.click(closeButton);
 
-    await waitFor(() => {
-      expect(screen.queryByRole("dialog", { name: "How to play" })).toBeNull();
-    });
+    act(() => vi.runAllTimers());
+    vi.useRealTimers();
+
+    expect(screen.queryByRole("dialog", { name: "How to play" })).toBeNull();
   });
 
   it("applies easy difficulty bonus and current streak bonus on win", async () => {

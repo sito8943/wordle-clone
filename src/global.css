@@ -33,27 +33,6 @@ h1,
   .input-error-text {
     @apply text-sm text-red-700 dark:text-red-500;
   }
-
-  .scoreboard-notice {
-    @apply rounded border px-3 py-2 text-sm;
-  }
-
-  .scoreboard-notice-amber {
-    @apply border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200;
-  }
-
-  .scoreboard-notice-sky {
-    @apply border-sky-300 bg-sky-100 text-sky-900 dark:border-sky-700 dark:bg-sky-950/40 dark:text-sky-200;
-  }
-
-  .scoreboard-notice-red {
-    @apply border-red-300 bg-red-100 text-red-900 dark:border-red-700 dark:bg-red-950/40 dark:text-red-200;
-  }
-
-  .scoreboard-notice-emerald {
-    @apply border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200;
-  }
-
   .dialog-backdrop {
     @apply fixed inset-0 flex items-center justify-center p-4;
     background-color: rgba(0, 0, 0, 0.45);

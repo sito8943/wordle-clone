@@ -7,7 +7,7 @@ import {
   faList,
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button, FireStreak } from "@components";
+import { Button, FireStreak, Alert } from "@components";
 import { useHomeView } from "../providers/";
 import type { NativeKeyboardClockStyle } from "./types";
 
@@ -131,15 +131,11 @@ const Toolbar = (): JSX.Element => {
       </div>
 
       {dictionaryLoading && (
-        <p className="rounded border border-sky-300 bg-sky-100 px-3 py-2 text-sm text-sky-900 dark:border-sky-700 dark:bg-sky-950/40 dark:text-sky-200">
-          Loading word list...
-        </p>
+        <Alert message={"Loading word list..."} color="info" />
       )}
 
       {!dictionaryLoading && dictionaryError && (
-        <p className="rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-900 dark:border-red-700 dark:bg-red-950/40 dark:text-red-200">
-          {dictionaryError}
-        </p>
+        <Alert message={dictionaryError} color="danger" />
       )}
     </>
   );
