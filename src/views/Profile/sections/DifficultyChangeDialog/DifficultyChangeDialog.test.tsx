@@ -45,9 +45,11 @@ const buildMockProfileView = (
     isDifficultyChangeConfirmationOpen: false,
     confirmDifficultyChange: vi.fn(),
     cancelDifficultyChange: vi.fn(),
-    pendingDifficultyLabel: vi.fn().mockImplementation((difficulty) =>
-      difficulty === "hard" ? "Hard" : "Normal",
-    ),
+    pendingDifficultyLabel: vi
+      .fn()
+      .mockImplementation((difficulty) =>
+        difficulty === "hard" ? "Hard" : "Normal",
+      ),
     ...overrides,
   },
 });

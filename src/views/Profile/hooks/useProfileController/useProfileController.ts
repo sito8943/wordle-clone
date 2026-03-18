@@ -83,7 +83,9 @@ export default function useProfileController() {
       try {
         await recoverPlayer(code);
       } catch (error) {
-        return error instanceof Error ? error.message : PROFILE_RECOVERY_EMPTY_CODE_ERROR;
+        return error instanceof Error
+          ? error.message
+          : PROFILE_RECOVERY_EMPTY_CODE_ERROR;
       }
 
       setEditing(false);

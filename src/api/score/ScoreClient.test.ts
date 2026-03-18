@@ -433,10 +433,11 @@ describe("ScoreClient", () => {
     });
 
     expect(profile.playerCode).toBe("AB12");
-    expect(JSON.parse(storage.getItem(SCOREBOARD_PROFILE_IDENTITY_KEY) || "{}"))
-      .toEqual({
-        clientRecordId: "remote-record",
-      });
+    expect(
+      JSON.parse(storage.getItem(SCOREBOARD_PROFILE_IDENTITY_KEY) || "{}"),
+    ).toEqual({
+      clientRecordId: "remote-record",
+    });
 
     await client.recordScore({
       nick: "Ana",

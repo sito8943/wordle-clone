@@ -239,7 +239,9 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Recovery code"), {
       target: { value: "ab12" },
     });
-    fireEvent.click(screen.getAllByRole("button", { name: "Recover profile" })[1]);
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Recover profile" })[1],
+    );
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");

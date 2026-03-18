@@ -170,7 +170,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - player preferences from `usePlayer`
 - gameplay state/actions from `useWordle`
 - difficulty-specific rules (hints, scoring multiplier, hard-mode timer)
- - score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations and keeps the adopted remote player identity in sync for later score writes
+- score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations and keeps the adopted remote player identity in sync for later score writes
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
 4. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.

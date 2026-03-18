@@ -19,10 +19,10 @@ Implementar un flujo para que cada jugador con nombre unico tenga un codigo de r
 - El perfil local seguira viviendo en `localStorage`, pero Convex sera la fuente de verdad para recuperar por codigo.
 - La generacion del codigo ocurrira en backend para garantizar unicidad real.
 - No se debe crear ni fijar identidad remota en Convex hasta que el usuario tome una decision explicita en el dialogo inicial:
-    - elegir un nombre unico para crear jugador nuevo
-    - introducir un codigo para recuperar jugador existente
-    - Si un navegador ya tenia un jugador local y despues recupera otro perfil por codigo, no se borra el registro remoto anterior.
-    - En ese caso, simplemente se sobreescribe el estado local del navegador con el perfil recuperado y, a partir de ese momento, ese navegador pasa a trabajar con la identidad del nuevo codigo cargado.
+  - elegir un nombre unico para crear jugador nuevo
+  - introducir un codigo para recuperar jugador existente
+  - Si un navegador ya tenia un jugador local y despues recupera otro perfil por codigo, no se borra el registro remoto anterior.
+  - En ese caso, simplemente se sobreescribe el estado local del navegador con el perfil recuperado y, a partir de ese momento, ese navegador pasa a trabajar con la identidad del nuevo codigo cargado.
 
 ## Riesgos a controlar
 

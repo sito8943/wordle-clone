@@ -82,9 +82,12 @@ class ScoreClient {
   async recoverPlayerByCode(code: string): Promise<RemotePlayerProfile> {
     this.assertRemoteIdentityAvailable();
 
-    const response = await this.gateway.query<unknown>(GET_PLAYER_BY_CODE_QUERY, {
-      code: this.normalizeRecoveryCode(code),
-    });
+    const response = await this.gateway.query<unknown>(
+      GET_PLAYER_BY_CODE_QUERY,
+      {
+        code: this.normalizeRecoveryCode(code),
+      },
+    );
 
     return this.parseRemotePlayerProfile(response, {
       clientId: null,

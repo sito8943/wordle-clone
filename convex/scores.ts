@@ -187,9 +187,7 @@ const resolveProfileRecord = async (
   return null;
 };
 
-const ensureUniquePlayerCode = async (
-  ctx: ScoresCtx,
-): Promise<string> => {
+const ensureUniquePlayerCode = async (ctx: ScoresCtx): Promise<string> => {
   for (let attempt = 0; attempt < PLAYER_CODE_MAX_ATTEMPTS; attempt += 1) {
     const candidate = createRandomCode();
     const existing = await ctx.db
@@ -354,9 +352,7 @@ export const upsertPlayerProfile = mutation({
           typeof args.streak === "number"
             ? normalizeStreak(args.streak)
             : normalizeStreak(existing.streak),
-        difficulty: normalizeDifficulty(
-          args.difficulty ?? existing.difficulty,
-        ),
+        difficulty: normalizeDifficulty(args.difficulty ?? existing.difficulty),
         keyboardPreference: normalizeKeyboardPreference(
           args.keyboardPreference ?? existing.keyboardPreference,
         ),

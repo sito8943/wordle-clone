@@ -33,8 +33,13 @@ const RecoverySection = () => {
 
   return (
     <section className="flex w-full max-w-xl flex-col gap-3 rounded-lg border border-neutral-300 bg-white/60 p-4 dark:border-neutral-700 dark:bg-neutral-800/40">
-      <h2 className="text-lg font-semibold">{PROFILE_RECOVERY_SECTION_TITLE}</h2>
-      <form className="flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={handleSubmit}>
+      <h2 className="text-lg font-semibold">
+        {PROFILE_RECOVERY_SECTION_TITLE}
+      </h2>
+      <form
+        className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        onSubmit={handleSubmit}
+      >
         <div className="flex-1">
           <label
             htmlFor={PROFILE_RECOVERY_INPUT_ID}
