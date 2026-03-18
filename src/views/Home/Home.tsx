@@ -6,6 +6,7 @@ import {
   BoardSection,
   KeyboardSection,
 } from "./sections";
+
 const HomeContent = (): JSX.Element => {
   return (
     <>

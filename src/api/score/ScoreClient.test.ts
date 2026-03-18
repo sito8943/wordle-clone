@@ -4,6 +4,7 @@ import { ScoreClient } from "./ScoreClient";
 import {
   SCOREBOARD_CACHE_KEY,
   SCOREBOARD_CLIENT_ID_KEY,
+  SCOREBOARD_PROFILE_IDENTITY_KEY,
   UPDATE_SCORE_MUTATION,
 } from "./constants";
 import type { ScoreClientGatewayOverrides } from "./types";
@@ -397,5 +398,141 @@ describe("ScoreClient", () => {
       ]),
     );
     expect(await client.isNickAvailable("ana")).toBe(true);
+  });
+
+  it("upserts a player profile and adopts the returned identity", async () => {
+    const mutation = vi
+      .fn()
+      .mockResolvedValueOnce({
+        id: "remote-player",
+        clientId: "remote-client",
+        clientRecordId: "remote-record",
+        nick: "Ana",
+        playerCode: "AB12",
+        score: 14,
+        streak: 3,
+        difficulty: "hard",
+        keyboardPreference: "native",
+        createdAt: 1000,
+      })
+      .mockResolvedValueOnce(undefined);
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        mutation,
+      }),
+      storage,
+    );
+
+    const profile = await client.upsertPlayerProfile({
+      nick: "Ana",
+      score: 14,
+      streak: 3,
+      difficulty: "hard",
+      keyboardPreference: "native",
+    });
+
+    expect(profile.playerCode).toBe("AB12");
+    expect(
+      JSON.parse(storage.getItem(SCOREBOARD_PROFILE_IDENTITY_KEY) || "{}"),
+    ).toEqual({
+      clientRecordId: "remote-record",
+    });
+
+    await client.recordScore({
+      nick: "Ana",
+      score: 20,
+      streak: 4,
+      createdAt: 2000,
+    });
+
+    expect(mutation).toHaveBeenNthCalledWith(
+      2,
+      expect.any(String),
+      expect.objectContaining({
+        clientRecordId: "remote-record",
+        nick: "Ana",
+        score: 20,
+      }),
+    );
+  });
+
+  it("recovers a player by code and can adopt that identity locally", async () => {
+    const query = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "previous-browser",
+      clientRecordId: "remote-record",
+      nick: "Recovered",
+      playerCode: "ZX90",
+      score: 40,
+      streak: 7,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    const profile = await client.recoverPlayerByCode("zx90");
+    client.adoptRecoveredIdentity(profile);
+
+    expect(query).toHaveBeenCalledWith("scores:getPlayerByCode", {
+      code: "ZX90",
+    });
+
+    const cache = JSON.parse(storage.getItem(SCOREBOARD_CACHE_KEY) || "[]");
+    expect(cache).toEqual([
+      expect.objectContaining({
+        localId: "remote-record",
+        nick: "Recovered",
+        score: 40,
+      }),
+    ]);
+  });
+
+  it("requests top scores using the recovered profile identity", async () => {
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        id: "remote-player",
+        clientId: "previous-browser",
+        clientRecordId: "remote-record",
+        nick: "Recovered",
+        playerCode: "ZX90",
+        score: 40,
+        streak: 7,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      })
+      .mockResolvedValueOnce({
+        scores: [],
+        currentClientRank: null,
+        currentClientEntry: null,
+      });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    const profile = await client.recoverPlayerByCode("zx90");
+    client.adoptRecoveredIdentity(profile);
+    await client.listTopScores(10);
+
+    expect(query).toHaveBeenNthCalledWith(2, "scores:listTopScores", {
+      limit: 10,
+      clientId: expect.any(String),
+      clientRecordId: "remote-record",
+    });
   });
 });

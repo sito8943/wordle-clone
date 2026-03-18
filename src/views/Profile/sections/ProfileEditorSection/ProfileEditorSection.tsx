@@ -1,13 +1,11 @@
 import { EditableProfileCard, ProfileCard } from "@views/Profile/components";
-import type { ProfileEditorSectionProps } from "./types";
+import { useProfileView } from "@views/Profile/providers";
 
-const ProfileEditorSection = ({
-  editing,
-  savedMessage,
-  name,
-  score,
-  onSubmit,
-}: ProfileEditorSectionProps) => {
+const ProfileEditorSection = () => {
+  const {
+    controller: { editing, savedMessage, player, code, submitProfile },
+  } = useProfileView();
+
   return (
     <>
       {savedMessage ? (
@@ -16,9 +14,14 @@ const ProfileEditorSection = ({
         </p>
       ) : null}
       {editing ? (
-        <EditableProfileCard name={name} score={score} onSubmit={onSubmit} />
+        <EditableProfileCard
+          name={player.name}
+          code={code}
+          score={player.score}
+          onSubmit={submitProfile}
+        />
       ) : (
-        <ProfileCard name={name} score={score} />
+        <ProfileCard name={player.name} code={code} score={player.score} />
       )}
     </>
   );

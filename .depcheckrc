@@ -8,5 +8,6 @@
     "@components/*",
     "@utils/*",
     "@providers/*",
-    "@hooks/*"
+    "@hooks/*",
+    "@vitest/coverage-v8"
   ]

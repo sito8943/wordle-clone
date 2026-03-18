@@ -79,6 +79,32 @@ describe("App", () => {
     mockSystemTheme("light");
     window.history.pushState({}, "", "/");
     window.dispatchEvent(new PopStateEvent("popstate"));
+    vi.spyOn(ScoreClient.prototype, "upsertPlayerProfile").mockImplementation(
+      async (input) => ({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: input.nick,
+        playerCode: "AB12",
+        score: input.score,
+        streak: input.streak ?? 0,
+        difficulty: input.difficulty,
+        keyboardPreference: input.keyboardPreference,
+        createdAt: 1000,
+      }),
+    );
+    vi.spyOn(ScoreClient.prototype, "recoverPlayerByCode").mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Recovered",
+      playerCode: "AB12",
+      score: 0,
+      streak: 0,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
   });
 
   it("renders the main navigation", async () => {
@@ -199,6 +225,29 @@ describe("App", () => {
 
     const player = JSON.parse(localStorage.getItem("player") || "{}");
     expect(player.name).toBe("Player");
+  });
+
+  it("recovers a player from the initial dialog using a recovery code", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+    );
+
+    renderApp();
+
+    fireEvent.click(screen.getByRole("button", { name: "Recover profile" }));
+    fireEvent.change(screen.getByLabelText("Recovery code"), {
+      target: { value: "ab12" },
+    });
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Recover profile" })[1],
+    );
+
+    await waitFor(() => {
+      const player = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(player.name).toBe("Recovered");
+      expect(player.code).toBe("AB12");
+    });
   });
 
   it("defaults to system theme preference", async () => {
@@ -1712,6 +1761,17 @@ describe("App", () => {
   });
 
   it("highlights the current player row in the scoreboard", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Ana",
+        code: "AB12",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
     renderApp();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
@@ -1827,6 +1887,16 @@ describe("App", () => {
   });
 
   it("lets the user edit the profile name", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Profile" }));
@@ -1852,6 +1922,16 @@ describe("App", () => {
   });
 
   it("normalizes and saves profile name", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Profile" }));

@@ -18,7 +18,7 @@ const InitialPlayerDialog = lazy(
 
 const View = () => {
   const { scoreClient } = useApi();
-  const { player, updatePlayer } = usePlayer();
+  const { player, recoverPlayer, updatePlayer } = usePlayer();
   const { pathname } = useLocation();
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
@@ -27,11 +27,33 @@ const View = () => {
   );
 
   const confirmInitialPlayerName = useCallback(
-    (name: string) => {
-      updatePlayer(name);
-      setShowInitialPlayerDialog(false);
+    async (name: string): Promise<string | null> => {
+      try {
+        await updatePlayer(name);
+        setShowInitialPlayerDialog(false);
+        return null;
+      } catch (error) {
+        return error instanceof Error
+          ? error.message
+          : INITIAL_PLAYER_NAME_VALIDATION_ERROR;
+      }
     },
     [updatePlayer],
+  );
+
+  const recoverInitialPlayer = useCallback(
+    async (code: string): Promise<string | null> => {
+      try {
+        await recoverPlayer(code);
+        setShowInitialPlayerDialog(false);
+        return null;
+      } catch (error) {
+        return error instanceof Error
+          ? error.message
+          : INITIAL_PLAYER_NAME_VALIDATION_ERROR;
+      }
+    },
+    [recoverPlayer],
   );
 
   const validateInitialPlayerName = useCallback(
@@ -81,6 +103,7 @@ const View = () => {
             onClose={() => undefined}
             initialName={player.name}
             onConfirm={confirmInitialPlayerName}
+            onRecover={recoverInitialPlayer}
             onValidateName={validateInitialPlayerName}
           />
         ) : null}

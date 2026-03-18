@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Button from "@components/Button/Button";
 import type { EditableProfileCardPropsTypes } from "./types";
 import {
+  PROFILE_CODE_HELP,
+  PROFILE_CODE_LABEL,
   PROFILE_EMPTY_NAME_ERROR_MESSAGE,
   PROFILE_NAME_LABEL,
   PROFILE_SAVE_ACTION_LABEL,
@@ -39,9 +41,14 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   }, [props.name, props.score]);
 
   return (
-    <form onSubmit={handleSubmit} className="profile-card-container">
+    <form
+      onSubmit={handleSubmit}
+      className="profile-section profile-card-container"
+    >
       <div className="profile-card-field-row">
-        <label htmlFor="name">{PROFILE_NAME_LABEL}</label>
+        <label htmlFor="name" className="profile-field-label">
+          {PROFILE_NAME_LABEL}
+        </label>
         <input
           className="profile-card-field-input"
           id="name"
@@ -54,7 +61,9 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
       </div>
       {error && <p className="input-error-text">{error}</p>}
       <div className="profile-card-field-row">
-        <label htmlFor="score">{PROFILE_SCORE_LABEL}</label>
+        <label htmlFor="score" className="profile-field-label">
+          {PROFILE_SCORE_LABEL}
+        </label>
         <input
           className="profile-card-field-input"
           id="score"
@@ -63,6 +72,19 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
           readOnly
         />
       </div>
+      <div className="profile-card-field-row">
+        <label htmlFor="code" className="profile-field-label">
+          {PROFILE_CODE_LABEL}
+        </label>
+        <input
+          className="profile-card-field-input"
+          id="code"
+          type="text"
+          value={props.code}
+          readOnly
+        />
+      </div>
+      <p className="profile-help-text">{PROFILE_CODE_HELP}</p>
       <Button type="submit" className="self-start" disabled={isSubmitting}>
         {isSubmitting ? PROFILE_SAVING_ACTION_LABEL : PROFILE_SAVE_ACTION_LABEL}
       </Button>

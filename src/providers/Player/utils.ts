@@ -14,6 +14,18 @@ export const normalizePlayerName = (value: string): string => {
   return normalized.slice(0, 30);
 };
 
+const normalizePlayerCode = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 4);
+};
+
 const normalizeCounter = (value: unknown): number => {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return 0;
@@ -61,6 +73,7 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
       typeof value.name === "string"
         ? normalizePlayerName(value.name)
         : DEFAULT_PLAYER.name,
+    code: normalizePlayerCode(value.code),
     score: normalizeCounter(value.score),
     streak: normalizeCounter(value.streak),
     difficulty: normalizePlayerDifficulty(value.difficulty),

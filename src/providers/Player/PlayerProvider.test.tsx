@@ -1,11 +1,15 @@
+import { QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
+import { queryKeys } from "@hooks";
 import { ApiContext } from "@providers/Api/ApiContext";
+import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
 import { usePlayer } from "./usePlayer";
 import { DEFAULT_PLAYER } from "./constants";
 import {
+  createTestQueryClient,
   createTestApiContextValue,
   createMockScoreClient,
 } from "../../test/utils";
@@ -17,7 +21,37 @@ afterEach(() => {
 });
 
 const makeWrapper =
-  (recordScore = vi.fn().mockResolvedValue(undefined)) =>
+  ({
+    recordScore = vi.fn().mockResolvedValue(undefined),
+    upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      playerCode: "AB12",
+      score: input.score,
+      streak: input.streak ?? 0,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    })),
+    recoverPlayerByCode = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "recovered-record",
+      nick: "Recovered",
+      playerCode: "RCV1",
+      score: 27,
+      streak: 4,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    }),
+  }: {
+    recordScore?: ApiContextType["scoreClient"]["recordScore"];
+    upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
+    recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
+  } = {}) =>
   ({ children }: { children: ReactNode }) => {
     const apiValue = createTestApiContextValue({
       scoreClient: createMockScoreClient(
@@ -27,16 +61,17 @@ const makeWrapper =
           currentClientRank: null,
           currentClientEntry: null,
         }),
+        { recordScore, upsertPlayerProfile, recoverPlayerByCode },
       ) as never,
     });
-    // Patch recordScore on the scoreClient mock
-    (apiValue.scoreClient as unknown as Record<string, unknown>).recordScore =
-      recordScore;
+    const queryClient = createTestQueryClient();
 
     return (
-      <ApiContext.Provider value={apiValue}>
-        <PlayerProvider>{children}</PlayerProvider>
-      </ApiContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <ApiContext.Provider value={apiValue}>
+          <PlayerProvider>{children}</PlayerProvider>
+        </ApiContext.Provider>
+      </QueryClientProvider>
     );
   };
 
@@ -74,25 +109,26 @@ describe("PlayerProvider", () => {
     expect(result.current.player.difficulty).toBe("hard");
   });
 
-  it("updatePlayer changes the player name", () => {
+  it("updatePlayer changes the player name and stores a recovery code", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
     });
 
-    act(() => {
-      result.current.updatePlayer("Carlos");
+    await act(async () => {
+      await result.current.updatePlayer("Carlos");
     });
 
     expect(result.current.player.name).toBe("Carlos");
+    expect(result.current.player.code).toBe("AB12");
   });
 
-  it("updatePlayer trims and normalizes the name", () => {
+  it("updatePlayer trims and normalizes the name", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
     });
 
-    act(() => {
-      result.current.updatePlayer("  Ana  ");
+    await act(async () => {
+      await result.current.updatePlayer("  Ana  ");
     });
 
     expect(result.current.player.name).toBe("Ana");
@@ -200,7 +236,11 @@ describe("PlayerProvider", () => {
   it("calls scoreClient.recordScore when score changes", async () => {
     const recordScore = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper(recordScore),
+      wrapper: makeWrapper({ recordScore }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Ana");
     });
 
     act(() => {
@@ -214,21 +254,106 @@ describe("PlayerProvider", () => {
     });
   });
 
-  it("calls scoreClient.recordScore with overwriteExisting when name changes", async () => {
-    const recordScore = vi.fn().mockResolvedValue(undefined);
+  it("calls scoreClient.upsertPlayerProfile when name changes", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      playerCode: "ZX90",
+      score: input.score,
+      streak: input.streak ?? 0,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    }));
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper(recordScore),
+      wrapper: makeWrapper({ upsertPlayerProfile }),
     });
 
-    act(() => {
-      result.current.updatePlayer("NewName");
+    await act(async () => {
+      await result.current.updatePlayer("NewName");
     });
 
     await waitFor(() => {
-      expect(recordScore).toHaveBeenCalledWith(
-        expect.objectContaining({ nick: "NewName", overwriteExisting: true }),
-        expect.any(String),
+      expect(upsertPlayerProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ nick: "NewName" }),
       );
+    });
+    expect(result.current.player.code).toBe("ZX90");
+  });
+
+  it("recoverPlayer updates the player identity", async () => {
+    const recoverPlayerByCode = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "recovered-record",
+      nick: "Recovered",
+      playerCode: "RCV1",
+      score: 27,
+      streak: 4,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+    const recoveredHook = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ recoverPlayerByCode }),
+    });
+
+    await act(async () => {
+      await recoveredHook.result.current.recoverPlayer("rcv1");
+    });
+
+    expect(recoverPlayerByCode).toHaveBeenCalledWith("rcv1");
+    expect(recoveredHook.result.current.player.name).toBe("Recovered");
+    expect(recoveredHook.result.current.player.score).toBe(27);
+    expect(recoveredHook.result.current.player.difficulty).toBe("hard");
+  });
+
+  it("invalidates top scores after recovering a player", async () => {
+    const recoverPlayerByCode = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "recovered-record",
+      nick: "Recovered",
+      playerCode: "RCV1",
+      score: 27,
+      streak: 4,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+    const queryClient = createTestQueryClient();
+    const invalidateQueriesSpy = vi
+      .spyOn(queryClient, "invalidateQueries")
+      .mockResolvedValue(undefined);
+    const apiValue = createTestApiContextValue({
+      scoreClient: createMockScoreClient(
+        vi.fn().mockResolvedValue({
+          scores: [],
+          source: "local",
+          currentClientRank: null,
+          currentClientEntry: null,
+        }),
+        { recoverPlayerByCode },
+      ) as never,
+    });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>
+        <ApiContext.Provider value={apiValue}>
+          <PlayerProvider>{children}</PlayerProvider>
+        </ApiContext.Provider>
+      </QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => usePlayer(), { wrapper });
+
+    await act(async () => {
+      await result.current.recoverPlayer("rcv1");
+    });
+
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.topScores,
     });
   });
 });

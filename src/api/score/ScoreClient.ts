@@ -2,22 +2,28 @@ import { ConvexGateway } from "../convex/ConvexGateway";
 import {
   ADD_SCORE_MUTATION,
   DEFAULT_LIMIT,
+  GET_PLAYER_BY_CODE_QUERY,
   IS_NICK_AVAILABLE_QUERY,
   LIST_TOP_SCORES_QUERY,
   MAX_LIMIT,
   SCOREBOARD_CACHE_KEY,
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PENDING_KEY,
+  SCOREBOARD_PROFILE_IDENTITY_KEY,
   UPDATE_SCORE_MUTATION,
+  UPSERT_PLAYER_PROFILE_MUTATION,
 } from "./constants";
 import type {
   RecordScoreInput,
+  RemotePlayerProfile,
   RemoteScore,
   RemoteScoresResponse,
   ScoreEntry,
   ScoreSource,
+  StoredScoreIdentity,
   StoredScore,
   TopScoresResult,
+  UpsertPlayerProfileInput,
 } from "./types";
 import { resolveStorage, scoreSorter } from "./utils";
 
@@ -32,11 +38,81 @@ class ScoreClient {
     this.clientId = this.getOrCreateClientId();
   }
 
+  async upsertPlayerProfile(
+    input: UpsertPlayerProfileInput,
+  ): Promise<RemotePlayerProfile> {
+    this.assertRemoteIdentityAvailable();
+
+    const currentRecord = this.getCurrentClientStoredScore();
+    const identity = this.readProfileIdentity();
+    const clientRecordId =
+      identity?.clientRecordId ??
+      currentRecord?.localId ??
+      this.createLocalId(input.score > 0 ? Date.now() : undefined);
+
+    const response = await this.gateway.mutation<unknown>(
+      UPSERT_PLAYER_PROFILE_MUTATION,
+      {
+        clientId: this.clientId,
+        clientRecordId,
+        nick: this.normalizeNick(input.nick),
+        score: this.normalizeScore(input.score),
+        streak: this.normalizeStreak(input.streak ?? 0),
+        difficulty: input.difficulty,
+        keyboardPreference: input.keyboardPreference,
+      },
+    );
+
+    const profile = this.parseRemotePlayerProfile(response, {
+      clientId: this.clientId,
+      clientRecordId,
+      nick: input.nick,
+      score: input.score,
+      streak: input.streak ?? 0,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: Date.now(),
+      playerCode: "",
+    });
+
+    this.adoptRecoveredIdentity(profile);
+    return profile;
+  }
+
+  async recoverPlayerByCode(code: string): Promise<RemotePlayerProfile> {
+    this.assertRemoteIdentityAvailable();
+
+    const response = await this.gateway.query<unknown>(
+      GET_PLAYER_BY_CODE_QUERY,
+      {
+        code: this.normalizeRecoveryCode(code),
+      },
+    );
+
+    return this.parseRemotePlayerProfile(response, {
+      clientId: null,
+      clientRecordId: "",
+      nick: "Player",
+      score: 0,
+      streak: 0,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: Date.now(),
+      playerCode: this.normalizeRecoveryCode(code),
+    });
+  }
+
+  adoptRecoveredIdentity(profile: RemotePlayerProfile): void {
+    this.writeProfileIdentity({ clientRecordId: profile.clientRecordId });
+    this.replaceCurrentBrowserScores(profile);
+  }
+
   async recordScore(
     input: RecordScoreInput,
     mutation: string = ADD_SCORE_MUTATION,
   ): Promise<void> {
     const currentRecord = this.getCurrentClientStoredScore();
+    const identity = this.readProfileIdentity();
     const overwriteExisting = input.overwriteExisting === true;
     const normalizedInputScore = this.normalizeScore(input.score);
     const score = overwriteExisting
@@ -60,7 +136,10 @@ class ScoreClient {
       : (input.createdAt ?? Date.now());
 
     const record: StoredScore = {
-      localId: currentRecord?.localId ?? this.createLocalId(createdAt),
+      localId:
+        identity?.clientRecordId ??
+        currentRecord?.localId ??
+        this.createLocalId(createdAt),
       clientId: this.clientId,
       nick: this.normalizeNick(input.nick),
       score,
@@ -77,7 +156,7 @@ class ScoreClient {
 
     try {
       await this.gateway.mutation(mutation, {
-        clientRecordId: record.localId,
+        clientRecordId: identity?.clientRecordId ?? record.localId,
         clientId: this.clientId,
         nick: record.nick,
         score: record.score,
@@ -105,6 +184,7 @@ class ScoreClient {
         {
           nick: normalizedNick,
           clientId: this.clientId,
+          clientRecordId: this.readProfileIdentity()?.clientRecordId,
         },
       );
 
@@ -133,6 +213,7 @@ class ScoreClient {
 
   async listTopScores(limit = DEFAULT_LIMIT): Promise<TopScoresResult> {
     const safeLimit = this.normalizeLimit(limit);
+    const identity = this.readProfileIdentity();
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
       const localScores = this.localScoresRanked();
@@ -150,7 +231,11 @@ class ScoreClient {
     try {
       const remoteResponse = await this.gateway.query<
         RemoteScoresResponse | RemoteScore[]
-      >(LIST_TOP_SCORES_QUERY, { limit: safeLimit, clientId: this.clientId });
+      >(LIST_TOP_SCORES_QUERY, {
+        limit: safeLimit,
+        clientId: this.clientId,
+        clientRecordId: identity?.clientRecordId,
+      });
       const parsedResponse = this.parseRemoteScoresResponse(remoteResponse);
       const mergedScores = this.mergeRemoteAndPending(
         parsedResponse.scores,
@@ -211,7 +296,8 @@ class ScoreClient {
             ? UPDATE_SCORE_MUTATION
             : ADD_SCORE_MUTATION,
           {
-            clientRecordId: entry.localId,
+            clientRecordId:
+              this.readProfileIdentity()?.clientRecordId ?? entry.localId,
             clientId: this.clientId,
             nick: entry.nick,
             score: entry.score,
@@ -533,10 +619,15 @@ class ScoreClient {
   }
 
   private getCurrentClientStoredScore(): StoredScore | null {
+    const identity = this.readProfileIdentity();
     const entries = [
       ...this.readScores(SCOREBOARD_CACHE_KEY),
       ...this.readScores(SCOREBOARD_PENDING_KEY),
-    ].filter((entry) => entry.clientId === this.clientId);
+    ].filter(
+      (entry) =>
+        entry.clientId === this.clientId ||
+        (identity !== null && entry.localId === identity.clientRecordId),
+    );
 
     let current: StoredScore | null = null;
 
@@ -630,6 +721,7 @@ class ScoreClient {
 
   private isNickAvailableInLocalData(nick: string): boolean {
     const requestedKey = this.nickKey(nick);
+    const identity = this.readProfileIdentity();
 
     return ![
       ...this.readScores(SCOREBOARD_CACHE_KEY),
@@ -637,7 +729,8 @@ class ScoreClient {
     ].some(
       (entry) =>
         this.nickKey(entry.nick) === requestedKey &&
-        entry.clientId !== this.clientId,
+        entry.clientId !== this.clientId &&
+        entry.localId !== identity?.clientRecordId,
     );
   }
 
@@ -647,6 +740,146 @@ class ScoreClient {
     }
 
     return navigator.onLine;
+  }
+
+  private normalizeRecoveryCode(code: string): string {
+    return code
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 4);
+  }
+
+  private parseRemotePlayerProfile(
+    value: unknown,
+    fallback: Omit<RemotePlayerProfile, "id">,
+  ): RemotePlayerProfile {
+    if (!value || typeof value !== "object") {
+      throw new Error("Profile sync returned an invalid response.");
+    }
+
+    const candidate = value as Partial<RemotePlayerProfile>;
+    if (typeof candidate.id !== "string") {
+      throw new Error("Profile sync returned an invalid response.");
+    }
+
+    const clientRecordId =
+      typeof candidate.clientRecordId === "string" &&
+      candidate.clientRecordId.length > 0
+        ? candidate.clientRecordId
+        : fallback.clientRecordId;
+
+    if (clientRecordId.length === 0) {
+      throw new Error("Profile sync returned a profile without identity.");
+    }
+
+    return {
+      id: candidate.id,
+      clientId:
+        typeof candidate.clientId === "string" ? candidate.clientId : null,
+      clientRecordId,
+      nick:
+        typeof candidate.nick === "string"
+          ? this.normalizeNick(candidate.nick)
+          : this.normalizeNick(fallback.nick),
+      playerCode:
+        typeof candidate.playerCode === "string"
+          ? this.normalizeRecoveryCode(candidate.playerCode)
+          : this.normalizeRecoveryCode(fallback.playerCode),
+      score: this.normalizeScore(
+        typeof candidate.score === "number" ? candidate.score : fallback.score,
+      ),
+      streak: this.normalizeStreak(
+        typeof candidate.streak === "number"
+          ? candidate.streak
+          : fallback.streak,
+      ),
+      difficulty:
+        candidate.difficulty === "easy" ||
+        candidate.difficulty === "normal" ||
+        candidate.difficulty === "hard" ||
+        candidate.difficulty === "insane"
+          ? candidate.difficulty
+          : fallback.difficulty,
+      keyboardPreference:
+        candidate.keyboardPreference === "onscreen" ||
+        candidate.keyboardPreference === "native"
+          ? candidate.keyboardPreference
+          : fallback.keyboardPreference,
+      createdAt:
+        typeof candidate.createdAt === "number" &&
+        Number.isFinite(candidate.createdAt)
+          ? candidate.createdAt
+          : fallback.createdAt,
+    };
+  }
+
+  private readProfileIdentity(): StoredScoreIdentity | null {
+    try {
+      const raw = this.storage.getItem(SCOREBOARD_PROFILE_IDENTITY_KEY);
+      if (!raw) {
+        return null;
+      }
+
+      const parsed = JSON.parse(raw) as Partial<StoredScoreIdentity>;
+      if (
+        !parsed ||
+        typeof parsed.clientRecordId !== "string" ||
+        parsed.clientRecordId.length === 0
+      ) {
+        return null;
+      }
+
+      return { clientRecordId: parsed.clientRecordId };
+    } catch {
+      return null;
+    }
+  }
+
+  private writeProfileIdentity(identity: StoredScoreIdentity): void {
+    this.storage.setItem(
+      SCOREBOARD_PROFILE_IDENTITY_KEY,
+      JSON.stringify(identity),
+    );
+  }
+
+  private replaceCurrentBrowserScores(profile: RemotePlayerProfile): void {
+    const nextEntry: StoredScore = {
+      localId: profile.clientRecordId,
+      clientId: this.clientId,
+      nick: profile.nick,
+      score: profile.score,
+      streak: profile.streak,
+      createdAt: profile.createdAt,
+    };
+
+    const cache = [
+      ...this.readScores(SCOREBOARD_CACHE_KEY).filter(
+        (entry) => !this.isCurrentBrowserEntry(entry),
+      ),
+      nextEntry,
+    ];
+    const pending = this.readScores(SCOREBOARD_PENDING_KEY).filter(
+      (entry) => !this.isCurrentBrowserEntry(entry),
+    );
+
+    this.writeScores(SCOREBOARD_CACHE_KEY, this.dedupeStoredByNick(cache));
+    this.writeScores(SCOREBOARD_PENDING_KEY, pending);
+  }
+
+  private isCurrentBrowserEntry(entry: StoredScore): boolean {
+    const identity = this.readProfileIdentity();
+
+    return (
+      entry.clientId === this.clientId ||
+      entry.localId === identity?.clientRecordId
+    );
+  }
+
+  private assertRemoteIdentityAvailable(): void {
+    if (!this.gateway.isConfigured || !this.isOnline()) {
+      throw new Error("Profile sync is unavailable right now.");
+    }
   }
 }
 

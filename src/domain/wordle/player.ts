@@ -1,5 +1,6 @@
 export type Player = {
   name: string;
+  code: string;
   score: number;
   streak: number;
   difficulty: PlayerDifficulty;

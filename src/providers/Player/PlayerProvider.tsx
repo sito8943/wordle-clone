@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
-import { useLocalStorage } from "@hooks";
+import { queryKeys, useLocalStorage } from "@hooks";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
 import type { ProviderProps } from "../types";
@@ -14,6 +15,7 @@ import type {
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
+  const queryClient = useQueryClient();
 
   const [storedPlayer, setStoredPlayer] = useLocalStorage<Player>(
     "player",
@@ -24,15 +26,20 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   const didMountRef = useRef(false);
   const previousSnapshotRef = useRef({
     name: player.name,
+    code: player.code,
     score: player.score,
     streak: player.streak,
+    difficulty: player.difficulty,
+    keyboardPreference: player.keyboardPreference,
   });
+  const skipNextScoreSyncRef = useRef(false);
 
   useEffect(() => {
     setStoredPlayer((previous) => {
       const normalized = normalizePlayer(previous);
       if (
         previous.name === normalized.name &&
+        previous.code === normalized.code &&
         previous.score === normalized.score &&
         previous.streak === normalized.streak &&
         previous.difficulty === normalized.difficulty &&
@@ -46,13 +53,52 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   }, [setStoredPlayer]);
 
   const updatePlayer = useCallback(
-    (name: string) => {
-      setStoredPlayer((prev) => ({
-        ...normalizePlayer(prev),
-        name: normalizePlayerName(name),
-      }));
+    async (name: string) => {
+      const normalizedName = normalizePlayerName(name);
+      const current = normalizePlayer(storedPlayer);
+
+      if (normalizedName === current.name && current.code.length > 0) {
+        return;
+      }
+
+      const remoteProfile = await scoreClient.upsertPlayerProfile({
+        nick: normalizedName,
+        score: current.score,
+        streak: current.streak,
+        difficulty: current.difficulty,
+        keyboardPreference: current.keyboardPreference,
+      });
+
+      skipNextScoreSyncRef.current = true;
+      setStoredPlayer({
+        name: remoteProfile.nick,
+        code: remoteProfile.playerCode,
+        score: remoteProfile.score,
+        streak: remoteProfile.streak,
+        difficulty: remoteProfile.difficulty,
+        keyboardPreference: remoteProfile.keyboardPreference,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
     },
-    [setStoredPlayer],
+    [queryClient, scoreClient, setStoredPlayer, storedPlayer],
+  );
+
+  const recoverPlayer = useCallback(
+    async (code: string) => {
+      const remoteProfile = await scoreClient.recoverPlayerByCode(code);
+      scoreClient.adoptRecoveredIdentity(remoteProfile);
+      skipNextScoreSyncRef.current = true;
+      setStoredPlayer({
+        name: remoteProfile.nick,
+        code: remoteProfile.playerCode,
+        score: remoteProfile.score,
+        streak: remoteProfile.streak,
+        difficulty: remoteProfile.difficulty,
+        keyboardPreference: remoteProfile.keyboardPreference,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
+    },
+    [queryClient, scoreClient, setStoredPlayer],
   );
 
   const replacePlayer = useCallback(
@@ -147,6 +193,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     () => ({
       player,
       updatePlayer,
+      recoverPlayer,
       replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
@@ -157,6 +204,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [
       player,
       updatePlayer,
+      recoverPlayer,
       replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
@@ -167,9 +215,93 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 
   useEffect(() => {
+    if (!didMountRef.current || name === DEFAULT_PLAYER.name) {
+      return;
+    }
+
+    const previous = previousSnapshotRef.current;
+    const difficultyChanged = player.difficulty !== previous.difficulty;
+    const keyboardPreferenceChanged =
+      player.keyboardPreference !== previous.keyboardPreference;
+
+    if (!difficultyChanged && !keyboardPreferenceChanged) {
+      return;
+    }
+
+    void scoreClient
+      .upsertPlayerProfile({
+        nick: name,
+        score,
+        streak,
+        difficulty: player.difficulty,
+        keyboardPreference: player.keyboardPreference,
+      })
+      .then((remoteProfile) => {
+        setStoredPlayer((previousPlayer) => {
+          const normalized = normalizePlayer(previousPlayer);
+          if (
+            normalized.code === remoteProfile.playerCode &&
+            normalized.difficulty === remoteProfile.difficulty &&
+            normalized.keyboardPreference === remoteProfile.keyboardPreference
+          ) {
+            return previousPlayer;
+          }
+
+          return {
+            ...normalized,
+            code: remoteProfile.playerCode,
+            difficulty: remoteProfile.difficulty,
+            keyboardPreference: remoteProfile.keyboardPreference,
+          };
+        });
+      })
+      .catch(() => undefined);
+  }, [
+    name,
+    player.difficulty,
+    player.keyboardPreference,
+    score,
+    scoreClient,
+    setStoredPlayer,
+    streak,
+  ]);
+
+  useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
-      previousSnapshotRef.current = { name, score, streak };
+      previousSnapshotRef.current = {
+        name,
+        code: player.code,
+        score,
+        streak,
+        difficulty: player.difficulty,
+        keyboardPreference: player.keyboardPreference,
+      };
+      return;
+    }
+
+    if (skipNextScoreSyncRef.current) {
+      skipNextScoreSyncRef.current = false;
+      previousSnapshotRef.current = {
+        name,
+        code: player.code,
+        score,
+        streak,
+        difficulty: player.difficulty,
+        keyboardPreference: player.keyboardPreference,
+      };
+      return;
+    }
+
+    if (name === DEFAULT_PLAYER.name) {
+      previousSnapshotRef.current = {
+        name,
+        code: player.code,
+        score,
+        streak,
+        difficulty: player.difficulty,
+        keyboardPreference: player.keyboardPreference,
+      };
       return;
     }
 
@@ -192,8 +324,23 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       void scoreClient.recordScore({ nick: name, score, streak });
     }
 
-    previousSnapshotRef.current = { name, score, streak };
-  }, [name, score, streak, scoreClient]);
+    previousSnapshotRef.current = {
+      name,
+      code: player.code,
+      score,
+      streak,
+      difficulty: player.difficulty,
+      keyboardPreference: player.keyboardPreference,
+    };
+  }, [
+    name,
+    player.code,
+    player.difficulty,
+    player.keyboardPreference,
+    score,
+    scoreClient,
+    streak,
+  ]);
 
   return (
     <PlayerContext.Provider value={contextValue}>

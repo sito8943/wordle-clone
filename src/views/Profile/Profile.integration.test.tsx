@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ScoreClient } from "@api/score";
 import { env } from "@config";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "../../test/utils";
@@ -18,10 +19,25 @@ describe("Profile integration", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    vi.spyOn(ScoreClient.prototype, "upsertPlayerProfile").mockImplementation(
+      async (input) => ({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: input.nick,
+        playerCode: "AB12",
+        score: input.score,
+        streak: input.streak ?? 0,
+        difficulty: input.difficulty,
+        keyboardPreference: input.keyboardPreference,
+        createdAt: 1000,
+      }),
+    );
   });
 
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   it("edits profile name and confirms difficulty change with active game", async () => {
@@ -87,6 +103,46 @@ describe("Profile integration", () => {
       const storedPlayer = JSON.parse(localStorage.getItem("player") || "{}");
       expect(storedPlayer.difficulty).toBe("hard");
       expect(localStorage.getItem(env.wordleGameStorageKey)).toBeNull();
+    });
+  });
+
+  it("recovers a profile from the profile view using a recovery code", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Local",
+        code: "",
+        score: 5,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
+    vi.spyOn(ScoreClient.prototype, "recoverPlayerByCode").mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Recovered",
+      playerCode: "ZX90",
+      score: 44,
+      streak: 6,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+
+    renderProfile();
+
+    fireEvent.change(screen.getByLabelText("Recovery code"), {
+      target: { value: "zx90" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Load profile" }));
+
+    await waitFor(() => {
+      const storedPlayer = JSON.parse(localStorage.getItem("player") || "{}");
+      expect(storedPlayer.name).toBe("Recovered");
+      expect(storedPlayer.code).toBe("ZX90");
+      expect(storedPlayer.score).toBe(44);
     });
   });
 });

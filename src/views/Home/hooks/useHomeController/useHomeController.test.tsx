@@ -1,0 +1,228 @@
+import { act, cleanup, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { getTotalPointsForWin } from "@domain/wordle";
+import useHomeController from "./useHomeController";
+
+const mockUseApi = vi.fn();
+const mockUsePlayer = vi.fn();
+const mockUseWordle = vi.fn();
+const mockUseHintController = vi.fn();
+const mockUseHardModeTimer = vi.fn();
+
+vi.mock("@providers", () => ({
+  useApi: () => mockUseApi(),
+  usePlayer: () => mockUsePlayer(),
+}));
+
+vi.mock("@hooks", () => ({
+  useWordle: () => mockUseWordle(),
+}));
+
+vi.mock("../useHintController", () => ({
+  useHintController: () => mockUseHintController(),
+}));
+
+vi.mock("./useHardModeTimer", () => ({
+  useHardModeTimer: () => mockUseHardModeTimer(),
+}));
+
+describe("useHomeController", () => {
+  let wordleState: Record<string, unknown>;
+
+  beforeEach(() => {
+    wordleState = {
+      sessionId: "session-1",
+      answer: "APPLE",
+      won: false,
+      guesses: [],
+      current: "",
+      gameOver: false,
+      refresh: vi.fn(),
+      forceLoss: vi.fn(),
+      showResumeDialog: false,
+      boardVersion: 1,
+      startNewBoard: vi.fn(),
+      revealHint: vi.fn().mockReturnValue(true),
+    };
+
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum: vi
+          .fn()
+          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+    });
+    mockUsePlayer.mockReturnValue({
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      },
+      replacePlayer: vi.fn(),
+      increaseScore: vi.fn(),
+      increaseWinStreak: vi.fn(),
+      resetWinStreak: vi.fn(),
+    });
+    mockUseWordle.mockImplementation(() => wordleState);
+    mockUseHintController.mockReturnValue({
+      hintsRemaining: 1,
+      hintsEnabledForDifficulty: true,
+      hintButtonDisabled: false,
+      useHint: vi.fn(),
+      resetHints: vi.fn(),
+    });
+    mockUseHardModeTimer.mockReturnValue({
+      showHardModeTimer: false,
+      showHardModeFinalStretchBar: false,
+      hardModeSecondsLeft: 60,
+      hardModeTimerStarted: false,
+      hardModeTickPulse: 0,
+      hardModeClockBoostScale: 0.1,
+      hardModeFinalStretchProgressPercent: 100,
+      boardShakePulse: 0,
+      resetHardModeTimer: vi.fn(),
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("awards points and streak exactly once when a round changes to won", () => {
+    const increaseScore = vi.fn();
+    const increaseWinStreak = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      },
+      increaseScore,
+      increaseWinStreak,
+    });
+
+    const { rerender } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+    rerender();
+
+    expect(increaseScore).toHaveBeenCalledTimes(1);
+    expect(increaseScore).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
+    expect(increaseWinStreak).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens a confirmation dialog before refreshing an active game", () => {
+    const resetHints = vi.fn();
+    const resetHardModeTimer = vi.fn();
+    const refresh = vi.fn();
+    wordleState = {
+      ...wordleState,
+      current: "AP",
+      refresh,
+    };
+    mockUseHintController.mockReturnValue({
+      ...mockUseHintController(),
+      hintsRemaining: 1,
+      hintsEnabledForDifficulty: true,
+      hintButtonDisabled: false,
+      useHint: vi.fn(),
+      resetHints,
+    });
+    mockUseHardModeTimer.mockReturnValue({
+      ...mockUseHardModeTimer(),
+      resetHardModeTimer,
+    });
+
+    const { result } = renderHook(() => useHomeController());
+
+    act(() => {
+      result.current.refreshBoard();
+    });
+
+    expect(result.current.showRefreshDialog).toBe(true);
+    expect(refresh).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.confirmRefreshBoard();
+    });
+
+    expect(result.current.showRefreshDialog).toBe(false);
+    expect(resetHints).toHaveBeenCalledTimes(1);
+    expect(resetHardModeTimer).toHaveBeenCalledTimes(1);
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the word list dialog disabled outside easy mode", () => {
+    const { result, rerender } = renderHook(() => useHomeController());
+
+    act(() => {
+      result.current.openWordsDialog();
+    });
+
+    expect(result.current.showWordsDialog).toBe(false);
+
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "easy",
+        keyboardPreference: "onscreen",
+      },
+    });
+
+    rerender();
+
+    act(() => {
+      result.current.openWordsDialog();
+    });
+
+    expect(result.current.showWordsDialog).toBe(true);
+  });
+
+  it("refreshes the remote dictionary checksum and exposes a success message", async () => {
+    const refreshRemoteChecksum = vi
+      .fn()
+      .mockResolvedValue({ checksum: 42, updatedAt: 1 });
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum,
+      },
+    });
+
+    const { result } = renderHook(() => useHomeController());
+
+    await act(async () => {
+      await result.current.refreshRemoteDictionaryChecksum();
+    });
+
+    expect(refreshRemoteChecksum).toHaveBeenCalledTimes(1);
+    expect(result.current.dictionaryChecksumMessage).toBe(
+      "Remote checksum updated to 42.",
+    );
+    expect(result.current.dictionaryChecksumMessageKind).toBe("success");
+  });
+});

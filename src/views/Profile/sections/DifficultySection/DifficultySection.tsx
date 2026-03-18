@@ -23,11 +23,11 @@ const DifficultySection = ({
   onChangeDifficulty,
 }: DifficultySectionProps) => {
   return (
-    <div className="max-w-xl rounded-lg border border-neutral-300 bg-white/60 p-3 text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800/40 dark:text-neutral-100">
+    <div className="max-w-xl">
       <div className="flex flex-col gap-2">
         <label
           htmlFor={PROFILE_KEYBOARD_MODE_INPUT_ID}
-          className="text-sm font-semibold"
+          className="profile-field-label"
         >
           {PROFILE_KEYBOARD_LABEL}
         </label>
@@ -40,7 +40,7 @@ const DifficultySection = ({
               event.target.value as PlayerKeyboardPreference,
             )
           }
-          className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+          className="profile-select-input"
         >
           {PROFILE_KEYBOARD_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -54,7 +54,7 @@ const DifficultySection = ({
 
         <label
           htmlFor={PROFILE_DIFFICULTY_MODE_INPUT_ID}
-          className="text-sm font-semibold"
+          className="profile-field-label"
         >
           {PROFILE_DIFFICULTY_LABEL}
         </label>
@@ -65,7 +65,7 @@ const DifficultySection = ({
           onChange={(event) =>
             onChangeDifficulty(event.target.value as PlayerDifficulty)
           }
-          className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+          className="profile-select-input"
         >
           {PROFILE_DIFFICULTY_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>

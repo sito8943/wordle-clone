@@ -64,6 +64,7 @@ Notes:
 - `npm run prettier`: format the project with Prettier.
 - `npm run convex:dev`: start Convex dev backend.
 - `npm run convex:deploy`: deploy Convex functions/schema.
+- `npm run convex:backfill-player-codes`: assign missing 4-character recovery codes to existing remote players.
 
 ## Persistence Behavior
 
@@ -73,13 +74,35 @@ Notes:
   - `wordle:game`: in-progress game state.
   - `wordle:hint-usage`: hint usage snapshot.
   - `wordle:dictionary:en`: cached dictionary.
-  - `player`: player profile and score/streak metadata.
+  - `player`: player profile and score/streak metadata, including recovery `code`.
   - `wordle:scoreboard:*`: scoreboard cache/pending/client metadata.
+  - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) after profile creation or recovery.
 
 Resume rules:
 
 - Same tab + refresh restores the current board automatically.
 - New tab + in-progress board from another tab session prompts to continue or start fresh.
+
+## Player Recovery
+
+- A named profile gets a unique 4-character recovery code (`A-Z`, `0-9`) from Convex.
+- The code is shown in `Profile` and is read-only.
+- The initial dialog now supports two explicit identity actions:
+  - create a unique player name
+  - recover an existing profile with its code
+- Identity operations are remote-first. If Convex is unavailable, profile creation/recovery fails without mutating the local player into an unrecognized state.
+
+Backfill existing remote players:
+
+```bash
+npm run convex:backfill-player-codes
+```
+
+You can pass extra Convex CLI flags through the script, for example:
+
+```bash
+npm run convex:backfill-player-codes -- --prod
+```
 
 ## Dictionary + Word List
 

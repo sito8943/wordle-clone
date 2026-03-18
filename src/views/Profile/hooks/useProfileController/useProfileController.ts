@@ -13,6 +13,10 @@ import {
   PROFILE_NAME_NOT_AVAILABLE_MESSAGE,
   PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
 } from "./constants";
+import {
+  PROFILE_RECOVERY_EMPTY_CODE_ERROR,
+  PROFILE_RECOVERY_SUCCESS_MESSAGE,
+} from "@views/Profile/constants";
 import { getPlayerDifficultyLabel, hasActivePersistedGame } from "./utils";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
 import type { ThemePreference } from "@hooks/useThemePreference";
@@ -21,6 +25,7 @@ export default function useProfileController() {
   const { scoreClient } = useApi();
   const {
     player,
+    recoverPlayer,
     updatePlayer,
     updatePlayerDifficulty,
     updatePlayerKeyboardPreference,
@@ -48,7 +53,16 @@ export default function useProfileController() {
         }
       }
 
-      updatePlayer(normalizedName);
+      if (normalizedName !== player.name || player.code.length === 0) {
+        try {
+          await updatePlayer(normalizedName);
+        } catch (error) {
+          return error instanceof Error
+            ? error.message
+            : PROFILE_NAME_NOT_AVAILABLE_MESSAGE;
+        }
+      }
+
       setEditing(false);
       setSavedMessage(PROFILE_CONFIGURATION_SAVED_MESSAGE);
       setTimeout(
@@ -57,7 +71,32 @@ export default function useProfileController() {
       );
       return null;
     },
-    [player.name, scoreClient, updatePlayer],
+    [player.code.length, player.name, scoreClient, updatePlayer],
+  );
+
+  const submitRecoveryCode = useCallback(
+    async (code: string) => {
+      if (code.trim().length === 0) {
+        return PROFILE_RECOVERY_EMPTY_CODE_ERROR;
+      }
+
+      try {
+        await recoverPlayer(code);
+      } catch (error) {
+        return error instanceof Error
+          ? error.message
+          : PROFILE_RECOVERY_EMPTY_CODE_ERROR;
+      }
+
+      setEditing(false);
+      setSavedMessage(PROFILE_RECOVERY_SUCCESS_MESSAGE);
+      setTimeout(
+        () => setSavedMessage(""),
+        PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
+      );
+      return null;
+    },
+    [recoverPlayer],
   );
 
   const toggleStartAnimations = useCallback(() => {
@@ -131,6 +170,8 @@ export default function useProfileController() {
     savedMessage,
     toggleEditing,
     submitProfile,
+    submitRecoveryCode,
+    code: player.code,
     startAnimationsEnabled,
     toggleStartAnimations,
     themePreference,

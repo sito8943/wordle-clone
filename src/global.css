@@ -52,16 +52,36 @@ h1,
     @apply mt-2 text-sm text-neutral-700 dark:text-neutral-300;
   }
 
+  .profile-section {
+    @apply flex w-full max-w-xl flex-col gap-3 rounded-lg border border-neutral-300 bg-white/60 p-4 dark:border-neutral-700 dark:bg-neutral-800/40;
+  }
+
+  .profile-section-title {
+    @apply text-lg font-semibold;
+  }
+
   .profile-card-container {
-    @apply flex w-full max-w-sm flex-col gap-4 rounded-lg border border-gray-300 p-4 dark:border-neutral-700;
+    @apply gap-4;
   }
 
   .profile-card-field-row {
-    @apply flex flex-wrap items-center gap-2;
+    @apply flex flex-col gap-1;
+  }
+
+  .profile-field-label {
+    @apply block text-sm font-semibold;
   }
 
   .profile-card-field-input {
-    @apply rounded border border-gray-300 px-2 py-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100;
+    @apply w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100;
+  }
+
+  .profile-help-text {
+    @apply text-sm text-neutral-600 dark:text-neutral-300;
+  }
+
+  .profile-select-input {
+    @apply w-full rounded border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100;
   }
 
   .scoreboard-header-cell {

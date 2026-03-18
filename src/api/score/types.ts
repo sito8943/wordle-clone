@@ -1,3 +1,8 @@
+import type {
+  PlayerDifficulty,
+  PlayerKeyboardPreference,
+} from "@domain/wordle";
+
 export type ScoreSource = "convex" | "local";
 
 export type ScoreEntry = {
@@ -16,6 +21,14 @@ export type RecordScoreInput = {
   streak?: number;
   createdAt?: number;
   overwriteExisting?: boolean;
+};
+
+export type UpsertPlayerProfileInput = {
+  nick: string;
+  score: number;
+  streak?: number;
+  difficulty: PlayerDifficulty;
+  keyboardPreference: PlayerKeyboardPreference;
 };
 
 export type TopScoresResult = {
@@ -48,6 +61,23 @@ export type RemoteScoresResponse = {
   scores: RemoteScore[];
   currentClientRank?: number | null;
   currentClientEntry?: RemoteScore | null;
+};
+
+export type RemotePlayerProfile = {
+  id: string;
+  clientId: string | null;
+  clientRecordId: string;
+  nick: string;
+  playerCode: string;
+  score: number;
+  streak: number;
+  difficulty: PlayerDifficulty;
+  keyboardPreference: PlayerKeyboardPreference;
+  createdAt: number;
+};
+
+export type StoredScoreIdentity = {
+  clientRecordId: string;
 };
 
 export type ScoreClientGatewayOverrides = {
