@@ -9,4 +9,5 @@
     "@utils/*",
     "@providers/*",
     "@hooks/*"
+    "@vitest/coverage-v8"
   ]
