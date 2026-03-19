@@ -93,3 +93,37 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     ),
   };
 };
+
+export const arePlayersEqual = (
+  left: Partial<Player> | null,
+  right: Partial<Player> | null,
+): boolean => {
+  const normalizedLeft = normalizePlayer(left);
+  const normalizedRight = normalizePlayer(right);
+
+  return (
+    normalizedLeft.name === normalizedRight.name &&
+    normalizedLeft.code === normalizedRight.code &&
+    normalizedLeft.score === normalizedRight.score &&
+    normalizedLeft.streak === normalizedRight.streak &&
+    normalizedLeft.difficulty === normalizedRight.difficulty &&
+    normalizedLeft.keyboardPreference === normalizedRight.keyboardPreference &&
+    normalizedLeft.showEndOfGameDialogs === normalizedRight.showEndOfGameDialogs
+  );
+};
+
+export const isStoredPlayerNormalized = (
+  value: Partial<Player> | null,
+): boolean => {
+  const normalized = normalizePlayer(value);
+
+  return (
+    value?.name === normalized.name &&
+    value?.code === normalized.code &&
+    value?.score === normalized.score &&
+    value?.streak === normalized.streak &&
+    value?.difficulty === normalized.difficulty &&
+    value?.keyboardPreference === normalized.keyboardPreference &&
+    value?.showEndOfGameDialogs === normalized.showEndOfGameDialogs
+  );
+};

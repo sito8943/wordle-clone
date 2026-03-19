@@ -5,7 +5,12 @@ import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
 import type { ProviderProps } from "../types";
 import { useApi } from "../Api";
-import { normalizePlayer, normalizePlayerName } from "./utils";
+import {
+  arePlayersEqual,
+  isStoredPlayerNormalized,
+  normalizePlayer,
+  normalizePlayerName,
+} from "./utils";
 import type {
   Player,
   PlayerDifficulty,
@@ -37,15 +42,39 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       difficulty: PlayerDifficulty;
       keyboardPreference: PlayerKeyboardPreference;
     }) => {
-      setStoredPlayer((previous) => ({
-        name: remoteProfile.nick,
-        code: remoteProfile.playerCode,
-        score: remoteProfile.score,
-        streak: remoteProfile.streak,
-        difficulty: remoteProfile.difficulty,
-        keyboardPreference: remoteProfile.keyboardPreference,
-        showEndOfGameDialogs: normalizePlayer(previous).showEndOfGameDialogs,
-      }));
+      let shouldInvalidateTopScores = false;
+
+      setStoredPlayer((previous) => {
+        const normalizedPrevious = normalizePlayer(previous);
+        const nextPlayer = {
+          name: remoteProfile.nick,
+          code: remoteProfile.playerCode,
+          score: remoteProfile.score,
+          streak: remoteProfile.streak,
+          difficulty: remoteProfile.difficulty,
+          keyboardPreference: remoteProfile.keyboardPreference,
+          showEndOfGameDialogs: normalizedPrevious.showEndOfGameDialogs,
+        };
+
+        previousPreferencesRef.current = {
+          difficulty: nextPlayer.difficulty,
+          keyboardPreference: nextPlayer.keyboardPreference,
+        };
+        shouldInvalidateTopScores =
+          normalizedPrevious.name !== nextPlayer.name ||
+          normalizedPrevious.code !== nextPlayer.code ||
+          normalizedPrevious.score !== nextPlayer.score ||
+          normalizedPrevious.streak !== nextPlayer.streak;
+
+        return arePlayersEqual(normalizedPrevious, nextPlayer)
+          ? previous
+          : nextPlayer;
+      });
+
+      if (!shouldInvalidateTopScores) {
+        return;
+      }
+
       await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
     },
     [queryClient, setStoredPlayer],
@@ -53,20 +82,11 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   useEffect(() => {
     setStoredPlayer((previous) => {
-      const normalized = normalizePlayer(previous);
-      if (
-        previous.name === normalized.name &&
-        previous.code === normalized.code &&
-        previous.score === normalized.score &&
-        previous.streak === normalized.streak &&
-        previous.difficulty === normalized.difficulty &&
-        previous.keyboardPreference === normalized.keyboardPreference &&
-        previous.showEndOfGameDialogs === normalized.showEndOfGameDialogs
-      ) {
+      if (isStoredPlayerNormalized(previous)) {
         return previous;
       }
 
-      return normalized;
+      return normalizePlayer(previous);
     });
   }, [setStoredPlayer]);
 
@@ -81,6 +101,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       if (syncedProfile) {
         await applyRemoteProfile(syncedProfile);
       }
+
+      return syncedProfile;
     },
     [applyRemoteProfile, scoreClient],
   );
@@ -306,7 +328,11 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     didHydrateRemoteRef.current = true;
 
     void syncQueuedVictories(player)
-      .then(async () => {
+      .then(async (syncedProfile) => {
+        if (syncedProfile) {
+          return;
+        }
+
         const remoteProfile = await scoreClient.getCurrentPlayerProfile();
         if (remoteProfile) {
           await applyRemoteProfile(remoteProfile);
