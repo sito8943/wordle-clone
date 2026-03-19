@@ -3,10 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@i18n";
 import type { TileStatus } from "@utils/types";
 import { Keyboard } from ".";
-import {
-  DELETE_HOLD_DELAY_MS,
-  DELETE_REPEAT_INTERVAL_MS,
-} from "./constants";
+import { DELETE_HOLD_DELAY_MS, DELETE_REPEAT_INTERVAL_MS } from "./constants";
 
 describe("Keyboard", () => {
   afterEach(() => {
@@ -76,7 +73,9 @@ describe("Keyboard", () => {
     });
 
     fireEvent.pointerDown(deleteKey);
-    vi.advanceTimersByTime(DELETE_HOLD_DELAY_MS + DELETE_REPEAT_INTERVAL_MS * 2);
+    vi.advanceTimersByTime(
+      DELETE_HOLD_DELAY_MS + DELETE_REPEAT_INTERVAL_MS * 2,
+    );
     fireEvent.pointerUp(deleteKey);
     fireEvent.click(deleteKey);
 

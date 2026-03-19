@@ -2,10 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { KeyboardProps } from "./types";
 import { useTranslation } from "@i18n";
 import useKeyboardController from "./useKeyboardController";
-import {
-  DELETE_HOLD_DELAY_MS,
-  DELETE_REPEAT_INTERVAL_MS,
-} from "./constants";
+import { DELETE_HOLD_DELAY_MS, DELETE_REPEAT_INTERVAL_MS } from "./constants";
 
 export function Keyboard({
   guesses,
