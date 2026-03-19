@@ -11,6 +11,7 @@ export const resources = {
         refresh: "Refresh",
         score: "Score",
         streak: "Streak",
+        streakLabel: "Streak: {{count}}",
         loading: "Loading...",
       },
       nav: {
@@ -150,6 +151,60 @@ export const resources = {
         },
       },
       home: {
+        sections: {
+          boardError: {
+            title: "The board crashed.",
+            description: "Retry to restore the current match view.",
+            action: "Retry board",
+          },
+          keyboardError: {
+            title: "The keyboard is unavailable.",
+            description: "Retry to re-enable key input.",
+            action: "Retry keyboard",
+          },
+          dialogsError: {
+            title: "A dialog failed to render.",
+            description: "Retry to open this panel again.",
+            action: "Retry panel",
+          },
+          insaneCountdownAriaLabel: "Insane mode countdown",
+          winMessage: "You got it in {{count}}!",
+          loseMessage: "The word was: {{answer}}",
+          deviceKeyboardInputAriaLabel: "Device keyboard input",
+          openDeviceKeyboard: "Open device keyboard",
+        },
+        gameplay: {
+          boardAriaLabel: "Wordle board",
+          onScreenKeyboardAriaLabel: "On-screen keyboard",
+          keys: {
+            deleteLetter: "Delete letter",
+            submitGuess: "Submit guess",
+            letter: "Letter {{key}}",
+          },
+          tile: {
+            blank: "blank",
+            statuses: {
+              empty: "empty",
+              tbd: "typing",
+              correct: "correct",
+              present: "present",
+              absent: "absent",
+            },
+          },
+        },
+        toolbar: {
+          wordListAriaLabel: "Word list",
+          wordListButton: "Words",
+          hintAriaLabel: "Hint",
+          hintButton: "Hint ({{count}})",
+          helpAriaLabel: "Help",
+          helpButton: "Help",
+          developerConsoleAriaLabel: "Developer console",
+          developerConsoleButton: "Dev console",
+          insaneTimerAriaLabel: "Insane timer: {{seconds}} seconds",
+          refreshAriaLabel: "Refresh",
+          loadingWordList: "Loading word list...",
+        },
         refreshDialog: {
           title: "Refresh current game?",
           description:
@@ -229,6 +284,7 @@ export const resources = {
         refresh: "Actualizar",
         score: "Puntuación",
         streak: "Racha",
+        streakLabel: "Racha: {{count}}",
         loading: "Cargando...",
       },
       nav: {
@@ -368,6 +424,60 @@ export const resources = {
         },
       },
       home: {
+        sections: {
+          boardError: {
+            title: "El tablero ha fallado.",
+            description: "Reintenta restaurar la vista de la partida actual.",
+            action: "Reintentar tablero",
+          },
+          keyboardError: {
+            title: "El teclado no está disponible.",
+            description: "Reintenta reactivar la entrada de teclas.",
+            action: "Reintentar teclado",
+          },
+          dialogsError: {
+            title: "Un diálogo no se ha podido renderizar.",
+            description: "Reintenta abrir este panel.",
+            action: "Reintentar panel",
+          },
+          insaneCountdownAriaLabel: "Cuenta atrás del modo insano",
+          winMessage: "Lo has acertado en {{count}}!",
+          loseMessage: "La palabra era: {{answer}}",
+          deviceKeyboardInputAriaLabel: "Entrada del teclado del dispositivo",
+          openDeviceKeyboard: "Abrir teclado del dispositivo",
+        },
+        gameplay: {
+          boardAriaLabel: "Tablero de Wordle",
+          onScreenKeyboardAriaLabel: "Teclado en pantalla",
+          keys: {
+            deleteLetter: "Borrar letra",
+            submitGuess: "Enviar intento",
+            letter: "Letra {{key}}",
+          },
+          tile: {
+            blank: "vacío",
+            statuses: {
+              empty: "vacío",
+              tbd: "escribiendo",
+              correct: "correcto",
+              present: "presente",
+              absent: "ausente",
+            },
+          },
+        },
+        toolbar: {
+          wordListAriaLabel: "Lista de palabras",
+          wordListButton: "Palabras",
+          hintAriaLabel: "Pista",
+          hintButton: "Pista ({{count}})",
+          helpAriaLabel: "Ayuda",
+          helpButton: "Ayuda",
+          developerConsoleAriaLabel: "Consola de desarrollo",
+          developerConsoleButton: "Consola dev",
+          insaneTimerAriaLabel: "Temporizador insano: {{seconds}} segundos",
+          refreshAriaLabel: "Actualizar",
+          loadingWordList: "Cargando lista de palabras...",
+        },
         refreshDialog: {
           title: "¿Actualizar partida actual?",
           description:

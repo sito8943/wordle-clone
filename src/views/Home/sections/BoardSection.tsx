@@ -1,9 +1,11 @@
 import type { JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
+import { useTranslation } from "@i18n";
 import { Board } from "../components";
 import { useHomeView } from "../providers";
 
 const BoardSection = (): JSX.Element => {
+  const { t } = useTranslation();
   const { controller, animateTileEntry } = useHomeView();
   const {
     guesses,
@@ -35,9 +37,9 @@ const BoardSection = (): JSX.Element => {
       ]}
       fallback={({ reset }) => (
         <ErrorFallback
-          title="The board crashed."
-          description="Retry to restore the current match view."
-          actionLabel="Retry board"
+          title={t("home.sections.boardError.title")}
+          description={t("home.sections.boardError.description")}
+          actionLabel={t("home.sections.boardError.action")}
           onAction={reset}
         />
       )}
@@ -46,7 +48,7 @@ const BoardSection = (): JSX.Element => {
         {showHardModeFinalStretchBar && (
           <div
             role="progressbar"
-            aria-label="Insane mode countdown"
+            aria-label={t("home.sections.insaneCountdownAriaLabel")}
             aria-valuemin={0}
             aria-valuemax={15}
             aria-valuenow={hardModeSecondsLeft}
@@ -80,8 +82,8 @@ const BoardSection = (): JSX.Element => {
         {gameOver && (
           <p className="text-center text-base font-semibold text-neutral-800 dark:text-neutral-200 sm:text-lg">
             {won
-              ? `You got it in ${guesses.length}!`
-              : `The word was: ${answer}`}
+              ? t("home.sections.winMessage", { count: guesses.length })
+              : t("home.sections.loseMessage", { answer })}
           </p>
         )}
       </>

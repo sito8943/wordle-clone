@@ -1,4 +1,5 @@
-import { STATUS_LABEL, STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "./constants";
+import { useTranslation } from "@i18n";
+import { STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "./constants";
 import type { TilePropsType } from "./types";
 
 export function Tile({
@@ -11,6 +12,7 @@ export function Tile({
   isHintReveal = false,
   hintRevealPulse = 0,
 }: TilePropsType) {
+  const { t } = useTranslation();
   const tileStyle =
     isLoss &&
     (status === "correct" || status === "present" || status === "absent")
@@ -25,7 +27,9 @@ export function Tile({
   return (
     <div
       role="gridcell"
-      aria-label={`${letter || "blank"}, ${STATUS_LABEL[status]}`}
+      aria-label={`${letter || t("home.gameplay.tile.blank")}, ${t(
+        `home.gameplay.tile.statuses.${status}`,
+      )}`}
       className={`relative flex h-12 w-12 select-none items-center justify-center rounded-xl border-2 text-2xl font-extrabold uppercase transition-colors sm:h-14 sm:w-14 sm:text-[2rem] ${tileStyle} ${tileEntryClass}`}
       style={tileEntryStyle}
     >

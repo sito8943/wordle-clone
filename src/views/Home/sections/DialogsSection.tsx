@@ -1,5 +1,6 @@
 import { lazy, Suspense, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
+import { useTranslation } from "@i18n";
 import { useHomeView } from "../providers/";
 
 const SessionResumeDialog = lazy(
@@ -20,6 +21,7 @@ const HomeDeveloperConsoleDialog = lazy(
 );
 
 const DialogsSection = (): JSX.Element => {
+  const { t } = useTranslation();
   const { controller, wordListButtonEnabled } = useHomeView();
   const {
     message,
@@ -58,9 +60,9 @@ const DialogsSection = (): JSX.Element => {
       fallback={({ reset }) => (
         <div className="px-3 pb-2">
           <ErrorFallback
-            title="A dialog failed to render."
-            description="Retry to open this panel again."
-            actionLabel="Retry panel"
+            title={t("home.sections.dialogsError.title")}
+            description={t("home.sections.dialogsError.description")}
+            actionLabel={t("home.sections.dialogsError.action")}
             onAction={reset}
           />
         </div>
