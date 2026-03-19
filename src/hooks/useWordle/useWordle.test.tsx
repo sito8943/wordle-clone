@@ -1,6 +1,7 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WORDS_CACHE_KEY_PREFIX, WORDS_DEFAULT_LANGUAGE } from "@api/words";
+import { env } from "@config";
 import { i18n } from "@i18n";
 import useWordle from "./useWordle";
 import {
@@ -21,6 +22,7 @@ describe("useWordle dictionary query integration", () => {
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -109,6 +111,41 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.dictionaryWords).toEqual([]);
     expect(result.current.dictionaryError).toBe(
       i18n.t("home.toolbar.wordListUnavailable"),
+    );
+  });
+
+  it("defers game persistence while typing and flushes after the debounce", () => {
+    vi.useFakeTimers();
+
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(localStorage.getItem(env.wordleGameStorageKey)).toBeNull();
+
+    act(() => {
+      vi.advanceTimersByTime(149);
+    });
+
+    expect(localStorage.getItem(env.wordleGameStorageKey)).toBeNull();
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+
+    expect(localStorage.getItem(env.wordleGameStorageKey)).toContain(
+      '"current":"A"',
     );
   });
 });

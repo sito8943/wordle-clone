@@ -39,6 +39,10 @@ export type TopScoresResult = {
   currentClientEntry: ScoreEntry | null;
 };
 
+export type SyncPendingScoresResult = {
+  flushed: boolean;
+};
+
 export type StoredScore = {
   localId: string;
   clientId?: string;

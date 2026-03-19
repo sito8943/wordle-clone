@@ -1,8 +1,8 @@
-import { lazy, Suspense, type JSX } from "react";
+import { lazy, memo, Suspense, type JSX } from "react";
 import { useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
-import { useHomeView } from "../providers/";
+import type { DialogsSectionProps } from "./types";
 
 const SessionResumeDialog = lazy(
   () => import("../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
@@ -27,34 +27,40 @@ const DefeatDialog = lazy(
   () => import("../components/Dialogs/DefeatDialog/DefeatDialog"),
 );
 
-const DialogsSection = (): JSX.Element => {
+const DialogsSection = ({
+  message,
+  showResumeDialog,
+  showRefreshDialog,
+  showWordsDialog,
+  showHelpDialog,
+  showDeveloperConsoleDialog,
+  showVictoryDialog,
+  showDefeatDialog,
+  showEndOfGameSettingsHint,
+  endOfGameAnswer,
+  victoryScoreSummary,
+  endOfGameCurrentStreak,
+  endOfGameBestStreak,
+  continuePreviousBoard,
+  startNewBoard,
+  closeEndOfGameDialog,
+  cancelRefreshBoard,
+  confirmRefreshBoard,
+  dictionaryWords,
+  closeWordsDialog,
+  closeHelpDialog,
+  closeDeveloperConsoleDialog,
+  wordListButtonEnabled,
+  developerConsoleEnabled,
+  player,
+  submitDeveloperPlayer,
+  refreshRemoteDictionaryChecksum,
+  isRefreshingDictionaryChecksum,
+  dictionaryChecksumMessage,
+  dictionaryChecksumMessageKind,
+}: DialogsSectionProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { controller, wordListButtonEnabled } = useHomeView();
-  const {
-    message,
-    showResumeDialog,
-    showRefreshDialog,
-    showWordsDialog,
-    showHelpDialog,
-    showDeveloperConsoleDialog,
-    showVictoryDialog,
-    showDefeatDialog,
-    showEndOfGameSettingsHint,
-    endOfGameAnswer,
-    victoryScoreSummary,
-    endOfGameCurrentStreak,
-    endOfGameBestStreak,
-    continuePreviousBoard,
-    startNewBoard,
-    closeEndOfGameDialog,
-    cancelRefreshBoard,
-    confirmRefreshBoard,
-    dictionaryWords,
-    closeWordsDialog,
-    closeHelpDialog,
-    closeDeveloperConsoleDialog,
-  } = controller;
   const resumeDialogVisible = showResumeDialog;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
   const refreshDialogVisible =
@@ -148,6 +154,14 @@ const DialogsSection = (): JSX.Element => {
           <HomeDeveloperConsoleDialog
             visible={developerConsoleDialogVisible}
             onClose={closeDeveloperConsoleDialog}
+            developerConsoleEnabled={developerConsoleEnabled}
+            player={player}
+            showResumeDialog={showResumeDialog}
+            submitDeveloperPlayer={submitDeveloperPlayer}
+            refreshRemoteDictionaryChecksum={refreshRemoteDictionaryChecksum}
+            isRefreshingDictionaryChecksum={isRefreshingDictionaryChecksum}
+            dictionaryChecksumMessage={dictionaryChecksumMessage}
+            dictionaryChecksumMessageKind={dictionaryChecksumMessageKind}
           />
         </Suspense>
       </>
@@ -155,4 +169,4 @@ const DialogsSection = (): JSX.Element => {
   );
 };
 
-export default DialogsSection;
+export default memo(DialogsSection);

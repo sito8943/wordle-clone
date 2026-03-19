@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   addLetter,
   applyGuess,
@@ -27,6 +27,7 @@ import {
 } from "@utils/words";
 import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
+  GAME_STATE_PERSIST_DEBOUNCE_MS,
   MESSAGE_VISIBILITY_DURATION_MS,
   NO_PRESENT_HINT_AVAILABLE_MESSAGE,
   ROW_ALREADY_FULL_MESSAGE,
@@ -105,19 +106,60 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const [hintRevealTileIndex, setHintRevealTileIndex] = useState<number | null>(
     null,
   );
+  const persistenceTimeoutRef = useRef<number | null>(null);
+  const latestGameStateRef = useRef(initialGameState);
 
   const { sessionId, gameId, answer, guesses, current, gameOver } = gameState;
 
-  const setGameStateAndPersist = useCallback(
-    (updater: (previous: PersistedGameState) => PersistedGameState) => {
+  const flushPersistedGameState = useCallback((state: PersistedGameState) => {
+    persistGameState(state);
+  }, []);
+
+  const cancelDeferredPersist = useCallback(() => {
+    if (persistenceTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(persistenceTimeoutRef.current);
+    persistenceTimeoutRef.current = null;
+  }, []);
+
+  const schedulePersistedGameState = useCallback(
+    (state: PersistedGameState) => {
+      cancelDeferredPersist();
+      persistenceTimeoutRef.current = window.setTimeout(() => {
+        flushPersistedGameState(state);
+        persistenceTimeoutRef.current = null;
+      }, GAME_STATE_PERSIST_DEBOUNCE_MS);
+    },
+    [cancelDeferredPersist, flushPersistedGameState],
+  );
+
+  const setGameStateWithPersistence = useCallback(
+    (
+      updater: (previous: PersistedGameState) => PersistedGameState,
+      persistence: "deferred" | "immediate" = "deferred",
+    ) => {
       setGameState((previous) => {
         const next = updater(previous);
-        persistGameState(next);
+        latestGameStateRef.current = next;
+
+        if (persistence === "immediate") {
+          cancelDeferredPersist();
+          flushPersistedGameState(next);
+          return next;
+        }
+
+        schedulePersistedGameState(next);
         return next;
       });
     },
-    [],
+    [cancelDeferredPersist, flushPersistedGameState, schedulePersistedGameState],
   );
+
+  useEffect(() => {
+    latestGameStateRef.current = gameState;
+  }, [gameState]);
 
   useEffect(() => {
     if (dictionaryWords.length === 0) {
@@ -196,13 +238,16 @@ export default function useWordle(options: UseWordleOptions = {}) {
       }
 
       resetActiveHints();
-      setGameStateAndPersist((prev) => applyGuess(prev, validation.guess));
+      setGameStateWithPersistence(
+        (prev) => applyGuess(prev, validation.guess),
+        "immediate",
+      );
     },
     [
       allowUnknownWords,
       answer,
       resetActiveHints,
-      setGameStateAndPersist,
+      setGameStateWithPersistence,
       showMessage,
     ],
   );
@@ -214,7 +259,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
     const removedIndex = current.length - 1;
 
-    setGameStateAndPersist((prev) => removeLetter(prev));
+    setGameStateWithPersistence((prev) => removeLetter(prev));
     setActiveRowHintStatuses((previous) => {
       if (!(removedIndex in previous)) {
         return previous;
@@ -228,13 +273,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
     if (hintRevealTileIndex === removedIndex) {
       setHintRevealTileIndex(null);
     }
-  }, [current.length, hintRevealTileIndex, setGameStateAndPersist]);
+  }, [current.length, hintRevealTileIndex, setGameStateWithPersistence]);
 
   const addCurrentLetter = useCallback(
     (letter: string) => {
-      setGameStateAndPersist((prev) => addLetter(prev, letter));
+      setGameStateWithPersistence((prev) => addLetter(prev, letter));
     },
-    [setGameStateAndPersist],
+    [setGameStateWithPersistence],
   );
 
   const revealHint = useCallback(
@@ -259,7 +304,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return false;
       }
 
-      setGameStateAndPersist((previous) => addLetter(previous, letter));
+      setGameStateWithPersistence((previous) => addLetter(previous, letter));
       setActiveRowHintStatuses((previous) => ({
         ...previous,
         [nextIndex]: hintStatus,
@@ -273,7 +318,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       answer,
       current,
       gameOver,
-      setGameStateAndPersist,
+      setGameStateWithPersistence,
       showMessage,
       showResumeDialog,
     ],
@@ -310,13 +355,16 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
 
   const continuePreviousBoard = useCallback(() => {
-    setGameStateAndPersist((prev) => ({
-      ...prev,
-      sessionId: currentSessionId,
-    }));
+    setGameStateWithPersistence(
+      (prev) => ({
+        ...prev,
+        sessionId: currentSessionId,
+      }),
+      "immediate",
+    );
     setShowResumeDialog(false);
     resetActiveHints();
-  }, [currentSessionId, resetActiveHints, setGameStateAndPersist]);
+  }, [currentSessionId, resetActiveHints, setGameStateWithPersistence]);
 
   const triggerStartAnimation = useCallback(() => {
     if (animationsDisabled) {
@@ -328,8 +376,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [animationsDisabled]);
 
   const resetBoard = useCallback(() => {
-    setGameStateAndPersist(() =>
-      createInitialGameState(currentSessionId, getRandomWord()),
+    setGameStateWithPersistence(
+      () => createInitialGameState(currentSessionId, getRandomWord()),
+      "immediate",
     );
     setBoardVersion((previous) => previous + 1);
     setShowResumeDialog(false);
@@ -339,7 +388,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [
     currentSessionId,
     resetActiveHints,
-    setGameStateAndPersist,
+    setGameStateWithPersistence,
     triggerStartAnimation,
   ]);
 
@@ -352,18 +401,37 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [resetBoard]);
 
   const forceLoss = useCallback(() => {
-    setGameStateAndPersist((previous) => {
-      if (previous.gameOver) {
-        return previous;
-      }
+    setGameStateWithPersistence(
+      (previous) => {
+        if (previous.gameOver) {
+          return previous;
+        }
 
-      return {
-        ...previous,
-        current: "",
-        gameOver: true,
-      };
-    });
-  }, [setGameStateAndPersist]);
+        return {
+          ...previous,
+          current: "",
+          gameOver: true,
+        };
+      },
+      "immediate",
+    );
+  }, [setGameStateWithPersistence]);
+
+  useEffect(() => {
+    const persistLatestGameState = () => {
+      cancelDeferredPersist();
+      flushPersistedGameState(latestGameStateRef.current);
+    };
+
+    window.addEventListener("beforeunload", persistLatestGameState);
+    window.addEventListener("pagehide", persistLatestGameState);
+
+    return () => {
+      window.removeEventListener("beforeunload", persistLatestGameState);
+      window.removeEventListener("pagehide", persistLatestGameState);
+      persistLatestGameState();
+    };
+  }, [cancelDeferredPersist, flushPersistedGameState]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

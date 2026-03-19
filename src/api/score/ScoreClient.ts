@@ -27,6 +27,7 @@ import type {
   StoredScore,
   StoredVictorySyncEvent,
   SyncVictoryEventsInput,
+  SyncPendingScoresResult,
   TopScoresResult,
   UpsertPlayerProfileInput,
 } from "./types";
@@ -340,17 +341,8 @@ class ScoreClient {
     const identity = this.readProfileIdentity();
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
-      const localScores = this.localScoresRanked();
-      const localResult = this.buildTopScoresResult(localScores, safeLimit);
-      return {
-        scores: localResult.scores,
-        source: "local",
-        currentClientRank: localResult.currentClientRank,
-        currentClientEntry: localResult.currentClientEntry,
-      };
+      return this.getCachedTopScores(safeLimit);
     }
-
-    await this.syncPendingScores();
 
     try {
       const remoteResponse = await this.gateway.query<
@@ -381,18 +373,24 @@ class ScoreClient {
         throw error;
       }
 
-      const localScores = this.localScoresRanked();
-      const localResult = this.buildTopScoresResult(localScores, safeLimit);
-      return {
-        scores: localResult.scores,
-        source: "local",
-        currentClientRank: localResult.currentClientRank,
-        currentClientEntry: localResult.currentClientEntry,
-      };
+      return this.getCachedTopScores(safeLimit);
     }
   }
 
-  private async syncPendingScores(): Promise<void> {
+  getCachedTopScores(limit = DEFAULT_LIMIT): TopScoresResult {
+    const safeLimit = this.normalizeLimit(limit);
+    const localScores = this.localScoresRanked();
+    const localResult = this.buildTopScoresResult(localScores, safeLimit);
+
+    return {
+      scores: localResult.scores,
+      source: "local",
+      currentClientRank: localResult.currentClientRank,
+      currentClientEntry: localResult.currentClientEntry,
+    };
+  }
+
+  async syncPendingScores(): Promise<SyncPendingScoresResult> {
     const pending = this.dedupeStoredByNick(
       this.readScores(SCOREBOARD_PENDING_KEY),
     );
@@ -402,7 +400,7 @@ class ScoreClient {
       !this.gateway.isConfigured ||
       !this.isOnline()
     ) {
-      return;
+      return { flushed: false };
     }
 
     const stillPending: StoredScore[] = [];
@@ -443,6 +441,8 @@ class ScoreClient {
       SCOREBOARD_PENDING_KEY,
       this.dedupeStoredByNick(stillPending),
     );
+
+    return { flushed: stillPending.length !== pending.length };
   }
 
   private localScoresRanked(): ScoreEntry[] {

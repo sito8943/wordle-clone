@@ -11,8 +11,7 @@ import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
 } from "@components/Dialogs/ConfirmationDialog";
-import type { HomeDeveloperConsoleDialogProps } from "@views/Home/hooks/useNativeKeyboardingInput/types";
-import { useHomeView } from "@views/Home/providers";
+import type { DeveloperConsoleDialogProps } from "./types";
 import {
   DEVELOPER_CONSOLE_DIALOG_TITLE_ID,
   DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID,
@@ -25,17 +24,16 @@ import {
 const DeveloperConsoleDialog = ({
   visible,
   onClose,
-}: HomeDeveloperConsoleDialogProps): JSX.Element => {
+  developerConsoleEnabled,
+  player,
+  showResumeDialog,
+  submitDeveloperPlayer,
+  refreshRemoteDictionaryChecksum,
+  isRefreshingDictionaryChecksum,
+  dictionaryChecksumMessage,
+  dictionaryChecksumMessageKind,
+}: DeveloperConsoleDialogProps): JSX.Element => {
   const { t } = useTranslation();
-  const { controller, player, developerConsoleEnabled } = useHomeView();
-  const {
-    showResumeDialog,
-    submitDeveloperPlayer,
-    refreshRemoteDictionaryChecksum,
-    isRefreshingDictionaryChecksum,
-    dictionaryChecksumMessage,
-    dictionaryChecksumMessageKind,
-  } = controller;
   const canRenderDialog =
     visible && developerConsoleEnabled && !showResumeDialog;
 
