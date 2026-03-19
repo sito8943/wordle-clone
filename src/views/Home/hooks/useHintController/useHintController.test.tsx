@@ -58,12 +58,12 @@ describe("useHintController", () => {
 
     expect(revealHint).toHaveBeenCalledWith("correct");
     expect(result.current.hintsRemaining).toBe(1);
-    expect(JSON.parse(localStorage.getItem(HINT_USAGE_STORAGE_KEY)!)).toMatchObject(
-      {
-        gameId: "game-1",
-        hintsUsed: 1,
-      },
-    );
+    expect(
+      JSON.parse(localStorage.getItem(HINT_USAGE_STORAGE_KEY)!),
+    ).toMatchObject({
+      gameId: "game-1",
+      hintsUsed: 1,
+    });
   });
 
   it("syncs hint state after a storage event from another tab", () => {

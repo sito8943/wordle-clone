@@ -350,7 +350,10 @@ describe("PlayerProvider", () => {
           currentClientRank: null,
           currentClientEntry: null,
         }),
-        { recoverPlayerByCode, getCurrentPlayerProfile: vi.fn().mockResolvedValue(null) },
+        {
+          recoverPlayerByCode,
+          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
+        },
       ) as never,
     });
     const wrapper = ({ children }: { children: ReactNode }) => (

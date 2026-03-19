@@ -83,8 +83,11 @@ export const createGameReferenceForAnswer = (
   for (let attempt = 0; attempt < words.length * 4; attempt += 1) {
     const nextReference = createGameReference();
     if (
-      resolveWordIndex(nextReference.seed, nextReference.gameId, words.length) ===
-      answerIndex
+      resolveWordIndex(
+        nextReference.seed,
+        nextReference.gameId,
+        words.length,
+      ) === answerIndex
     ) {
       return nextReference;
     }

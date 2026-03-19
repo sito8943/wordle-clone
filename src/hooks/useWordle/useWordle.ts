@@ -136,7 +136,10 @@ export default function useWordle(options: UseWordleOptions = {}) {
     }
 
     setGameState((previous) => {
-      const resolvedAnswer = resolveAnswerFromGameReference(previous, dictionaryWords);
+      const resolvedAnswer = resolveAnswerFromGameReference(
+        previous,
+        dictionaryWords,
+      );
 
       if (
         hasInProgressGame(previous) &&

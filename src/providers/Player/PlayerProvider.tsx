@@ -191,21 +191,21 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 
   const commitLoss = useCallback(async () => {
-      const current = normalizePlayer(storedPlayer);
+    const current = normalizePlayer(storedPlayer);
 
-      if (current.streak === 0) {
-        return;
-      }
+    if (current.streak === 0) {
+      return;
+    }
 
-      const nextPlayer = { ...current, streak: 0 };
-      setStoredPlayer(nextPlayer);
-      scoreClient.cachePlayerScore({
-        nick: nextPlayer.name,
-        score: nextPlayer.score,
-        streak: nextPlayer.streak,
-        overwriteExisting: true,
-      });
-    }, [scoreClient, setStoredPlayer, storedPlayer]);
+    const nextPlayer = { ...current, streak: 0 };
+    setStoredPlayer(nextPlayer);
+    scoreClient.cachePlayerScore({
+      nick: nextPlayer.name,
+      score: nextPlayer.score,
+      streak: nextPlayer.streak,
+      overwriteExisting: true,
+    });
+  }, [scoreClient, setStoredPlayer, storedPlayer]);
 
   const updatePlayerDifficulty = useCallback(
     (difficulty: PlayerDifficulty) => {

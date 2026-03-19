@@ -168,7 +168,9 @@ class ScoreClient {
       return null;
     }
 
-    const orderedEvents = [...events].sort((left, right) => left.wonAt - right.wonAt);
+    const orderedEvents = [...events].sort(
+      (left, right) => left.wonAt - right.wonAt,
+    );
 
     try {
       const response = await this.gateway.mutation<unknown>(

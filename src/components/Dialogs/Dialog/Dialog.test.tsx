@@ -102,8 +102,8 @@ describe("Dialog", () => {
     for (const className of DIALOG_BACKDROP_EXIT_ANIMATION_CLASS.split(" ")) {
       expect(backdrop?.classList.contains(className)).toBe(true);
     }
-    expect(
-      dialog.classList.contains(DIALOG_PANEL_EXIT_ANIMATION_CLASS),
-    ).toBe(true);
+    expect(dialog.classList.contains(DIALOG_PANEL_EXIT_ANIMATION_CLASS)).toBe(
+      true,
+    );
   });
 });

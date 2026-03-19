@@ -123,9 +123,7 @@ describe("useHomeController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledTimes(1);
-    expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 2, 2),
-    );
+    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
   });
 
   it("opens a confirmation dialog before refreshing an active game", () => {

@@ -101,12 +101,12 @@ export const setHintUsageSnapshot = (snapshot: HintUsageSnapshot): void => {
   try {
     localStorage.setItem(
       HINT_USAGE_STORAGE_KEY,
-        JSON.stringify({
-          ...snapshot,
-          gameKey:
-            typeof snapshot.gameKey === "string" ? snapshot.gameKey : undefined,
-          hintsUsed: normalizeHintsUsed(snapshot.hintsUsed),
-        }),
+      JSON.stringify({
+        ...snapshot,
+        gameKey:
+          typeof snapshot.gameKey === "string" ? snapshot.gameKey : undefined,
+        hintsUsed: normalizeHintsUsed(snapshot.hintsUsed),
+      }),
     );
   } catch {
     // Ignore storage write errors.
