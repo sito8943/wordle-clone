@@ -7,6 +7,10 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Dialog } from "./index";
+import {
+  DIALOG_BACKDROP_EXIT_ANIMATION_CLASS,
+  DIALOG_PANEL_EXIT_ANIMATION_CLASS,
+} from "../ConfirmationDialog/constants";
 
 describe("Dialog", () => {
   beforeEach(() => vi.useFakeTimers());
@@ -78,5 +82,28 @@ describe("Dialog", () => {
     act(() => vi.runAllTimers());
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders exit animation classes when closing is controlled externally", () => {
+    render(
+      <Dialog
+        visible
+        isClosing
+        onClose={() => undefined}
+        titleId="test-dialog-title"
+        title="Test dialog"
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Test dialog" });
+    const backdrop = dialog.parentElement;
+
+    expect(backdrop).not.toBeNull();
+    for (const className of DIALOG_BACKDROP_EXIT_ANIMATION_CLASS.split(" ")) {
+      expect(backdrop?.classList.contains(className)).toBe(true);
+    }
+    expect(
+      dialog.classList.contains(DIALOG_PANEL_EXIT_ANIMATION_CLASS),
+    ).toBe(true);
   });
 });

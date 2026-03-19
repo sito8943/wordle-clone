@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog";
+import {
+  DIALOG_CLOSE_DURATION_MS,
+  getDialogTransitionClasses,
+} from "@components/Dialogs/ConfirmationDialog";
 import {
   INITIAL_PLAYER_DIALOG_CREATE_MODE_LABEL,
   INITIAL_PLAYER_DIALOG_DESCRIPTION,
@@ -36,6 +39,8 @@ const InitialPlayerDialog = ({
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
   );
+  const { backdropAnimationClassName, panelAnimationClassName } =
+    getDialogTransitionClasses(isClosing);
 
   useEffect(() => {
     if (mode === "create") {
@@ -113,10 +118,13 @@ const InitialPlayerDialog = ({
     <Dialog
       visible={visible}
       onClose={onClose}
+      isClosing={isClosing}
       titleId={INITIAL_PLAYER_DIALOG_TITLE_ID}
       title={INITIAL_PLAYER_DIALOG_TITLE}
       description={INITIAL_PLAYER_DIALOG_DESCRIPTION}
       zIndexClassName="z-30"
+      backdropAnimationClassName={backdropAnimationClassName}
+      panelAnimationClassName={panelAnimationClassName}
     >
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button

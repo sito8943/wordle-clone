@@ -6,7 +6,10 @@ import {
   type JSX,
 } from "react";
 import { Button, Dialog, useDialogCloseTransition } from "@components";
-import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog";
+import {
+  DIALOG_CLOSE_DURATION_MS,
+  getDialogTransitionClasses,
+} from "@components/Dialogs/ConfirmationDialog";
 import type { HomeDeveloperConsoleDialogProps } from "@views/Home/hooks/useNativeKeyboardingInput/types";
 import { useHomeView } from "@views/Home/providers";
 import {
@@ -49,6 +52,8 @@ const DeveloperConsoleDialog = ({
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
   );
+  const { backdropAnimationClassName, panelAnimationClassName } =
+    getDialogTransitionClasses(isClosing);
 
   useEffect(() => {
     if (!canRenderDialog) {
@@ -84,11 +89,14 @@ const DeveloperConsoleDialog = ({
     <Dialog
       visible={canRenderDialog}
       onClose={onClose}
+      isClosing={isClosing}
       titleId={DEVELOPER_CONSOLE_DIALOG_TITLE_ID}
       title={DEVELOPER_CONSOLE_DIALOG_TITLE}
       description={DEVELOPER_CONSOLE_DIALOG_DESCRIPTION}
       panelClassName="max-w-lg"
       zIndexClassName="z-30"
+      backdropAnimationClassName={backdropAnimationClassName}
+      panelAnimationClassName={panelAnimationClassName}
     >
       <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
         <label
