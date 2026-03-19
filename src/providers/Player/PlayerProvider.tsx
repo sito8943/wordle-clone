@@ -44,8 +44,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         streak: remoteProfile.streak,
         difficulty: remoteProfile.difficulty,
         keyboardPreference: remoteProfile.keyboardPreference,
-        showEndOfGameDialogs:
-          normalizePlayer(previous).showEndOfGameDialogs,
+        showEndOfGameDialogs: normalizePlayer(previous).showEndOfGameDialogs,
       }));
       await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
     },

@@ -109,8 +109,7 @@ const Toolbar = (): JSX.Element => {
                 className="boost-animation inline-flex"
                 style={
                   {
-                    "--boost-scale":
-                      hardModeClockBoostScale.toString(),
+                    "--boost-scale": hardModeClockBoostScale.toString(),
                   } as NativeKeyboardClockStyle
                 }
               >
@@ -137,8 +136,7 @@ const Toolbar = (): JSX.Element => {
             style={
               showRefreshAttention
                 ? ({
-                    "--boost-scale":
-                      refreshAttentionScale.toString(),
+                    "--boost-scale": refreshAttentionScale.toString(),
                   } as NativeKeyboardClockStyle)
                 : undefined
             }

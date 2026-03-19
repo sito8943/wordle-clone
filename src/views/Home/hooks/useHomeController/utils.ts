@@ -95,8 +95,9 @@ export const hasSeenEndOfGameDialogInSession = (): boolean => {
   }
 
   return (
-    window.sessionStorage.getItem(END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY) ===
-    "seen"
+    window.sessionStorage.getItem(
+      END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+    ) === "seen"
   );
 };
 

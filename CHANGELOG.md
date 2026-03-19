@@ -2,6 +2,17 @@
 
 ## 2026-03-19
 
+### Branch `features/results`
+
+- Added dedicated end-of-game result dialogs on Home: a victory dialog with the solved word, score breakdown, current streak, and `Play again`, plus a defeat dialog with the solved word, best streak, replay action, and a shortcut to change difficulty from Profile.
+- Reworked Home result orchestration so end-of-game data is composed in `useHomeController`, reuses the existing board reset flow, suppresses the legacy win/loss feedback when dialogs are enabled, and shows a first-run settings hint that points players to the new Profile preference.
+- Extended scoring for `insane` difficulty with a time-based win bonus worth 1 extra point per 2 seconds remaining, and wired the same computed total into both the persisted victory flow and the UI score summary.
+- Added a persisted player preference to show or hide end-of-game dialogs, exposed it through the Profile settings flow, and kept older stored player records backward-compatible through provider normalization.
+- Hardened player profile hydration so the app refreshes the current remote profile when a local player exists without a recovery code, preventing older local records from missing the new settings/code data.
+- Updated Home help and translation resources to explain the `insane` time bonus and cover the new result-dialog and Profile-settings copy.
+- Added motion/polish for the results flow and toolbar feedback, including boosted timer/refresh attention animations, related global styles, and the implementation plan in `docs/INSANE_SCORE_VICTORY_DIALOG_PLAN.md`.
+- Expanded automated coverage across scoring, Home controller result flow, victory/defeat dialogs, Profile controller/settings behavior, Player provider normalization, and app-level gameplay integration.
+
 ### Branch `i18n-migration`
 
 - Added a shared `i18next` + `react-i18next` setup for the React + Vite app, including centralized translation resources and alias wiring for app, Vite, and Vitest.

@@ -164,7 +164,9 @@ describe("useHomeController", () => {
 
     rerender();
 
-    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 4, 2, 5));
+    expect(commitVictory).toHaveBeenCalledWith(
+      getTotalPointsForWin(3, 4, 2, 5),
+    );
     expect(result.current.victoryScoreSummary?.total).toBe(15);
     expect(result.current.showVictoryDialog).toBe(true);
   });
@@ -183,7 +185,7 @@ describe("useHomeController", () => {
 
     expect(result.current.showVictoryDialog).toBe(true);
     expect(result.current.showLegacyEndOfGameMessage).toBe(false);
-    expect(result.current.showRefreshAttention).toBe(false);
+    expect(result.current.showRefreshAttention).toBe(true);
 
     act(() => {
       result.current.closeEndOfGameDialog();

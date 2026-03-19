@@ -20,9 +20,7 @@ import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Home/hooks/useHintController";
-import {
-  END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
-} from "@views/Home/hooks/useHomeController/constants";
+import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Home/hooks/useHomeController/constants";
 
 vi.mock("./utils/words", async () => {
   const actual =
@@ -1429,7 +1427,9 @@ describe("App", () => {
 
     expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
     expect(
-      screen.getByRole("link", { name: "Profile settings" }).getAttribute("href"),
+      screen
+        .getByRole("link", { name: "Profile settings" })
+        .getAttribute("href"),
     ).toBe("/profile#end-dialogs");
     expect(
       sessionStorage.getItem(END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY),
