@@ -195,6 +195,7 @@ export const resources = {
         toolbar: {
           wordListAriaLabel: "Word list",
           wordListButton: "Words",
+          wordListUnavailable: "Word list unavailable.",
           hintAriaLabel: "Hint",
           hintButton: "Hint ({{count}})",
           helpAriaLabel: "Help",
@@ -468,6 +469,7 @@ export const resources = {
         toolbar: {
           wordListAriaLabel: "Lista de palabras",
           wordListButton: "Palabras",
+          wordListUnavailable: "La lista de palabras no está disponible.",
           hintAriaLabel: "Pista",
           hintButton: "Pista ({{count}})",
           helpAriaLabel: "Ayuda",

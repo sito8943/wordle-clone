@@ -123,6 +123,7 @@ const Toolbar = (): JSX.Element => {
           <Button
             onClick={refreshBoard}
             aria-label={t("home.toolbar.refreshAriaLabel")}
+            data-wordle-refresh="true"
             icon={faRotateRight}
             variant="ghost"
             iconClassName="text-lg"

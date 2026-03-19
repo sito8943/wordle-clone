@@ -1,6 +1,7 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WORDS_CACHE_KEY_PREFIX, WORDS_DEFAULT_LANGUAGE } from "@api/words";
+import { i18n } from "@i18n";
 import useWordle from "./useWordle";
 import {
   createHookWrapper,
@@ -15,6 +16,7 @@ describe("useWordle dictionary query integration", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    void i18n.changeLanguage("en");
   });
 
   afterEach(() => {
@@ -105,6 +107,8 @@ describe("useWordle dictionary query integration", () => {
     });
 
     expect(result.current.dictionaryWords).toEqual([]);
-    expect(result.current.dictionaryError).toBe("Word list unavailable.");
+    expect(result.current.dictionaryError).toBe(
+      i18n.t("home.toolbar.wordListUnavailable"),
+    );
   });
 });

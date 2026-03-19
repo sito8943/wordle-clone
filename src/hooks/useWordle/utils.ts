@@ -89,7 +89,7 @@ export const blurRefreshButtonIfFocused = (): void => {
     return;
   }
 
-  if (activeElement.getAttribute("aria-label") !== "Refresh") {
+  if (activeElement.dataset.wordleRefresh !== "true") {
     return;
   }
 
