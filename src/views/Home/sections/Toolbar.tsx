@@ -31,6 +31,9 @@ const Toolbar = (): JSX.Element => {
     hardModeSecondsLeft,
     hardModeTickPulse,
     hardModeClockBoostScale,
+    showRefreshAttention,
+    refreshAttentionPulse,
+    refreshAttentionScale,
     refreshBoard,
     dictionaryError,
   } = controller;
@@ -124,18 +127,39 @@ const Toolbar = (): JSX.Element => {
               </span>
             </div>
           )}
-          <Button
-            onClick={refreshBoard}
-            aria-label={t("home.toolbar.refreshAriaLabel")}
-            data-wordle-refresh="true"
-            icon={faRotateRight}
-            variant="ghost"
-            iconClassName="text-lg"
-            className="mobile-compact-button"
-            hideLabelOnMobile
+          <span
+            key={showRefreshAttention ? refreshAttentionPulse : "idle"}
+            className={
+              showRefreshAttention
+                ? "hard-mode-clock-boost-animation inline-flex"
+                : "inline-flex"
+            }
+            style={
+              showRefreshAttention
+                ? ({
+                    "--hard-mode-clock-boost-scale":
+                      refreshAttentionScale.toString(),
+                  } as NativeKeyboardClockStyle)
+                : undefined
+            }
           >
-            {t("common.refresh")}
-          </Button>
+            <Button
+              onClick={refreshBoard}
+              aria-label={t("home.toolbar.refreshAriaLabel")}
+              data-wordle-refresh="true"
+              icon={faRotateRight}
+              variant="ghost"
+              iconClassName="text-lg"
+              className={
+                showRefreshAttention
+                  ? "mobile-compact-button text-amber-700 dark:text-amber-300"
+                  : "mobile-compact-button"
+              }
+              hideLabelOnMobile
+            >
+              {t("common.refresh")}
+            </Button>
+          </span>
         </div>
       </div>
 

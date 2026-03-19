@@ -53,6 +53,9 @@ export default function useHomeController() {
     useState<"success" | "error" | null>(null);
   const [endOfGameSnapshot, setEndOfGameSnapshot] =
     useState<EndOfGameSnapshot | null>(null);
+  const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
+    useState(false);
+  const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -103,6 +106,7 @@ export default function useHomeController() {
     }
 
     if (won) {
+      setShowLegacyEndOfGameFeedback(false);
       const basePoints = getPointsForWin(guesses.length);
       const difficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
@@ -140,6 +144,7 @@ export default function useHomeController() {
 
       void commitVictory(totalPoints);
     } else {
+      setShowLegacyEndOfGameFeedback(false);
       setEndOfGameSnapshot({
         answer,
         currentStreak: player.streak,
@@ -181,6 +186,7 @@ export default function useHomeController() {
 
   const refreshBoardNow = useCallback(() => {
     setEndOfGameSnapshot(null);
+    setShowLegacyEndOfGameFeedback(false);
     resetHints();
     resetHardModeTimer();
     refresh();
@@ -188,6 +194,7 @@ export default function useHomeController() {
 
   const startNewBoard = useCallback(() => {
     setEndOfGameSnapshot(null);
+    setShowLegacyEndOfGameFeedback(false);
     resetHints();
     resetHardModeTimer();
     startNewWordleBoard();
@@ -195,6 +202,7 @@ export default function useHomeController() {
 
   const closeEndOfGameDialog = useCallback(() => {
     setEndOfGameSnapshot(null);
+    setShowLegacyEndOfGameFeedback(true);
   }, []);
 
   const refreshBoard = useCallback(() => {
@@ -304,6 +312,7 @@ export default function useHomeController() {
   useEffect(() => {
     if (showResumeDialog) {
       setEndOfGameSnapshot(null);
+      setShowLegacyEndOfGameFeedback(false);
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
       setShowHelpDialog(false);
@@ -322,11 +331,34 @@ export default function useHomeController() {
     showEndOfGameDialogs && gameOver && won && endOfGameSnapshot !== null;
   const showDefeatDialog =
     showEndOfGameDialogs && gameOver && !won && endOfGameSnapshot !== null;
+  const showRefreshAttention =
+    gameOver && (!showEndOfGameDialogs || showLegacyEndOfGameFeedback);
+
+  useEffect(() => {
+    if (!showRefreshAttention) {
+      setRefreshAttentionPulse(0);
+      return;
+    }
+
+    setRefreshAttentionPulse((previous) => previous + 1);
+
+    const intervalId = window.setInterval(() => {
+      setRefreshAttentionPulse((previous) => previous + 1);
+    }, 1400);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [showRefreshAttention]);
 
   return {
     ...wordle,
     currentWinStreak: player.streak,
-    showLegacyEndOfGameMessage: !showEndOfGameDialogs,
+    showLegacyEndOfGameMessage:
+      !showEndOfGameDialogs || showLegacyEndOfGameFeedback,
+    showRefreshAttention,
+    refreshAttentionPulse,
+    refreshAttentionScale: 0.14,
     showVictoryDialog,
     showDefeatDialog,
     endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,

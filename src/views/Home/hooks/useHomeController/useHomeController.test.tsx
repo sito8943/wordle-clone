@@ -30,6 +30,7 @@ describe("useHomeController", () => {
   let wordleState: Record<string, unknown>;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     wordleState = {
       sessionId: "session-1",
       gameId: "game-1",
@@ -93,6 +94,7 @@ describe("useHomeController", () => {
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -164,6 +166,61 @@ describe("useHomeController", () => {
     expect(result.current.showVictoryDialog).toBe(true);
   });
 
+  it("restores the legacy end-of-game feedback after closing the dialog manually", () => {
+    const { rerender, result } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showVictoryDialog).toBe(true);
+    expect(result.current.showLegacyEndOfGameMessage).toBe(false);
+    expect(result.current.showRefreshAttention).toBe(false);
+
+    act(() => {
+      result.current.closeEndOfGameDialog();
+    });
+
+    expect(result.current.showVictoryDialog).toBe(false);
+    expect(result.current.showLegacyEndOfGameMessage).toBe(true);
+    expect(result.current.showRefreshAttention).toBe(true);
+  });
+
+  it("activates refresh attention immediately when end-of-game dialogs are disabled", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: false,
+      },
+    });
+
+    const { rerender, result } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showLegacyEndOfGameMessage).toBe(true);
+    expect(result.current.showRefreshAttention).toBe(true);
+    expect(result.current.refreshAttentionPulse).toBeGreaterThan(0);
+  });
+
   it("opens a confirmation dialog before refreshing an active game", () => {
     const resetHints = vi.fn();
     const resetHardModeTimer = vi.fn();
@@ -223,6 +280,7 @@ describe("useHomeController", () => {
         streak: 2,
         difficulty: "easy",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
     });
 
