@@ -1,10 +1,13 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import VictoryDialog from "./VictoryDialog";
 
 afterEach(cleanup);
 
 describe("VictoryDialog", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
   it("renders the score summary and play again action", () => {
     const onPlayAgain = vi.fn();
 
@@ -33,6 +36,34 @@ describe("VictoryDialog", () => {
     expect(screen.getByText("+15")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Play again" }));
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(onPlayAgain).toHaveBeenCalledTimes(1);
+  });
+
+  it("triggers play again when pressing Enter", () => {
+    const onPlayAgain = vi.fn();
+
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 4,
+        }}
+        onClose={() => undefined}
+        onPlayAgain={onPlayAgain}
+      />,
+    );
+
+    fireEvent.keyDown(document, { key: "Enter" });
+    act(() => {
+      vi.runAllTimers();
+    });
 
     expect(onPlayAgain).toHaveBeenCalledTimes(1);
   });
