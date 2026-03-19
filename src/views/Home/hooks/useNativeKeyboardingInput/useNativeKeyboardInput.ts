@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, type KeyboardEvent } from "react";
-import { NATIVE_KEYBOARD_AUTO_FOCUS_DELAY_MS } from "./constants";
+import {
+  NATIVE_KEYBOARD_AUTO_FOCUS_DELAY_MS,
+  NATIVE_KEYBOARD_SCROLL_RESTORE_FRAMES,
+} from "./constants";
 import type {
   UseNativeKeyboardInputParams,
   UseNativeKeyboardInputResult,
@@ -17,7 +20,26 @@ export const useNativeKeyboardInput = ({
   const nativeKeyboardInputRef = useRef<HTMLInputElement | null>(null);
 
   const focusNativeKeyboardInput = useCallback(() => {
-    nativeKeyboardInputRef.current?.focus();
+    const input = nativeKeyboardInputRef.current;
+    if (!input) {
+      return;
+    }
+
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    input.focus({ preventScroll: true });
+
+    let frameCount = 0;
+    const restoreScrollPosition = () => {
+      window.scrollTo(scrollX, scrollY);
+      frameCount += 1;
+
+      if (frameCount < NATIVE_KEYBOARD_SCROLL_RESTORE_FRAMES) {
+        window.requestAnimationFrame(restoreScrollPosition);
+      }
+    };
+
+    window.requestAnimationFrame(restoreScrollPosition);
   }, []);
 
   const handleNativeKeyboardKeyDown = useCallback(
@@ -61,13 +83,13 @@ export const useNativeKeyboardInput = ({
     }
 
     const timeoutId = window.setTimeout(() => {
-      nativeKeyboardInputRef.current?.focus();
+      focusNativeKeyboardInput();
     }, NATIVE_KEYBOARD_AUTO_FOCUS_DELAY_MS);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [blocked, enabled]);
+  }, [blocked, enabled, focusNativeKeyboardInput]);
 
   return {
     nativeKeyboardInputRef,

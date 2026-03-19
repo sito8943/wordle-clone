@@ -63,7 +63,7 @@ const KeyboardSection = ({
             spellCheck={false}
             enterKeyHint="enter"
             aria-label={t("home.sections.deviceKeyboardInputAriaLabel")}
-            className="fixed bottom-0 left-0 h-px w-px opacity-0 pointer-events-none"
+            className="fixed left-0 top-0 h-px w-px opacity-0 pointer-events-none"
             onKeyDown={handleNativeKeyboardKeyDown}
             onInput={handleNativeKeyboardInput}
           />

@@ -40,6 +40,7 @@ const TestHarness = ({
 describe("useNativeKeyboardInput", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    window.scrollTo = vi.fn();
   });
 
   afterEach(() => {
@@ -57,6 +58,24 @@ describe("useNativeKeyboardInput", () => {
     expect(document.activeElement).toBe(
       screen.getByLabelText("Native keyboard input"),
     );
+  });
+
+  it("restores scroll position after focusing the hidden input", () => {
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        callback(0);
+        return 1;
+      });
+
+    render(<TestHarness />);
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    requestAnimationFrameSpy.mockRestore();
   });
 
   it("maps keyboard events to Wordle keys", () => {
