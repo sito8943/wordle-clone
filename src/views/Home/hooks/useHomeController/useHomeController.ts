@@ -60,9 +60,8 @@ export default function useHomeController() {
   const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
     useState(false);
   const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
-  const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] = useState(
-    false,
-  );
+  const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] =
+    useState(false);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -338,8 +337,7 @@ export default function useHomeController() {
     showEndOfGameDialogs && gameOver && won && endOfGameSnapshot !== null;
   const showDefeatDialog =
     showEndOfGameDialogs && gameOver && !won && endOfGameSnapshot !== null;
-  const showRefreshAttention =
-    gameOver && (!showEndOfGameDialogs || showLegacyEndOfGameFeedback);
+  const showRefreshAttention = gameOver;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
 
   useEffect(() => {

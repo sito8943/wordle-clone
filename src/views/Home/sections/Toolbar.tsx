@@ -102,14 +102,14 @@ const Toolbar = (): JSX.Element => {
               aria-label={t("home.toolbar.insaneTimerAriaLabel", {
                 seconds: hardModeSecondsLeft,
               })}
-              className="mobile-compact-button inline-flex items-center gap-2 rounded border border-blue-300 bg-blue-100/90 px-3 py-2 text-sm font-bold text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
+              className={`mobile-compact-button inline-flex items-center gap-2 rounded border px-3 py-2 text-sm font-bold border-blue-300 bg-blue-100/90 text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200`}
             >
               <span
                 key={hardModeTickPulse}
-                className="hard-mode-clock-boost-animation inline-flex"
+                className="boost-animation inline-flex"
                 style={
                   {
-                    "--hard-mode-clock-boost-scale":
+                    "--boost-scale":
                       hardModeClockBoostScale.toString(),
                   } as NativeKeyboardClockStyle
                 }
@@ -131,13 +131,13 @@ const Toolbar = (): JSX.Element => {
             key={showRefreshAttention ? refreshAttentionPulse : "idle"}
             className={
               showRefreshAttention
-                ? "hard-mode-clock-boost-animation inline-flex"
+                ? "boost-animation inline-flex"
                 : "inline-flex"
             }
             style={
               showRefreshAttention
                 ? ({
-                    "--hard-mode-clock-boost-scale":
+                    "--boost-scale":
                       refreshAttentionScale.toString(),
                   } as NativeKeyboardClockStyle)
                 : undefined
