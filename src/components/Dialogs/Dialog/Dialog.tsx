@@ -14,6 +14,7 @@ import {
 const Dialog = ({
   visible,
   onClose,
+  isClosing: controlledIsClosing = false,
   titleId,
   title,
   description,
@@ -24,9 +25,9 @@ const Dialog = ({
   backdropAnimationClassName: customBackdropAnimationClassName,
   panelAnimationClassName: customPanelAnimationClassName,
 }: DialogProps): JSX.Element | null => {
-  const { isClosing, closeWithAction } = useDialogCloseTransition(
-    DIALOG_CLOSE_DURATION_MS,
-  );
+  const { isClosing: internalIsClosing, closeWithAction } =
+    useDialogCloseTransition(DIALOG_CLOSE_DURATION_MS);
+  const isClosing = controlledIsClosing || internalIsClosing;
 
   const { backdropAnimationClassName, panelAnimationClassName } =
     getDialogTransitionClasses(isClosing);

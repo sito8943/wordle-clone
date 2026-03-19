@@ -155,9 +155,13 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:session-id`: tab session id used by wordle session handling.
 - `localStorage`
 - `wordle:game`: persisted in-progress game payload (managed in domain storage helpers).
+  - It stores `{ sessionId, gameId, seed, guesses, current, gameOver }`.
+  - `answer` is resolved at runtime from `gameId + seed + dictionary`, not stored in clear.
   - It is persisted as soon as there is in-progress input (submitted rows or typed letters in `current`).
-- `wordle:hint-usage`: snapshot for hint usage (`sessionId + answer + hintsUsed`) to keep hint limits after reload.
+- `wordle:hint-usage`: snapshot for hint usage (`gameId + derived gameKey + hintsUsed`) to keep hint limits after reload without persisting `answer`.
 - `player`: player profile and score/streak metadata, including recovery `code`.
+  - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
+- `wordle:sync-events`: local queue of pending `VictorySyncEvent` records for offline score synchronization.
 - `wordle:dictionary:en`: cached dictionary words.
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - additional feature keys for theme/animations/scoreboard caches.
@@ -170,10 +174,11 @@ This is an evolution of the current layered architecture, not a replacement for 
 - player preferences from `usePlayer`
 - gameplay state/actions from `useWordle`
 - difficulty-specific rules (hints, scoring multiplier, hard-mode timer)
-- score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations and keeps the adopted remote player identity in sync for later score writes
+- score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations, keeps local score as cache, and syncs confirmed victories through the offline event queue
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
-4. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
+4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible.
+5. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
 
 ## Testing Layout
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-03-19
+
+### Branch `features/fraud`
+
+- Completed the anti-fraud storage hardening pass for gameplay and profile state, documenting the audit and rollout plan in `docs/STORAGE_PHASE0_AUDIT.md` and `docs/STORAGE_ANTI_FRAUD_PLAN.md`.
+- Removed the clear-text persisted `answer` from local game storage and replaced it with a derived `gameId + seed` reference so in-progress boards can still resume offline without exposing the final word directly.
+- Added shared game-reference utilities in the Wordle domain to generate deterministic board references, resolve answers from stored references, and normalize legacy persisted games into the new storage contract.
+- Extended the score/profile flow so Convex remains the source of truth for sensitive profile data while the client keeps only provisional local cache and identity-aware sync metadata.
+- Added Convex anti-fraud support for player/profile synchronization, including the new score/profile operations in `convex/scores.ts` and corresponding `ScoreClient` updates.
+- Hardened profile rehydration so the Profile view now refreshes the current remote player when the local cache is missing a recovery `code`, fixing older browsers/devices that predate code persistence.
+- Fixed dialog close transitions so confirmation, initial-player, and developer-console dialogs now animate consistently on exit instead of waiting for the delay and disappearing abruptly.
+- Refined related UX assets and polish in this branch, including updated PWA/app icons and the supporting UI/controller tests for the anti-fraud and profile refresh flows.
+
 ## 2026-03-18
 
 ### Recent changes

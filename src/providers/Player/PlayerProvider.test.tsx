@@ -22,7 +22,6 @@ afterEach(() => {
 
 const makeWrapper =
   ({
-    recordScore = vi.fn().mockResolvedValue(undefined),
     upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
       id: "remote-player",
       clientId: "test-client",
@@ -47,10 +46,15 @@ const makeWrapper =
       keyboardPreference: "native",
       createdAt: 1000,
     }),
+    getCurrentPlayerProfile = vi.fn().mockResolvedValue(null),
+    queueVictoryEvent = vi.fn(),
+    syncVictoryEvents = vi.fn().mockResolvedValue(null),
   }: {
-    recordScore?: ApiContextType["scoreClient"]["recordScore"];
     upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
     recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
+    getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
+    queueVictoryEvent?: ApiContextType["scoreClient"]["queueVictoryEvent"];
+    syncVictoryEvents?: ApiContextType["scoreClient"]["syncVictoryEvents"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
     const apiValue = createTestApiContextValue({
@@ -61,7 +65,13 @@ const makeWrapper =
           currentClientRank: null,
           currentClientEntry: null,
         }),
-        { recordScore, upsertPlayerProfile, recoverPlayerByCode },
+        {
+          upsertPlayerProfile,
+          recoverPlayerByCode,
+          getCurrentPlayerProfile,
+          queueVictoryEvent,
+          syncVictoryEvents,
+        },
       ) as never,
     });
     const queryClient = createTestQueryClient();
@@ -148,62 +158,54 @@ describe("PlayerProvider", () => {
     expect(result.current.player.name).toBe(DEFAULT_PLAYER.name);
   });
 
-  it("increaseScore adds points to current score", () => {
+  it("commitVictory adds points, increments streak and enqueues an event", async () => {
+    const queueVictoryEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper(),
+      wrapper: makeWrapper({ queueVictoryEvent }),
     });
 
-    act(() => {
-      result.current.increaseScore(5);
-    });
-    act(() => {
-      result.current.increaseScore(3);
+    await act(async () => {
+      await result.current.commitVictory(5, 1234);
     });
 
-    expect(result.current.player.score).toBe(8);
+    expect(result.current.player.score).toBe(5);
+    expect(result.current.player.streak).toBe(1);
+    expect(queueVictoryEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        score: 5,
+        streak: 1,
+        wonAt: 1234,
+        version: 1,
+      }),
+    );
   });
 
-  it("increaseScore ignores zero and negative values", () => {
+  it("commitVictory ignores zero and negative values", async () => {
+    const queueVictoryEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper(),
+      wrapper: makeWrapper({ queueVictoryEvent }),
     });
 
-    act(() => {
-      result.current.increaseScore(0);
-    });
-    act(() => {
-      result.current.increaseScore(-5);
+    await act(async () => {
+      await result.current.commitVictory(0);
+      await result.current.commitVictory(-5);
     });
 
     expect(result.current.player.score).toBe(0);
+    expect(queueVictoryEvent).not.toHaveBeenCalled();
   });
 
-  it("increaseWinStreak increments streak", () => {
+  it("commitLoss resets streak to 0", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
     });
 
     act(() => {
-      result.current.increaseWinStreak();
-    });
-    act(() => {
-      result.current.increaseWinStreak();
+      result.current.replacePlayer({ streak: 2 });
     });
 
-    expect(result.current.player.streak).toBe(2);
-  });
-
-  it("resetWinStreak sets streak to 0", () => {
-    const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper(),
-    });
-
-    act(() => {
-      result.current.increaseWinStreak();
-      result.current.increaseWinStreak();
-    });
-    act(() => {
-      result.current.resetWinStreak();
+    await act(async () => {
+      await result.current.commitLoss();
     });
 
     expect(result.current.player.streak).toBe(0);
@@ -233,25 +235,38 @@ describe("PlayerProvider", () => {
     expect(result.current.player.keyboardPreference).toBe("native");
   });
 
-  it("calls scoreClient.recordScore when score changes", async () => {
-    const recordScore = vi.fn().mockResolvedValue(undefined);
+  it("syncs victory events after a named player wins", async () => {
+    const syncVictoryEvents = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      playerCode: "ZX90",
+      score: 10,
+      streak: 1,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ recordScore }),
+      wrapper: makeWrapper({ syncVictoryEvents }),
     });
 
     await act(async () => {
       await result.current.updatePlayer("Ana");
     });
 
-    act(() => {
-      result.current.increaseScore(10);
+    await act(async () => {
+      await result.current.commitVictory(10, 1000);
     });
 
     await waitFor(() => {
-      expect(recordScore).toHaveBeenCalledWith(
-        expect.objectContaining({ score: 10 }),
+      expect(syncVictoryEvents).toHaveBeenCalledWith(
+        expect.objectContaining({ nick: "Ana" }),
       );
     });
+    expect(result.current.player.score).toBe(10);
+    expect(result.current.player.code).toBe("ZX90");
   });
 
   it("calls scoreClient.upsertPlayerProfile when name changes", async () => {
@@ -335,7 +350,10 @@ describe("PlayerProvider", () => {
           currentClientRank: null,
           currentClientEntry: null,
         }),
-        { recoverPlayerByCode },
+        {
+          recoverPlayerByCode,
+          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
+        },
       ) as never,
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -355,6 +373,47 @@ describe("PlayerProvider", () => {
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
       queryKey: queryKeys.topScores,
     });
+  });
+
+  it("refreshes the current player profile from remote data", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Ana",
+        code: "",
+        score: 3,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
+
+    const getCurrentPlayerProfile = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      playerCode: "ZX90",
+      score: 12,
+      streak: 4,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ getCurrentPlayerProfile }),
+    });
+
+    getCurrentPlayerProfile.mockClear();
+
+    await act(async () => {
+      await result.current.refreshCurrentPlayerProfile();
+    });
+
+    expect(getCurrentPlayerProfile).toHaveBeenCalled();
+    expect(result.current.player.code).toBe("ZX90");
+    expect(result.current.player.score).toBe(12);
+    expect(result.current.player.difficulty).toBe("normal");
   });
 });
 

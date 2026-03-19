@@ -71,10 +71,13 @@ Notes:
 - `sessionStorage`
   - `wordle:session-id`: per-tab session id.
 - `localStorage`
-  - `wordle:game`: in-progress game state.
-  - `wordle:hint-usage`: hint usage snapshot.
+  - `wordle:game`: in-progress game reference `{ sessionId, gameId, seed, guesses, current, gameOver }`.
+    - `answer` is not stored; it is derived locally from `gameId`, `seed`, and the dictionary.
+  - `wordle:hint-usage`: hint usage snapshot keyed by game reference, without storing `answer` in clear.
+  - `wordle:sync-events`: pending offline victory events used to sync score/streak to Convex in order.
   - `wordle:dictionary:en`: cached dictionary.
   - `player`: player profile and score/streak metadata, including recovery `code`.
+    - local `score`/`streak` act as UI cache; confirmed remote values take precedence after sync.
   - `wordle:scoreboard:*`: scoreboard cache/pending/client metadata.
   - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) after profile creation or recovery.
 

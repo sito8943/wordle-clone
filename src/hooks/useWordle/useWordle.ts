@@ -10,6 +10,7 @@ import {
   normalizePersistedGameState,
   persistGameState,
   readPersistedGameState,
+  resolveAnswerFromGameReference,
   removeLetter,
   shouldAskToResume,
   type PersistedGameState,
@@ -72,8 +73,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
         readPersistedGameState(),
         currentSessionId,
         initialAnswer,
+        cachedWords,
       ),
-    [currentSessionId, initialAnswer],
+    [cachedWords, currentSessionId, initialAnswer],
   );
   const { animationsDisabled } = useAnimationsPreference();
   const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
@@ -103,7 +105,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     null,
   );
 
-  const { sessionId, answer, guesses, current, gameOver } = gameState;
+  const { sessionId, gameId, answer, guesses, current, gameOver } = gameState;
 
   const setGameStateAndPersist = useCallback(
     (updater: (previous: PersistedGameState) => PersistedGameState) => {
@@ -134,6 +136,22 @@ export default function useWordle(options: UseWordleOptions = {}) {
     }
 
     setGameState((previous) => {
+      const resolvedAnswer = resolveAnswerFromGameReference(
+        previous,
+        dictionaryWords,
+      );
+
+      if (
+        hasInProgressGame(previous) &&
+        resolvedAnswer &&
+        resolvedAnswer !== previous.answer
+      ) {
+        return {
+          ...previous,
+          answer: resolvedAnswer,
+        };
+      }
+
       if (hasInProgressGame(previous)) {
         return previous;
       }
@@ -371,6 +389,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
   return {
     sessionId,
+    gameId,
     answer,
     guesses,
     current,

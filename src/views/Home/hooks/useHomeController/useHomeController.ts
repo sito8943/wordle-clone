@@ -10,18 +10,13 @@ import { useHintController } from "../useHintController";
 
 export default function useHomeController() {
   const { scoreClient, wordDictionaryClient } = useApi();
-  const {
-    player,
-    replacePlayer,
-    increaseScore,
-    increaseWinStreak,
-    resetWinStreak,
-  } = usePlayer();
+  const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
   const wordle = useWordle({
     allowUnknownWords: player.difficulty !== "insane",
   });
   const {
     sessionId,
+    gameId,
     answer,
     won,
     guesses,
@@ -83,7 +78,7 @@ export default function useHomeController() {
       hydrated.current = true;
 
       if (gameOver && !won) {
-        resetWinStreak();
+        void commitLoss();
       }
 
       roundSettled.current = gameOver;
@@ -103,27 +98,25 @@ export default function useHomeController() {
       const difficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
       );
-      increaseScore(
+      void commitVictory(
         getTotalPointsForWin(
           guesses.length,
           difficultyMultiplier,
           player.streak,
         ),
       );
-      increaseWinStreak();
     } else {
-      resetWinStreak();
+      void commitLoss();
     }
 
     roundSettled.current = true;
   }, [
     gameOver,
     guesses.length,
-    increaseScore,
-    increaseWinStreak,
+    commitLoss,
+    commitVictory,
     player.difficulty,
     player.streak,
-    resetWinStreak,
     won,
   ]);
 
@@ -135,6 +128,7 @@ export default function useHomeController() {
     resetHints,
   } = useHintController({
     answer,
+    gameId,
     difficulty: player.difficulty,
     hasInProgressGameAtMount,
     showResumeDialog,

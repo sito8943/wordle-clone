@@ -1,6 +1,7 @@
 import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
+  VictorySyncEvent,
 } from "@domain/wordle";
 
 export type ScoreSource = "convex" | "local";
@@ -86,3 +87,11 @@ export type ScoreClientGatewayOverrides = {
   mutation?: (...args: unknown[]) => Promise<unknown>;
   isNetworkError?: (error: unknown) => boolean;
 };
+
+export type SyncVictoryEventsInput = {
+  nick: string;
+  difficulty: PlayerDifficulty;
+  keyboardPreference: PlayerKeyboardPreference;
+};
+
+export type StoredVictorySyncEvent = VictorySyncEvent;

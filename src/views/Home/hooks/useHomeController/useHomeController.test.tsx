@@ -32,6 +32,7 @@ describe("useHomeController", () => {
   beforeEach(() => {
     wordleState = {
       sessionId: "session-1",
+      gameId: "game-1",
       answer: "APPLE",
       won: false,
       guesses: [],
@@ -65,9 +66,8 @@ describe("useHomeController", () => {
         keyboardPreference: "onscreen",
       },
       replacePlayer: vi.fn(),
-      increaseScore: vi.fn(),
-      increaseWinStreak: vi.fn(),
-      resetWinStreak: vi.fn(),
+      commitVictory: vi.fn().mockResolvedValue(undefined),
+      commitLoss: vi.fn().mockResolvedValue(undefined),
     });
     mockUseWordle.mockImplementation(() => wordleState);
     mockUseHintController.mockReturnValue({
@@ -96,8 +96,7 @@ describe("useHomeController", () => {
   });
 
   it("awards points and streak exactly once when a round changes to won", () => {
-    const increaseScore = vi.fn();
-    const increaseWinStreak = vi.fn();
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
       ...mockUsePlayer(),
       player: {
@@ -108,8 +107,7 @@ describe("useHomeController", () => {
         difficulty: "normal",
         keyboardPreference: "onscreen",
       },
-      increaseScore,
-      increaseWinStreak,
+      commitVictory,
     });
 
     const { rerender } = renderHook(() => useHomeController());
@@ -124,9 +122,8 @@ describe("useHomeController", () => {
     rerender();
     rerender();
 
-    expect(increaseScore).toHaveBeenCalledTimes(1);
-    expect(increaseScore).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
-    expect(increaseWinStreak).toHaveBeenCalledTimes(1);
+    expect(commitVictory).toHaveBeenCalledTimes(1);
+    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
   });
 
   it("opens a confirmation dialog before refreshing an active game", () => {

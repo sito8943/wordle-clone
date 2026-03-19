@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 export type DialogProps = {
   visible: boolean;
   onClose: () => void;
+  isClosing?: boolean;
   titleId: string;
   title: string;
   description?: string;

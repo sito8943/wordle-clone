@@ -74,6 +74,10 @@ const createMockScoreClient = (
       keyboardPreference: "onscreen",
       createdAt: 1000,
     } as RemotePlayerProfile),
+    getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
+    cachePlayerScore: vi.fn(),
+    queueVictoryEvent: vi.fn(),
+    syncVictoryEvents: vi.fn().mockResolvedValue(null),
     adoptRecoveredIdentity: vi.fn(),
     ...overrides,
   }) as unknown as ApiContextType["scoreClient"];

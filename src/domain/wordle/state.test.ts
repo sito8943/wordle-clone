@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   addLetter,
   applyGuess,
@@ -12,6 +12,7 @@ import {
   shouldAskToResume,
   validateGuessInput,
 } from "./state";
+import { createGameReferenceForAnswer } from "./reference";
 import type { PersistedGameState } from "./types";
 
 const SESSION_ID = "test-session-id";
@@ -20,11 +21,7 @@ const ANSWER = "CRANE";
 const makeState = (
   overrides: Partial<PersistedGameState> = {},
 ): PersistedGameState => ({
-  sessionId: SESSION_ID,
-  answer: ANSWER,
-  guesses: [],
-  current: "",
-  gameOver: false,
+  ...createInitialGameState(SESSION_ID, ANSWER),
   ...overrides,
 });
 
@@ -252,17 +249,6 @@ describe("applyGuess", () => {
 });
 
 describe("validateGuessInput", () => {
-  beforeEach(() => {
-    // Mock isValidWord to always return true for testing purposes
-    vi.mock("@utils/words", () => ({
-      isValidWord: (word: string) => word.length === 5,
-    }));
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("returns error when input is too short", () => {
     const result = validateGuessInput("CR", "CRANE");
     expect(result.ok).toBe(false);
@@ -317,7 +303,13 @@ describe("isLetterKey", () => {
 describe("normalizePersistedGameState", () => {
   it("returns initial state for null input", () => {
     const state = normalizePersistedGameState(null, SESSION_ID, ANSWER);
-    expect(state).toEqual(createInitialGameState(SESSION_ID, ANSWER));
+    expect(state).toMatchObject({
+      sessionId: SESSION_ID,
+      answer: ANSWER,
+      guesses: [],
+      current: "",
+      gameOver: false,
+    });
   });
 
   it("returns initial state for invalid object shape", () => {
@@ -326,12 +318,21 @@ describe("normalizePersistedGameState", () => {
       SESSION_ID,
       ANSWER,
     );
-    expect(state).toEqual(createInitialGameState(SESSION_ID, ANSWER));
+    expect(state).toMatchObject({
+      sessionId: SESSION_ID,
+      answer: ANSWER,
+      guesses: [],
+      current: "",
+      gameOver: false,
+    });
   });
 
   it("returns normalized state for valid persisted data", () => {
+    const reference = createGameReferenceForAnswer("STONE", ["crane", "stone"]);
     const valid: PersistedGameState = {
       sessionId: "stored-session",
+      gameId: reference.gameId,
+      seed: reference.seed,
       answer: "STONE",
       guesses: [
         {
@@ -342,26 +343,37 @@ describe("normalizePersistedGameState", () => {
       current: "AB",
       gameOver: false,
     };
-    const state = normalizePersistedGameState(valid, SESSION_ID, ANSWER);
+    const state = normalizePersistedGameState(valid, SESSION_ID, ANSWER, [
+      "crane",
+      "stone",
+    ]);
     expect(state.answer).toBe("STONE");
     expect(state.guesses).toHaveLength(1);
     expect(state.current).toBe("AB");
   });
 
   it("returns initial state when persisted game has no in-progress state", () => {
-    const empty: PersistedGameState = {
+    const empty: PersistedGameState = createInitialGameState(
+      SESSION_ID,
+      "STONE",
+    );
+    const state = normalizePersistedGameState(empty, SESSION_ID, ANSWER, [
+      "crane",
+      "stone",
+    ]);
+    expect(state).toMatchObject({
       sessionId: SESSION_ID,
-      answer: "STONE",
+      answer: ANSWER,
       guesses: [],
       current: "",
       gameOver: false,
-    };
-    const state = normalizePersistedGameState(empty, SESSION_ID, ANSWER);
-    expect(state).toEqual(createInitialGameState(SESSION_ID, ANSWER));
+    });
   });
 
   it("falls back to provided sessionId when stored sessionId is missing", () => {
     const valid = {
+      ...createInitialGameState(SESSION_ID, "STONE"),
+      sessionId: undefined,
       answer: "STONE",
       guesses: [
         {
@@ -372,7 +384,10 @@ describe("normalizePersistedGameState", () => {
       current: "AB",
       gameOver: false,
     };
-    const state = normalizePersistedGameState(valid, SESSION_ID, ANSWER);
+    const state = normalizePersistedGameState(valid, SESSION_ID, ANSWER, [
+      "crane",
+      "stone",
+    ]);
     expect(state.sessionId).toBe(SESSION_ID);
   });
 });

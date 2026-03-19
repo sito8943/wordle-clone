@@ -1,9 +1,15 @@
 import { checkGuess } from "@utils/checker";
 import { isValidWord } from "@utils/words";
 import { MAX_GUESSES, WORD_LENGTH } from "./constants";
+import {
+  createGameReferenceForAnswer,
+  normalizeSeed,
+  resolveAnswerFromGameReference,
+} from "./reference";
 import type {
   GuessResult,
   GuessValidationResult,
+  PersistedGameRef,
   PersistedGameState,
 } from "./types";
 
@@ -16,13 +22,19 @@ export const hasInProgressGame = (state: PersistedGameState): boolean =>
 export const createInitialGameState = (
   sessionId: string,
   answer: string,
-): PersistedGameState => ({
-  sessionId,
-  answer,
-  guesses: [],
-  current: "",
-  gameOver: false,
-});
+): PersistedGameState => {
+  const reference = createGameReferenceForAnswer(answer);
+
+  return {
+    sessionId,
+    gameId: reference.gameId,
+    seed: reference.seed,
+    answer,
+    guesses: [],
+    current: "",
+    gameOver: false,
+  };
+};
 
 const isGuessResult = (value: unknown): value is GuessResult => {
   if (!value || typeof value !== "object") {
@@ -46,9 +58,44 @@ export const normalizePersistedGameState = (
   value: unknown,
   sessionId: string,
   initialAnswer: string,
+  words: string[] = [],
 ): PersistedGameState => {
   if (value && typeof value === "object") {
-    const maybe = value as Partial<PersistedGameState>;
+    const maybe = value as Partial<PersistedGameState & PersistedGameRef>;
+
+    if (
+      typeof maybe.gameId === "string" &&
+      typeof maybe.seed === "number" &&
+      Array.isArray(maybe.guesses) &&
+      typeof maybe.current === "string" &&
+      typeof maybe.gameOver === "boolean" &&
+      maybe.guesses.every(isGuessResult)
+    ) {
+      const answer = resolveAnswerFromGameReference(
+        {
+          gameId: maybe.gameId,
+          seed: normalizeSeed(maybe.seed),
+        },
+        words,
+      );
+
+      const normalized: PersistedGameState = {
+        sessionId:
+          typeof maybe.sessionId === "string" ? maybe.sessionId : sessionId,
+        gameId: maybe.gameId,
+        seed: normalizeSeed(maybe.seed),
+        answer: answer ?? initialAnswer,
+        guesses: maybe.guesses,
+        current: maybe.current,
+        gameOver: maybe.gameOver,
+      };
+
+      if (!hasInProgressGame(normalized)) {
+        return createInitialGameState(sessionId, initialAnswer);
+      }
+
+      return normalized;
+    }
 
     if (
       typeof maybe.answer === "string" &&
@@ -57,9 +104,14 @@ export const normalizePersistedGameState = (
       typeof maybe.gameOver === "boolean" &&
       maybe.guesses.every(isGuessResult)
     ) {
+      const reference = createGameReferenceForAnswer(maybe.answer, words, {
+        deterministic: true,
+      });
       const normalized: PersistedGameState = {
         sessionId:
           typeof maybe.sessionId === "string" ? maybe.sessionId : sessionId,
+        gameId: reference.gameId,
+        seed: reference.seed,
         answer: maybe.answer,
         guesses: maybe.guesses,
         current: maybe.current,

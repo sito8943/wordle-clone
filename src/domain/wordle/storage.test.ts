@@ -9,11 +9,15 @@ import type { PersistedGameState } from "./types";
 const makeState = (
   overrides: Partial<PersistedGameState> = {},
 ): PersistedGameState => ({
-  sessionId: "session-1",
-  answer: "CRANE",
-  guesses: [],
-  current: "",
-  gameOver: false,
+  ...({
+    sessionId: "session-1",
+    gameId: "game-1",
+    seed: 123,
+    answer: "CRANE",
+    guesses: [],
+    current: "",
+    gameOver: false,
+  } satisfies PersistedGameState),
   ...overrides,
 });
 
@@ -50,7 +54,14 @@ describe("persistGameState", () => {
     const state = makeState({ current: "CR" });
     persistGameState(state);
     const key = import.meta.env.VITE_WORDLE_GAME_STORAGE_KEY ?? "wordle:game";
-    expect(localStorage.getItem(key)).not.toBeNull();
+    expect(JSON.parse(localStorage.getItem(key)!)).toEqual({
+      sessionId: "session-1",
+      gameId: "game-1",
+      seed: 123,
+      guesses: [],
+      current: "CR",
+      gameOver: false,
+    });
   });
 
   it("removes state from localStorage when game has no progress", () => {
