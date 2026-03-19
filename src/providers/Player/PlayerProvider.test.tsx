@@ -121,6 +121,19 @@ describe("PlayerProvider", () => {
     expect(result.current.player.showEndOfGameDialogs).toBe(true);
   });
 
+  it("does not rewrite normalized player state on mount", () => {
+    localStorage.setItem("player", JSON.stringify(DEFAULT_PLAYER));
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
+
+    renderHook(() => usePlayer(), {
+      wrapper: makeWrapper(),
+    });
+
+    expect(
+      setItemSpy.mock.calls.filter(([key]) => key === "player"),
+    ).toHaveLength(0);
+  });
+
   it("updatePlayer changes the player name and stores a recovery code", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
@@ -428,6 +441,43 @@ describe("PlayerProvider", () => {
     expect(result.current.player.code).toBe("ZX90");
     expect(result.current.player.score).toBe(12);
     expect(result.current.player.difficulty).toBe("normal");
+  });
+
+  it("skips duplicate current-profile fetch when queued victories already hydrate remote state", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Ana",
+        code: "ZX90",
+        score: 3,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
+    const syncVictoryEvents = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      playerCode: "ZX90",
+      score: 12,
+      streak: 4,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    const getCurrentPlayerProfile = vi.fn().mockResolvedValue(null);
+
+    renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ syncVictoryEvents, getCurrentPlayerProfile }),
+    });
+
+    await waitFor(() => {
+      expect(syncVictoryEvents).toHaveBeenCalled();
+    });
+
+    expect(getCurrentPlayerProfile).not.toHaveBeenCalled();
   });
 });
 

@@ -6,6 +6,44 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return;
+          }
+
+          if (
+            id.includes("/react/") ||
+            id.includes("/react-dom/") ||
+            id.includes("scheduler")
+          ) {
+            return "react-vendor";
+          }
+
+          if (
+            id.includes("react-router") ||
+            id.includes("@tanstack/react-query")
+          ) {
+            return "app-vendor";
+          }
+
+          if (id.includes("i18next") || id.includes("react-i18next")) {
+            return "i18n-vendor";
+          }
+
+          if (id.includes("@fortawesome")) {
+            return "icons-vendor";
+          }
+
+          if (id.includes("convex")) {
+            return "convex-vendor";
+          }
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@api": fileURLToPath(new URL("./src/api", import.meta.url)),

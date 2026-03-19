@@ -1,6 +1,7 @@
 "ignores": [
     "tailwindcss",
     "@fontsource/*",
+    "@fontsource-variable/*",
     "@domain/*",
     "@layouts/*",
     "@views/*",

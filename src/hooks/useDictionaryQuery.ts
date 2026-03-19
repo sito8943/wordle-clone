@@ -9,9 +9,12 @@ const useDictionaryQuery = (
 ) => {
   const { wordDictionaryClient } = useApi();
   const queryClient = useQueryClient();
+  const hasInitialWords = initialWords.length > 0;
 
   useQuery({
     queryKey: queryKeys.dictionaryChecksumByLanguage(language),
+    enabled: hasInitialWords,
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const remote = await wordDictionaryClient.fetchRemoteChecksum(language);
       if (!remote) return null;
@@ -31,7 +34,8 @@ const useDictionaryQuery = (
   return useQuery({
     queryKey: queryKeys.dictionaryByLanguage(language),
     queryFn: () => wordDictionaryClient.loadWords(language),
-    initialData: initialWords.length > 0 ? initialWords : undefined,
+    initialData: hasInitialWords ? initialWords : undefined,
+    staleTime: hasInitialWords ? Number.POSITIVE_INFINITY : undefined,
   });
 };
 

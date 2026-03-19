@@ -1,13 +1,11 @@
-import type { JSX } from "react";
+import { memo, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { Board } from "../components";
-import { useHomeView } from "../providers";
+import type { BoardContentProps, BoardSectionProps } from "./types";
 
-const BoardSection = (): JSX.Element => {
-  const { t } = useTranslation();
-  const { controller, animateTileEntry } = useHomeView();
-  const {
+const BoardContent = memo(
+  ({
     guesses,
     current,
     gameOver,
@@ -17,55 +15,15 @@ const BoardSection = (): JSX.Element => {
     startAnimationSeed,
     startAnimationsEnabled,
     boardShakePulse,
-    showHardModeFinalStretchBar,
-    hardModeSecondsLeft,
-    hardModeFinalStretchProgressPercent,
     activeRowHintStatuses,
     hintRevealPulse,
     hintRevealTileIndex,
-  } = controller;
+    animateTileEntry,
+  }: BoardContentProps): JSX.Element => {
+    const { t } = useTranslation();
 
-  return (
-    <ErrorBoundary
-      name="home-board"
-      resetKeys={[
-        guesses.length,
-        current,
-        gameOver,
-        won,
-        startAnimationSeed,
-        boardShakePulse,
-      ]}
-      fallback={({ reset }) => (
-        <ErrorFallback
-          title={t("home.sections.boardError.title")}
-          description={t("home.sections.boardError.description")}
-          actionLabel={t("home.sections.boardError.action")}
-          onAction={reset}
-        />
-      )}
-    >
+    return (
       <>
-        {showHardModeFinalStretchBar && (
-          <div
-            role="progressbar"
-            aria-label={t("home.sections.insaneCountdownAriaLabel")}
-            aria-valuemin={0}
-            aria-valuemax={15}
-            aria-valuenow={hardModeSecondsLeft}
-            className="w-full max-w-md"
-          >
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-200/80 dark:bg-blue-950/50">
-              <div
-                className="h-full rounded-full bg-blue-500 transition-[width] duration-1000 ease-linear dark:bg-blue-400"
-                style={{
-                  width: `${hardModeFinalStretchProgressPercent}%`,
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         <Board
           key={`board-${startAnimationSeed}`}
           guesses={guesses}
@@ -88,8 +46,76 @@ const BoardSection = (): JSX.Element => {
           </p>
         )}
       </>
+    );
+  },
+);
+
+const HardModeProgressBar = memo(
+  ({
+    showHardModeFinalStretchBar,
+    hardModeSecondsLeft,
+    hardModeFinalStretchProgressPercent,
+  }: BoardSectionProps["hardModeProgress"]): JSX.Element | null => {
+    const { t } = useTranslation();
+
+    if (!showHardModeFinalStretchBar) {
+      return null;
+    }
+
+    return (
+      <div
+        role="progressbar"
+        aria-label={t("home.sections.insaneCountdownAriaLabel")}
+        aria-valuemin={0}
+        aria-valuemax={15}
+        aria-valuenow={hardModeSecondsLeft}
+        className="w-full max-w-md"
+      >
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-200/80 dark:bg-blue-950/50">
+          <div
+            className="h-full origin-left rounded-full bg-blue-500 transition-transform duration-1000 ease-linear dark:bg-blue-400"
+            style={{
+              transform: `scaleX(${hardModeFinalStretchProgressPercent / 100})`,
+            }}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
+const BoardSection = ({
+  board,
+  hardModeProgress,
+}: BoardSectionProps): JSX.Element => {
+  const { t } = useTranslation();
+
+  return (
+    <ErrorBoundary
+      name="home-board"
+      resetKeys={[
+        board.guesses.length,
+        board.current,
+        board.gameOver,
+        board.won,
+        board.startAnimationSeed,
+        board.boardShakePulse,
+      ]}
+      fallback={({ reset }) => (
+        <ErrorFallback
+          title={t("home.sections.boardError.title")}
+          description={t("home.sections.boardError.description")}
+          actionLabel={t("home.sections.boardError.action")}
+          onAction={reset}
+        />
+      )}
+    >
+      <>
+        <HardModeProgressBar {...hardModeProgress} />
+        <BoardContent {...board} />
+      </>
     </ErrorBoundary>
   );
 };
 
-export default BoardSection;
+export default memo(BoardSection);

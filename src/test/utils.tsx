@@ -82,6 +82,8 @@ const createMockScoreClient = (
     } as RemotePlayerProfile),
     getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
     cachePlayerScore: vi.fn(),
+    getCachedTopScores: vi.fn().mockReturnValue(DEFAULT_TOP_SCORES_RESULT),
+    syncPendingScores: vi.fn().mockResolvedValue({ flushed: false }),
     queueVictoryEvent: vi.fn(),
     syncVictoryEvents: vi.fn().mockResolvedValue(null),
     adoptRecoveredIdentity: vi.fn(),

@@ -296,7 +296,7 @@ describe("ScoreClient", () => {
       UPDATE_SCORE_MUTATION,
     );
 
-    await client.listTopScores(10);
+    await client.syncPendingScores();
 
     expect(mutation).toHaveBeenNthCalledWith(
       2,

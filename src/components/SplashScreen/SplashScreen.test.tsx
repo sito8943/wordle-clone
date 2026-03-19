@@ -1,6 +1,11 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { initI18n } from "@i18n";
 import SplashScreen from "./SplashScreen";
+
+beforeAll(async () => {
+  await initI18n();
+});
 
 afterEach(cleanup);
 

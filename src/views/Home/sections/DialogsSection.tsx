@@ -1,8 +1,8 @@
-import { lazy, Suspense, type JSX } from "react";
+import { lazy, memo, Suspense, type JSX } from "react";
 import { useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
-import { useHomeView } from "../providers/";
+import type { DialogsSectionProps } from "./types";
 
 const SessionResumeDialog = lazy(
   () => import("../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
@@ -27,34 +27,40 @@ const DefeatDialog = lazy(
   () => import("../components/Dialogs/DefeatDialog/DefeatDialog"),
 );
 
-const DialogsSection = (): JSX.Element => {
+const DialogsSection = ({
+  message,
+  showResumeDialog,
+  showRefreshDialog,
+  showWordsDialog,
+  showHelpDialog,
+  showDeveloperConsoleDialog,
+  showVictoryDialog,
+  showDefeatDialog,
+  showEndOfGameSettingsHint,
+  endOfGameAnswer,
+  victoryScoreSummary,
+  endOfGameCurrentStreak,
+  endOfGameBestStreak,
+  continuePreviousBoard,
+  startNewBoard,
+  closeEndOfGameDialog,
+  cancelRefreshBoard,
+  confirmRefreshBoard,
+  dictionaryWords,
+  closeWordsDialog,
+  closeHelpDialog,
+  closeDeveloperConsoleDialog,
+  wordListButtonEnabled,
+  developerConsoleEnabled,
+  player,
+  submitDeveloperPlayer,
+  refreshRemoteDictionaryChecksum,
+  isRefreshingDictionaryChecksum,
+  dictionaryChecksumMessage,
+  dictionaryChecksumMessageKind,
+}: DialogsSectionProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { controller, wordListButtonEnabled } = useHomeView();
-  const {
-    message,
-    showResumeDialog,
-    showRefreshDialog,
-    showWordsDialog,
-    showHelpDialog,
-    showDeveloperConsoleDialog,
-    showVictoryDialog,
-    showDefeatDialog,
-    showEndOfGameSettingsHint,
-    endOfGameAnswer,
-    victoryScoreSummary,
-    endOfGameCurrentStreak,
-    endOfGameBestStreak,
-    continuePreviousBoard,
-    startNewBoard,
-    closeEndOfGameDialog,
-    cancelRefreshBoard,
-    confirmRefreshBoard,
-    dictionaryWords,
-    closeWordsDialog,
-    closeHelpDialog,
-    closeDeveloperConsoleDialog,
-  } = controller;
   const resumeDialogVisible = showResumeDialog;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
   const refreshDialogVisible =
@@ -108,51 +114,73 @@ const DialogsSection = (): JSX.Element => {
           </div>
         )}
         <Suspense fallback={null}>
-          <SessionResumeDialog
-            visible={resumeDialogVisible}
-            onClose={continuePreviousBoard}
-            onStartNew={startNewBoard}
-          />
-          <RefreshConfirmationDialog
-            visible={refreshDialogVisible}
-            onClose={cancelRefreshBoard}
-            onConfirm={confirmRefreshBoard}
-          />
-          <WordListDialog
-            visible={wordListDialogVisible}
-            language="en"
-            words={dictionaryWords}
-            onClose={closeWordsDialog}
-          />
-          <HelpDialog visible={helpDialogVisible} onClose={closeHelpDialog} />
+          {resumeDialogVisible ? (
+            <SessionResumeDialog
+              visible
+              onClose={continuePreviousBoard}
+              onStartNew={startNewBoard}
+            />
+          ) : null}
+          {refreshDialogVisible ? (
+            <RefreshConfirmationDialog
+              visible
+              onClose={cancelRefreshBoard}
+              onConfirm={confirmRefreshBoard}
+            />
+          ) : null}
+          {wordListDialogVisible ? (
+            <WordListDialog
+              visible
+              language="en"
+              words={dictionaryWords}
+              onClose={closeWordsDialog}
+            />
+          ) : null}
+          {helpDialogVisible ? (
+            <HelpDialog visible onClose={closeHelpDialog} />
+          ) : null}
           {victoryScoreSummary ? (
-            <VictoryDialog
-              visible={showVictoryDialog}
+            showVictoryDialog ? (
+              <VictoryDialog
+                visible
+                answer={endOfGameAnswer}
+                currentStreak={endOfGameCurrentStreak}
+                scoreSummary={victoryScoreSummary}
+                showSettingsHint={showEndOfGameSettingsHint}
+                onClose={closeEndOfGameDialog}
+                onPlayAgain={startNewBoard}
+              />
+            ) : null
+          ) : null}
+          {showDefeatDialog ? (
+            <DefeatDialog
+              visible
               answer={endOfGameAnswer}
-              currentStreak={endOfGameCurrentStreak}
-              scoreSummary={victoryScoreSummary}
+              bestStreak={endOfGameBestStreak}
               showSettingsHint={showEndOfGameSettingsHint}
               onClose={closeEndOfGameDialog}
               onPlayAgain={startNewBoard}
+              onChangeDifficulty={changeDifficulty}
             />
           ) : null}
-          <DefeatDialog
-            visible={showDefeatDialog}
-            answer={endOfGameAnswer}
-            bestStreak={endOfGameBestStreak}
-            showSettingsHint={showEndOfGameSettingsHint}
-            onClose={closeEndOfGameDialog}
-            onPlayAgain={startNewBoard}
-            onChangeDifficulty={changeDifficulty}
-          />
-          <HomeDeveloperConsoleDialog
-            visible={developerConsoleDialogVisible}
-            onClose={closeDeveloperConsoleDialog}
-          />
+          {developerConsoleDialogVisible ? (
+            <HomeDeveloperConsoleDialog
+              visible
+              onClose={closeDeveloperConsoleDialog}
+              developerConsoleEnabled={developerConsoleEnabled}
+              player={player}
+              showResumeDialog={showResumeDialog}
+              submitDeveloperPlayer={submitDeveloperPlayer}
+              refreshRemoteDictionaryChecksum={refreshRemoteDictionaryChecksum}
+              isRefreshingDictionaryChecksum={isRefreshingDictionaryChecksum}
+              dictionaryChecksumMessage={dictionaryChecksumMessage}
+              dictionaryChecksumMessageKind={dictionaryChecksumMessageKind}
+            />
+          ) : null}
         </Suspense>
       </>
     </ErrorBoundary>
   );
 };
 
-export default DialogsSection;
+export default memo(DialogsSection);

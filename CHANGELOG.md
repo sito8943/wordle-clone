@@ -2,6 +2,16 @@
 
 ## 2026-03-19
 
+### Branch `features/performance`
+
+- Reduced Home route startup work by rendering lazy dialog modules only when their corresponding overlay is actually visible, so the lazy chunks for help, word list, refresh/session dialogs, result dialogs, and the developer console are no longer pulled into the tree on every Home mount.
+- Reworked initial bundle loading by deferring i18n resource loading out of the base runtime, splitting vendor code into dedicated Rollup chunks, and keeping translation resources in their own asset so the app no longer ships a single oversized startup chunk.
+- Simplified dictionary bootstrapping so cached word lists are reused as stable initial query data, background checksum validation only runs when cached words exist, and Home no longer refetches the same dictionary payload immediately after synchronous cache hydration.
+- Tightened `PlayerProvider` hydration to avoid redundant storage rewrites, skip duplicate remote profile fetches when queued victory sync already returns a fresh profile, and prevent unnecessary top-score invalidations when remote hydration does not materially change the player record.
+- Optimized the Insane countdown bar animation by switching the progress indicator from `width` animation to `transform: scaleX(...)`, avoiding repeated layout work during the timer ticks on the main gameplay screen.
+- Replaced runtime font registration/warmup with static `@font-face` loading for the latin variable Roboto and Roboto Slab subsets, so font assets participate in normal browser caching and stop flashing in after each hard refresh.
+- Updated supporting tests, lint/dependency configuration, and build validation to cover the new performance behavior and keep the repo green after the startup-path refactors.
+
 ### Branch `features/results`
 
 - Added dedicated end-of-game result dialogs on Home: a victory dialog with the solved word, score breakdown, current streak, and `Play again`, plus a defeat dialog with the solved word, best streak, replay action, and a shortcut to change difficulty from Profile.

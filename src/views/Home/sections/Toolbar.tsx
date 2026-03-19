@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import { memo, type JSX } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleQuestion,
@@ -9,34 +9,80 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak, Alert } from "@components";
 import { useTranslation } from "@i18n";
-import { useHomeView } from "../providers/";
-import type { NativeKeyboardClockStyle } from "./types";
+import type {
+  NativeKeyboardClockStyle,
+  ToolbarProps,
+  ToolbarTimerProps,
+} from "./types";
 
-const Toolbar = (): JSX.Element => {
-  const { t } = useTranslation();
-  const { controller, wordListButtonEnabled, developerConsoleEnabled } =
-    useHomeView();
-  const {
-    currentWinStreak,
-    dictionaryLoading,
-    dictionaryWords,
-    openWordsDialog,
-    hintsEnabledForDifficulty,
-    useHint,
-    hintButtonDisabled,
-    hintsRemaining,
-    openHelpDialog,
-    openDeveloperConsoleDialog,
+const HardModeTimerIndicator = memo(
+  ({
     showHardModeTimer,
     hardModeSecondsLeft,
     hardModeTickPulse,
     hardModeClockBoostScale,
-    showRefreshAttention,
-    refreshAttentionPulse,
-    refreshAttentionScale,
-    refreshBoard,
-    dictionaryError,
-  } = controller;
+  }: ToolbarTimerProps): JSX.Element | null => {
+    const { t } = useTranslation();
+
+    if (!showHardModeTimer) {
+      return null;
+    }
+
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label={t("home.toolbar.insaneTimerAriaLabel", {
+          seconds: hardModeSecondsLeft,
+        })}
+        className="mobile-compact-button inline-flex items-center gap-2 rounded border px-3 py-2 text-sm font-bold border-blue-300 bg-blue-100/90 text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
+      >
+        <span
+          key={hardModeTickPulse}
+          className="boost-animation inline-flex"
+          style={
+            {
+              "--boost-scale": hardModeClockBoostScale.toString(),
+            } as NativeKeyboardClockStyle
+          }
+        >
+          <FontAwesomeIcon
+            icon={faClock}
+            aria-hidden="true"
+            className="text-lg"
+          />
+        </span>
+        <span>
+          {t("home.toolbar.insaneTimerValue", {
+            seconds: hardModeSecondsLeft,
+          })}
+        </span>
+      </div>
+    );
+  },
+);
+
+const Toolbar = ({
+  currentWinStreak,
+  dictionaryLoading,
+  dictionaryWords,
+  openWordsDialog,
+  hintsEnabledForDifficulty,
+  useHint,
+  hintButtonDisabled,
+  hintsRemaining,
+  openHelpDialog,
+  openDeveloperConsoleDialog,
+  showRefreshAttention,
+  refreshAttentionPulse,
+  refreshAttentionScale,
+  refreshBoard,
+  dictionaryError,
+  wordListButtonEnabled,
+  developerConsoleEnabled,
+  timer,
+}: ToolbarProps): JSX.Element => {
+  const { t } = useTranslation();
 
   return (
     <>
@@ -95,37 +141,7 @@ const Toolbar = (): JSX.Element => {
               {t("home.toolbar.developerConsoleButton")}
             </Button>
           )}
-          {showHardModeTimer && (
-            <div
-              role="status"
-              aria-live="polite"
-              aria-label={t("home.toolbar.insaneTimerAriaLabel", {
-                seconds: hardModeSecondsLeft,
-              })}
-              className={`mobile-compact-button inline-flex items-center gap-2 rounded border px-3 py-2 text-sm font-bold border-blue-300 bg-blue-100/90 text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200`}
-            >
-              <span
-                key={hardModeTickPulse}
-                className="boost-animation inline-flex"
-                style={
-                  {
-                    "--boost-scale": hardModeClockBoostScale.toString(),
-                  } as NativeKeyboardClockStyle
-                }
-              >
-                <FontAwesomeIcon
-                  icon={faClock}
-                  aria-hidden="true"
-                  className="text-lg"
-                />
-              </span>
-              <span>
-                {t("home.toolbar.insaneTimerValue", {
-                  seconds: hardModeSecondsLeft,
-                })}
-              </span>
-            </div>
-          )}
+          <HardModeTimerIndicator {...timer} />
           <span
             key={showRefreshAttention ? refreshAttentionPulse : "idle"}
             className={
@@ -172,4 +188,4 @@ const Toolbar = (): JSX.Element => {
   );
 };
 
-export default Toolbar;
+export default memo(Toolbar);

@@ -12,7 +12,11 @@ const Footer = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsVisible(window.scrollY > SCROLL_VISIBILITY_THRESHOLD);
+      const nextVisible = window.scrollY > SCROLL_VISIBILITY_THRESHOLD;
+
+      setIsVisible((previous) =>
+        previous === nextVisible ? previous : nextVisible,
+      );
     };
 
     handleScroll();

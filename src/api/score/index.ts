@@ -4,6 +4,7 @@ export type {
   RemotePlayerProfile,
   ScoreEntry,
   ScoreSource,
+  SyncPendingScoresResult,
   TopScoresResult,
   UpsertPlayerProfileInput,
 } from "./types";

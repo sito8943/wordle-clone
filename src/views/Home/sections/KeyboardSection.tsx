@@ -1,22 +1,21 @@
-import type { JSX } from "react";
+import { memo, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { Keyboard } from "../components";
-import { useHomeView } from "../providers/";
 import { useNativeKeyboardInput } from "../hooks";
+import type { KeyboardSectionProps } from "./types";
 
-const KeyboardSection = (): JSX.Element => {
+const KeyboardSection = ({
+  guesses,
+  current,
+  handleKey,
+  gameOver,
+  won,
+  keyboardEntryAnimationEnabled,
+  showResumeDialog,
+  preferNativeKeyboard,
+}: KeyboardSectionProps): JSX.Element => {
   const { t } = useTranslation();
-  const { controller, preferNativeKeyboard } = useHomeView();
-  const {
-    guesses,
-    current,
-    handleKey,
-    gameOver,
-    won,
-    keyboardEntryAnimationEnabled,
-    showResumeDialog,
-  } = controller;
 
   const nativeKeyboardBlocked = showResumeDialog || gameOver;
   const {
@@ -93,4 +92,4 @@ const KeyboardSection = (): JSX.Element => {
   );
 };
 
-export default KeyboardSection;
+export default memo(KeyboardSection);
