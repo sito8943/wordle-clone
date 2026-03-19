@@ -1429,8 +1429,8 @@ describe("App", () => {
 
     expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
     expect(
-      screen.getByRole("link", { name: "Profile settings" }),
-    ).toHaveAttribute("href", "/profile#end-dialogs");
+      screen.getByRole("link", { name: "Profile settings" }).getAttribute("href"),
+    ).toBe("/profile#end-dialogs");
     expect(
       sessionStorage.getItem(END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY),
     ).toBe("seen");

@@ -195,7 +195,7 @@ describe("useHomeController", () => {
   });
 
   it("shows the end-of-game settings hint only once per tab session", () => {
-    const { rerender, result, unmount } = renderHook(() => useHomeController());
+    const { rerender, result } = renderHook(() => useHomeController());
 
     wordleState = {
       ...wordleState,
@@ -213,7 +213,13 @@ describe("useHomeController", () => {
       ),
     ).toBe("seen");
 
-    unmount();
+    wordleState = {
+      ...wordleState,
+      current: "",
+      gameOver: false,
+      guesses: [],
+    };
+    rerender();
 
     wordleState = {
       ...wordleState,
@@ -222,11 +228,10 @@ describe("useHomeController", () => {
       gameOver: true,
       guesses: ["SLATE", "CRANE", "BRICK"],
     };
+    rerender();
 
-    const { result: secondResult } = renderHook(() => useHomeController());
-
-    expect(secondResult.current.showDefeatDialog).toBe(true);
-    expect(secondResult.current.showEndOfGameSettingsHint).toBe(false);
+    expect(result.current.showDefeatDialog).toBe(true);
+    expect(result.current.showEndOfGameSettingsHint).toBe(false);
   });
 
   it("activates refresh attention immediately when end-of-game dialogs are disabled", () => {

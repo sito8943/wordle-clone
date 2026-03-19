@@ -84,9 +84,11 @@ describe("VictoryDialog", () => {
       />,
     );
 
-    expect(screen.getByText("You can disable these dialogs in")).toBeTruthy();
-    expect(
-      screen.getByRole("link", { name: "Profile settings" }),
-    ).toHaveAttribute("href", "/profile#end-dialogs");
+    const settingsLink = screen.getByRole("link", { name: "Profile settings" });
+
+    expect(settingsLink.closest("p")?.textContent).toContain(
+      "You can disable these dialogs in",
+    );
+    expect(settingsLink.getAttribute("href")).toBe("/profile#end-dialogs");
   });
 });
