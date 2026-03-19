@@ -2,12 +2,14 @@ import type { PlayerDifficulty } from "@domain/wordle";
 import type { HintTileStatus } from "@hooks/useWordle/types";
 
 export type HintUsageSnapshot = {
-  answer: string;
+  gameId: string;
+  gameKey?: string;
   hintsUsed: number;
 };
 
 export type UseHintControllerParams = {
   answer: string;
+  gameId: string;
   difficulty: PlayerDifficulty;
   hasInProgressGameAtMount: boolean;
   showResumeDialog: boolean;

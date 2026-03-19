@@ -1,4 +1,5 @@
 import type { PlayerDifficulty } from "@domain/wordle";
+import { hashGameId } from "@domain/wordle";
 import {
   EASY_MODE_HINT_LIMIT,
   HARD_MODE_HINT_LIMIT,
@@ -55,11 +56,16 @@ const isHintUsageSnapshot = (value: unknown): value is HintUsageSnapshot => {
   const maybe = value as Partial<HintUsageSnapshot>;
 
   return (
-    typeof maybe.answer === "string" && typeof maybe.hintsUsed === "number"
+    typeof maybe.gameId === "string" &&
+    typeof maybe.hintsUsed === "number" &&
+    (maybe.gameKey === undefined || typeof maybe.gameKey === "string")
   );
 };
 
-export const getHintsUsedForAnswer = (answer: string): number => {
+export const getHintUsageKey = (answer: string): string =>
+  hashGameId(answer.trim().toLowerCase()).toString(16);
+
+export const getHintsUsedForGame = (gameId: string, answer: string): number => {
   if (typeof window === "undefined") {
     return 0;
   }
@@ -74,7 +80,10 @@ export const getHintsUsedForAnswer = (answer: string): number => {
     if (!isHintUsageSnapshot(parsed)) {
       return 0;
     }
-    if (parsed.answer !== answer) {
+    if (
+      parsed.gameId !== gameId &&
+      parsed.gameKey !== getHintUsageKey(answer)
+    ) {
       return 0;
     }
 
@@ -92,10 +101,12 @@ export const setHintUsageSnapshot = (snapshot: HintUsageSnapshot): void => {
   try {
     localStorage.setItem(
       HINT_USAGE_STORAGE_KEY,
-      JSON.stringify({
-        ...snapshot,
-        hintsUsed: normalizeHintsUsed(snapshot.hintsUsed),
-      }),
+        JSON.stringify({
+          ...snapshot,
+          gameKey:
+            typeof snapshot.gameKey === "string" ? snapshot.gameKey : undefined,
+          hintsUsed: normalizeHintsUsed(snapshot.hintsUsed),
+        }),
     );
   } catch {
     // Ignore storage write errors.

@@ -2,6 +2,7 @@ import { ConvexGateway } from "../convex/ConvexGateway";
 import {
   ADD_SCORE_MUTATION,
   DEFAULT_LIMIT,
+  GET_CURRENT_PLAYER_PROFILE_QUERY,
   GET_PLAYER_BY_CODE_QUERY,
   IS_NICK_AVAILABLE_QUERY,
   LIST_TOP_SCORES_QUERY,
@@ -10,8 +11,10 @@ import {
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PENDING_KEY,
   SCOREBOARD_PROFILE_IDENTITY_KEY,
+  SYNC_VICTORY_EVENTS_MUTATION,
   UPDATE_SCORE_MUTATION,
   UPSERT_PLAYER_PROFILE_MUTATION,
+  WORDLE_SYNC_EVENTS_KEY,
 } from "./constants";
 import type {
   RecordScoreInput,
@@ -22,6 +25,8 @@ import type {
   ScoreSource,
   StoredScoreIdentity,
   StoredScore,
+  StoredVictorySyncEvent,
+  SyncVictoryEventsInput,
   TopScoresResult,
   UpsertPlayerProfileInput,
 } from "./types";
@@ -100,6 +105,123 @@ class ScoreClient {
       createdAt: Date.now(),
       playerCode: this.normalizeRecoveryCode(code),
     });
+  }
+
+  async getCurrentPlayerProfile(): Promise<RemotePlayerProfile | null> {
+    const identity = this.readProfileIdentity();
+
+    if (!this.gateway.isConfigured || !this.isOnline()) {
+      return null;
+    }
+
+    const response = await this.gateway.query<unknown>(
+      GET_CURRENT_PLAYER_PROFILE_QUERY,
+      {
+        clientId: this.clientId,
+        clientRecordId: identity?.clientRecordId,
+      },
+    );
+
+    if (response === null) {
+      return null;
+    }
+
+    const profile = this.parseRemotePlayerProfile(response, {
+      clientId: this.clientId,
+      clientRecordId: identity?.clientRecordId ?? "",
+      nick: "Player",
+      score: 0,
+      streak: 0,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: Date.now(),
+      playerCode: "",
+    });
+
+    this.adoptRecoveredIdentity(profile);
+    return profile;
+  }
+
+  queueVictoryEvent(event: StoredVictorySyncEvent): void {
+    const pending = this.readVictoryEvents();
+    const next = pending.filter((entry) => entry.id !== event.id);
+    next.push({
+      ...event,
+      score: this.normalizeScore(event.score),
+      streak: this.normalizeStreak(event.streak),
+      wonAt:
+        Number.isFinite(event.wonAt) && event.wonAt > 0
+          ? Math.floor(event.wonAt)
+          : Date.now(),
+      version: 1,
+    });
+    this.writeVictoryEvents(next);
+  }
+
+  async syncVictoryEvents(
+    input: SyncVictoryEventsInput,
+  ): Promise<RemotePlayerProfile | null> {
+    const events = this.readVictoryEvents();
+    const identity = this.readProfileIdentity();
+
+    if (events.length === 0 || !this.gateway.isConfigured || !this.isOnline()) {
+      return null;
+    }
+
+    const orderedEvents = [...events].sort((left, right) => left.wonAt - right.wonAt);
+
+    try {
+      const response = await this.gateway.mutation<unknown>(
+        SYNC_VICTORY_EVENTS_MUTATION,
+        {
+          clientId: this.clientId,
+          clientRecordId: identity?.clientRecordId,
+          nick: this.normalizeNick(input.nick),
+          difficulty: input.difficulty,
+          keyboardPreference: input.keyboardPreference,
+          events: orderedEvents,
+        },
+      );
+      const lastEvent = orderedEvents[orderedEvents.length - 1];
+      const profile = this.parseRemotePlayerProfile(response, {
+        clientId: this.clientId,
+        clientRecordId: identity?.clientRecordId ?? this.createLocalId(),
+        nick: input.nick,
+        score: lastEvent.score,
+        streak: lastEvent.streak,
+        difficulty: input.difficulty,
+        keyboardPreference: input.keyboardPreference,
+        createdAt: lastEvent.wonAt,
+        playerCode: "",
+      });
+
+      this.clearVictoryEvents();
+      this.adoptRecoveredIdentity(profile);
+      return profile;
+    } catch (error) {
+      if (!this.gateway.isNetworkError(error)) {
+        throw error;
+      }
+
+      return null;
+    }
+  }
+
+  cachePlayerScore(input: RecordScoreInput): void {
+    const identity = this.readProfileIdentity();
+    const createdAt = input.createdAt ?? Date.now();
+
+    this.addToCache(
+      {
+        localId: identity?.clientRecordId ?? this.createLocalId(createdAt),
+        clientId: this.clientId,
+        nick: this.normalizeNick(input.nick),
+        score: this.normalizeScore(input.score),
+        streak: this.normalizeStreak(input.streak ?? 0),
+        createdAt,
+      },
+      input.overwriteExisting === true,
+    );
   }
 
   adoptRecoveredIdentity(profile: RemotePlayerProfile): void {
@@ -497,6 +619,38 @@ class ScoreClient {
     this.storage.setItem(key, JSON.stringify(scores));
   }
 
+  private readVictoryEvents(): StoredVictorySyncEvent[] {
+    try {
+      const raw = this.storage.getItem(WORDLE_SYNC_EVENTS_KEY);
+      if (!raw) {
+        return [];
+      }
+
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed.flatMap((entry) => {
+        const normalized = this.toStoredVictorySyncEvent(entry);
+        return normalized ? [normalized] : [];
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  private writeVictoryEvents(events: StoredVictorySyncEvent[]): void {
+    this.storage.setItem(
+      WORDLE_SYNC_EVENTS_KEY,
+      JSON.stringify(events.sort((left, right) => left.wonAt - right.wonAt)),
+    );
+  }
+
+  private clearVictoryEvents(): void {
+    this.storage.removeItem(WORDLE_SYNC_EVENTS_KEY);
+  }
+
   private normalizeNick(nick: string): string {
     const trimmed = nick.trim();
     if (trimmed.length === 0) {
@@ -556,6 +710,34 @@ class ScoreClient {
     }
 
     return Math.random().toString(36).slice(2);
+  }
+
+  private toStoredVictorySyncEvent(
+    value: unknown,
+  ): StoredVictorySyncEvent | null {
+    if (!value || typeof value !== "object") {
+      return null;
+    }
+
+    const candidate = value as Partial<StoredVictorySyncEvent>;
+    if (
+      typeof candidate.id !== "string" ||
+      typeof candidate.playerId !== "string" ||
+      typeof candidate.score !== "number" ||
+      typeof candidate.streak !== "number" ||
+      typeof candidate.wonAt !== "number"
+    ) {
+      return null;
+    }
+
+    return {
+      id: candidate.id,
+      playerId: candidate.playerId,
+      score: this.normalizeScore(candidate.score),
+      streak: this.normalizeStreak(candidate.streak),
+      wonAt: Math.floor(candidate.wonAt),
+      version: 1,
+    };
   }
 
   private toStoredScore(value: unknown): StoredScore | null {

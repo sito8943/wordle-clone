@@ -159,6 +159,15 @@ const buildPlayerProfile = (record: ScoreRecord) => ({
   createdAt: record.createdAt,
 });
 
+const victoryEventValidator = v.object({
+  id: v.string(),
+  playerId: v.string(),
+  score: v.number(),
+  streak: v.number(),
+  wonAt: v.number(),
+  version: v.number(),
+});
+
 const resolveProfileRecord = async (
   ctx: ScoresCtx,
   clientRecordId?: string,
@@ -428,6 +437,95 @@ export const getPlayerByCode = query({
     }
 
     return buildPlayerProfile(existing);
+  },
+});
+
+export const getCurrentPlayerProfile = query({
+  args: {
+    clientId: v.optional(v.string()),
+    clientRecordId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await resolveProfileRecord(
+      ctx,
+      args.clientRecordId,
+      args.clientId,
+    );
+
+    return existing ? buildPlayerProfile(existing) : null;
+  },
+});
+
+export const syncVictoryEvents = mutation({
+  args: {
+    clientId: v.optional(v.string()),
+    clientRecordId: v.optional(v.string()),
+    nick: v.string(),
+    difficulty: v.optional(v.string()),
+    keyboardPreference: v.optional(v.string()),
+    events: v.array(victoryEventValidator),
+  },
+  handler: async (ctx, args) => {
+    const orderedEvents = [...args.events]
+      .filter((event) => event.version === 1)
+      .sort((left, right) => left.wonAt - right.wonAt);
+
+    const finalEvent = orderedEvents.at(-1);
+    const profileId = await upsertScoreRecord(
+      ctx,
+      {
+        clientId: args.clientId,
+        clientRecordId: args.clientRecordId,
+        nick: args.nick,
+        score: finalEvent?.score ?? 0,
+        streak: finalEvent?.streak ?? 0,
+        createdAt: finalEvent?.wonAt ?? Date.now(),
+      },
+      true,
+    );
+
+    const profileRecord = (await ctx.db
+      .query("scores")
+      .withIndex("by_client_record_id", (query) =>
+        query.eq("clientRecordId", args.clientRecordId ?? profileId),
+      )
+      .first()) as ScoreRecord | null;
+
+    const existing =
+      profileRecord ??
+      ((await resolveProfileRecord(
+        ctx,
+        args.clientRecordId,
+        args.clientId,
+      )) as ScoreRecord | null);
+
+    if (!existing) {
+      throw new Error("Could not resolve player profile after sync.");
+    }
+
+    const patch = {
+      difficulty: normalizeDifficulty(args.difficulty ?? existing.difficulty),
+      keyboardPreference: normalizeKeyboardPreference(
+        args.keyboardPreference ?? existing.keyboardPreference,
+      ),
+      playerCode: await ensurePlayerCode(ctx, existing.playerCode),
+    };
+
+    if (
+      existing.difficulty !== patch.difficulty ||
+      existing.keyboardPreference !== patch.keyboardPreference ||
+      normalizeCode(existing.playerCode ?? "") !== patch.playerCode
+    ) {
+      await ctx.db.patch(existing._id, patch);
+    }
+
+    return buildPlayerProfile({
+      ...existing,
+      ...patch,
+      score: finalEvent?.score ?? existing.score,
+      streak: finalEvent?.streak ?? existing.streak,
+      createdAt: finalEvent?.wonAt ?? existing.createdAt,
+    });
   },
 });
 

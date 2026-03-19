@@ -1,6 +1,15 @@
 import { env } from "@config";
 import { hasInProgressGame } from "./state";
-import type { PersistedGameState } from "./types";
+import type { PersistedGameRef, PersistedGameState } from "./types";
+
+const toPersistedGameRef = (state: PersistedGameState): PersistedGameRef => ({
+  sessionId: state.sessionId,
+  gameId: state.gameId,
+  seed: state.seed,
+  guesses: state.guesses,
+  current: state.current,
+  gameOver: state.gameOver,
+});
 
 export const readPersistedGameState = (): unknown => {
   if (typeof window === "undefined") {
@@ -26,7 +35,10 @@ export const persistGameState = (state: PersistedGameState): void => {
 
   try {
     if (hasInProgressGame(state)) {
-      localStorage.setItem(env.wordleGameStorageKey, JSON.stringify(state));
+      localStorage.setItem(
+        env.wordleGameStorageKey,
+        JSON.stringify(toPersistedGameRef(state)),
+      );
       return;
     }
 

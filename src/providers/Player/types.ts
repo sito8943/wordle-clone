@@ -13,7 +13,6 @@ export type PlayerContextType = {
   updatePlayerKeyboardPreference: (
     preference: PlayerKeyboardPreference,
   ) => void;
-  increaseScore: (points: number) => void;
-  increaseWinStreak: () => void;
-  resetWinStreak: () => void;
+  commitVictory: (points: number, wonAt?: number) => Promise<void>;
+  commitLoss: () => Promise<void>;
 };

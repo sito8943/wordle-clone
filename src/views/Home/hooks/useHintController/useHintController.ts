@@ -4,7 +4,8 @@ import { HINT_USAGE_STORAGE_KEY } from "./constants";
 import type { UseHintControllerParams, UseHintControllerResult } from "./types";
 import {
   clearHintUsageSnapshot,
-  getHintsUsedForAnswer,
+  getHintUsageKey,
+  getHintsUsedForGame,
   getHintStatusByDifficulty,
   getHintsLimitByDifficulty,
   setHintUsageSnapshot,
@@ -12,6 +13,7 @@ import {
 
 export const useHintController = ({
   answer,
+  gameId,
   difficulty,
   hasInProgressGameAtMount,
   showResumeDialog,
@@ -20,7 +22,7 @@ export const useHintController = ({
   revealHint,
 }: UseHintControllerParams): UseHintControllerResult => {
   const hintsLimit = getHintsLimitByDifficulty(difficulty);
-  const initialAnswerRef = useRef(answer);
+  const initialGameIdRef = useRef(gameId);
   const hasInProgressGameAtMountRef = useRef(hasInProgressGameAtMount);
   const [hintsUsed, setHintsUsed] = useState(0);
 
@@ -37,7 +39,10 @@ export const useHintController = ({
       return;
     }
 
-    const persistedHintsUsed = getHintsUsedForAnswer(initialAnswerRef.current);
+    const persistedHintsUsed = getHintsUsedForGame(
+      initialGameIdRef.current,
+      answer,
+    );
     if (persistedHintsUsed <= 0) {
       return;
     }
@@ -54,14 +59,14 @@ export const useHintController = ({
         return;
       }
 
-      setHintsUsed(getHintsUsedForAnswer(answer));
+      setHintsUsed(getHintsUsedForGame(gameId, answer));
     };
 
     window.addEventListener("storage", onStorage);
     return () => {
       window.removeEventListener("storage", onStorage);
     };
-  }, [answer]);
+  }, [answer, gameId]);
 
   const resetHints = useCallback(() => {
     setHintsUsed(0);
@@ -86,13 +91,14 @@ export const useHintController = ({
     setHintsUsed((previous) => {
       const next = previous + 1;
       setHintUsageSnapshot({
-        answer,
+        gameId,
+        gameKey: getHintUsageKey(answer),
         hintsUsed: next,
       });
 
       return next;
     });
-  }, [answer, difficulty, hintButtonDisabled, revealHint]);
+  }, [answer, difficulty, gameId, hintButtonDisabled, revealHint]);
 
   return {
     hintsRemaining,

@@ -17,12 +17,13 @@ describe("useHintController", () => {
   it("restores persisted hints for the same answer on mount", () => {
     localStorage.setItem(
       HINT_USAGE_STORAGE_KEY,
-      JSON.stringify({ answer: "APPLE", hintsUsed: 1 }),
+      JSON.stringify({ gameId: "game-1", hintsUsed: 1 }),
     );
 
     const { result } = renderHook(() =>
       useHintController({
         answer: "APPLE",
+        gameId: "game-1",
         difficulty: "normal",
         hasInProgressGameAtMount: true,
         showResumeDialog: false,
@@ -41,6 +42,7 @@ describe("useHintController", () => {
     const { result } = renderHook(() =>
       useHintController({
         answer: "APPLE",
+        gameId: "game-1",
         difficulty: "easy",
         hasInProgressGameAtMount: false,
         showResumeDialog: false,
@@ -56,16 +58,19 @@ describe("useHintController", () => {
 
     expect(revealHint).toHaveBeenCalledWith("correct");
     expect(result.current.hintsRemaining).toBe(1);
-    expect(JSON.parse(localStorage.getItem(HINT_USAGE_STORAGE_KEY)!)).toEqual({
-      answer: "APPLE",
-      hintsUsed: 1,
-    });
+    expect(JSON.parse(localStorage.getItem(HINT_USAGE_STORAGE_KEY)!)).toMatchObject(
+      {
+        gameId: "game-1",
+        hintsUsed: 1,
+      },
+    );
   });
 
   it("syncs hint state after a storage event from another tab", () => {
     const { result } = renderHook(() =>
       useHintController({
         answer: "APPLE",
+        gameId: "game-1",
         difficulty: "easy",
         hasInProgressGameAtMount: false,
         showResumeDialog: false,
@@ -78,7 +83,7 @@ describe("useHintController", () => {
     act(() => {
       localStorage.setItem(
         HINT_USAGE_STORAGE_KEY,
-        JSON.stringify({ answer: "APPLE", hintsUsed: 2 }),
+        JSON.stringify({ gameId: "game-1", hintsUsed: 2 }),
       );
       window.dispatchEvent(
         new StorageEvent("storage", { key: HINT_USAGE_STORAGE_KEY }),
@@ -92,12 +97,13 @@ describe("useHintController", () => {
   it("clears persisted hint usage when resetHints is called", () => {
     localStorage.setItem(
       HINT_USAGE_STORAGE_KEY,
-      JSON.stringify({ answer: "APPLE", hintsUsed: 1 }),
+      JSON.stringify({ gameId: "game-1", hintsUsed: 1 }),
     );
 
     const { result } = renderHook(() =>
       useHintController({
         answer: "APPLE",
+        gameId: "game-1",
         difficulty: "easy",
         hasInProgressGameAtMount: true,
         showResumeDialog: false,
