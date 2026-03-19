@@ -7,7 +7,6 @@ import App from "./App.tsx";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { queryClient } from "./queryClient";
-import { loadFontsAsync } from "@utils/loadFontsAsync";
 
 const root = createRoot(document.getElementById("root")!);
 
@@ -44,5 +43,3 @@ void initI18n().then(() => {
     </StrictMode>,
   );
 });
-
-void loadFontsAsync();

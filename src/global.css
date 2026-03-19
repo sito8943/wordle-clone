@@ -1,6 +1,24 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+@font-face {
+  font-family: "Roboto Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("@fontsource-variable/roboto/files/roboto-latin-wght-normal.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Roboto Slab Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("@fontsource-variable/roboto-slab/files/roboto-slab-latin-wght-normal.woff2")
+    format("woff2");
+}
+
 @theme {
   --color-primary: #2563eb;
   --color-secondary: #0f766e;
