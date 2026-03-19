@@ -192,3 +192,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - Prefer adding domain helpers instead of duplicating logic in hooks/views.
 - If storage keys or persistence shape changes, update tests + this file.
 - Keep route structure and provider boundaries intact unless explicitly requested.
+- All user-facing copy in JSX must go through `i18next` / `react-i18next`.
+- Resolve translations in views, layouts, shared UI, or controller output models, not in domain logic.
+- Do not move technical constants into i18n: storage keys, query names, mutation names, DOM ids, class names, timing values, and other implementation-only strings stay as code constants.
+- Internal developer/invariant errors such as missing provider usage messages may stay outside i18n unless they are intentionally shown as end-user UI.

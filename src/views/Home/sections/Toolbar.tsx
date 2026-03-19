@@ -117,7 +117,11 @@ const Toolbar = (): JSX.Element => {
                   className="text-lg"
                 />
               </span>
-              <span>{hardModeSecondsLeft}s</span>
+              <span>
+                {t("home.toolbar.insaneTimerValue", {
+                  seconds: hardModeSecondsLeft,
+                })}
+              </span>
             </div>
           )}
           <Button

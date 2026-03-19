@@ -47,7 +47,7 @@ export const useHintController = ({
       return;
     }
     setHintsUsed(persistedHintsUsed);
-  }, []);
+  }, [answer]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

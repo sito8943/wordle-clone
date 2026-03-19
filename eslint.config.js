@@ -20,4 +20,37 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "src/i18n/**",
+      "src/**/constants.ts",
+      "src/**/types.ts",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "JSXText[value=/[A-Za-zÀ-ÿ]/]",
+          message:
+            "Visible JSX text must come from i18n (`t(...)`) instead of literal strings.",
+        },
+        {
+          selector:
+            "JSXAttribute[name.name=/^(aria-label|title|placeholder|alt)$/][value.type='Literal'][value.value=/[A-Za-zÀ-ÿ]/]",
+          message:
+            "User-facing JSX attributes must use i18n (`t(...)`) instead of literal strings.",
+        },
+        {
+          selector:
+            "JSXExpressionContainer > Literal[value=/[A-Za-zÀ-ÿ]/]",
+          message:
+            "Visible JSX string literals must come from i18n (`t(...)`) instead of inline text.",
+        },
+      ],
+    },
+  },
 ]);
