@@ -73,9 +73,9 @@ const HardModeProgressBar = memo(
       >
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-200/80 dark:bg-blue-950/50">
           <div
-            className="h-full rounded-full bg-blue-500 transition-[width] duration-1000 ease-linear dark:bg-blue-400"
+            className="h-full origin-left rounded-full bg-blue-500 transition-transform duration-1000 ease-linear dark:bg-blue-400"
             style={{
-              width: `${hardModeFinalStretchProgressPercent}%`,
+              transform: `scaleX(${hardModeFinalStretchProgressPercent / 100})`,
             }}
           />
         </div>
