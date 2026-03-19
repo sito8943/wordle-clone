@@ -1,4 +1,5 @@
 import type { KeyboardProps } from "./types";
+import { useTranslation } from "@i18n";
 import useKeyboardController from "./useKeyboardController";
 
 export function Keyboard({
@@ -8,6 +9,7 @@ export function Keyboard({
   onEntryAnimationEnd,
   isLoss = false,
 }: KeyboardProps) {
+  const { t } = useTranslation();
   const { rows, keyStyleMap } = useKeyboardController({ guesses, isLoss });
 
   return (
@@ -15,7 +17,7 @@ export function Keyboard({
       <div aria-hidden="true" className="h-48 sm:hidden" />
       <div
         role="group"
-        aria-label="On-screen keyboard"
+        aria-label={t("home.gameplay.onScreenKeyboardAriaLabel")}
         onAnimationEnd={animateEntry ? onEntryAnimationEnd : undefined}
         className={`w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm dark:max-sm:bg-neutral-900/95 ${
           animateEntry ? "keyboard-entry-animation" : ""

@@ -6,6 +6,7 @@ import {
   type JSX,
 } from "react";
 import { Button, Dialog, useDialogCloseTransition } from "@components";
+import { useTranslation } from "@i18n";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
@@ -13,23 +14,19 @@ import {
 import type { HomeDeveloperConsoleDialogProps } from "@views/Home/hooks/useNativeKeyboardingInput/types";
 import { useHomeView } from "@views/Home/providers";
 import {
-  DEVELOPER_CONSOLE_CANCEL_ACTION_LABEL,
-  DEVELOPER_CONSOLE_DIALOG_DESCRIPTION,
-  DEVELOPER_CONSOLE_DIALOG_TITLE,
   DEVELOPER_CONSOLE_DIALOG_TITLE_ID,
   DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID,
   DEVELOPER_CONSOLE_KEYBOARD_INPUT_ID,
   DEVELOPER_CONSOLE_NAME_INPUT_ID,
-  DEVELOPER_CONSOLE_REFRESH_CHECKSUM_ACTION_LABEL,
   DEVELOPER_CONSOLE_SCORE_INPUT_ID,
   DEVELOPER_CONSOLE_STREAK_INPUT_ID,
-  DEVELOPER_CONSOLE_SUBMIT_ACTION_LABEL,
 } from "@views/Home/constants";
 
 const DeveloperConsoleDialog = ({
   visible,
   onClose,
 }: HomeDeveloperConsoleDialogProps): JSX.Element => {
+  const { t } = useTranslation();
   const { controller, player, developerConsoleEnabled } = useHomeView();
   const {
     showResumeDialog,
@@ -91,8 +88,8 @@ const DeveloperConsoleDialog = ({
       onClose={onClose}
       isClosing={isClosing}
       titleId={DEVELOPER_CONSOLE_DIALOG_TITLE_ID}
-      title={DEVELOPER_CONSOLE_DIALOG_TITLE}
-      description={DEVELOPER_CONSOLE_DIALOG_DESCRIPTION}
+      title={t("home.developerConsole.title")}
+      description={t("home.developerConsole.description")}
       panelClassName="max-w-lg"
       zIndexClassName="z-30"
       backdropAnimationClassName={backdropAnimationClassName}
@@ -103,7 +100,7 @@ const DeveloperConsoleDialog = ({
           htmlFor={DEVELOPER_CONSOLE_NAME_INPUT_ID}
           className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
         >
-          Player name
+          {t("home.developerConsole.nameLabel")}
         </label>
         <input
           id={DEVELOPER_CONSOLE_NAME_INPUT_ID}
@@ -123,7 +120,7 @@ const DeveloperConsoleDialog = ({
               htmlFor={DEVELOPER_CONSOLE_SCORE_INPUT_ID}
               className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
             >
-              Score
+              {t("common.score")}
             </label>
             <input
               id={DEVELOPER_CONSOLE_SCORE_INPUT_ID}
@@ -143,7 +140,7 @@ const DeveloperConsoleDialog = ({
               htmlFor={DEVELOPER_CONSOLE_STREAK_INPUT_ID}
               className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
             >
-              Streak
+              {t("common.streak")}
             </label>
             <input
               id={DEVELOPER_CONSOLE_STREAK_INPUT_ID}
@@ -166,7 +163,7 @@ const DeveloperConsoleDialog = ({
               htmlFor={DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID}
               className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
             >
-              Difficulty
+              {t("home.developerConsole.difficultyLabel")}
             </label>
             <select
               id={DEVELOPER_CONSOLE_DIFFICULTY_INPUT_ID}
@@ -177,10 +174,18 @@ const DeveloperConsoleDialog = ({
               }
               className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
             >
-              <option value="easy">Easy</option>
-              <option value="normal">Normal</option>
-              <option value="hard">Hard</option>
-              <option value="insane">Insane</option>
+              <option value="easy">
+                {t("profile.difficultyOptions.easy")}
+              </option>
+              <option value="normal">
+                {t("profile.difficultyOptions.normal")}
+              </option>
+              <option value="hard">
+                {t("profile.difficultyOptions.hard")}
+              </option>
+              <option value="insane">
+                {t("profile.difficultyOptions.insane")}
+              </option>
             </select>
           </div>
           <div>
@@ -188,7 +193,7 @@ const DeveloperConsoleDialog = ({
               htmlFor={DEVELOPER_CONSOLE_KEYBOARD_INPUT_ID}
               className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
             >
-              Keyboard mode
+              {t("home.developerConsole.keyboardModeLabel")}
             </label>
             <select
               id={DEVELOPER_CONSOLE_KEYBOARD_INPUT_ID}
@@ -201,16 +206,19 @@ const DeveloperConsoleDialog = ({
               }
               className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
             >
-              <option value="onscreen">On-screen keyboard</option>
-              <option value="native">Device keyboard (mobile)</option>
+              <option value="onscreen">
+                {t("profile.keyboardOptions.onscreen")}
+              </option>
+              <option value="native">
+                {t("profile.keyboardOptions.native")}
+              </option>
             </select>
           </div>
         </div>
 
         <div className="rounded-md border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900">
           <p className="text-xs text-neutral-700 dark:text-neutral-300">
-            Recompute checksum from current Convex words and patch existing
-            words metadata.
+            {t("home.developerConsole.checksumDescription")}
           </p>
           <div className="mt-2">
             <Button
@@ -222,8 +230,8 @@ const DeveloperConsoleDialog = ({
               }}
             >
               {isRefreshingDictionaryChecksum
-                ? "Refreshing..."
-                : DEVELOPER_CONSOLE_REFRESH_CHECKSUM_ACTION_LABEL}
+                ? t("home.developerConsole.refreshing")
+                : t("home.developerConsole.refreshChecksum")}
             </Button>
           </div>
           {dictionaryChecksumMessage && (
@@ -241,14 +249,14 @@ const DeveloperConsoleDialog = ({
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">
           <Button type="submit" disabled={isClosing}>
-            {DEVELOPER_CONSOLE_SUBMIT_ACTION_LABEL}
+            {t("home.developerConsole.apply")}
           </Button>
           <Button
             onClick={() => closeWithAction(onClose)}
             variant="outline"
             disabled={isClosing}
           >
-            {DEVELOPER_CONSOLE_CANCEL_ACTION_LABEL}
+            {t("home.developerConsole.cancel")}
           </Button>
         </div>
       </form>

@@ -1,4 +1,5 @@
 import { Row } from "./Row";
+import { useTranslation } from "@i18n";
 import type { BoardPropsType } from "./types";
 import useBoardController from "./useBoardController";
 
@@ -14,6 +15,7 @@ export function Board({
   hintRevealPulse = 0,
   hintRevealTileIndex = null,
 }: BoardPropsType) {
+  const { t } = useTranslation();
   const { rows, isShaking } = useBoardController({
     guesses,
     current,
@@ -31,7 +33,11 @@ export function Board({
 
   return (
     <div className={boardWrapperClassName}>
-      <div role="grid" aria-label="Wordle board" className={boardClassName}>
+      <div
+        role="grid"
+        aria-label={t("home.gameplay.boardAriaLabel")}
+        className={boardClassName}
+      >
         {rows.map((row) => {
           return (
             <Row

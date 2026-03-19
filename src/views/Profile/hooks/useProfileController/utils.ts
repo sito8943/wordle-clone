@@ -1,4 +1,4 @@
-import type { PersistedGameState, PlayerDifficulty } from "@domain/wordle";
+import type { PersistedGameState } from "@domain/wordle";
 
 export const hasActivePersistedGame = (value: unknown): boolean => {
   if (!value || typeof value !== "object") {
@@ -14,22 +14,4 @@ export const hasActivePersistedGame = (value: unknown): boolean => {
   return (
     maybeState.gameOver === false && (hasAttemptedGuess || hasTypedLetters)
   );
-};
-
-export const getPlayerDifficultyLabel = (
-  difficulty: PlayerDifficulty,
-): string => {
-  if (difficulty === "easy") {
-    return "Easy";
-  }
-
-  if (difficulty === "insane") {
-    return "Insane";
-  }
-
-  if (difficulty === "hard") {
-    return "Hard";
-  }
-
-  return "Normal";
 };

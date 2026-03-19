@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ScoreEntry, ScoreSource } from "@api/score";
 import { env } from "@config";
+import { i18n } from "@i18n";
 import { useApi } from "@providers";
 import { queryKeys } from "@hooks";
 import { formatDate } from "@hooks/utils";
@@ -28,7 +29,7 @@ export default function useScoreboardController() {
     topScoresError instanceof Error
       ? topScoresError.message
       : topScoresError
-        ? "Failed to load scoreboard."
+        ? i18n.t("errors.scoreboard.description")
         : "";
 
   const refresh = useCallback(async () => {

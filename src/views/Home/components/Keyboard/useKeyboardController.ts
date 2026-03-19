@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { KEYBOARD_ROWS, getKeyStatuses } from "@domain/wordle";
+import { i18n } from "@i18n";
 import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constants";
 import type { KeyboardProps, KeyboardRowModel } from "./types";
 
@@ -22,10 +23,10 @@ const useKeyboardController = ({
           displayKey: key === "BACKSPACE" ? "⌫" : key,
           ariaLabel:
             key === "BACKSPACE"
-              ? "Delete letter"
+              ? i18n.t("home.gameplay.keys.deleteLetter")
               : key === "ENTER"
-                ? "Submit guess"
-                : `Letter ${key}`,
+                ? i18n.t("home.gameplay.keys.submitGuess")
+                : i18n.t("home.gameplay.keys.letter", { key }),
         })),
       ),
     [keyStatuses],

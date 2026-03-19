@@ -2,6 +2,15 @@
 
 ## 2026-03-19
 
+### Branch `i18n-migration`
+
+- Added a shared `i18next` + `react-i18next` setup for the React + Vite app, including centralized translation resources and alias wiring for app, Vite, and Vitest.
+- Migrated user-facing copy from shared shell, Home, Profile, Scoreboard, NotFound, dialogs, board/keyboard accessibility labels, and gameplay status messaging to i18n.
+- Reduced copy-only `constants.ts` usage so technical values stay as constants while visible UI text is resolved through translations.
+- Updated tests to assert translated UI labels and messages where needed, and expanded validation around translated gameplay and dialog accessibility text.
+- Added an ESLint guardrail that blocks new literal user-facing strings in JSX text and visible JSX attributes, while excluding tests, i18n resource files, and technical constants modules.
+- Documented the i18n migration plan and architecture boundaries in project docs so translation ownership is explicit and future UI copy changes follow the same pattern.
+
 ### Branch `features/fraud`
 
 - Completed the anti-fraud storage hardening pass for gameplay and profile state, documenting the audit and rollout plan in `docs/STORAGE_PHASE0_AUDIT.md` and `docs/STORAGE_ANTI_FRAUD_PLAN.md`.

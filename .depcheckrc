@@ -9,5 +9,6 @@
     "@utils/*",
     "@providers/*",
     "@hooks/*",
-    "@vitest/coverage-v8"
+    "@vitest/coverage-v8",
+    "i18next-browser-languagedetector"
   ]

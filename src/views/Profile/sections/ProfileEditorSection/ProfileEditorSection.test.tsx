@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Player } from "@domain/wordle";
+import { i18n } from "@i18n";
 import type { ProfileViewContextValue } from "@views/Profile/providers/types";
 import ProfileEditorSection from "./ProfileEditorSection";
 
@@ -43,7 +44,6 @@ const buildMockProfileView = (
       isDifficultyChangeConfirmationOpen: false,
       confirmDifficultyChange: vi.fn(),
       cancelDifficultyChange: vi.fn(),
-      pendingDifficultyLabel: vi.fn().mockReturnValue("Normal"),
       ...overrides,
     },
   };
@@ -56,14 +56,18 @@ describe("ProfileEditorSection", () => {
 
   it("renders readonly profile card and success status", () => {
     mockProfileView = buildMockProfileView({
-      savedMessage: "Configuration saved.",
+      savedMessage: i18n.t("profile.savedMessage"),
     });
 
     render(<ProfileEditorSection />);
 
     expect(screen.getByRole("status")).toBeTruthy();
-    const nameInput = screen.getByLabelText("Name:") as HTMLInputElement;
-    const scoreInput = screen.getByLabelText("Score:") as HTMLInputElement;
+    const nameInput = screen.getByLabelText(
+      i18n.t("profile.labels.name"),
+    ) as HTMLInputElement;
+    const scoreInput = screen.getByLabelText(
+      i18n.t("profile.labels.score"),
+    ) as HTMLInputElement;
 
     expect(nameInput.value).toBe("Player");
     expect(scoreInput.value).toBe("14");
@@ -78,8 +82,12 @@ describe("ProfileEditorSection", () => {
 
     render(<ProfileEditorSection />);
 
-    expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
-    const nameInput = screen.getByLabelText("Name:") as HTMLInputElement;
+    expect(
+      screen.getByRole("button", { name: i18n.t("profile.saveAction") }),
+    ).toBeTruthy();
+    const nameInput = screen.getByLabelText(
+      i18n.t("profile.labels.name"),
+    ) as HTMLInputElement;
     expect(nameInput.readOnly).toBe(false);
   });
 });

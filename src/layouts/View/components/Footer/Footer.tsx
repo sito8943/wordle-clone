@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "@i18n";
 import {
-  FOOTER_COPYRIGHT_LABEL,
-  FOOTER_GITHUB_ARIA_LABEL,
   FOOTER_GITHUB_REPOSITORY_URL,
   FOOTER_PORTFOLIO_URL,
   SCROLL_VISIBILITY_THRESHOLD,
 } from "./constants";
 
 const Footer = () => {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -38,13 +38,13 @@ const Footer = () => {
           rel="noreferrer"
           className="underline decoration-neutral-400 underline-offset-4 hover:decoration-current"
         >
-          {FOOTER_COPYRIGHT_LABEL}
+          {t("footer.madeBy")}
         </a>
         <a
           href={FOOTER_GITHUB_REPOSITORY_URL}
           target="_blank"
           rel="noreferrer"
-          aria-label={FOOTER_GITHUB_ARIA_LABEL}
+          aria-label={t("footer.githubRepository")}
           className="rounded p-1 text-neutral-700 transition-colors hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-700 dark:text-neutral-300 dark:hover:text-white dark:focus-visible:outline-neutral-300"
         >
           <svg

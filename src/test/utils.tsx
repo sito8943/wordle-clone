@@ -3,6 +3,7 @@ import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import type { RemotePlayerProfile, TopScoresResult } from "@api/score";
 import type { ReactElement, ReactNode } from "react";
+import { i18n } from "@i18n";
 import { ApiContext } from "@providers/Api/ApiContext";
 import type { ApiContextType } from "@providers/Api/types";
 
@@ -27,8 +28,13 @@ const createTestQueryClient = () =>
 const renderWithQueryClient = (
   ui: ReactElement,
   queryClient: QueryClient = createTestQueryClient(),
-) =>
-  render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+) => {
+  void i18n.changeLanguage("en");
+
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+};
 
 const createTestApiContextValue = (
   overrides: Partial<ApiContextType> = {},

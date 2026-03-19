@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Button } from "@components";
-import {
-  PROFILE_RECOVERY_ACTION_LABEL,
-  PROFILE_RECOVERY_INPUT_ID,
-  PROFILE_RECOVERY_INPUT_LABEL,
-  PROFILE_RECOVERY_SECTION_TITLE,
-} from "@views/Profile/constants";
+import { useTranslation } from "@i18n";
+import { PROFILE_RECOVERY_INPUT_ID } from "@views/Profile/constants";
 import { useProfileView } from "@views/Profile/providers";
 
 const RecoverySection = () => {
+  const { t } = useTranslation();
   const {
     controller: { submitRecoveryCode },
   } = useProfileView();
@@ -34,9 +31,7 @@ const RecoverySection = () => {
 
   return (
     <section className="profile-section">
-      <h2 className="profile-section-title">
-        {PROFILE_RECOVERY_SECTION_TITLE}
-      </h2>
+      <h2 className="profile-section-title">{t("profile.recovery.title")}</h2>
       <form
         className="flex flex-col gap-3 sm:flex-row sm:items-end"
         onSubmit={handleSubmit}
@@ -46,7 +41,7 @@ const RecoverySection = () => {
             htmlFor={PROFILE_RECOVERY_INPUT_ID}
             className="profile-field-label"
           >
-            {PROFILE_RECOVERY_INPUT_LABEL}
+            {t("profile.recovery.inputLabel")}
           </label>
           <input
             id={PROFILE_RECOVERY_INPUT_ID}
@@ -64,7 +59,7 @@ const RecoverySection = () => {
           />
         </div>
         <Button type="submit" disabled={isSubmitting}>
-          {PROFILE_RECOVERY_ACTION_LABEL}
+          {t("profile.recovery.action")}
         </Button>
       </form>
       {error ? <p className="input-error-text">{error}</p> : null}

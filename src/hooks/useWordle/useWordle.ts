@@ -31,6 +31,7 @@ import {
   NO_PRESENT_HINT_AVAILABLE_MESSAGE,
   ROW_ALREADY_FULL_MESSAGE,
 } from "./constants";
+import { i18n } from "@i18n";
 import type { HintTileStatus, UseWordleOptions } from "./types";
 import {
   blurRefreshButtonIfFocused,
@@ -61,7 +62,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const dictionaryError = useMemo(
     () =>
       !dictionaryLoading && dictionaryWords.length === 0
-        ? "Word list unavailable."
+        ? i18n.t("home.toolbar.wordListUnavailable")
         : null,
     [dictionaryLoading, dictionaryWords.length],
   );

@@ -1,14 +1,17 @@
 import { Link } from "react-router";
+import { useTranslation } from "@i18n";
 
 const NotFound = () => {
+  const { t } = useTranslation();
+
   return (
     <main className="page-centered">
-      <h2 className="page-title">404 - Not Found</h2>
+      <h2 className="page-title">{t("notFound.title")}</h2>
       <p className="mt-2 text-base text-neutral-600">
-        The page you are looking for does not exist.
+        {t("notFound.description")}
       </p>
       <Link to="/" className="text-blue-500 hover:text-blue-700">
-        Go back home
+        {t("notFound.action")}
       </Link>
     </main>
   );

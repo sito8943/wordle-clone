@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { i18n } from "@i18n";
 import type { TileStatus } from "@utils/types";
 import { Board } from "./Board";
 
@@ -32,9 +33,21 @@ describe("Board", () => {
       />,
     );
 
-    expect(screen.getByRole("gridcell", { name: "A, correct" })).toBeTruthy();
-    expect(screen.getByRole("gridcell", { name: "B, typing" })).toBeTruthy();
-    expect(screen.getByRole("gridcell", { name: "R, typing" })).toBeTruthy();
+    expect(
+      screen.getByRole("gridcell", {
+        name: `A, ${i18n.t("home.gameplay.tile.statuses.correct")}`,
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("gridcell", {
+        name: `B, ${i18n.t("home.gameplay.tile.statuses.tbd")}`,
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("gridcell", {
+        name: `R, ${i18n.t("home.gameplay.tile.statuses.tbd")}`,
+      }),
+    ).toBeTruthy();
   });
 
   it("hides typing cells when game is over", () => {
@@ -54,7 +67,11 @@ describe("Board", () => {
       />,
     );
 
-    expect(screen.queryByRole("gridcell", { name: "Z, typing" })).toBeNull();
+    expect(
+      screen.queryByRole("gridcell", {
+        name: `Z, ${i18n.t("home.gameplay.tile.statuses.tbd")}`,
+      }),
+    ).toBeNull();
   });
 
   it("renders revealed colors as gray when the player loses", () => {
@@ -76,10 +93,14 @@ describe("Board", () => {
     );
 
     expect(
-      screen.getByRole("gridcell", { name: "H, correct" }).className,
+      screen.getByRole("gridcell", {
+        name: `H, ${i18n.t("home.gameplay.tile.statuses.correct")}`,
+      }).className,
     ).toContain("bg-neutral-700");
     expect(
-      screen.getByRole("gridcell", { name: "O, present" }).className,
+      screen.getByRole("gridcell", {
+        name: `O, ${i18n.t("home.gameplay.tile.statuses.present")}`,
+      }).className,
     ).toContain("bg-neutral-700");
   });
 

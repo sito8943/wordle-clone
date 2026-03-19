@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { i18n } from "@i18n";
 import FireStreak from "./FireStreak";
 
 afterEach(cleanup);
@@ -12,7 +13,9 @@ describe("FireStreak", () => {
 
   it("renders 'Streak: N' label by default", () => {
     render(<FireStreak streak={3} />);
-    expect(screen.getByText("Streak: 3")).toBeTruthy();
+    expect(
+      screen.getByText(i18n.t("common.streakLabel", { count: 3 })),
+    ).toBeTruthy();
   });
 
   it("renders only the number when noLabel is true", () => {
@@ -38,37 +41,49 @@ describe("FireStreak", () => {
 
   it("uses amber color class when streak >= 2", () => {
     render(<FireStreak streak={5} />);
-    const label = screen.getByRole("generic", { name: /Streak: 5/ });
+    const label = screen.getByRole("generic", {
+      name: i18n.t("common.streakLabel", { count: 5 }),
+    });
     expect(label.className).toContain("text-amber-800");
   });
 
   it("uses neutral color class when streak < 2", () => {
     render(<FireStreak streak={1} />);
-    const label = screen.getByRole("generic", { name: /Streak: 1/ });
+    const label = screen.getByRole("generic", {
+      name: i18n.t("common.streakLabel", { count: 1 }),
+    });
     expect(label.className).toContain("text-neutral-600");
   });
 
   it("applies sm size classes when size='sm'", () => {
     render(<FireStreak streak={1} size="sm" />);
-    const label = screen.getByRole("generic", { name: /Streak: 1/ });
+    const label = screen.getByRole("generic", {
+      name: i18n.t("common.streakLabel", { count: 1 }),
+    });
     expect(label.className).toContain("text-xs");
   });
 
   it("applies md size classes by default", () => {
     render(<FireStreak streak={1} />);
-    const label = screen.getByRole("generic", { name: /Streak: 1/ });
+    const label = screen.getByRole("generic", {
+      name: i18n.t("common.streakLabel", { count: 1 }),
+    });
     expect(label.className).toContain("py-1");
   });
 
   it("merges custom className", () => {
     render(<FireStreak streak={1} className="custom-class" />);
-    const label = screen.getByRole("generic", { name: /Streak: 1/ });
+    const label = screen.getByRole("generic", {
+      name: i18n.t("common.streakLabel", { count: 1 }),
+    });
     expect(label.className).toContain("custom-class");
   });
 
   it("sets aria-label on the container", () => {
     render(<FireStreak streak={4} />);
-    expect(screen.getByLabelText("Streak: 4")).toBeTruthy();
+    expect(
+      screen.getByLabelText(i18n.t("common.streakLabel", { count: 4 })),
+    ).toBeTruthy();
   });
 
   it("sanitizes negative streak values", () => {

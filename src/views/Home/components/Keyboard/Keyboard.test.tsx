@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { i18n } from "@i18n";
 import type { TileStatus } from "@utils/types";
 import { Keyboard } from ".";
 
@@ -12,13 +13,25 @@ describe("Keyboard", () => {
     render(<Keyboard guesses={[]} onKey={vi.fn()} />);
 
     expect(
-      screen.getByRole("group", { name: "On-screen keyboard" }),
+      screen.getByRole("group", {
+        name: i18n.t("home.gameplay.onScreenKeyboardAriaLabel"),
+      }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Letter A" }).className,
+      screen.getByRole("button", {
+        name: i18n.t("home.gameplay.keys.letter", { key: "A" }),
+      }).className,
     ).toContain("active:scale-[0.97]");
-    expect(screen.getByRole("button", { name: "Submit guess" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Delete letter" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: i18n.t("home.gameplay.keys.submitGuess"),
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: i18n.t("home.gameplay.keys.deleteLetter"),
+      }),
+    ).toBeTruthy();
     expect(screen.getAllByRole("button").length).toBe(28);
   });
 
@@ -26,9 +39,21 @@ describe("Keyboard", () => {
     const onKey = vi.fn();
     render(<Keyboard guesses={[]} onKey={onKey} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
-    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete letter" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.t("home.gameplay.keys.letter", { key: "A" }),
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.t("home.gameplay.keys.submitGuess"),
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.t("home.gameplay.keys.deleteLetter"),
+      }),
+    );
 
     expect(onKey).toHaveBeenNthCalledWith(1, "A");
     expect(onKey).toHaveBeenNthCalledWith(2, "ENTER");
@@ -61,7 +86,9 @@ describe("Keyboard", () => {
       />,
     );
 
-    const aKey = screen.getByRole("button", { name: "Letter A" });
+    const aKey = screen.getByRole("button", {
+      name: i18n.t("home.gameplay.keys.letter", { key: "A" }),
+    });
     expect(aKey.className).toContain("bg-green-700");
   });
 
@@ -82,8 +109,12 @@ describe("Keyboard", () => {
       />,
     );
 
-    const aKey = screen.getByRole("button", { name: "Letter A" });
-    const lKey = screen.getByRole("button", { name: "Letter L" });
+    const aKey = screen.getByRole("button", {
+      name: i18n.t("home.gameplay.keys.letter", { key: "A" }),
+    });
+    const lKey = screen.getByRole("button", {
+      name: i18n.t("home.gameplay.keys.letter", { key: "L" }),
+    });
 
     expect(aKey.className).toContain("bg-neutral-500");
     expect(aKey.className).not.toContain("bg-green-700");
@@ -94,7 +125,9 @@ describe("Keyboard", () => {
     render(<Keyboard guesses={[]} onKey={vi.fn()} animateEntry />);
 
     expect(
-      screen.getByRole("group", { name: "On-screen keyboard" }).className,
+      screen.getByRole("group", {
+        name: i18n.t("home.gameplay.onScreenKeyboardAriaLabel"),
+      }).className,
     ).toContain("keyboard-entry-animation");
   });
 
@@ -110,7 +143,9 @@ describe("Keyboard", () => {
     );
 
     fireEvent.animationEnd(
-      screen.getByRole("group", { name: "On-screen keyboard" }),
+      screen.getByRole("group", {
+        name: i18n.t("home.gameplay.onScreenKeyboardAriaLabel"),
+      }),
     );
 
     expect(onEntryAnimationEnd).toHaveBeenCalledTimes(1);

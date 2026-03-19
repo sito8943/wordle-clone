@@ -1,5 +1,6 @@
 import { useEffect, type JSX } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "@i18n";
 import type { DialogProps } from "./types";
 import { joinClassNames } from "./utils";
 import { Button } from "@components/Button";
@@ -25,6 +26,7 @@ const Dialog = ({
   backdropAnimationClassName: customBackdropAnimationClassName,
   panelAnimationClassName: customPanelAnimationClassName,
 }: DialogProps): JSX.Element | null => {
+  const { t } = useTranslation();
   const { isClosing: internalIsClosing, closeWithAction } =
     useDialogCloseTransition(DIALOG_CLOSE_DURATION_MS);
   const isClosing = controlledIsClosing || internalIsClosing;
@@ -99,7 +101,7 @@ const Dialog = ({
               color="danger"
               className="absolute top-2 right-2"
               disabled={isClosing}
-              aria-label="Close"
+              aria-label={t("common.close")}
             >
               <FontAwesomeIcon icon={faClose} />
             </Button>

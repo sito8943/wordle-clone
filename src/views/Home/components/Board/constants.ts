@@ -9,13 +9,5 @@ export const STATUS_STYLE: Record<Status, string> = {
   absent: "border-neutral-700 bg-neutral-700 text-white",
 };
 
-export const STATUS_LABEL: Record<Status, string> = {
-  empty: "empty",
-  tbd: "typing",
-  correct: "correct",
-  present: "present",
-  absent: "absent",
-};
-
 export const TILE_ENTRY_STAGGER_MS = 16;
 export const BOARD_SHAKE_DURATION_MS = 220;

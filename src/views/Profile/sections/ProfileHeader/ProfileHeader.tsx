@@ -1,21 +1,18 @@
 import { Button } from "@components";
-import {
-  PROFILE_PAGE_TITLE,
-  PROFILE_CANCEL_ACTION_LABEL,
-  PROFILE_EDIT_ACTION_LABEL,
-} from "@views/Profile/constants";
+import { useTranslation } from "@i18n";
 import { useProfileView } from "@views/Profile/providers";
 
 const ProfileHeader = () => {
+  const { t } = useTranslation();
   const {
     controller: { editing, toggleEditing },
   } = useProfileView();
 
   return (
     <div className="flex gap-4 items-center flex-wrap justify-center">
-      <h2 className="page-title">{PROFILE_PAGE_TITLE}</h2>
+      <h2 className="page-title">{t("profile.pageTitle")}</h2>
       <Button onClick={toggleEditing}>
-        {editing ? PROFILE_CANCEL_ACTION_LABEL : PROFILE_EDIT_ACTION_LABEL}
+        {editing ? t("profile.cancelAction") : t("profile.editAction")}
       </Button>
     </div>
   );

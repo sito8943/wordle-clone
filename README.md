@@ -60,6 +60,12 @@ Notes:
 - `npm run test`: run tests with Vitest.
 - `npm run coverage`: run tests with coverage.
 - `npm run lint`: run typecheck + eslint + prettier check + depcheck.
+
+## i18n guardrail
+
+- User-facing copy in JSX must go through `i18next` / `react-i18next`.
+- ESLint blocks new literal strings in JSX text nodes and visible attributes such as `aria-label`, `title`, `placeholder`, and `alt`.
+- Technical constants, test files, `src/i18n/**`, and module `constants.ts` files are excluded from that rule.
 - `npm run lint-prettier`: validate formatting with Prettier.
 - `npm run prettier`: format the project with Prettier.
 - `npm run convex:dev`: start Convex dev backend.

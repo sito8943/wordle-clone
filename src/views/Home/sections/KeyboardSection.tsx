@@ -1,10 +1,12 @@
 import type { JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
+import { useTranslation } from "@i18n";
 import { Keyboard } from "../components";
 import { useHomeView } from "../providers/";
 import { useNativeKeyboardInput } from "../hooks";
 
 const KeyboardSection = (): JSX.Element => {
+  const { t } = useTranslation();
   const { controller, preferNativeKeyboard } = useHomeView();
   const {
     guesses,
@@ -35,9 +37,9 @@ const KeyboardSection = (): JSX.Element => {
       fallback={({ reset }) => (
         <div className="px-2 pb-2">
           <ErrorFallback
-            title="The keyboard is unavailable."
-            description="Retry to re-enable key input."
-            actionLabel="Retry keyboard"
+            title={t("home.sections.keyboardError.title")}
+            description={t("home.sections.keyboardError.description")}
+            actionLabel={t("home.sections.keyboardError.action")}
             onAction={reset}
           />
         </div>
@@ -61,7 +63,7 @@ const KeyboardSection = (): JSX.Element => {
             autoComplete="off"
             spellCheck={false}
             enterKeyHint="enter"
-            aria-label="Device keyboard input"
+            aria-label={t("home.sections.deviceKeyboardInputAriaLabel")}
             className="fixed bottom-0 left-0 h-px w-px opacity-0 pointer-events-none"
             onKeyDown={handleNativeKeyboardKeyDown}
             onInput={handleNativeKeyboardInput}
@@ -74,7 +76,7 @@ const KeyboardSection = (): JSX.Element => {
               disabled={nativeKeyboardBlocked}
               className="w-full rounded-md border border-neutral-400 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 disabled:opacity-60 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
             >
-              Open device keyboard
+              {t("home.sections.openDeviceKeyboard")}
             </button>
           </div>
           <div className="hidden sm:block">

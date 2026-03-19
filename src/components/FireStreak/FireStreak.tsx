@@ -1,4 +1,5 @@
 import Fire from "./Fire";
+import { useTranslation } from "@i18n";
 import type { FireStreakProps } from "./types";
 import { sanitizeCounter } from "./utils";
 
@@ -8,12 +9,15 @@ const FireStreak = ({
   noLabel = false,
   className = "",
 }: FireStreakProps) => {
+  const { t } = useTranslation();
   const safeStreak = sanitizeCounter(streak);
   const showFlame = safeStreak >= 2;
 
   const sizeClassName = size === "sm" ? "py-0.5 text-xs" : "py-1";
   const iconSize = size === "sm" ? 16 : 20;
-  const label = `${noLabel ? "" : "Streak: "}${safeStreak}`;
+  const label = noLabel
+    ? String(safeStreak)
+    : t("common.streakLabel", { count: safeStreak });
 
   return (
     <span

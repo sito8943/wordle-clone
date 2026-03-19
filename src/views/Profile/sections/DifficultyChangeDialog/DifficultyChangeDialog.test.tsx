@@ -6,6 +6,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { i18n } from "@i18n";
 import type { ProfileViewContextValue } from "@views/Profile/providers/types";
 import DifficultyChangeDialog from "./DifficultyChangeDialog";
 
@@ -45,11 +46,6 @@ const buildMockProfileView = (
     isDifficultyChangeConfirmationOpen: false,
     confirmDifficultyChange: vi.fn(),
     cancelDifficultyChange: vi.fn(),
-    pendingDifficultyLabel: vi
-      .fn()
-      .mockImplementation((difficulty) =>
-        difficulty === "hard" ? "Hard" : "Normal",
-      ),
     ...overrides,
   },
 });
@@ -64,9 +60,11 @@ describe("DifficultyChangeDialog", () => {
 
     render(<DifficultyChangeDialog />);
 
-    expect(screen.queryByRole("dialog", { name: "Change difficulty?" })).toBe(
-      null,
-    );
+    expect(
+      screen.queryByRole("dialog", {
+        name: i18n.t("profile.difficultyChange.title"),
+      }),
+    ).toBe(null);
   });
 
   it("renders pending difficulty and confirms change", async () => {
@@ -81,11 +79,18 @@ describe("DifficultyChangeDialog", () => {
     render(<DifficultyChangeDialog />);
 
     expect(
-      screen.getByText("New difficulty: Hard.", { exact: false }),
+      screen.getByText(
+        i18n.t("profile.difficultyChange.nextDifficulty", {
+          difficulty: i18n.t("profile.difficultyOptions.hard"),
+        }),
+        { exact: false },
+      ),
     ).toBeTruthy();
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Yes, change and restart" }),
+      screen.getByRole("button", {
+        name: i18n.t("profile.difficultyChange.confirm"),
+      }),
     );
 
     await waitFor(() => {
