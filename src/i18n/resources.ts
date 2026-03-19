@@ -306,7 +306,8 @@ export const resources = {
         },
         appRoot: {
           title: "No se ha podido cargar Wordle.",
-          description: "Vuelve a intentarlo. Si el problema sigue, recarga la página.",
+          description:
+            "Vuelve a intentarlo. Si el problema sigue, recarga la página.",
           action: "Reintentar app",
         },
         routeOutlet: {
@@ -507,8 +508,7 @@ export const resources = {
             pressEnter: "Pulsa Enter para enviar tu intento.",
             nonDictionary:
               "Fácil, Normal y Difícil aceptan palabras fuera del diccionario.",
-            insaneDictionary:
-              "Insano solo acepta palabras del diccionario.",
+            insaneDictionary: "Insano solo acepta palabras del diccionario.",
             green: "Casilla verde: letra correcta en la posición correcta.",
             yellow:
               "Casilla amarilla: letra correcta en la posición incorrecta.",

@@ -2,9 +2,7 @@ import { Button } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
 import { useTranslation } from "@i18n";
 import { DifficultySection } from "../DifficultySection";
-import {
-  PROFILE_THEME_MODE_INPUT_ID,
-} from "@views/Profile/constants";
+import { PROFILE_THEME_MODE_INPUT_ID } from "@views/Profile/constants";
 import { useProfileView } from "@views/Profile/providers";
 
 const SettingsSection = () => {

@@ -174,10 +174,18 @@ const DeveloperConsoleDialog = ({
               }
               className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
             >
-              <option value="easy">{t("profile.difficultyOptions.easy")}</option>
-              <option value="normal">{t("profile.difficultyOptions.normal")}</option>
-              <option value="hard">{t("profile.difficultyOptions.hard")}</option>
-              <option value="insane">{t("profile.difficultyOptions.insane")}</option>
+              <option value="easy">
+                {t("profile.difficultyOptions.easy")}
+              </option>
+              <option value="normal">
+                {t("profile.difficultyOptions.normal")}
+              </option>
+              <option value="hard">
+                {t("profile.difficultyOptions.hard")}
+              </option>
+              <option value="insane">
+                {t("profile.difficultyOptions.insane")}
+              </option>
             </select>
           </div>
           <div>

@@ -33,8 +33,7 @@ export default defineConfig([
       "no-restricted-syntax": [
         "error",
         {
-          selector:
-            "JSXText[value=/[A-Za-zÀ-ÿ]/]",
+          selector: "JSXText[value=/[A-Za-zÀ-ÿ]/]",
           message:
             "Visible JSX text must come from i18n (`t(...)`) instead of literal strings.",
         },
@@ -45,8 +44,7 @@ export default defineConfig([
             "User-facing JSX attributes must use i18n (`t(...)`) instead of literal strings.",
         },
         {
-          selector:
-            "JSXExpressionContainer > Literal[value=/[A-Za-zÀ-ÿ]/]",
+          selector: "JSXExpressionContainer > Literal[value=/[A-Za-zÀ-ÿ]/]",
           message:
             "Visible JSX string literals must come from i18n (`t(...)`) instead of inline text.",
         },

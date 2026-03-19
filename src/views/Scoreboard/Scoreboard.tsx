@@ -41,17 +41,11 @@ const Scoreboard = (): JSX.Element => {
       </div>
 
       {!convexEnabled && (
-        <Alert
-          message={t("scoreboard.convexNotConfigured")}
-          color="warning"
-        />
+        <Alert message={t("scoreboard.convexNotConfigured")} color="warning" />
       )}
 
       {convexEnabled && source === "local" && (
-        <Alert
-          message={t("scoreboard.offlineFallback")}
-          color="info"
-        />
+        <Alert message={t("scoreboard.offlineFallback")} color="info" />
       )}
 
       {error && <Alert message={error} color="danger" />}

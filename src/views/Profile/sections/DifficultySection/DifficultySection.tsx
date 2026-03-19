@@ -37,7 +37,9 @@ const DifficultySection = ({
           }
           className="profile-select-input"
         >
-          <option value="onscreen">{t("profile.keyboardOptions.onscreen")}</option>
+          <option value="onscreen">
+            {t("profile.keyboardOptions.onscreen")}
+          </option>
           <option value="native">{t("profile.keyboardOptions.native")}</option>
         </select>
         <p className="text-xs text-neutral-600 dark:text-neutral-300">
@@ -60,9 +62,13 @@ const DifficultySection = ({
           className="profile-select-input"
         >
           <option value="easy">{t("profile.difficultyOptions.easy")}</option>
-          <option value="normal">{t("profile.difficultyOptions.normal")}</option>
+          <option value="normal">
+            {t("profile.difficultyOptions.normal")}
+          </option>
           <option value="hard">{t("profile.difficultyOptions.hard")}</option>
-          <option value="insane">{t("profile.difficultyOptions.insane")}</option>
+          <option value="insane">
+            {t("profile.difficultyOptions.insane")}
+          </option>
         </select>
         <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
           <li>{t("profile.difficultyRules.easy")}</li>

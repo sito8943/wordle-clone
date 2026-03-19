@@ -61,7 +61,9 @@ describe("DifficultyChangeDialog", () => {
     render(<DifficultyChangeDialog />);
 
     expect(
-      screen.queryByRole("dialog", { name: i18n.t("profile.difficultyChange.title") }),
+      screen.queryByRole("dialog", {
+        name: i18n.t("profile.difficultyChange.title"),
+      }),
     ).toBe(null);
   });
 

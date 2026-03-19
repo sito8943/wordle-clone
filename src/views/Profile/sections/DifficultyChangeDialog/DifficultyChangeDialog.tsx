@@ -17,7 +17,9 @@ const DifficultyChangeDialog = () => {
   if (!isDifficultyChangeConfirmationOpen) {
     return null;
   }
-  const nextDifficultyLabel = t(`profile.difficultyOptions.${pendingDifficulty}`);
+  const nextDifficultyLabel = t(
+    `profile.difficultyOptions.${pendingDifficulty}`,
+  );
   const description = `${t("profile.difficultyChange.description")} ${t(
     "profile.difficultyChange.nextDifficulty",
     { difficulty: nextDifficultyLabel },

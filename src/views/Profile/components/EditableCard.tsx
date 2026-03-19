@@ -79,9 +79,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
       </div>
       <p className="profile-help-text">{t("profile.codeHelp")}</p>
       <Button type="submit" className="self-start" disabled={isSubmitting}>
-        {isSubmitting
-          ? t("profile.savingAction")
-          : t("profile.saveAction")}
+        {isSubmitting ? t("profile.savingAction") : t("profile.saveAction")}
       </Button>
     </form>
   );
