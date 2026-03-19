@@ -114,55 +114,69 @@ const DialogsSection = ({
           </div>
         )}
         <Suspense fallback={null}>
-          <SessionResumeDialog
-            visible={resumeDialogVisible}
-            onClose={continuePreviousBoard}
-            onStartNew={startNewBoard}
-          />
-          <RefreshConfirmationDialog
-            visible={refreshDialogVisible}
-            onClose={cancelRefreshBoard}
-            onConfirm={confirmRefreshBoard}
-          />
-          <WordListDialog
-            visible={wordListDialogVisible}
-            language="en"
-            words={dictionaryWords}
-            onClose={closeWordsDialog}
-          />
-          <HelpDialog visible={helpDialogVisible} onClose={closeHelpDialog} />
+          {resumeDialogVisible ? (
+            <SessionResumeDialog
+              visible
+              onClose={continuePreviousBoard}
+              onStartNew={startNewBoard}
+            />
+          ) : null}
+          {refreshDialogVisible ? (
+            <RefreshConfirmationDialog
+              visible
+              onClose={cancelRefreshBoard}
+              onConfirm={confirmRefreshBoard}
+            />
+          ) : null}
+          {wordListDialogVisible ? (
+            <WordListDialog
+              visible
+              language="en"
+              words={dictionaryWords}
+              onClose={closeWordsDialog}
+            />
+          ) : null}
+          {helpDialogVisible ? (
+            <HelpDialog visible onClose={closeHelpDialog} />
+          ) : null}
           {victoryScoreSummary ? (
-            <VictoryDialog
-              visible={showVictoryDialog}
+            showVictoryDialog ? (
+              <VictoryDialog
+                visible
+                answer={endOfGameAnswer}
+                currentStreak={endOfGameCurrentStreak}
+                scoreSummary={victoryScoreSummary}
+                showSettingsHint={showEndOfGameSettingsHint}
+                onClose={closeEndOfGameDialog}
+                onPlayAgain={startNewBoard}
+              />
+            ) : null
+          ) : null}
+          {showDefeatDialog ? (
+            <DefeatDialog
+              visible
               answer={endOfGameAnswer}
-              currentStreak={endOfGameCurrentStreak}
-              scoreSummary={victoryScoreSummary}
+              bestStreak={endOfGameBestStreak}
               showSettingsHint={showEndOfGameSettingsHint}
               onClose={closeEndOfGameDialog}
               onPlayAgain={startNewBoard}
+              onChangeDifficulty={changeDifficulty}
             />
           ) : null}
-          <DefeatDialog
-            visible={showDefeatDialog}
-            answer={endOfGameAnswer}
-            bestStreak={endOfGameBestStreak}
-            showSettingsHint={showEndOfGameSettingsHint}
-            onClose={closeEndOfGameDialog}
-            onPlayAgain={startNewBoard}
-            onChangeDifficulty={changeDifficulty}
-          />
-          <HomeDeveloperConsoleDialog
-            visible={developerConsoleDialogVisible}
-            onClose={closeDeveloperConsoleDialog}
-            developerConsoleEnabled={developerConsoleEnabled}
-            player={player}
-            showResumeDialog={showResumeDialog}
-            submitDeveloperPlayer={submitDeveloperPlayer}
-            refreshRemoteDictionaryChecksum={refreshRemoteDictionaryChecksum}
-            isRefreshingDictionaryChecksum={isRefreshingDictionaryChecksum}
-            dictionaryChecksumMessage={dictionaryChecksumMessage}
-            dictionaryChecksumMessageKind={dictionaryChecksumMessageKind}
-          />
+          {developerConsoleDialogVisible ? (
+            <HomeDeveloperConsoleDialog
+              visible
+              onClose={closeDeveloperConsoleDialog}
+              developerConsoleEnabled={developerConsoleEnabled}
+              player={player}
+              showResumeDialog={showResumeDialog}
+              submitDeveloperPlayer={submitDeveloperPlayer}
+              refreshRemoteDictionaryChecksum={refreshRemoteDictionaryChecksum}
+              isRefreshingDictionaryChecksum={isRefreshingDictionaryChecksum}
+              dictionaryChecksumMessage={dictionaryChecksumMessage}
+              dictionaryChecksumMessageKind={dictionaryChecksumMessageKind}
+            />
+          ) : null}
         </Suspense>
       </>
     </ErrorBoundary>
