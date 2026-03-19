@@ -5,6 +5,7 @@ export type Player = {
   streak: number;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
+  showEndOfGameDialogs: boolean;
 };
 
 export type PlayerDifficulty = "easy" | "normal" | "hard" | "insane";

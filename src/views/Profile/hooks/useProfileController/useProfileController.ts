@@ -23,6 +23,7 @@ export default function useProfileController() {
     updatePlayer,
     updatePlayerDifficulty,
     updatePlayerKeyboardPreference,
+    updatePlayerShowEndOfGameDialogs,
   } = usePlayer();
   const { startAnimationsEnabled, toggleAnimationsDisabled } =
     useAnimationsPreference();
@@ -123,6 +124,17 @@ export default function useProfileController() {
     [player.keyboardPreference, updatePlayerKeyboardPreference],
   );
 
+  const changeShowEndOfGameDialogs = useCallback(
+    (showDialogs: boolean) => {
+      if (showDialogs === player.showEndOfGameDialogs) {
+        return;
+      }
+
+      updatePlayerShowEndOfGameDialogs(showDialogs);
+    },
+    [player.showEndOfGameDialogs, updatePlayerShowEndOfGameDialogs],
+  );
+
   const changeDifficulty = useCallback(
     (nextDifficulty: PlayerDifficulty) => {
       if (nextDifficulty === player.difficulty) {
@@ -174,6 +186,8 @@ export default function useProfileController() {
     changeThemePreference,
     keyboardPreference: player.keyboardPreference,
     changeKeyboardPreference,
+    showEndOfGameDialogs: player.showEndOfGameDialogs,
+    changeShowEndOfGameDialogs,
     changeDifficulty,
     isDifficultyChangeConfirmationOpen,
     confirmDifficultyChange,

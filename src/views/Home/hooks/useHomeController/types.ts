@@ -4,6 +4,29 @@ export type HardModeTimerSnapshot = {
   timerStarted: boolean;
 };
 
+export type EndOfGameScoreSummaryItemKey =
+  | "base"
+  | "difficulty"
+  | "streak"
+  | "time";
+
+export type EndOfGameScoreSummaryItem = {
+  key: EndOfGameScoreSummaryItemKey;
+  value: number;
+};
+
+export type EndOfGameScoreSummary = {
+  items: EndOfGameScoreSummaryItem[];
+  total: number;
+};
+
+export type EndOfGameSnapshot = {
+  answer: string;
+  currentStreak: number;
+  bestStreak: number;
+  scoreSummary: EndOfGameScoreSummary | null;
+};
+
 export type UseHardModeTimerParams = {
   sessionId: string;
   hardModeEnabled: boolean;

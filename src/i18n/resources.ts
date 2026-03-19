@@ -85,7 +85,10 @@ export const resources = {
           keyboard: "Keyboard",
           keyboardMode: "Keyboard mode",
           difficulty: "Difficulty",
+          endOfGameDialogs: "End-of-game dialogs",
         },
+        endOfGameDialogsDescription:
+          "Show dialogs when you win or lose a board.",
         codeHelp:
           "Use this 4-character code to recover your profile on another browser.",
         recovery: {
@@ -243,10 +246,34 @@ export const resources = {
             easy: "Easy: +1 difficulty bonus.",
             normal: "Normal: +2 difficulty bonus.",
             hard: "Hard: +3 difficulty bonus.",
-            insane: "Insane: +4 difficulty bonus.",
+            insane:
+              "Insane: +4 difficulty bonus and +1 extra point per 2 seconds left.",
             final:
-              "Final score = base points + difficulty bonus + streak bonus.",
+              "Final score = base points + difficulty bonus + streak bonus + time bonus in Insane.",
           },
+        },
+        endOfGame: {
+          wordLabel: "Correct word",
+          playAgain: "Play again",
+        },
+        victoryDialog: {
+          title: "Victory",
+          description: "Board cleared. Here is your score breakdown.",
+          scoreSummaryTitle: "Score summary",
+          scoreItems: {
+            base: "Base points",
+            difficulty: "Difficulty bonus",
+            streak: "Streak bonus",
+            time: "Time bonus",
+            total: "Total",
+          },
+        },
+        defeatDialog: {
+          title: "Game Over",
+          description: "That round is over.",
+          bestStreak: "Best streak: {{count}}",
+          closingMessage: "Better luck next time.",
+          changeDifficulty: "Change difficulty",
         },
         wordListDialog: {
           title: "Possible words",
@@ -361,7 +388,10 @@ export const resources = {
           keyboard: "Teclado",
           keyboardMode: "Modo de teclado",
           difficulty: "Dificultad",
+          endOfGameDialogs: "Diálogos de fin de partida",
         },
+        endOfGameDialogsDescription:
+          "Muestra diálogos cuando ganas o pierdes un tablero.",
         codeHelp:
           "Usa este código de 4 caracteres para recuperar tu perfil en otro navegador.",
         recovery: {
@@ -522,10 +552,34 @@ export const resources = {
             easy: "Fácil: +1 de bonus de dificultad.",
             normal: "Normal: +2 de bonus de dificultad.",
             hard: "Difícil: +3 de bonus de dificultad.",
-            insane: "Insano: +4 de bonus de dificultad.",
+            insane:
+              "Insano: +4 de bonus de dificultad y +1 punto extra por cada 2 segundos restantes.",
             final:
-              "Puntuación final = puntos base + bonus de dificultad + bonus de racha.",
+              "Puntuación final = puntos base + bonus de dificultad + bonus de racha + bonus de tiempo en Insano.",
           },
+        },
+        endOfGame: {
+          wordLabel: "Palabra correcta",
+          playAgain: "Jugar otra vez",
+        },
+        victoryDialog: {
+          title: "Victoria",
+          description: "Partida superada. Aquí tienes el desglose.",
+          scoreSummaryTitle: "Resumen de puntuación",
+          scoreItems: {
+            base: "Puntos base",
+            difficulty: "Bonus de dificultad",
+            streak: "Bonus de racha",
+            time: "Bonus de tiempo",
+            total: "Total",
+          },
+        },
+        defeatDialog: {
+          title: "Game Over",
+          description: "Esta ronda ha terminado.",
+          bestStreak: "Mejor racha: {{count}}",
+          closingMessage: "Suerte la próxima vez.",
+          changeDifficulty: "Cambiar dificultad",
         },
         wordListDialog: {
           title: "Palabras posibles",

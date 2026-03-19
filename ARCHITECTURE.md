@@ -160,6 +160,7 @@ This is an evolution of the current layered architecture, not a replacement for 
   - It is persisted as soon as there is in-progress input (submitted rows or typed letters in `current`).
 - `wordle:hint-usage`: snapshot for hint usage (`gameId + derived gameKey + hintsUsed`) to keep hint limits after reload without persisting `answer`.
 - `player`: player profile and score/streak metadata, including recovery `code`.
+  - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, and `showEndOfGameDialogs`.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - `wordle:sync-events`: local queue of pending `VictorySyncEvent` records for offline score synchronization.
 - `wordle:dictionary:en`: cached dictionary words.

@@ -95,6 +95,7 @@ describe("PlayerProvider", () => {
     expect(result.current.player.score).toBe(0);
     expect(result.current.player.streak).toBe(0);
     expect(result.current.player.difficulty).toBe(DEFAULT_PLAYER.difficulty);
+    expect(result.current.player.showEndOfGameDialogs).toBe(true);
   });
 
   it("reads stored player from localStorage", () => {
@@ -117,6 +118,7 @@ describe("PlayerProvider", () => {
     expect(result.current.player.score).toBe(10);
     expect(result.current.player.streak).toBe(3);
     expect(result.current.player.difficulty).toBe("hard");
+    expect(result.current.player.showEndOfGameDialogs).toBe(true);
   });
 
   it("updatePlayer changes the player name and stores a recovery code", async () => {
@@ -233,6 +235,18 @@ describe("PlayerProvider", () => {
     });
 
     expect(result.current.player.keyboardPreference).toBe("native");
+  });
+
+  it("updates the end-of-game dialogs preference", () => {
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper(),
+    });
+
+    act(() => {
+      result.current.updatePlayerShowEndOfGameDialogs(false);
+    });
+
+    expect(result.current.player.showEndOfGameDialogs).toBe(false);
   });
 
   it("syncs victory events after a named player wins", async () => {

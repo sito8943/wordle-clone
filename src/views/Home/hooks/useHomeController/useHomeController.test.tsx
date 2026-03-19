@@ -64,6 +64,7 @@ describe("useHomeController", () => {
         streak: 2,
         difficulty: "normal",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
       replacePlayer: vi.fn(),
       commitVictory: vi.fn().mockResolvedValue(undefined),
@@ -106,6 +107,7 @@ describe("useHomeController", () => {
         streak: 2,
         difficulty: "normal",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
       commitVictory,
     });
@@ -124,6 +126,42 @@ describe("useHomeController", () => {
 
     expect(commitVictory).toHaveBeenCalledTimes(1);
     expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
+  });
+
+  it("adds insane time bonus to the committed victory score", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "insane",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+    mockUseHardModeTimer.mockReturnValue({
+      ...mockUseHardModeTimer(),
+      hardModeSecondsLeft: 11,
+    });
+
+    const { rerender, result } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 4, 2, 5));
+    expect(result.current.victoryScoreSummary?.total).toBe(15);
+    expect(result.current.showVictoryDialog).toBe(true);
   });
 
   it("opens a confirmation dialog before refreshing an active game", () => {

@@ -13,6 +13,7 @@ const BoardSection = (): JSX.Element => {
     gameOver,
     won,
     answer,
+    showLegacyEndOfGameMessage,
     startAnimationSeed,
     startAnimationsEnabled,
     boardShakePulse,
@@ -79,7 +80,7 @@ const BoardSection = (): JSX.Element => {
           hintRevealTileIndex={hintRevealTileIndex}
         />
 
-        {gameOver && (
+        {gameOver && showLegacyEndOfGameMessage && (
           <p className="text-center text-base font-semibold text-neutral-800 dark:text-neutral-200 sm:text-lg">
             {won
               ? t("home.sections.winMessage", { count: guesses.length })
