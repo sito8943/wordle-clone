@@ -14,6 +14,7 @@ export type PlayerContextType = {
   updatePlayerKeyboardPreference: (
     preference: PlayerKeyboardPreference,
   ) => void;
+  updatePlayerShowEndOfGameDialogs: (showDialogs: boolean) => void;
   commitVictory: (points: number, wonAt?: number) => Promise<void>;
   commitLoss: () => Promise<void>;
 };

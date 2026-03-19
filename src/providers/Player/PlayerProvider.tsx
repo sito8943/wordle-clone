@@ -37,14 +37,15 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       difficulty: PlayerDifficulty;
       keyboardPreference: PlayerKeyboardPreference;
     }) => {
-      setStoredPlayer({
+      setStoredPlayer((previous) => ({
         name: remoteProfile.nick,
         code: remoteProfile.playerCode,
         score: remoteProfile.score,
         streak: remoteProfile.streak,
         difficulty: remoteProfile.difficulty,
         keyboardPreference: remoteProfile.keyboardPreference,
-      });
+        showEndOfGameDialogs: normalizePlayer(previous).showEndOfGameDialogs,
+      }));
       await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
     },
     [queryClient, setStoredPlayer],
@@ -59,7 +60,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         previous.score === normalized.score &&
         previous.streak === normalized.streak &&
         previous.difficulty === normalized.difficulty &&
-        previous.keyboardPreference === normalized.keyboardPreference
+        previous.keyboardPreference === normalized.keyboardPreference &&
+        previous.showEndOfGameDialogs === normalized.showEndOfGameDialogs
       ) {
         return previous;
       }
@@ -243,6 +245,24 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [setStoredPlayer],
   );
 
+  const updatePlayerShowEndOfGameDialogs = useCallback(
+    (showDialogs: boolean) => {
+      setStoredPlayer((prev) => {
+        const normalized = normalizePlayer(prev);
+        if (normalized.showEndOfGameDialogs === showDialogs) {
+          if (prev.showEndOfGameDialogs === showDialogs) {
+            return prev;
+          }
+
+          return normalized;
+        }
+
+        return { ...normalized, showEndOfGameDialogs: showDialogs };
+      });
+    },
+    [setStoredPlayer],
+  );
+
   const contextValue = useMemo(
     () => ({
       player,
@@ -252,6 +272,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
+      updatePlayerShowEndOfGameDialogs,
       commitVictory,
       commitLoss,
     }),
@@ -263,6 +284,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
+      updatePlayerShowEndOfGameDialogs,
       commitVictory,
       commitLoss,
     ],

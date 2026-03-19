@@ -1,12 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getTotalPointsForWin, type Player } from "@domain/wordle";
+import {
+  getInsaneTimeBonus,
+  getPointsForWin,
+  getTotalPointsForWin,
+  type Player,
+} from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useApi, usePlayer } from "@providers";
 import { useHardModeTimer } from "./useHardModeTimer";
-import { getDifficultyScoreMultiplier } from "./utils";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
+import type { EndOfGameSnapshot, EndOfGameScoreSummaryItem } from "./types";
+import {
+  getDifficultyScoreMultiplier,
+  hasSeenEndOfGameDialogInSession,
+  markEndOfGameDialogAsSeenInSession,
+} from "./utils";
 
 export default function useHomeController() {
   const { scoreClient, wordDictionaryClient } = useApi();
@@ -45,6 +55,13 @@ export default function useHomeController() {
   >(null);
   const [dictionaryChecksumMessageKind, setDictionaryChecksumMessageKind] =
     useState<"success" | "error" | null>(null);
+  const [endOfGameSnapshot, setEndOfGameSnapshot] =
+    useState<EndOfGameSnapshot | null>(null);
+  const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
+    useState(false);
+  const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
+  const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] =
+    useState(false);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -95,17 +112,51 @@ export default function useHomeController() {
     }
 
     if (won) {
+      setShowLegacyEndOfGameFeedback(false);
+      const basePoints = getPointsForWin(guesses.length);
       const difficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
       );
-      void commitVictory(
-        getTotalPointsForWin(
-          guesses.length,
-          difficultyMultiplier,
-          player.streak,
-        ),
+      const timeBonus =
+        player.difficulty === "insane"
+          ? getInsaneTimeBonus(hardModeSecondsLeft)
+          : 0;
+      const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
+        { key: "base", value: basePoints },
+        { key: "difficulty", value: difficultyMultiplier },
+        { key: "streak", value: player.streak },
+      ];
+
+      if (player.difficulty === "insane") {
+        scoreSummaryItems.push({ key: "time", value: timeBonus });
+      }
+
+      const totalPoints = getTotalPointsForWin(
+        guesses.length,
+        difficultyMultiplier,
+        player.streak,
+        timeBonus,
       );
+
+      setEndOfGameSnapshot({
+        answer,
+        currentStreak: player.streak + 1,
+        bestStreak: player.streak,
+        scoreSummary: {
+          items: scoreSummaryItems,
+          total: totalPoints,
+        },
+      });
+
+      void commitVictory(totalPoints);
     } else {
+      setShowLegacyEndOfGameFeedback(false);
+      setEndOfGameSnapshot({
+        answer,
+        currentStreak: player.streak,
+        bestStreak: player.streak,
+        scoreSummary: null,
+      });
       void commitLoss();
     }
 
@@ -115,6 +166,8 @@ export default function useHomeController() {
     guesses.length,
     commitLoss,
     commitVictory,
+    answer,
+    hardModeSecondsLeft,
     player.difficulty,
     player.streak,
     won,
@@ -138,16 +191,25 @@ export default function useHomeController() {
   });
 
   const refreshBoardNow = useCallback(() => {
+    setEndOfGameSnapshot(null);
+    setShowLegacyEndOfGameFeedback(false);
     resetHints();
     resetHardModeTimer();
     refresh();
   }, [refresh, resetHardModeTimer, resetHints]);
 
   const startNewBoard = useCallback(() => {
+    setEndOfGameSnapshot(null);
+    setShowLegacyEndOfGameFeedback(false);
     resetHints();
     resetHardModeTimer();
     startNewWordleBoard();
   }, [resetHardModeTimer, resetHints, startNewWordleBoard]);
+
+  const closeEndOfGameDialog = useCallback(() => {
+    setEndOfGameSnapshot(null);
+    setShowLegacyEndOfGameFeedback(true);
+  }, []);
 
   const refreshBoard = useCallback(() => {
     if (hasActiveGame) {
@@ -255,6 +317,8 @@ export default function useHomeController() {
 
   useEffect(() => {
     if (showResumeDialog) {
+      setEndOfGameSnapshot(null);
+      setShowLegacyEndOfGameFeedback(false);
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
       setShowHelpDialog(false);
@@ -268,9 +332,61 @@ export default function useHomeController() {
     }
   }, [wordListEnabledForDifficulty]);
 
+  const showEndOfGameDialogs = player.showEndOfGameDialogs;
+  const showVictoryDialog =
+    showEndOfGameDialogs && gameOver && won && endOfGameSnapshot !== null;
+  const showDefeatDialog =
+    showEndOfGameDialogs && gameOver && !won && endOfGameSnapshot !== null;
+  const showRefreshAttention = gameOver;
+  const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
+
+  useEffect(() => {
+    if (!endOfGameDialogVisible) {
+      return;
+    }
+
+    if (hasSeenEndOfGameDialogInSession()) {
+      setShowEndOfGameSettingsHint(false);
+      return;
+    }
+
+    markEndOfGameDialogAsSeenInSession();
+    setShowEndOfGameSettingsHint(true);
+  }, [endOfGameDialogVisible]);
+
+  useEffect(() => {
+    if (!showRefreshAttention) {
+      setRefreshAttentionPulse(0);
+      return;
+    }
+
+    setRefreshAttentionPulse((previous) => previous + 1);
+
+    const intervalId = window.setInterval(() => {
+      setRefreshAttentionPulse((previous) => previous + 1);
+    }, 1400);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [showRefreshAttention]);
+
   return {
     ...wordle,
     currentWinStreak: player.streak,
+    showLegacyEndOfGameMessage:
+      !showEndOfGameDialogs || showLegacyEndOfGameFeedback,
+    showRefreshAttention,
+    refreshAttentionPulse,
+    refreshAttentionScale: 0.14,
+    showVictoryDialog,
+    showDefeatDialog,
+    showEndOfGameSettingsHint,
+    endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
+    victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,
+    endOfGameCurrentStreak: endOfGameSnapshot?.currentStreak ?? player.streak,
+    endOfGameBestStreak: endOfGameSnapshot?.bestStreak ?? player.streak,
+    closeEndOfGameDialog,
     wordListEnabledForDifficulty,
     showHardModeTimer,
     showHardModeFinalStretchBar,

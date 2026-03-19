@@ -63,6 +63,14 @@ const normalizePlayerKeyboardPreference = (
   return value;
 };
 
+const normalizeShowEndOfGameDialogs = (value: unknown): boolean => {
+  if (typeof value !== "boolean") {
+    return DEFAULT_PLAYER.showEndOfGameDialogs;
+  }
+
+  return value;
+};
+
 export const normalizePlayer = (value: Partial<Player> | null): Player => {
   if (!value) {
     return DEFAULT_PLAYER;
@@ -79,6 +87,9 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     difficulty: normalizePlayerDifficulty(value.difficulty),
     keyboardPreference: normalizePlayerKeyboardPreference(
       value.keyboardPreference,
+    ),
+    showEndOfGameDialogs: normalizeShowEndOfGameDialogs(
+      value.showEndOfGameDialogs,
     ),
   };
 };

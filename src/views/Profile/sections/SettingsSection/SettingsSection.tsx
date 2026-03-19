@@ -2,7 +2,10 @@ import { Button } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
 import { useTranslation } from "@i18n";
 import { DifficultySection } from "../DifficultySection";
-import { PROFILE_THEME_MODE_INPUT_ID } from "@views/Profile/constants";
+import {
+  PROFILE_END_OF_GAME_DIALOGS_INPUT_ID,
+  PROFILE_THEME_MODE_INPUT_ID,
+} from "@views/Profile/constants";
 import { useProfileView } from "@views/Profile/providers";
 
 const SettingsSection = () => {
@@ -15,6 +18,8 @@ const SettingsSection = () => {
       changeThemePreference,
       keyboardPreference,
       changeKeyboardPreference,
+      showEndOfGameDialogs,
+      changeShowEndOfGameDialogs,
       difficulty,
       changeDifficulty,
     },
@@ -51,6 +56,30 @@ const SettingsSection = () => {
           <option value="light">{t("profile.themeOptions.light")}</option>
           <option value="dark">{t("profile.themeOptions.dark")}</option>
         </select>
+      </div>
+      <div id="end-dialogs" className="mt-4 max-w-xl">
+        <div className="flex items-start gap-3">
+          <input
+            id={PROFILE_END_OF_GAME_DIALOGS_INPUT_ID}
+            type="checkbox"
+            checked={showEndOfGameDialogs}
+            onChange={(event) =>
+              changeShowEndOfGameDialogs(event.target.checked)
+            }
+            className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
+          />
+          <div>
+            <label
+              htmlFor={PROFILE_END_OF_GAME_DIALOGS_INPUT_ID}
+              className="profile-field-label"
+            >
+              {t("profile.labels.endOfGameDialogs")}
+            </label>
+            <p className="text-xs text-neutral-600 dark:text-neutral-300">
+              {t("profile.endOfGameDialogsDescription")}
+            </p>
+          </div>
+        </div>
       </div>
       <DifficultySection
         keyboardPreference={keyboardPreference}

@@ -31,6 +31,9 @@ const Toolbar = (): JSX.Element => {
     hardModeSecondsLeft,
     hardModeTickPulse,
     hardModeClockBoostScale,
+    showRefreshAttention,
+    refreshAttentionPulse,
+    refreshAttentionScale,
     refreshBoard,
     dictionaryError,
   } = controller;
@@ -99,15 +102,14 @@ const Toolbar = (): JSX.Element => {
               aria-label={t("home.toolbar.insaneTimerAriaLabel", {
                 seconds: hardModeSecondsLeft,
               })}
-              className="mobile-compact-button inline-flex items-center gap-2 rounded border border-blue-300 bg-blue-100/90 px-3 py-2 text-sm font-bold text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
+              className={`mobile-compact-button inline-flex items-center gap-2 rounded border px-3 py-2 text-sm font-bold border-blue-300 bg-blue-100/90 text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200`}
             >
               <span
                 key={hardModeTickPulse}
-                className="hard-mode-clock-boost-animation inline-flex"
+                className="boost-animation inline-flex"
                 style={
                   {
-                    "--hard-mode-clock-boost-scale":
-                      hardModeClockBoostScale.toString(),
+                    "--boost-scale": hardModeClockBoostScale.toString(),
                   } as NativeKeyboardClockStyle
                 }
               >
@@ -124,18 +126,38 @@ const Toolbar = (): JSX.Element => {
               </span>
             </div>
           )}
-          <Button
-            onClick={refreshBoard}
-            aria-label={t("home.toolbar.refreshAriaLabel")}
-            data-wordle-refresh="true"
-            icon={faRotateRight}
-            variant="ghost"
-            iconClassName="text-lg"
-            className="mobile-compact-button"
-            hideLabelOnMobile
+          <span
+            key={showRefreshAttention ? refreshAttentionPulse : "idle"}
+            className={
+              showRefreshAttention
+                ? "boost-animation inline-flex"
+                : "inline-flex"
+            }
+            style={
+              showRefreshAttention
+                ? ({
+                    "--boost-scale": refreshAttentionScale.toString(),
+                  } as NativeKeyboardClockStyle)
+                : undefined
+            }
           >
-            {t("common.refresh")}
-          </Button>
+            <Button
+              onClick={refreshBoard}
+              aria-label={t("home.toolbar.refreshAriaLabel")}
+              data-wordle-refresh="true"
+              icon={faRotateRight}
+              variant="ghost"
+              iconClassName="text-lg"
+              className={
+                showRefreshAttention
+                  ? "mobile-compact-button text-amber-700 dark:text-amber-300"
+                  : "mobile-compact-button"
+              }
+              hideLabelOnMobile
+            >
+              {t("common.refresh")}
+            </Button>
+          </span>
         </div>
       </div>
 

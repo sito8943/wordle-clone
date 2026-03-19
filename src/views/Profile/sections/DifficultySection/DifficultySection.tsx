@@ -18,7 +18,7 @@ const DifficultySection = ({
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl" id="difficulty">
       <div className="flex flex-col gap-2">
         <label
           htmlFor={PROFILE_KEYBOARD_MODE_INPUT_ID}

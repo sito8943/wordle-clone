@@ -19,11 +19,29 @@ const toSafeStreakBonus = (value: number): number => {
   return Math.floor(value);
 };
 
+export const getInsaneTimeBonus = (secondsLeft: number): number => {
+  if (!Number.isFinite(secondsLeft) || secondsLeft <= 1) {
+    return 0;
+  }
+
+  return Math.max(0, Math.floor(secondsLeft / 2));
+};
+
+const toSafeTimeBonus = (value: number): number => {
+  if (!Number.isFinite(value) || value < 0) {
+    return 0;
+  }
+
+  return Math.floor(value);
+};
+
 export const getTotalPointsForWin = (
   guessesUsed: number,
   difficultyMultiplier: number,
   streakBonus: number,
+  timeBonus = 0,
 ): number =>
   getPointsForWin(guessesUsed) +
   toSafeDifficultyMultiplier(difficultyMultiplier) +
-  toSafeStreakBonus(streakBonus);
+  toSafeStreakBonus(streakBonus) +
+  toSafeTimeBonus(timeBonus);

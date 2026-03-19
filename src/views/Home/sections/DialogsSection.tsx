@@ -1,4 +1,5 @@
 import { lazy, Suspense, type JSX } from "react";
+import { useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { useHomeView } from "../providers/";
@@ -19,9 +20,16 @@ const HelpDialog = lazy(
 const HomeDeveloperConsoleDialog = lazy(
   () => import("../components/Dialogs/DeveloperConsoleDialog"),
 );
+const VictoryDialog = lazy(
+  () => import("../components/Dialogs/VictoryDialog/VictoryDialog"),
+);
+const DefeatDialog = lazy(
+  () => import("../components/Dialogs/DefeatDialog/DefeatDialog"),
+);
 
 const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { controller, wordListButtonEnabled } = useHomeView();
   const {
     message,
@@ -30,8 +38,16 @@ const DialogsSection = (): JSX.Element => {
     showWordsDialog,
     showHelpDialog,
     showDeveloperConsoleDialog,
+    showVictoryDialog,
+    showDefeatDialog,
+    showEndOfGameSettingsHint,
+    endOfGameAnswer,
+    victoryScoreSummary,
+    endOfGameCurrentStreak,
+    endOfGameBestStreak,
     continuePreviousBoard,
     startNewBoard,
+    closeEndOfGameDialog,
     cancelRefreshBoard,
     confirmRefreshBoard,
     dictionaryWords,
@@ -40,12 +56,23 @@ const DialogsSection = (): JSX.Element => {
     closeDeveloperConsoleDialog,
   } = controller;
   const resumeDialogVisible = showResumeDialog;
-  const refreshDialogVisible = !showResumeDialog && showRefreshDialog;
+  const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
+  const refreshDialogVisible =
+    !showResumeDialog && !endOfGameDialogVisible && showRefreshDialog;
   const wordListDialogVisible =
-    !showResumeDialog && wordListButtonEnabled && showWordsDialog;
-  const helpDialogVisible = !showResumeDialog && showHelpDialog;
+    !showResumeDialog &&
+    !endOfGameDialogVisible &&
+    wordListButtonEnabled &&
+    showWordsDialog;
+  const helpDialogVisible =
+    !showResumeDialog && !endOfGameDialogVisible && showHelpDialog;
   const developerConsoleDialogVisible =
-    !showResumeDialog && showDeveloperConsoleDialog;
+    !showResumeDialog && !endOfGameDialogVisible && showDeveloperConsoleDialog;
+
+  const changeDifficulty = () => {
+    closeEndOfGameDialog();
+    navigate("/profile#difficulty");
+  };
 
   return (
     <ErrorBoundary
@@ -56,6 +83,8 @@ const DialogsSection = (): JSX.Element => {
         showWordsDialog,
         showHelpDialog,
         showDeveloperConsoleDialog,
+        showVictoryDialog,
+        showDefeatDialog,
       ]}
       fallback={({ reset }) => (
         <div className="px-3 pb-2">
@@ -96,6 +125,26 @@ const DialogsSection = (): JSX.Element => {
             onClose={closeWordsDialog}
           />
           <HelpDialog visible={helpDialogVisible} onClose={closeHelpDialog} />
+          {victoryScoreSummary ? (
+            <VictoryDialog
+              visible={showVictoryDialog}
+              answer={endOfGameAnswer}
+              currentStreak={endOfGameCurrentStreak}
+              scoreSummary={victoryScoreSummary}
+              showSettingsHint={showEndOfGameSettingsHint}
+              onClose={closeEndOfGameDialog}
+              onPlayAgain={startNewBoard}
+            />
+          ) : null}
+          <DefeatDialog
+            visible={showDefeatDialog}
+            answer={endOfGameAnswer}
+            bestStreak={endOfGameBestStreak}
+            showSettingsHint={showEndOfGameSettingsHint}
+            onClose={closeEndOfGameDialog}
+            onPlayAgain={startNewBoard}
+            onChangeDifficulty={changeDifficulty}
+          />
           <HomeDeveloperConsoleDialog
             visible={developerConsoleDialogVisible}
             onClose={closeDeveloperConsoleDialog}

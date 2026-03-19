@@ -20,6 +20,7 @@ import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Home/hooks/useHintController";
+import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Home/hooks/useHomeController/constants";
 
 vi.mock("./utils/words", async () => {
   const actual =
@@ -1036,7 +1037,6 @@ describe("App", () => {
   });
 
   it("marks timeout as a loss and keeps the board until player refreshes", async () => {
-    vi.useFakeTimers();
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1044,12 +1044,17 @@ describe("App", () => {
         score: 0,
         streak: 0,
         difficulty: "insane",
+        showEndOfGameDialogs: false,
       }),
     );
 
     try {
       renderApp();
-      fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
+      const letterAButton = await screen.findByRole("button", {
+        name: "Letter A",
+      });
+      vi.useFakeTimers();
+      fireEvent.click(letterAButton);
 
       act(() => {
         vi.advanceTimersByTime(60000);
@@ -1396,20 +1401,39 @@ describe("App", () => {
   it("shows and increments win streak in home after a victory", async () => {
     renderApp();
 
-    expect(screen.getByLabelText("Streak: 0")).toBeTruthy();
+    expect(await screen.findByLabelText("Streak: 0")).toBeTruthy();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
     }
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
-    expect(await screen.findByText("You got it in 1!")).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
     expect(screen.getByLabelText("Streak: 1")).toBeTruthy();
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.streak).toBe(1);
     });
+  });
+
+  it("shows the profile settings hint only on the first end-of-game dialog in a tab", async () => {
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", { name: "Profile settings" })
+        .getAttribute("href"),
+    ).toBe("/profile#end-dialogs");
+    expect(
+      sessionStorage.getItem(END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY),
+    ).toBe("seen");
   });
 
   it("opens the help dialog from home and shows rules and scoring", async () => {
@@ -1447,7 +1471,7 @@ describe("App", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Final score = base points + difficulty bonus + streak bonus.",
+        "Final score = base points + difficulty bonus + streak bonus + time bonus in Insane.",
       ),
     ).toBeTruthy();
 
@@ -1512,7 +1536,7 @@ describe("App", () => {
     });
   });
 
-  it("applies insane difficulty bonus and current streak bonus on win", async () => {
+  it("applies insane difficulty, streak, and remaining-time bonuses on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1532,7 +1556,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(10);
+      expect(player.score).toBe(40);
     });
   });
 
@@ -1701,6 +1725,16 @@ describe("App", () => {
   });
 
   it("finishes a winning round and allows refreshing the board", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        score: 0,
+        streak: 0,
+        showEndOfGameDialogs: false,
+      }),
+    );
+
     renderApp();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
@@ -1724,6 +1758,28 @@ describe("App", () => {
       expect(screen.queryByText("You got it in 1!")).toBeNull();
     });
     expect(screen.getByRole("button", { name: "Refresh" })).toBeTruthy();
+  });
+
+  it("opens the victory dialog by default and starts a clean board after play again", async () => {
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(
+        await screen.findByRole("button", { name: `Letter ${letter}` }),
+      );
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
+    expect(screen.getByText("APPLE")).toBeTruthy();
+    expect(screen.queryByText("You got it in 1!")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Play again" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Victory" })).toBeNull();
+    });
+    expect(screen.queryByText("APPLE")).toBeNull();
   });
 
   it("asks confirmation before refreshing an active game", async () => {

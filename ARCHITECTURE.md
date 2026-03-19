@@ -153,6 +153,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 
 - `sessionStorage`
 - `wordle:session-id`: tab session id used by wordle session handling.
+- `wordle:end-of-game-dialog-seen`: marks that this tab already showed the first-run hint for victory/defeat dialogs.
 - `localStorage`
 - `wordle:game`: persisted in-progress game payload (managed in domain storage helpers).
   - It stores `{ sessionId, gameId, seed, guesses, current, gameOver }`.
@@ -160,6 +161,7 @@ This is an evolution of the current layered architecture, not a replacement for 
   - It is persisted as soon as there is in-progress input (submitted rows or typed letters in `current`).
 - `wordle:hint-usage`: snapshot for hint usage (`gameId + derived gameKey + hintsUsed`) to keep hint limits after reload without persisting `answer`.
 - `player`: player profile and score/streak metadata, including recovery `code`.
+  - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, and `showEndOfGameDialogs`.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - `wordle:sync-events`: local queue of pending `VictorySyncEvent` records for offline score synchronization.
 - `wordle:dictionary:en`: cached dictionary words.

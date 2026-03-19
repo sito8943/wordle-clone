@@ -2,6 +2,7 @@ import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import useHomeController from "./useHomeController";
+import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "./constants";
 
 const mockUseApi = vi.fn();
 const mockUsePlayer = vi.fn();
@@ -30,6 +31,8 @@ describe("useHomeController", () => {
   let wordleState: Record<string, unknown>;
 
   beforeEach(() => {
+    vi.useFakeTimers();
+    window.sessionStorage.clear();
     wordleState = {
       sessionId: "session-1",
       gameId: "game-1",
@@ -64,6 +67,7 @@ describe("useHomeController", () => {
         streak: 2,
         difficulty: "normal",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
       replacePlayer: vi.fn(),
       commitVictory: vi.fn().mockResolvedValue(undefined),
@@ -92,6 +96,8 @@ describe("useHomeController", () => {
 
   afterEach(() => {
     cleanup();
+    window.sessionStorage.clear();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -106,6 +112,7 @@ describe("useHomeController", () => {
         streak: 2,
         difficulty: "normal",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
       commitVictory,
     });
@@ -124,6 +131,139 @@ describe("useHomeController", () => {
 
     expect(commitVictory).toHaveBeenCalledTimes(1);
     expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
+  });
+
+  it("adds insane time bonus to the committed victory score", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "insane",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+    mockUseHardModeTimer.mockReturnValue({
+      ...mockUseHardModeTimer(),
+      hardModeSecondsLeft: 11,
+    });
+
+    const { rerender, result } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(
+      getTotalPointsForWin(3, 4, 2, 5),
+    );
+    expect(result.current.victoryScoreSummary?.total).toBe(15);
+    expect(result.current.showVictoryDialog).toBe(true);
+  });
+
+  it("restores the legacy end-of-game feedback after closing the dialog manually", () => {
+    const { rerender, result } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showVictoryDialog).toBe(true);
+    expect(result.current.showLegacyEndOfGameMessage).toBe(false);
+    expect(result.current.showRefreshAttention).toBe(true);
+
+    act(() => {
+      result.current.closeEndOfGameDialog();
+    });
+
+    expect(result.current.showVictoryDialog).toBe(false);
+    expect(result.current.showLegacyEndOfGameMessage).toBe(true);
+    expect(result.current.showRefreshAttention).toBe(true);
+  });
+
+  it("shows the end-of-game settings hint only once per tab session", () => {
+    const { rerender, result } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showEndOfGameSettingsHint).toBe(true);
+    expect(
+      window.sessionStorage.getItem(
+        END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+      ),
+    ).toBe("seen");
+
+    wordleState = {
+      ...wordleState,
+      current: "",
+      gameOver: false,
+      guesses: [],
+    };
+    rerender();
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      won: false,
+      gameOver: true,
+      guesses: ["SLATE", "CRANE", "BRICK"],
+    };
+    rerender();
+
+    expect(result.current.showDefeatDialog).toBe(true);
+    expect(result.current.showEndOfGameSettingsHint).toBe(false);
+  });
+
+  it("activates refresh attention immediately when end-of-game dialogs are disabled", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: false,
+      },
+    });
+
+    const { rerender, result } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showLegacyEndOfGameMessage).toBe(true);
+    expect(result.current.showRefreshAttention).toBe(true);
+    expect(result.current.refreshAttentionPulse).toBeGreaterThan(0);
   });
 
   it("opens a confirmation dialog before refreshing an active game", () => {
@@ -185,6 +325,7 @@ describe("useHomeController", () => {
         streak: 2,
         difficulty: "easy",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
     });
 

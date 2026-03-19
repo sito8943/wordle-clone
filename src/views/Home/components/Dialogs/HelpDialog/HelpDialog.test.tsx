@@ -46,6 +46,15 @@ describe("HelpDialog", () => {
     expect(screen.getByText("Scoring")).toBeTruthy();
   });
 
+  it("renders the insane time bonus rule", () => {
+    render(<HelpDialog visible onClose={() => undefined} />);
+    expect(
+      screen.getByText(
+        "Insane: +4 difficulty bonus and +1 extra point per 2 seconds left.",
+      ),
+    ).toBeTruthy();
+  });
+
   it("renders the Close button", () => {
     render(<HelpDialog visible onClose={() => undefined} />);
     expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();

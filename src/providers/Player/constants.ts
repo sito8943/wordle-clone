@@ -15,4 +15,5 @@ export const DEFAULT_PLAYER: Player = {
   streak: 0,
   difficulty: DEFAULT_PLAYER_DIFFICULTY,
   keyboardPreference: DEFAULT_PLAYER_KEYBOARD_PREFERENCE,
+  showEndOfGameDialogs: true,
 };

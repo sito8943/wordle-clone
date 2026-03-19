@@ -1,5 +1,6 @@
 import type { PlayerDifficulty } from "@domain/wordle";
 import {
+  END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
   HARD_MODE_FINAL_STRETCH_SECONDS,
   HARD_MODE_TOTAL_SECONDS,
 } from "./constants";
@@ -86,4 +87,27 @@ export const setHardModeTimerSnapshot = (
   snapshot: HardModeTimerSnapshot,
 ): void => {
   hardModeTimerSnapshot = snapshot;
+};
+
+export const hasSeenEndOfGameDialogInSession = (): boolean => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return (
+    window.sessionStorage.getItem(
+      END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+    ) === "seen"
+  );
+};
+
+export const markEndOfGameDialogAsSeenInSession = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+    "seen",
+  );
 };

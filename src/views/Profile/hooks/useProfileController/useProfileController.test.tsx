@@ -51,12 +51,14 @@ describe("useProfileController", () => {
         streak: 2,
         difficulty: "normal",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
       recoverPlayer: vi.fn().mockResolvedValue(undefined),
       refreshCurrentPlayerProfile: vi.fn().mockResolvedValue(undefined),
       updatePlayer: vi.fn().mockResolvedValue(undefined),
       updatePlayerDifficulty: vi.fn(),
       updatePlayerKeyboardPreference: vi.fn(),
+      updatePlayerShowEndOfGameDialogs: vi.fn(),
     });
     mockUseAnimationsPreference.mockReturnValue({
       startAnimationsEnabled: true,
@@ -160,6 +162,7 @@ describe("useProfileController", () => {
         streak: 2,
         difficulty: "normal",
         keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
       },
       refreshCurrentPlayerProfile,
     });
@@ -197,5 +200,21 @@ describe("useProfileController", () => {
     expect(mockClearPersistedGameState).toHaveBeenCalledTimes(1);
     expect(updatePlayerDifficulty).toHaveBeenCalledWith("hard");
     expect(result.current.isDifficultyChangeConfirmationOpen).toBe(false);
+  });
+
+  it("updates the end-of-game dialogs preference", () => {
+    const updatePlayerShowEndOfGameDialogs = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      updatePlayerShowEndOfGameDialogs,
+    });
+
+    const { result } = renderHook(() => useProfileController());
+
+    act(() => {
+      result.current.changeShowEndOfGameDialogs(false);
+    });
+
+    expect(updatePlayerShowEndOfGameDialogs).toHaveBeenCalledWith(false);
   });
 });
