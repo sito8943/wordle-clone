@@ -57,7 +57,7 @@ const VictoryDialog = ({
       panelAnimationClassName={panelAnimationClassName}
     >
       <div className="mt-5 space-y-5">
-        <section className="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-100">
+        <section className="rounded-2xl bg-emerald-200 px-4 py-3 text-emerald-950 dark:bg-emerald-950/90 dark:text-emerald-400">
           <p className="text-xs font-semibold uppercase tracking-[0.24em]">
             {t("home.endOfGame.wordLabel")}
           </p>
