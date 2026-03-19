@@ -3,10 +3,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@i18n";
 import type { TileStatus } from "@utils/types";
 import { Keyboard } from ".";
+import {
+  DELETE_HOLD_DELAY_MS,
+  DELETE_REPEAT_INTERVAL_MS,
+} from "./constants";
 
 describe("Keyboard", () => {
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
   });
 
   it("renders the keyboard with expected keys", () => {
@@ -58,6 +63,47 @@ describe("Keyboard", () => {
     expect(onKey).toHaveBeenNthCalledWith(1, "A");
     expect(onKey).toHaveBeenNthCalledWith(2, "ENTER");
     expect(onKey).toHaveBeenNthCalledWith(3, "BACKSPACE");
+  });
+
+  it("repeats delete while the delete key is held", () => {
+    vi.useFakeTimers();
+    const onKey = vi.fn();
+
+    render(<Keyboard guesses={[]} onKey={onKey} />);
+
+    const deleteKey = screen.getByRole("button", {
+      name: i18n.t("home.gameplay.keys.deleteLetter"),
+    });
+
+    fireEvent.pointerDown(deleteKey);
+    vi.advanceTimersByTime(DELETE_HOLD_DELAY_MS + DELETE_REPEAT_INTERVAL_MS * 2);
+    fireEvent.pointerUp(deleteKey);
+    fireEvent.click(deleteKey);
+
+    expect(onKey).toHaveBeenCalledTimes(3);
+    expect(onKey).toHaveBeenNthCalledWith(1, "BACKSPACE");
+    expect(onKey).toHaveBeenNthCalledWith(2, "BACKSPACE");
+    expect(onKey).toHaveBeenNthCalledWith(3, "BACKSPACE");
+  });
+
+  it("does not repeat delete if the press ends before the hold delay", () => {
+    vi.useFakeTimers();
+    const onKey = vi.fn();
+
+    render(<Keyboard guesses={[]} onKey={onKey} />);
+
+    const deleteKey = screen.getByRole("button", {
+      name: i18n.t("home.gameplay.keys.deleteLetter"),
+    });
+
+    fireEvent.pointerDown(deleteKey);
+    vi.advanceTimersByTime(DELETE_HOLD_DELAY_MS - 1);
+    fireEvent.pointerUp(deleteKey);
+    fireEvent.click(deleteKey);
+    vi.advanceTimersByTime(DELETE_REPEAT_INTERVAL_MS * 2);
+
+    expect(onKey).toHaveBeenCalledTimes(1);
+    expect(onKey).toHaveBeenCalledWith("BACKSPACE");
   });
 
   it("keeps the highest priority style for a key across guesses", () => {

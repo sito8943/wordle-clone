@@ -17,3 +17,6 @@ export const KEY_STYLE_ON_LOSS: Record<TileStatus | "default", string> = {
   absent: NEUTRAL_REVEALED_KEY_STYLE,
   default: KEY_STYLE.default,
 };
+
+export const DELETE_HOLD_DELAY_MS = 300;
+export const DELETE_REPEAT_INTERVAL_MS = 75;

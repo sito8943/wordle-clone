@@ -1,6 +1,11 @@
+import { useCallback, useEffect, useRef } from "react";
 import type { KeyboardProps } from "./types";
 import { useTranslation } from "@i18n";
 import useKeyboardController from "./useKeyboardController";
+import {
+  DELETE_HOLD_DELAY_MS,
+  DELETE_REPEAT_INTERVAL_MS,
+} from "./constants";
 
 export function Keyboard({
   guesses,
@@ -11,6 +16,48 @@ export function Keyboard({
 }: KeyboardProps) {
   const { t } = useTranslation();
   const { rows, keyStyleMap } = useKeyboardController({ guesses, isLoss });
+  const deleteHoldTimeoutRef = useRef<number | null>(null);
+  const deleteRepeatIntervalRef = useRef<number | null>(null);
+  const deleteHoldTriggeredRef = useRef(false);
+
+  const clearDeleteRepeat = useCallback(() => {
+    if (deleteHoldTimeoutRef.current !== null) {
+      window.clearTimeout(deleteHoldTimeoutRef.current);
+      deleteHoldTimeoutRef.current = null;
+    }
+
+    if (deleteRepeatIntervalRef.current !== null) {
+      window.clearInterval(deleteRepeatIntervalRef.current);
+      deleteRepeatIntervalRef.current = null;
+    }
+  }, []);
+
+  const startDeleteRepeat = useCallback(() => {
+    clearDeleteRepeat();
+    deleteHoldTriggeredRef.current = false;
+    deleteHoldTimeoutRef.current = window.setTimeout(() => {
+      deleteHoldTriggeredRef.current = true;
+      onKey("BACKSPACE");
+      deleteRepeatIntervalRef.current = window.setInterval(() => {
+        onKey("BACKSPACE");
+      }, DELETE_REPEAT_INTERVAL_MS);
+    }, DELETE_HOLD_DELAY_MS);
+  }, [clearDeleteRepeat, onKey]);
+
+  const stopDeleteRepeat = useCallback(() => {
+    clearDeleteRepeat();
+  }, [clearDeleteRepeat]);
+
+  const handleDeleteClick = useCallback(() => {
+    if (deleteHoldTriggeredRef.current) {
+      deleteHoldTriggeredRef.current = false;
+      return;
+    }
+
+    onKey("BACKSPACE");
+  }, [onKey]);
+
+  useEffect(() => clearDeleteRepeat, [clearDeleteRepeat]);
 
   return (
     <>
@@ -34,7 +81,21 @@ export function Keyboard({
                 <button
                   key={key}
                   type="button"
-                  onClick={() => onKey(key)}
+                  onClick={
+                    key === "BACKSPACE" ? handleDeleteClick : () => onKey(key)
+                  }
+                  onPointerDown={
+                    key === "BACKSPACE" ? startDeleteRepeat : undefined
+                  }
+                  onPointerUp={
+                    key === "BACKSPACE" ? stopDeleteRepeat : undefined
+                  }
+                  onPointerLeave={
+                    key === "BACKSPACE" ? stopDeleteRepeat : undefined
+                  }
+                  onPointerCancel={
+                    key === "BACKSPACE" ? stopDeleteRepeat : undefined
+                  }
                   aria-label={ariaLabel}
                   className={`flex h-11 w-9 items-center justify-center rounded-lg border text-xs font-bold tracking-wide transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-100 active:scale-[0.97] dark:focus-visible:ring-neutral-200 dark:focus-visible:ring-offset-neutral-900 sm:h-12 sm:w-10 sm:text-sm ${isWide ? "w-14 text-[0.65rem] sm:w-16 sm:text-xs" : ""} ${keyStyle}`}
                 >
