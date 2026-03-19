@@ -154,7 +154,11 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return next;
       });
     },
-    [cancelDeferredPersist, flushPersistedGameState, schedulePersistedGameState],
+    [
+      cancelDeferredPersist,
+      flushPersistedGameState,
+      schedulePersistedGameState,
+    ],
   );
 
   useEffect(() => {
@@ -401,20 +405,17 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [resetBoard]);
 
   const forceLoss = useCallback(() => {
-    setGameStateWithPersistence(
-      (previous) => {
-        if (previous.gameOver) {
-          return previous;
-        }
+    setGameStateWithPersistence((previous) => {
+      if (previous.gameOver) {
+        return previous;
+      }
 
-        return {
-          ...previous,
-          current: "",
-          gameOver: true,
-        };
-      },
-      "immediate",
-    );
+      return {
+        ...previous,
+        current: "",
+        gameOver: true,
+      };
+    }, "immediate");
   }, [setGameStateWithPersistence]);
 
   useEffect(() => {

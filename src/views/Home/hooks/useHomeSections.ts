@@ -1,0 +1,227 @@
+import { useMemo } from "react";
+import { env } from "@config";
+import type { Player } from "@domain/wordle";
+import type {
+  BoardSectionProps,
+  DialogsSectionProps,
+  KeyboardSectionProps,
+  ToolbarProps,
+} from "../sections/types";
+import type { useHomeController } from "./useHomeController";
+
+type HomeControllerState = ReturnType<typeof useHomeController>;
+
+type UseHomeSectionsResult = {
+  toolbarProps: ToolbarProps;
+  boardProps: BoardSectionProps;
+  keyboardProps: KeyboardSectionProps;
+  dialogsProps: DialogsSectionProps;
+};
+
+const useHomeSections = (
+  controller: HomeControllerState,
+  player: Player,
+): UseHomeSectionsResult => {
+  const animateTileEntry =
+    controller.startAnimationsEnabled && controller.startAnimationSeed > 0;
+  const wordListButtonEnabled =
+    env.wordListButtonEnabled && controller.wordListEnabledForDifficulty;
+  const developerConsoleEnabled =
+    env.mode === "development" || env.mode === "develpment";
+  const preferNativeKeyboard = player.keyboardPreference === "native";
+
+  const toolbarProps = useMemo<ToolbarProps>(
+    () => ({
+      currentWinStreak: player.streak,
+      dictionaryLoading: controller.dictionaryLoading,
+      dictionaryWords: controller.dictionaryWords,
+      openWordsDialog: controller.openWordsDialog,
+      hintsEnabledForDifficulty: controller.hintsEnabledForDifficulty,
+      useHint: controller.useHint,
+      hintButtonDisabled: controller.hintButtonDisabled,
+      hintsRemaining: controller.hintsRemaining,
+      openHelpDialog: controller.openHelpDialog,
+      openDeveloperConsoleDialog: controller.openDeveloperConsoleDialog,
+      showRefreshAttention: controller.showRefreshAttention,
+      refreshAttentionPulse: controller.refreshAttentionPulse,
+      refreshAttentionScale: controller.refreshAttentionScale,
+      refreshBoard: controller.refreshBoard,
+      dictionaryError: controller.dictionaryError,
+      wordListButtonEnabled,
+      developerConsoleEnabled,
+      timer: {
+        showHardModeTimer: controller.showHardModeTimer,
+        hardModeSecondsLeft: controller.hardModeSecondsLeft,
+        hardModeTickPulse: controller.hardModeTickPulse,
+        hardModeClockBoostScale: controller.hardModeClockBoostScale,
+      },
+    }),
+    [
+      controller.dictionaryError,
+      controller.dictionaryLoading,
+      controller.dictionaryWords,
+      controller.hardModeClockBoostScale,
+      controller.hardModeSecondsLeft,
+      controller.hardModeTickPulse,
+      controller.hintButtonDisabled,
+      controller.hintsEnabledForDifficulty,
+      controller.hintsRemaining,
+      controller.openDeveloperConsoleDialog,
+      controller.openHelpDialog,
+      controller.openWordsDialog,
+      controller.refreshAttentionPulse,
+      controller.refreshAttentionScale,
+      controller.refreshBoard,
+      controller.showHardModeTimer,
+      controller.showRefreshAttention,
+      controller.useHint,
+      developerConsoleEnabled,
+      player.streak,
+      wordListButtonEnabled,
+    ],
+  );
+
+  const boardProps = useMemo<BoardSectionProps>(
+    () => ({
+      board: {
+        guesses: controller.guesses,
+        current: controller.current,
+        gameOver: controller.gameOver,
+        won: controller.won,
+        answer: controller.answer,
+        showLegacyEndOfGameMessage: controller.showLegacyEndOfGameMessage,
+        startAnimationSeed: controller.startAnimationSeed,
+        startAnimationsEnabled: controller.startAnimationsEnabled,
+        boardShakePulse: controller.boardShakePulse,
+        activeRowHintStatuses: controller.activeRowHintStatuses,
+        hintRevealPulse: controller.hintRevealPulse,
+        hintRevealTileIndex: controller.hintRevealTileIndex,
+        animateTileEntry,
+      },
+      hardModeProgress: {
+        showHardModeFinalStretchBar: controller.showHardModeFinalStretchBar,
+        hardModeSecondsLeft: controller.hardModeSecondsLeft,
+        hardModeFinalStretchProgressPercent:
+          controller.hardModeFinalStretchProgressPercent,
+      },
+    }),
+    [
+      animateTileEntry,
+      controller.activeRowHintStatuses,
+      controller.answer,
+      controller.boardShakePulse,
+      controller.current,
+      controller.gameOver,
+      controller.guesses,
+      controller.hardModeFinalStretchProgressPercent,
+      controller.hardModeSecondsLeft,
+      controller.hintRevealPulse,
+      controller.hintRevealTileIndex,
+      controller.showHardModeFinalStretchBar,
+      controller.showLegacyEndOfGameMessage,
+      controller.startAnimationSeed,
+      controller.startAnimationsEnabled,
+      controller.won,
+    ],
+  );
+
+  const keyboardProps = useMemo<KeyboardSectionProps>(
+    () => ({
+      guesses: controller.guesses,
+      current: controller.current,
+      handleKey: controller.handleKey,
+      gameOver: controller.gameOver,
+      won: controller.won,
+      keyboardEntryAnimationEnabled: controller.keyboardEntryAnimationEnabled,
+      showResumeDialog: controller.showResumeDialog,
+      preferNativeKeyboard,
+    }),
+    [
+      controller.current,
+      controller.gameOver,
+      controller.guesses,
+      controller.handleKey,
+      controller.keyboardEntryAnimationEnabled,
+      controller.showResumeDialog,
+      controller.won,
+      preferNativeKeyboard,
+    ],
+  );
+
+  const dialogsProps = useMemo<DialogsSectionProps>(
+    () => ({
+      message: controller.message,
+      showResumeDialog: controller.showResumeDialog,
+      showRefreshDialog: controller.showRefreshDialog,
+      showWordsDialog: controller.showWordsDialog,
+      showHelpDialog: controller.showHelpDialog,
+      showDeveloperConsoleDialog: controller.showDeveloperConsoleDialog,
+      showVictoryDialog: controller.showVictoryDialog,
+      showDefeatDialog: controller.showDefeatDialog,
+      showEndOfGameSettingsHint: controller.showEndOfGameSettingsHint,
+      endOfGameAnswer: controller.endOfGameAnswer,
+      victoryScoreSummary: controller.victoryScoreSummary,
+      endOfGameCurrentStreak: controller.endOfGameCurrentStreak,
+      endOfGameBestStreak: controller.endOfGameBestStreak,
+      continuePreviousBoard: controller.continuePreviousBoard,
+      startNewBoard: controller.startNewBoard,
+      closeEndOfGameDialog: controller.closeEndOfGameDialog,
+      cancelRefreshBoard: controller.cancelRefreshBoard,
+      confirmRefreshBoard: controller.confirmRefreshBoard,
+      dictionaryWords: controller.dictionaryWords,
+      closeWordsDialog: controller.closeWordsDialog,
+      closeHelpDialog: controller.closeHelpDialog,
+      closeDeveloperConsoleDialog: controller.closeDeveloperConsoleDialog,
+      wordListButtonEnabled,
+      developerConsoleEnabled,
+      player,
+      submitDeveloperPlayer: controller.submitDeveloperPlayer,
+      refreshRemoteDictionaryChecksum:
+        controller.refreshRemoteDictionaryChecksum,
+      isRefreshingDictionaryChecksum: controller.isRefreshingDictionaryChecksum,
+      dictionaryChecksumMessage: controller.dictionaryChecksumMessage,
+      dictionaryChecksumMessageKind: controller.dictionaryChecksumMessageKind,
+    }),
+    [
+      controller.cancelRefreshBoard,
+      controller.closeDeveloperConsoleDialog,
+      controller.closeEndOfGameDialog,
+      controller.closeHelpDialog,
+      controller.closeWordsDialog,
+      controller.confirmRefreshBoard,
+      controller.continuePreviousBoard,
+      controller.dictionaryChecksumMessage,
+      controller.dictionaryChecksumMessageKind,
+      controller.dictionaryWords,
+      controller.endOfGameAnswer,
+      controller.endOfGameBestStreak,
+      controller.endOfGameCurrentStreak,
+      controller.isRefreshingDictionaryChecksum,
+      controller.message,
+      controller.refreshRemoteDictionaryChecksum,
+      controller.showDefeatDialog,
+      controller.showDeveloperConsoleDialog,
+      controller.showEndOfGameSettingsHint,
+      controller.showHelpDialog,
+      controller.showRefreshDialog,
+      controller.showResumeDialog,
+      controller.showVictoryDialog,
+      controller.showWordsDialog,
+      controller.startNewBoard,
+      controller.submitDeveloperPlayer,
+      controller.victoryScoreSummary,
+      developerConsoleEnabled,
+      player,
+      wordListButtonEnabled,
+    ],
+  );
+
+  return {
+    toolbarProps,
+    boardProps,
+    keyboardProps,
+    dialogsProps,
+  };
+};
+
+export { useHomeSections };

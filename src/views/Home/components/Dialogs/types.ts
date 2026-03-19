@@ -10,8 +10,7 @@ export type DeveloperConsoleDialogProps = {
   player: Player;
   showResumeDialog: boolean;
   submitDeveloperPlayer: HomeControllerState["submitDeveloperPlayer"];
-  refreshRemoteDictionaryChecksum:
-    HomeControllerState["refreshRemoteDictionaryChecksum"];
+  refreshRemoteDictionaryChecksum: HomeControllerState["refreshRemoteDictionaryChecksum"];
   isRefreshingDictionaryChecksum: boolean;
   dictionaryChecksumMessage: string | null;
   dictionaryChecksumMessageKind: "success" | "error" | null;
