@@ -15,7 +15,7 @@ describe("useScoreboardController", () => {
     vi.restoreAllMocks();
   });
 
-  it("exposes loading while top scores are pending", () => {
+  it("exposes cached local scores while the remote scoreboard is pending", () => {
     const listTopScores = vi.fn().mockReturnValue(new Promise(() => undefined));
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
@@ -27,7 +27,8 @@ describe("useScoreboardController", () => {
 
     const { result } = renderHook(() => useScoreboardController(), { wrapper });
 
-    expect(result.current.loading).toBe(true);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.source).toBe("local");
     expect(result.current.error).toBe("");
     expect(result.current.scores).toEqual([]);
   });
@@ -68,7 +69,7 @@ describe("useScoreboardController", () => {
     const { result } = renderHook(() => useScoreboardController(), { wrapper });
 
     await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+      expect(result.current.currentClientRank).toBe(12);
     });
 
     expect(result.current.source).toBe("convex");
@@ -95,7 +96,7 @@ describe("useScoreboardController", () => {
     const { result } = renderHook(() => useScoreboardController(), { wrapper });
 
     await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBe("Failed to load scoreboard.");
     });
 
     expect(result.current.error).toBe("Failed to load scoreboard.");

@@ -67,7 +67,7 @@ describe("useTopScoresQuery", () => {
     const { result } = renderHook(() => useTopScoresQuery(3), { wrapper });
 
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data?.currentClientRank).toBe(7);
     });
 
     expect(listTopScores).toHaveBeenCalledWith(3);
