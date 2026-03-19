@@ -371,6 +371,47 @@ describe("PlayerProvider", () => {
       queryKey: queryKeys.topScores,
     });
   });
+
+  it("refreshes the current player profile from remote data", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Ana",
+        code: "",
+        score: 3,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
+
+    const getCurrentPlayerProfile = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      playerCode: "ZX90",
+      score: 12,
+      streak: 4,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ getCurrentPlayerProfile }),
+    });
+
+    getCurrentPlayerProfile.mockClear();
+
+    await act(async () => {
+      await result.current.refreshCurrentPlayerProfile();
+    });
+
+    expect(getCurrentPlayerProfile).toHaveBeenCalled();
+    expect(result.current.player.code).toBe("ZX90");
+    expect(result.current.player.score).toBe(12);
+    expect(result.current.player.difficulty).toBe("normal");
+  });
 });
 
 describe("usePlayer", () => {

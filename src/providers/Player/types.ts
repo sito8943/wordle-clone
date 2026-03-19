@@ -8,6 +8,7 @@ export type PlayerContextType = {
   player: Player;
   updatePlayer: (name: string) => Promise<void>;
   recoverPlayer: (code: string) => Promise<void>;
+  refreshCurrentPlayerProfile: () => Promise<void>;
   replacePlayer: (nextPlayer: Partial<Player>) => void;
   updatePlayerDifficulty: (difficulty: PlayerDifficulty) => void;
   updatePlayerKeyboardPreference: (

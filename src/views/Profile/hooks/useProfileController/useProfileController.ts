@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   clearPersistedGameState,
   readPersistedGameState,
@@ -26,6 +26,7 @@ export default function useProfileController() {
   const {
     player,
     recoverPlayer,
+    refreshCurrentPlayerProfile,
     updatePlayer,
     updatePlayerDifficulty,
     updatePlayerKeyboardPreference,
@@ -38,6 +39,14 @@ export default function useProfileController() {
   const [savedMessage, setSavedMessage] = useState("");
   const [pendingDifficulty, setPendingDifficulty] =
     useState<PlayerDifficulty | null>(null);
+
+  useEffect(() => {
+    if (player.name.length === 0 || player.code.length > 0) {
+      return;
+    }
+
+    void refreshCurrentPlayerProfile().catch(() => undefined);
+  }, [player.code.length, player.name.length, refreshCurrentPlayerProfile]);
 
   const toggleEditing = useCallback(() => {
     setEditing((previous) => !previous);

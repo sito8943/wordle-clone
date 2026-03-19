@@ -59,6 +59,7 @@ describe("useProfileController", () => {
         keyboardPreference: "onscreen",
       },
       recoverPlayer: vi.fn().mockResolvedValue(undefined),
+      refreshCurrentPlayerProfile: vi.fn().mockResolvedValue(undefined),
       updatePlayer: vi.fn().mockResolvedValue(undefined),
       updatePlayerDifficulty: vi.fn(),
       updatePlayerKeyboardPreference: vi.fn(),
@@ -152,6 +153,26 @@ describe("useProfileController", () => {
 
     expect(recoverPlayer).toHaveBeenCalledWith("ab12");
     expect(result.current.savedMessage).toBe(PROFILE_RECOVERY_SUCCESS_MESSAGE);
+  });
+
+  it("refreshes the remote profile when the local player has no recovery code", () => {
+    const refreshCurrentPlayerProfile = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "",
+        score: 15,
+        streak: 2,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      },
+      refreshCurrentPlayerProfile,
+    });
+
+    renderHook(() => useProfileController());
+
+    expect(refreshCurrentPlayerProfile).toHaveBeenCalledTimes(1);
   });
 
   it("asks for confirmation before changing difficulty with an active game", () => {
