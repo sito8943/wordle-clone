@@ -40,6 +40,7 @@ const DialogsSection = (): JSX.Element => {
     showDeveloperConsoleDialog,
     showVictoryDialog,
     showDefeatDialog,
+    showEndOfGameSettingsHint,
     endOfGameAnswer,
     victoryScoreSummary,
     endOfGameCurrentStreak,
@@ -130,6 +131,7 @@ const DialogsSection = (): JSX.Element => {
               answer={endOfGameAnswer}
               currentStreak={endOfGameCurrentStreak}
               scoreSummary={victoryScoreSummary}
+              showSettingsHint={showEndOfGameSettingsHint}
               onClose={closeEndOfGameDialog}
               onPlayAgain={startNewBoard}
             />
@@ -138,6 +140,7 @@ const DialogsSection = (): JSX.Element => {
             visible={showDefeatDialog}
             answer={endOfGameAnswer}
             bestStreak={endOfGameBestStreak}
+            showSettingsHint={showEndOfGameSettingsHint}
             onClose={closeEndOfGameDialog}
             onPlayAgain={startNewBoard}
             onChangeDifficulty={changeDifficulty}

@@ -20,6 +20,9 @@ import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Home/hooks/useHintController";
+import {
+  END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+} from "@views/Home/hooks/useHomeController/constants";
 
 vi.mock("./utils/words", async () => {
   const actual =
@@ -1414,6 +1417,23 @@ describe("App", () => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.streak).toBe(1);
     });
+  });
+
+  it("shows the profile settings hint only on the first end-of-game dialog in a tab", async () => {
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Profile settings" }),
+    ).toHaveAttribute("href", "/profile#end-dialogs");
+    expect(
+      sessionStorage.getItem(END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY),
+    ).toBe("seen");
   });
 
   it("opens the help dialog from home and shows rules and scoring", async () => {

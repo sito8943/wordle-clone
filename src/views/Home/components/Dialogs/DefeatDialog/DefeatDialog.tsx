@@ -6,11 +6,13 @@ import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog
 import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDialog/utils";
 import { DEFEAT_DIALOG_TITLE_ID } from "./constants";
 import type { DefeatDialogProps } from "./types";
+import SettingsHint from "../SettingsHint";
 
 const DefeatDialog = ({
   visible,
   answer,
   bestStreak,
+  showSettingsHint = false,
   onClose,
   onPlayAgain,
   onChangeDifficulty,
@@ -59,9 +61,7 @@ const DefeatDialog = ({
           <p className="text-xs font-semibold uppercase tracking-[0.24em]">
             {t("home.endOfGame.wordLabel")}
           </p>
-          <p className="mt-2 text-3xl font-black tracking-[0.18em]">
-            {answer}
-          </p>
+          <p className="mt-2 text-3xl font-black tracking-[0.18em]">{answer}</p>
         </section>
 
         <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">
@@ -72,8 +72,13 @@ const DefeatDialog = ({
           {t("home.defeatDialog.closingMessage")}
         </p>
 
+        {showSettingsHint ? <SettingsHint /> : null}
+
         <div className="flex flex-wrap justify-end gap-3">
-          <Button onClick={() => closeWithAction(onPlayAgain)} disabled={isClosing}>
+          <Button
+            onClick={() => closeWithAction(onPlayAgain)}
+            disabled={isClosing}
+          >
             {t("home.endOfGame.playAgain")}
           </Button>
           <Button

@@ -57,7 +57,7 @@ const SettingsSection = () => {
           <option value="dark">{t("profile.themeOptions.dark")}</option>
         </select>
       </div>
-      <div className="mt-4 max-w-xl">
+      <div id="end-dialogs" className="mt-4 max-w-xl">
         <div className="flex items-start gap-3">
           <input
             id={PROFILE_END_OF_GAME_DIALOGS_INPUT_ID}

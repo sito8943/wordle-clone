@@ -67,4 +67,26 @@ describe("VictoryDialog", () => {
 
     expect(onPlayAgain).toHaveBeenCalledTimes(1);
   });
+
+  it("shows the profile settings hint when requested", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 4,
+        }}
+        showSettingsHint
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("You can disable these dialogs in")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Profile settings" }),
+    ).toHaveAttribute("href", "/profile#end-dialogs");
+  });
 });

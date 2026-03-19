@@ -5,6 +5,7 @@ export type VictoryDialogProps = {
   answer: string;
   currentStreak: number;
   scoreSummary: EndOfGameScoreSummary;
+  showSettingsHint?: boolean;
   onClose: () => void;
   onPlayAgain: () => void;
 };

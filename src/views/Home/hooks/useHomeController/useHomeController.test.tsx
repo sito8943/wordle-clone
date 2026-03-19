@@ -2,6 +2,7 @@ import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import useHomeController from "./useHomeController";
+import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "./constants";
 
 const mockUseApi = vi.fn();
 const mockUsePlayer = vi.fn();
@@ -31,6 +32,7 @@ describe("useHomeController", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    window.sessionStorage.clear();
     wordleState = {
       sessionId: "session-1",
       gameId: "game-1",
@@ -94,6 +96,7 @@ describe("useHomeController", () => {
 
   afterEach(() => {
     cleanup();
+    window.sessionStorage.clear();
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -189,6 +192,41 @@ describe("useHomeController", () => {
     expect(result.current.showVictoryDialog).toBe(false);
     expect(result.current.showLegacyEndOfGameMessage).toBe(true);
     expect(result.current.showRefreshAttention).toBe(true);
+  });
+
+  it("shows the end-of-game settings hint only once per tab session", () => {
+    const { rerender, result, unmount } = renderHook(() => useHomeController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showEndOfGameSettingsHint).toBe(true);
+    expect(
+      window.sessionStorage.getItem(
+        END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+      ),
+    ).toBe("seen");
+
+    unmount();
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      won: false,
+      gameOver: true,
+      guesses: ["SLATE", "CRANE", "BRICK"],
+    };
+
+    const { result: secondResult } = renderHook(() => useHomeController());
+
+    expect(secondResult.current.showDefeatDialog).toBe(true);
+    expect(secondResult.current.showEndOfGameSettingsHint).toBe(false);
   });
 
   it("activates refresh attention immediately when end-of-game dialogs are disabled", () => {

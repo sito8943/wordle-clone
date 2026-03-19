@@ -6,12 +6,14 @@ import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog
 import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDialog/utils";
 import { VICTORY_DIALOG_TITLE_ID } from "./constants";
 import type { VictoryDialogProps } from "./types";
+import SettingsHint from "../SettingsHint";
 
 const VictoryDialog = ({
   visible,
   answer,
   currentStreak,
   scoreSummary,
+  showSettingsHint = false,
   onClose,
   onPlayAgain,
 }: VictoryDialogProps) => {
@@ -88,8 +90,13 @@ const VictoryDialog = ({
           {t("common.streakLabel", { count: currentStreak })}
         </p>
 
+        {showSettingsHint ? <SettingsHint /> : null}
+
         <div className="flex justify-end">
-          <Button onClick={() => closeWithAction(onPlayAgain)} disabled={isClosing}>
+          <Button
+            onClick={() => closeWithAction(onPlayAgain)}
+            disabled={isClosing}
+          >
             {t("home.endOfGame.playAgain")}
           </Button>
         </div>

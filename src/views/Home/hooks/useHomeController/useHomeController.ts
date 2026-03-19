@@ -8,11 +8,15 @@ import {
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useApi, usePlayer } from "@providers";
 import { useHardModeTimer } from "./useHardModeTimer";
-import { getDifficultyScoreMultiplier } from "./utils";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
 import type { EndOfGameSnapshot, EndOfGameScoreSummaryItem } from "./types";
+import {
+  getDifficultyScoreMultiplier,
+  hasSeenEndOfGameDialogInSession,
+  markEndOfGameDialogAsSeenInSession,
+} from "./utils";
 
 export default function useHomeController() {
   const { scoreClient, wordDictionaryClient } = useApi();
@@ -56,6 +60,9 @@ export default function useHomeController() {
   const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
     useState(false);
   const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
+  const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] = useState(
+    false,
+  );
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -333,6 +340,21 @@ export default function useHomeController() {
     showEndOfGameDialogs && gameOver && !won && endOfGameSnapshot !== null;
   const showRefreshAttention =
     gameOver && (!showEndOfGameDialogs || showLegacyEndOfGameFeedback);
+  const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
+
+  useEffect(() => {
+    if (!endOfGameDialogVisible) {
+      return;
+    }
+
+    if (hasSeenEndOfGameDialogInSession()) {
+      setShowEndOfGameSettingsHint(false);
+      return;
+    }
+
+    markEndOfGameDialogAsSeenInSession();
+    setShowEndOfGameSettingsHint(true);
+  }, [endOfGameDialogVisible]);
 
   useEffect(() => {
     if (!showRefreshAttention) {
@@ -361,6 +383,7 @@ export default function useHomeController() {
     refreshAttentionScale: 0.14,
     showVictoryDialog,
     showDefeatDialog,
+    showEndOfGameSettingsHint,
     endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
     victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,
     endOfGameCurrentStreak: endOfGameSnapshot?.currentStreak ?? player.streak,

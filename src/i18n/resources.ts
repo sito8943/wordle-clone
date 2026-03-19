@@ -255,6 +255,9 @@ export const resources = {
         endOfGame: {
           wordLabel: "Correct word",
           playAgain: "Play again",
+          settingsHintPrefix: "You can disable these dialogs in",
+          settingsHintLink: "Profile settings",
+          settingsHintSuffix: "if you prefer.",
         },
         victoryDialog: {
           title: "Victory",
@@ -561,6 +564,9 @@ export const resources = {
         endOfGame: {
           wordLabel: "Palabra correcta",
           playAgain: "Jugar otra vez",
+          settingsHintPrefix: "Puedes desactivar estos diálogos en",
+          settingsHintLink: "Ajustes del perfil",
+          settingsHintSuffix: "si lo prefieres.",
         },
         victoryDialog: {
           title: "Victoria",

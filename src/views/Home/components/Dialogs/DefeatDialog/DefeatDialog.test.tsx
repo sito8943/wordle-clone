@@ -61,4 +61,21 @@ describe("DefeatDialog", () => {
 
     expect(onPlayAgain).toHaveBeenCalledTimes(1);
   });
+
+  it("hides the profile settings hint when not requested", () => {
+    render(
+      <DefeatDialog
+        visible
+        answer="APPLE"
+        bestStreak={4}
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+        onChangeDifficulty={() => undefined}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("link", { name: "Profile settings" }),
+    ).toBeNull();
+  });
 });
