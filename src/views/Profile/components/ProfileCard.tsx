@@ -1,17 +1,14 @@
+import { useTranslation } from "@i18n";
 import type { ProfileCardPropsTypes } from "./types";
-import {
-  PROFILE_CODE_HELP,
-  PROFILE_CODE_LABEL,
-  PROFILE_NAME_LABEL,
-  PROFILE_SCORE_LABEL,
-} from "../constants";
 
 const ProfileCard = (props: ProfileCardPropsTypes) => {
+  const { t } = useTranslation();
+
   return (
     <div className="profile-section profile-card-container">
       <div className="profile-card-field-row">
         <label htmlFor="name" className="profile-field-label">
-          {PROFILE_NAME_LABEL}
+          {t("profile.labels.name")}
         </label>
         <input
           className="profile-card-field-input"
@@ -23,7 +20,7 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
       </div>
       <div className="profile-card-field-row">
         <label htmlFor="score" className="profile-field-label">
-          {PROFILE_SCORE_LABEL}
+          {t("profile.labels.score")}
         </label>
         <input
           className="profile-card-field-input"
@@ -35,7 +32,7 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
       </div>
       <div className="profile-card-field-row">
         <label htmlFor="code" className="profile-field-label">
-          {PROFILE_CODE_LABEL}
+          {t("profile.labels.code")}
         </label>
         <input
           className="profile-card-field-input"
@@ -45,7 +42,7 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
           readOnly
         />
       </div>
-      <p className="profile-help-text">{PROFILE_CODE_HELP}</p>
+      <p className="profile-help-text">{t("profile.codeHelp")}</p>
     </div>
   );
 };

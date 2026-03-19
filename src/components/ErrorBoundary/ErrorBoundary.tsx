@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo } from "react";
+import { i18n } from "@i18n";
 import type {
   ErrorBoundaryProps,
   ErrorBoundaryState,
@@ -7,9 +8,9 @@ import type {
 import { hasResetKeysChanged } from "./utils";
 
 export const ErrorFallback = ({
-  title = "Something went wrong.",
-  description = "Try again in a moment.",
-  actionLabel = "Try again",
+  title = i18n.t("errors.generic.title"),
+  description = i18n.t("errors.generic.description"),
+  actionLabel = i18n.t("errors.generic.action"),
   onAction,
 }: ErrorFallbackProps) => (
   <section

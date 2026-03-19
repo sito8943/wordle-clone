@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "@i18n";
 import {
   Alert,
   Button,
@@ -10,6 +11,7 @@ import {
 import { useScoreboardController } from "./hooks";
 
 const Scoreboard = (): JSX.Element => {
+  const { t } = useTranslation();
   const {
     convexEnabled,
     source,
@@ -24,31 +26,30 @@ const Scoreboard = (): JSX.Element => {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="page-title">Scoreboard</h2>
+        <h2 className="page-title">{t("scoreboard.title")}</h2>
         <Button
           onClick={() => void refresh()}
-          aria-label="Refresh scores"
+          aria-label={t("scoreboard.refreshAriaLabel")}
           icon={faRotateRight}
           variant="ghost"
           iconClassName="text-lg"
           className="mobile-compact-button"
           hideLabelOnMobile
         >
-          Refresh
+          {t("common.refresh")}
         </Button>
       </div>
 
       {!convexEnabled && (
         <Alert
-          message="Convex is not configured (`VITE_CONVEX_URL`). Using local storage
-          only."
+          message={t("scoreboard.convexNotConfigured")}
           color="warning"
         />
       )}
 
       {convexEnabled && source === "local" && (
         <Alert
-          message="Offline fallback active. Showing cached local scores."
+          message={t("scoreboard.offlineFallback")}
           color="info"
         />
       )}
@@ -57,7 +58,10 @@ const Scoreboard = (): JSX.Element => {
 
       {currentClientOutsideTop && currentClientRank !== null && (
         <Alert
-          message={`You are shown as #${scores.length}. Real position: #${currentClientRank}.`}
+          message={t("scoreboard.currentPosition", {
+            shownRank: scores.length,
+            realRank: currentClientRank,
+          })}
           color="success"
         />
       )}
@@ -67,9 +71,9 @@ const Scoreboard = (): JSX.Element => {
         resetKeys={[scores.length, loading, source, currentClientRank]}
         fallback={({ reset }) => (
           <ErrorFallback
-            title="Scoreboard table failed to render."
-            description="Retry to load player rankings."
-            actionLabel="Retry scoreboard"
+            title={t("errors.scoreboard.title")}
+            description={t("errors.scoreboard.description")}
+            actionLabel={t("errors.scoreboard.action")}
             onAction={reset}
           />
         )}
@@ -78,17 +82,25 @@ const Scoreboard = (): JSX.Element => {
           <table className="w-full text-left text-sm">
             <thead className="bg-neutral-100 dark:bg-neutral-700/80">
               <tr>
-                <th className="scoreboard-header-cell">#</th>
-                <th className="scoreboard-header-cell">Nick</th>
-                <th className="scoreboard-header-cell">Score</th>
-                <th className="scoreboard-header-cell">Date</th>
+                <th className="scoreboard-header-cell">
+                  {t("scoreboard.headers.rank")}
+                </th>
+                <th className="scoreboard-header-cell">
+                  {t("scoreboard.headers.nick")}
+                </th>
+                <th className="scoreboard-header-cell">
+                  {t("scoreboard.headers.score")}
+                </th>
+                <th className="scoreboard-header-cell">
+                  {t("scoreboard.headers.date")}
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
                   <td className="scoreboard-placeholder-cell" colSpan={4}>
-                    Loading scores...
+                    {t("scoreboard.loading")}
                   </td>
                 </tr>
               )}
@@ -96,7 +108,7 @@ const Scoreboard = (): JSX.Element => {
               {!loading && scores.length === 0 && (
                 <tr>
                   <td className="scoreboard-placeholder-cell" colSpan={4}>
-                    No scores yet.
+                    {t("scoreboard.empty")}
                   </td>
                 </tr>
               )}

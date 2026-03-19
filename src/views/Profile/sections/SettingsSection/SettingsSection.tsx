@@ -1,18 +1,14 @@
 import { Button } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
+import { useTranslation } from "@i18n";
 import { DifficultySection } from "../DifficultySection";
 import {
-  PROFILE_SETTINGS_TITLE,
-  PROFILE_ANIMATION_ENABLED_LABEL,
-  PROFILE_ANIMATION_DISABLED_LABEL,
   PROFILE_THEME_MODE_INPUT_ID,
-  PROFILE_THEME_LABEL,
-  PROFILE_THEME_MODE_ARIA_LABEL,
-  PROFILE_THEME_OPTIONS,
 } from "@views/Profile/constants";
 import { useProfileView } from "@views/Profile/providers";
 
 const SettingsSection = () => {
+  const { t } = useTranslation();
   const {
     controller: {
       startAnimationsEnabled,
@@ -28,7 +24,7 @@ const SettingsSection = () => {
 
   return (
     <section id="settings" className="profile-section">
-      <h2 className="profile-section-title">{PROFILE_SETTINGS_TITLE}</h2>
+      <h2 className="profile-section-title">{t("profile.settingsTitle")}</h2>
       <div className="flex gap-4 items-center flex-wrap">
         <Button
           onClick={toggleStartAnimations}
@@ -36,28 +32,26 @@ const SettingsSection = () => {
           color="neutral"
         >
           {startAnimationsEnabled
-            ? PROFILE_ANIMATION_ENABLED_LABEL
-            : PROFILE_ANIMATION_DISABLED_LABEL}
+            ? t("profile.animationEnabled")
+            : t("profile.animationDisabled")}
         </Button>
         <label
           htmlFor={PROFILE_THEME_MODE_INPUT_ID}
           className="text-sm font-semibold"
         >
-          {PROFILE_THEME_LABEL}
+          {t("profile.labels.theme")}
         </label>
         <select
           id={PROFILE_THEME_MODE_INPUT_ID}
-          aria-label={PROFILE_THEME_MODE_ARIA_LABEL}
+          aria-label={t("profile.labels.themeMode")}
           value={themePreference}
           onChange={(event) =>
             changeThemePreference(event.target.value as ThemePreference)
           }
         >
-          {PROFILE_THEME_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          <option value="system">{t("profile.themeOptions.system")}</option>
+          <option value="light">{t("profile.themeOptions.light")}</option>
+          <option value="dark">{t("profile.themeOptions.dark")}</option>
         </select>
       </div>
       <DifficultySection

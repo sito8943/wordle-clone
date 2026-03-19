@@ -1,43 +1,48 @@
 import { Dialog } from "@components";
+import { useTranslation } from "@i18n";
 import { HELP_DIALOG_TITLE_ID } from "./constants";
 import type { HelpDialogProps } from "./types";
 
 const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
+  const { t } = useTranslation();
+
   return (
     <Dialog
       visible={visible}
       onClose={onClose}
       titleId={HELP_DIALOG_TITLE_ID}
-      title="How to play"
-      description="Guess the hidden 5-letter word in up to 6 attempts."
+      title={t("home.helpDialog.title")}
+      description={t("home.helpDialog.description")}
       panelClassName="max-w-2xl"
     >
       <div className="mt-4 space-y-4 text-sm text-neutral-800 dark:text-neutral-200 overflow-auto">
         <section>
-          <h3 className="text-base font-semibold">Rules</h3>
+          <h3 className="text-base font-semibold">
+            {t("home.helpDialog.rulesTitle")}
+          </h3>
           <ul className="mt-2 list-disc pl-5 space-y-1">
-            <li>Each guess must be 5 letters long.</li>
-            <li>Press Enter to submit your guess.</li>
-            <li>Easy, Normal, and Hard accept non-dictionary words.</li>
-            <li>Insane only accepts words from the dictionary.</li>
-            <li>Green tile: correct letter in the correct position.</li>
-            <li>Yellow tile: correct letter in the wrong position.</li>
-            <li>Gray tile: letter is not in the word.</li>
+            <li>{t("home.helpDialog.rules.guessLength")}</li>
+            <li>{t("home.helpDialog.rules.pressEnter")}</li>
+            <li>{t("home.helpDialog.rules.nonDictionary")}</li>
+            <li>{t("home.helpDialog.rules.insaneDictionary")}</li>
+            <li>{t("home.helpDialog.rules.green")}</li>
+            <li>{t("home.helpDialog.rules.yellow")}</li>
+            <li>{t("home.helpDialog.rules.gray")}</li>
           </ul>
         </section>
 
         <section>
-          <h3 className="text-base font-semibold">Scoring</h3>
+          <h3 className="text-base font-semibold">
+            {t("home.helpDialog.scoringTitle")}
+          </h3>
           <ul className="mt-2 list-disc pl-5 space-y-1">
-            <li>Base points are the remaining attempts after a win.</li>
-            <li>Streak bonus adds your current streak value to each win.</li>
-            <li>Easy: +1 difficulty bonus.</li>
-            <li>Normal: +2 difficulty bonus.</li>
-            <li>Hard: +3 difficulty bonus.</li>
-            <li>Insane: +4 difficulty bonus.</li>
-            <li>
-              Final score = base points + difficulty bonus + streak bonus.
-            </li>
+            <li>{t("home.helpDialog.scoring.basePoints")}</li>
+            <li>{t("home.helpDialog.scoring.streakBonus")}</li>
+            <li>{t("home.helpDialog.scoring.easy")}</li>
+            <li>{t("home.helpDialog.scoring.normal")}</li>
+            <li>{t("home.helpDialog.scoring.hard")}</li>
+            <li>{t("home.helpDialog.scoring.insane")}</li>
+            <li>{t("home.helpDialog.scoring.final")}</li>
           </ul>
         </section>
       </div>

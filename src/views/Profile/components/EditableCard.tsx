@@ -1,17 +1,10 @@
 import { useState, useEffect } from "react";
 import Button from "@components/Button/Button";
+import { useTranslation } from "@i18n";
 import type { EditableProfileCardPropsTypes } from "./types";
-import {
-  PROFILE_CODE_HELP,
-  PROFILE_CODE_LABEL,
-  PROFILE_EMPTY_NAME_ERROR_MESSAGE,
-  PROFILE_NAME_LABEL,
-  PROFILE_SAVE_ACTION_LABEL,
-  PROFILE_SAVING_ACTION_LABEL,
-  PROFILE_SCORE_LABEL,
-} from "../constants";
 
 const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(props.name);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +12,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length === 0) {
-      setError(PROFILE_EMPTY_NAME_ERROR_MESSAGE);
+      setError(t("profile.emptyNameError"));
       return;
     }
 
@@ -47,7 +40,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
     >
       <div className="profile-card-field-row">
         <label htmlFor="name" className="profile-field-label">
-          {PROFILE_NAME_LABEL}
+          {t("profile.labels.name")}
         </label>
         <input
           className="profile-card-field-input"
@@ -62,7 +55,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
       {error && <p className="input-error-text">{error}</p>}
       <div className="profile-card-field-row">
         <label htmlFor="score" className="profile-field-label">
-          {PROFILE_SCORE_LABEL}
+          {t("profile.labels.score")}
         </label>
         <input
           className="profile-card-field-input"
@@ -74,7 +67,7 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
       </div>
       <div className="profile-card-field-row">
         <label htmlFor="code" className="profile-field-label">
-          {PROFILE_CODE_LABEL}
+          {t("profile.labels.code")}
         </label>
         <input
           className="profile-card-field-input"
@@ -84,9 +77,11 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
           readOnly
         />
       </div>
-      <p className="profile-help-text">{PROFILE_CODE_HELP}</p>
+      <p className="profile-help-text">{t("profile.codeHelp")}</p>
       <Button type="submit" className="self-start" disabled={isSubmitting}>
-        {isSubmitting ? PROFILE_SAVING_ACTION_LABEL : PROFILE_SAVE_ACTION_LABEL}
+        {isSubmitting
+          ? t("profile.savingAction")
+          : t("profile.saveAction")}
       </Button>
     </form>
   );

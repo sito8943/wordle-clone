@@ -1,14 +1,11 @@
 import { lazy, Suspense, useCallback, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
+import { i18n } from "@i18n";
 import { Navbar, Footer } from "./components";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
 import { useApi, usePlayer } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
-import {
-  INITIAL_PLAYER_NAME_NOT_AVAILABLE_ERROR,
-  INITIAL_PLAYER_NAME_VALIDATION_ERROR,
-} from "./constants";
 import { shouldAskForInitialPlayerName } from "./utils";
 
 const InitialPlayerDialog = lazy(
@@ -35,7 +32,7 @@ const View = () => {
       } catch (error) {
         return error instanceof Error
           ? error.message
-          : INITIAL_PLAYER_NAME_VALIDATION_ERROR;
+          : i18n.t("layout.initialPlayer.nameValidationError");
       }
     },
     [updatePlayer],
@@ -50,7 +47,7 @@ const View = () => {
       } catch (error) {
         return error instanceof Error
           ? error.message
-          : INITIAL_PLAYER_NAME_VALIDATION_ERROR;
+          : i18n.t("layout.initialPlayer.nameValidationError");
       }
     },
     [recoverPlayer],
@@ -63,12 +60,12 @@ const View = () => {
       try {
         const isAvailable = await scoreClient.isNickAvailable(normalizedName);
         if (!isAvailable) {
-          return INITIAL_PLAYER_NAME_NOT_AVAILABLE_ERROR;
+          return i18n.t("layout.initialPlayer.nameNotAvailable");
         }
 
         return null;
       } catch {
-        return INITIAL_PLAYER_NAME_VALIDATION_ERROR;
+        return i18n.t("layout.initialPlayer.nameValidationError");
       }
     },
     [scoreClient],
@@ -84,9 +81,9 @@ const View = () => {
           fallback={({ reset }) => (
             <main className="page-centered py-10">
               <ErrorFallback
-                title="This page could not be rendered."
-                description="Try again or navigate to a different section."
-                actionLabel="Retry page"
+                title={i18n.t("errors.routeOutlet.title")}
+                description={i18n.t("errors.routeOutlet.description")}
+                actionLabel={i18n.t("errors.routeOutlet.action")}
                 onAction={reset}
               />
             </main>

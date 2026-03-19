@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { i18n } from "@i18n";
 import {
   clearPersistedGameState,
   readPersistedGameState,
@@ -8,16 +9,8 @@ import {
 import { useApi, usePlayer } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
 
-import {
-  PROFILE_CONFIGURATION_SAVED_MESSAGE,
-  PROFILE_NAME_NOT_AVAILABLE_MESSAGE,
-  PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
-} from "./constants";
-import {
-  PROFILE_RECOVERY_EMPTY_CODE_ERROR,
-  PROFILE_RECOVERY_SUCCESS_MESSAGE,
-} from "@views/Profile/constants";
-import { getPlayerDifficultyLabel, hasActivePersistedGame } from "./utils";
+import { PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS } from "./constants";
+import { hasActivePersistedGame } from "./utils";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
 import type { ThemePreference } from "@hooks/useThemePreference";
 
@@ -58,7 +51,7 @@ export default function useProfileController() {
       if (normalizedName !== player.name) {
         const isAvailable = await scoreClient.isNickAvailable(normalizedName);
         if (!isAvailable) {
-          return PROFILE_NAME_NOT_AVAILABLE_MESSAGE;
+          return i18n.t("profile.nameNotAvailable");
         }
       }
 
@@ -68,12 +61,12 @@ export default function useProfileController() {
         } catch (error) {
           return error instanceof Error
             ? error.message
-            : PROFILE_NAME_NOT_AVAILABLE_MESSAGE;
+            : i18n.t("profile.nameNotAvailable");
         }
       }
 
       setEditing(false);
-      setSavedMessage(PROFILE_CONFIGURATION_SAVED_MESSAGE);
+      setSavedMessage(i18n.t("profile.savedMessage"));
       setTimeout(
         () => setSavedMessage(""),
         PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
@@ -86,7 +79,7 @@ export default function useProfileController() {
   const submitRecoveryCode = useCallback(
     async (code: string) => {
       if (code.trim().length === 0) {
-        return PROFILE_RECOVERY_EMPTY_CODE_ERROR;
+        return i18n.t("profile.recovery.emptyCodeError");
       }
 
       try {
@@ -94,11 +87,11 @@ export default function useProfileController() {
       } catch (error) {
         return error instanceof Error
           ? error.message
-          : PROFILE_RECOVERY_EMPTY_CODE_ERROR;
+          : i18n.t("profile.recovery.emptyCodeError");
       }
 
       setEditing(false);
-      setSavedMessage(PROFILE_RECOVERY_SUCCESS_MESSAGE);
+      setSavedMessage(i18n.t("profile.recovery.successMessage"));
       setTimeout(
         () => setSavedMessage(""),
         PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
@@ -165,12 +158,6 @@ export default function useProfileController() {
 
   const pendingDifficultyValue = pendingDifficulty ?? player.difficulty;
 
-  const pendingDifficultyLabel = useCallback(
-    (difficulty: PlayerDifficulty): string =>
-      getPlayerDifficultyLabel(difficulty),
-    [],
-  );
-
   return {
     player,
     difficulty: player.difficulty,
@@ -191,6 +178,5 @@ export default function useProfileController() {
     isDifficultyChangeConfirmationOpen,
     confirmDifficultyChange,
     cancelDifficultyChange,
-    pendingDifficultyLabel,
   };
 }

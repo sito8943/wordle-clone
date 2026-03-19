@@ -1,21 +1,12 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useTranslation } from "@i18n";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
 } from "@components/Dialogs/ConfirmationDialog";
 import {
-  INITIAL_PLAYER_DIALOG_CREATE_MODE_LABEL,
-  INITIAL_PLAYER_DIALOG_DESCRIPTION,
-  INITIAL_PLAYER_DIALOG_EMPTY_CODE_ERROR,
-  INITIAL_PLAYER_DIALOG_EMPTY_NAME_ERROR,
   INITIAL_PLAYER_DIALOG_INPUT_ID,
-  INITIAL_PLAYER_DIALOG_PRIMARY_ACTION_LABEL,
-  INITIAL_PLAYER_DIALOG_RECOVER_ACTION_LABEL,
-  INITIAL_PLAYER_DIALOG_RECOVER_MODE_LABEL,
-  INITIAL_PLAYER_DIALOG_RECOVERY_CODE_LABEL,
-  INITIAL_PLAYER_DIALOG_RECOVERY_HELP,
   INITIAL_PLAYER_DIALOG_RECOVERY_INPUT_ID,
-  INITIAL_PLAYER_DIALOG_TITLE,
   INITIAL_PLAYER_DIALOG_TITLE_ID,
 } from "./constants";
 import type { InitialPlayerDialogProps } from "./types";
@@ -29,6 +20,7 @@ const InitialPlayerDialog = ({
   onRecover,
   onValidateName,
 }: InitialPlayerDialogProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(initialName);
   const [recoveryCode, setRecoveryCode] = useState("");
   const [mode, setMode] = useState<"create" | "recover">("create");
@@ -61,7 +53,7 @@ const InitialPlayerDialog = ({
     }
 
     if (name.trim().length === 0) {
-      setError(INITIAL_PLAYER_DIALOG_EMPTY_NAME_ERROR);
+      setError(t("layout.initialPlayer.emptyNameError"));
       return;
     }
 
@@ -97,7 +89,7 @@ const InitialPlayerDialog = ({
     }
 
     if (recoveryCode.trim().length === 0) {
-      setError(INITIAL_PLAYER_DIALOG_EMPTY_CODE_ERROR);
+      setError(t("layout.initialPlayer.emptyCodeError"));
       return;
     }
 
@@ -120,8 +112,8 @@ const InitialPlayerDialog = ({
       onClose={onClose}
       isClosing={isClosing}
       titleId={INITIAL_PLAYER_DIALOG_TITLE_ID}
-      title={INITIAL_PLAYER_DIALOG_TITLE}
-      description={INITIAL_PLAYER_DIALOG_DESCRIPTION}
+      title={t("layout.initialPlayer.title")}
+      description={t("layout.initialPlayer.description")}
       zIndexClassName="z-30"
       backdropAnimationClassName={backdropAnimationClassName}
       panelAnimationClassName={panelAnimationClassName}
@@ -137,7 +129,7 @@ const InitialPlayerDialog = ({
             setError("");
           }}
         >
-          {INITIAL_PLAYER_DIALOG_CREATE_MODE_LABEL}
+          {t("layout.initialPlayer.createMode")}
         </Button>
         <Button
           type="button"
@@ -149,7 +141,7 @@ const InitialPlayerDialog = ({
             setError("");
           }}
         >
-          {INITIAL_PLAYER_DIALOG_RECOVER_MODE_LABEL}
+          {t("layout.initialPlayer.recoverMode")}
         </Button>
       </div>
 
@@ -159,7 +151,7 @@ const InitialPlayerDialog = ({
             htmlFor={INITIAL_PLAYER_DIALOG_INPUT_ID}
             className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
           >
-            Player nick name
+            {t("layout.initialPlayer.nameLabel")}
           </label>
           <input
             ref={nameInputRef}
@@ -184,7 +176,7 @@ const InitialPlayerDialog = ({
 
           <div className="mt-5 flex justify-end">
             <Button type="submit" disabled={isClosing || isSubmitting}>
-              {INITIAL_PLAYER_DIALOG_PRIMARY_ACTION_LABEL}
+              {t("layout.initialPlayer.createAction")}
             </Button>
           </div>
         </form>
@@ -194,7 +186,7 @@ const InitialPlayerDialog = ({
             htmlFor={INITIAL_PLAYER_DIALOG_RECOVERY_INPUT_ID}
             className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
           >
-            {INITIAL_PLAYER_DIALOG_RECOVERY_CODE_LABEL}
+            {t("layout.initialPlayer.recoveryCodeLabel")}
           </label>
           <input
             ref={recoveryInputRef}
@@ -216,14 +208,14 @@ const InitialPlayerDialog = ({
             className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm uppercase tracking-[0.3em] text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
           />
           <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300">
-            {INITIAL_PLAYER_DIALOG_RECOVERY_HELP}
+            {t("layout.initialPlayer.recoveryHelp")}
           </p>
 
           {error ? <p className="mt-2 input-error-text">{error}</p> : null}
 
           <div className="mt-5 flex justify-end">
             <Button type="submit" disabled={isClosing || isSubmitting}>
-              {INITIAL_PLAYER_DIALOG_RECOVER_ACTION_LABEL}
+              {t("layout.initialPlayer.recoverAction")}
             </Button>
           </div>
         </form>

@@ -1,40 +1,36 @@
 import { ConfirmationDialog } from "@components";
-
-import {
-  DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL,
-  DIFFICULTY_CHANGE_CONFIRM_ACTION_LABEL,
-  DIFFICULTY_CHANGE_CONFIRMATION_DESCRIPTION,
-  DIFFICULTY_CHANGE_CONFIRMATION_TITLE,
-  DIFFICULTY_CHANGE_DIALOG_TITLE_ID,
-  DIFFICULTY_CHANGE_NEW_DIFFICULTY_PREFIX,
-} from "@views/Profile/constants";
+import { useTranslation } from "@i18n";
+import { DIFFICULTY_CHANGE_DIALOG_TITLE_ID } from "@views/Profile/constants";
 import { useProfileView } from "@views/Profile/providers";
 
 const DifficultyChangeDialog = () => {
+  const { t } = useTranslation();
   const {
     controller: {
       pendingDifficulty,
       isDifficultyChangeConfirmationOpen,
       cancelDifficultyChange,
       confirmDifficultyChange,
-      pendingDifficultyLabel,
     },
   } = useProfileView();
 
   if (!isDifficultyChangeConfirmationOpen) {
     return null;
   }
-
-  const nextDifficultyLabel = pendingDifficultyLabel(pendingDifficulty);
+  const nextDifficultyLabel = t(`profile.difficultyOptions.${pendingDifficulty}`);
+  const description = `${t("profile.difficultyChange.description")} ${t(
+    "profile.difficultyChange.nextDifficulty",
+    { difficulty: nextDifficultyLabel },
+  )}`;
 
   return (
     <ConfirmationDialog
       visible={isDifficultyChangeConfirmationOpen}
       onClose={cancelDifficultyChange}
-      title={DIFFICULTY_CHANGE_CONFIRMATION_TITLE}
-      description={`${DIFFICULTY_CHANGE_CONFIRMATION_DESCRIPTION} ${DIFFICULTY_CHANGE_NEW_DIFFICULTY_PREFIX} ${nextDifficultyLabel}.`}
-      confirmActionLabel={DIFFICULTY_CHANGE_CONFIRM_ACTION_LABEL}
-      cancelActionLabel={DIFFICULTY_CHANGE_CANCEL_ACTION_LABEL}
+      title={t("profile.difficultyChange.title")}
+      description={description}
+      confirmActionLabel={t("profile.difficultyChange.confirm")}
+      cancelActionLabel={t("profile.difficultyChange.cancel")}
       dialogTitleId={DIFFICULTY_CHANGE_DIALOG_TITLE_ID}
       onConfirm={confirmDifficultyChange}
     />

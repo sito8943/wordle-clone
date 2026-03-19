@@ -1,14 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  PROFILE_CONFIGURATION_SAVED_MESSAGE,
-  PROFILE_NAME_NOT_AVAILABLE_MESSAGE,
-  PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
-} from "./constants";
-import {
-  PROFILE_RECOVERY_EMPTY_CODE_ERROR,
-  PROFILE_RECOVERY_SUCCESS_MESSAGE,
-} from "@views/Profile/constants";
+import { i18n } from "@i18n";
+import { PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS } from "./constants";
 import useProfileController from "./useProfileController";
 
 const mockUseApi = vi.fn();
@@ -44,6 +37,7 @@ vi.mock("@domain/wordle", async () => {
 describe("useProfileController", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    void i18n.changeLanguage("en");
     mockUseApi.mockReturnValue({
       scoreClient: {
         isNickAvailable: vi.fn().mockResolvedValue(true),
@@ -98,7 +92,7 @@ describe("useProfileController", () => {
     const { result } = renderHook(() => useProfileController());
 
     await expect(result.current.submitProfile("Ana")).resolves.toBe(
-      PROFILE_NAME_NOT_AVAILABLE_MESSAGE,
+      i18n.t("profile.nameNotAvailable"),
     );
     expect(isNickAvailable).toHaveBeenCalledWith("Ana");
     expect(updatePlayer).not.toHaveBeenCalled();
@@ -118,9 +112,7 @@ describe("useProfileController", () => {
     });
 
     expect(updatePlayer).toHaveBeenCalledWith("Ana");
-    expect(result.current.savedMessage).toBe(
-      PROFILE_CONFIGURATION_SAVED_MESSAGE,
-    );
+    expect(result.current.savedMessage).toBe(i18n.t("profile.savedMessage"));
 
     act(() => {
       vi.advanceTimersByTime(PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS);
@@ -133,7 +125,7 @@ describe("useProfileController", () => {
     const { result } = renderHook(() => useProfileController());
 
     await expect(result.current.submitRecoveryCode("   ")).resolves.toBe(
-      PROFILE_RECOVERY_EMPTY_CODE_ERROR,
+      i18n.t("profile.recovery.emptyCodeError"),
     );
   });
 
@@ -152,7 +144,9 @@ describe("useProfileController", () => {
     });
 
     expect(recoverPlayer).toHaveBeenCalledWith("ab12");
-    expect(result.current.savedMessage).toBe(PROFILE_RECOVERY_SUCCESS_MESSAGE);
+    expect(result.current.savedMessage).toBe(
+      i18n.t("profile.recovery.successMessage"),
+    );
   });
 
   it("refreshes the remote profile when the local player has no recovery code", () => {

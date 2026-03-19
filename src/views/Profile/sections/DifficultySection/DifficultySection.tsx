@@ -2,18 +2,11 @@ import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
 } from "@domain/wordle";
+import { useTranslation } from "@i18n";
 import type { DifficultySectionProps } from "./types";
 import {
-  PROFILE_DIFFICULTY_LABEL,
-  PROFILE_DIFFICULTY_MODE_ARIA_LABEL,
   PROFILE_DIFFICULTY_MODE_INPUT_ID,
-  PROFILE_DIFFICULTY_OPTIONS,
-  PROFILE_DIFFICULTY_RULES,
-  PROFILE_KEYBOARD_LABEL,
-  PROFILE_KEYBOARD_MODE_ARIA_LABEL,
-  PROFILE_KEYBOARD_MODE_DESCRIPTION,
   PROFILE_KEYBOARD_MODE_INPUT_ID,
-  PROFILE_KEYBOARD_OPTIONS,
 } from "@views/Profile/constants";
 
 const DifficultySection = ({
@@ -22,6 +15,8 @@ const DifficultySection = ({
   difficulty,
   onChangeDifficulty,
 }: DifficultySectionProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="max-w-xl">
       <div className="flex flex-col gap-2">
@@ -29,11 +24,11 @@ const DifficultySection = ({
           htmlFor={PROFILE_KEYBOARD_MODE_INPUT_ID}
           className="profile-field-label"
         >
-          {PROFILE_KEYBOARD_LABEL}
+          {t("profile.labels.keyboard")}
         </label>
         <select
           id={PROFILE_KEYBOARD_MODE_INPUT_ID}
-          aria-label={PROFILE_KEYBOARD_MODE_ARIA_LABEL}
+          aria-label={t("profile.labels.keyboardMode")}
           value={keyboardPreference}
           onChange={(event) =>
             onChangeKeyboardPreference(
@@ -42,41 +37,38 @@ const DifficultySection = ({
           }
           className="profile-select-input"
         >
-          {PROFILE_KEYBOARD_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          <option value="onscreen">{t("profile.keyboardOptions.onscreen")}</option>
+          <option value="native">{t("profile.keyboardOptions.native")}</option>
         </select>
         <p className="text-xs text-neutral-600 dark:text-neutral-300">
-          {PROFILE_KEYBOARD_MODE_DESCRIPTION}
+          {t("profile.keyboardDescription")}
         </p>
 
         <label
           htmlFor={PROFILE_DIFFICULTY_MODE_INPUT_ID}
           className="profile-field-label"
         >
-          {PROFILE_DIFFICULTY_LABEL}
+          {t("profile.labels.difficulty")}
         </label>
         <select
           id={PROFILE_DIFFICULTY_MODE_INPUT_ID}
-          aria-label={PROFILE_DIFFICULTY_MODE_ARIA_LABEL}
+          aria-label={t("profile.labels.difficulty")}
           value={difficulty}
           onChange={(event) =>
             onChangeDifficulty(event.target.value as PlayerDifficulty)
           }
           className="profile-select-input"
         >
-          {PROFILE_DIFFICULTY_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          <option value="easy">{t("profile.difficultyOptions.easy")}</option>
+          <option value="normal">{t("profile.difficultyOptions.normal")}</option>
+          <option value="hard">{t("profile.difficultyOptions.hard")}</option>
+          <option value="insane">{t("profile.difficultyOptions.insane")}</option>
         </select>
         <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-          {PROFILE_DIFFICULTY_RULES.map((rule) => (
-            <li key={rule}>{rule}</li>
-          ))}
+          <li>{t("profile.difficultyRules.easy")}</li>
+          <li>{t("profile.difficultyRules.normal")}</li>
+          <li>{t("profile.difficultyRules.hard")}</li>
+          <li>{t("profile.difficultyRules.insane")}</li>
         </ul>
       </div>
     </div>
