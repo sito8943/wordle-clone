@@ -29,6 +29,7 @@ const RecoverySection = () => {
 
     setCode("");
     setError("");
+    scrollTo({ top: 0 });
   };
 
   return (
