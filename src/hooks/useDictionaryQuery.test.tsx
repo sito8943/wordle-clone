@@ -1,4 +1,4 @@
-import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import useDictionaryQuery from "./useDictionaryQuery";
@@ -85,6 +85,9 @@ describe("useDictionaryQuery", () => {
   describe("checksum sync", () => {
     it("does not clear cache when checksums match", async () => {
       const clearCache = vi.fn();
+      const fetchRemoteChecksum = vi
+        .fn()
+        .mockResolvedValue({ checksum: CHECKSUM_A, updatedAt: 100 });
       const loadWords = vi.fn().mockResolvedValue(["apple"]);
       const queryClient = createTestQueryClient();
       const wrapper = createHookWrapper(
@@ -93,18 +96,23 @@ describe("useDictionaryQuery", () => {
           wordDictionaryClient: createMockWordDictionaryClient(loadWords, {
             clearCache,
             getStoredChecksum: vi.fn().mockReturnValue(CHECKSUM_A),
-            fetchRemoteChecksum: vi
-              .fn()
-              .mockResolvedValue({ checksum: CHECKSUM_A, updatedAt: 100 }),
+            fetchRemoteChecksum,
           }),
         }),
       );
 
-      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE), { wrapper });
+      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, ["apple"]), {
+        wrapper,
+      });
 
-      await waitFor(() => expect(loadWords).toHaveBeenCalled());
+      await waitFor(() =>
+        expect(fetchRemoteChecksum).toHaveBeenCalledWith(
+          WORDS_DEFAULT_LANGUAGE,
+        ),
+      );
 
       expect(clearCache).not.toHaveBeenCalled();
+      expect(loadWords).not.toHaveBeenCalled();
     });
 
     it("clears cache and invalidates dictionary query when checksum mismatches", async () => {
@@ -125,7 +133,9 @@ describe("useDictionaryQuery", () => {
         }),
       );
 
-      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE), { wrapper });
+      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, ["apple"]), {
+        wrapper,
+      });
 
       await waitFor(() =>
         expect(clearCache).toHaveBeenCalledWith(WORDS_DEFAULT_LANGUAGE),
@@ -154,7 +164,9 @@ describe("useDictionaryQuery", () => {
         }),
       );
 
-      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE), { wrapper });
+      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, ["apple"]), {
+        wrapper,
+      });
 
       await waitFor(() => expect(fetchRemoteChecksum).toHaveBeenCalled());
 
@@ -178,7 +190,9 @@ describe("useDictionaryQuery", () => {
         }),
       );
 
-      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE), { wrapper });
+      renderHook(() => useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, ["apple"]), {
+        wrapper,
+      });
 
       await waitFor(() => expect(loadWords).toHaveBeenCalled());
 
@@ -186,18 +200,19 @@ describe("useDictionaryQuery", () => {
     });
   });
 
-  it("uses initial cached words as initial data", async () => {
-    let resolveLoadWords!: (words: string[]) => void;
-    const loadWords = vi.fn().mockReturnValue(
-      new Promise<string[]>((resolve) => {
-        resolveLoadWords = resolve;
-      }),
-    );
+  it("uses initial cached words as initial data without refetching words immediately", async () => {
+    const loadWords = vi.fn().mockResolvedValue(["apple"]);
+    const fetchRemoteChecksum = vi
+      .fn()
+      .mockResolvedValue({ checksum: CHECKSUM_A, updatedAt: 100 });
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
       queryClient,
       createTestApiContextValue({
-        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords, {
+          fetchRemoteChecksum,
+          getStoredChecksum: vi.fn().mockReturnValue(CHECKSUM_A),
+        }),
       }),
     );
 
@@ -208,13 +223,9 @@ describe("useDictionaryQuery", () => {
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.data).toEqual(["cache"]);
-
-    act(() => {
-      resolveLoadWords(["apple"]);
-    });
-
     await waitFor(() => {
-      expect(result.current.data).toEqual(["apple"]);
+      expect(fetchRemoteChecksum).toHaveBeenCalledWith(WORDS_DEFAULT_LANGUAGE);
     });
+    expect(loadWords).not.toHaveBeenCalled();
   });
 });
