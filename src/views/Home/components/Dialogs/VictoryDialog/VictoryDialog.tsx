@@ -8,6 +8,9 @@ import { VICTORY_DIALOG_TITLE_ID } from "./constants";
 import type { VictoryDialogProps } from "./types";
 import SettingsHint from "../SettingsHint";
 
+const formatScoreSummaryValue = (key: string, value: number): string =>
+  key === "difficulty" ? `x${value}` : `+${value}`;
+
 const VictoryDialog = ({
   visible,
   answer,
@@ -74,7 +77,9 @@ const VictoryDialog = ({
             {scoreSummary.items.map((item) => (
               <div key={item.key} className="flex items-center justify-between">
                 <span>{t(`home.victoryDialog.scoreItems.${item.key}`)}</span>
-                <span className="font-semibold">+{item.value}</span>
+                <span className="font-semibold">
+                  {formatScoreSummaryValue(item.key, item.value)}
+                </span>
               </div>
             ))}
             <div className="border-t border-neutral-200 pt-3 font-semibold text-neutral-950 dark:border-neutral-700 dark:text-neutral-50">

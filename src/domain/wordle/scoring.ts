@@ -1,4 +1,5 @@
-import { MAX_GUESSES } from "./constants";
+import { DIFFICULTY_SCORE_MULTIPLIERS, MAX_GUESSES } from "./constants";
+import type { PlayerDifficulty } from "./player";
 
 export const getPointsForWin = (guessesUsed: number): number =>
   Math.max(0, MAX_GUESSES - guessesUsed + 1);
@@ -26,6 +27,10 @@ export const getInsaneTimeBonus = (secondsLeft: number): number => {
 
   return Math.max(0, Math.floor(secondsLeft / 2));
 };
+
+export const getDifficultyScoreMultiplier = (
+  difficulty: PlayerDifficulty,
+): number => DIFFICULTY_SCORE_MULTIPLIERS[difficulty];
 
 const toSafeTimeBonus = (value: number): number => {
   if (!Number.isFinite(value) || value < 0) {

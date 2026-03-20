@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
   getPointsForWin,
   getTotalPointsForWin,
@@ -13,7 +14,6 @@ import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
 import type { EndOfGameSnapshot, EndOfGameScoreSummaryItem } from "./types";
 import {
-  getDifficultyScoreMultiplier,
   hasSeenEndOfGameDialogInSession,
   markEndOfGameDialogAsSeenInSession,
 } from "./utils";

@@ -1471,7 +1471,7 @@ describe("App", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Final score = base points + difficulty bonus + streak bonus + time bonus in Insane.",
+        "Final score = (base points x difficulty multiplier) + streak bonus + time bonus in Insane.",
       ),
     ).toBeTruthy();
 
@@ -1488,7 +1488,7 @@ describe("App", () => {
     expect(screen.queryByRole("dialog", { name: "How to play" })).toBeNull();
   });
 
-  it("applies easy difficulty bonus and current streak bonus on win", async () => {
+  it("applies easy difficulty multiplier and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1512,7 +1512,7 @@ describe("App", () => {
     });
   });
 
-  it("applies hard difficulty bonus and current streak bonus on win", async () => {
+  it("applies hard difficulty multiplier and current streak bonus on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1532,7 +1532,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(9);
+      expect(player.score).toBe(18);
     });
   });
 
@@ -1556,7 +1556,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(40);
+      expect(player.score).toBe(54);
     });
   });
 
@@ -1580,7 +1580,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(10);
+      expect(player.score).toBe(9);
       expect(player.streak).toBe(4);
     });
   });

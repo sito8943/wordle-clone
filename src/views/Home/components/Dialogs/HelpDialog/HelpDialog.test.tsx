@@ -50,7 +50,7 @@ describe("HelpDialog", () => {
     render(<HelpDialog visible onClose={() => undefined} />);
     expect(
       screen.getByText(
-        "Insane: +4 difficulty bonus and +1 extra point per 2 seconds left.",
+        "Insane: x4 difficulty multiplier and +1 extra point per 2 seconds left.",
       ),
     ).toBeTruthy();
   });

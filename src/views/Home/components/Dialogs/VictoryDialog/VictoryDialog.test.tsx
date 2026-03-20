@@ -38,6 +38,8 @@ describe("VictoryDialog", () => {
 
     expect(screen.getByRole("dialog", { name: "Victory" })).toBeTruthy();
     expect(screen.getByText("APPLE")).toBeTruthy();
+    expect(screen.getByText("Difficulty multiplier")).toBeTruthy();
+    expect(screen.getByText("x4")).toBeTruthy();
     expect(screen.getByText("Time bonus")).toBeTruthy();
     expect(screen.getByText("+15")).toBeTruthy();
 

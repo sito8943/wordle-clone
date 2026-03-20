@@ -167,7 +167,7 @@ describe("useHomeController", () => {
     expect(commitVictory).toHaveBeenCalledWith(
       getTotalPointsForWin(3, 4, 2, 5),
     );
-    expect(result.current.victoryScoreSummary?.total).toBe(15);
+    expect(result.current.victoryScoreSummary?.total).toBe(23);
     expect(result.current.showVictoryDialog).toBe(true);
   });
 

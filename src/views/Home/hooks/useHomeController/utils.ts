@@ -1,4 +1,3 @@
-import type { PlayerDifficulty } from "@domain/wordle";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
   HARD_MODE_FINAL_STRETCH_SECONDS,
@@ -7,24 +6,6 @@ import {
 import type { HardModeTimerSnapshot } from "./types";
 
 let hardModeTimerSnapshot: HardModeTimerSnapshot | null = null;
-
-export const getDifficultyScoreMultiplier = (
-  difficulty: PlayerDifficulty,
-): number => {
-  if (difficulty === "easy") {
-    return 1;
-  }
-
-  if (difficulty === "insane") {
-    return 4;
-  }
-
-  if (difficulty === "hard") {
-    return 3;
-  }
-
-  return 2;
-};
 
 export const getHardModeClockBoostScale = (secondsLeft: number): number => {
   if (secondsLeft <= HARD_MODE_FINAL_STRETCH_SECONDS) {

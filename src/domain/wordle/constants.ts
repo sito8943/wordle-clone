@@ -1,4 +1,5 @@
 import type { TileStatus } from "@utils/types";
+import type { PlayerDifficulty } from "./player";
 
 export const WORD_LENGTH = 5;
 export const MAX_GUESSES = 6;
@@ -9,6 +10,13 @@ export const WORDLE_START_ANIMATION_SESSION_KEY =
   "wordle:start-animation-session-seen";
 export const WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY =
   "wordle:keyboard-entry-animation-seen";
+
+export const DIFFICULTY_SCORE_MULTIPLIERS: Record<PlayerDifficulty, number> = {
+  easy: 1,
+  normal: 2,
+  hard: 3,
+  insane: 4,
+};
 
 export const KEYBOARD_ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],

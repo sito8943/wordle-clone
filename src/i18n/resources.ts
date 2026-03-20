@@ -243,13 +243,13 @@ export const resources = {
             basePoints: "Base points are the remaining attempts after a win.",
             streakBonus:
               "Streak bonus adds your current streak value to each win.",
-            easy: "Easy: +1 difficulty bonus.",
-            normal: "Normal: +2 difficulty bonus.",
-            hard: "Hard: +3 difficulty bonus.",
+            easy: "Easy: x1 difficulty multiplier.",
+            normal: "Normal: x2 difficulty multiplier.",
+            hard: "Hard: x3 difficulty multiplier.",
             insane:
-              "Insane: +4 difficulty bonus and +1 extra point per 2 seconds left.",
+              "Insane: x4 difficulty multiplier and +1 extra point per 2 seconds left.",
             final:
-              "Final score = base points + difficulty bonus + streak bonus + time bonus in Insane.",
+              "Final score = (base points x difficulty multiplier) + streak bonus + time bonus in Insane.",
           },
         },
         endOfGame: {
@@ -265,7 +265,7 @@ export const resources = {
           scoreSummaryTitle: "Score summary",
           scoreItems: {
             base: "Base points",
-            difficulty: "Difficulty bonus",
+            difficulty: "Difficulty multiplier",
             streak: "Streak bonus",
             time: "Time bonus",
             total: "Total",
@@ -552,13 +552,13 @@ export const resources = {
               "Los puntos base son los intentos restantes después de ganar.",
             streakBonus:
               "El bonus de racha suma el valor de tu racha actual a cada victoria.",
-            easy: "Fácil: +1 de bonus de dificultad.",
-            normal: "Normal: +2 de bonus de dificultad.",
-            hard: "Difícil: +3 de bonus de dificultad.",
+            easy: "Fácil: multiplicador de dificultad x1.",
+            normal: "Normal: multiplicador de dificultad x2.",
+            hard: "Difícil: multiplicador de dificultad x3.",
             insane:
-              "Insano: +4 de bonus de dificultad y +1 punto extra por cada 2 segundos restantes.",
+              "Insano: multiplicador de dificultad x4 y +1 punto extra por cada 2 segundos restantes.",
             final:
-              "Puntuación final = puntos base + bonus de dificultad + bonus de racha + bonus de tiempo en Insano.",
+              "Puntuación final = (puntos base x multiplicador de dificultad) + bonus de racha + bonus de tiempo en Insano.",
           },
         },
         endOfGame: {
@@ -574,7 +574,7 @@ export const resources = {
           scoreSummaryTitle: "Resumen de puntuación",
           scoreItems: {
             base: "Puntos base",
-            difficulty: "Bonus de dificultad",
+            difficulty: "Multiplicador de dificultad",
             streak: "Bonus de racha",
             time: "Bonus de tiempo",
             total: "Total",
