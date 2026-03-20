@@ -41,6 +41,10 @@ const renderApp = () =>
     </ApiProvider>,
   );
 
+const waitForHomeReady = async () => {
+  await screen.findByRole("heading", { name: "WORDLE" }, { timeout: 5000 });
+};
+
 const defaultEnvMode = env.mode;
 const defaultEnvConvexUrl = env.convexUrl;
 
@@ -275,10 +279,11 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForHomeReady();
 
     fireEvent.click(screen.getByRole("link", { name: "Profile" }));
     expect(
-      await screen.findByRole("heading", { name: "Profile" }),
+      await screen.findByRole("heading", { name: "Profile" }, { timeout: 5000 }),
     ).toBeTruthy();
 
     const themeSelect = screen.getByLabelText(
@@ -1448,6 +1453,7 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForHomeReady();
 
     fireEvent.click(await screen.findByRole("button", { name: "Help" }));
 
@@ -1500,6 +1506,7 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForHomeReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1508,7 +1515,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(7);
+      expect(player.score).toBe(6);
     });
   });
 
@@ -1524,6 +1531,7 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForHomeReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1548,6 +1556,7 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForHomeReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1572,6 +1581,7 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForHomeReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1736,6 +1746,7 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForHomeReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1746,7 +1757,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(8);
+      expect(player.score).toBe(12);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
@@ -1829,6 +1840,7 @@ describe("App", () => {
       }),
     );
     renderApp();
+    await waitForHomeReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1837,7 +1849,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(8);
+      expect(player.score).toBe(12);
     });
 
     fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));

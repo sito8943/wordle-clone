@@ -47,6 +47,6 @@ export const getTotalPointsForWin = (
   timeBonus = 0,
 ): number =>
   getPointsForWin(guessesUsed) *
-  toSafeDifficultyMultiplier(difficultyMultiplier) +
+    toSafeDifficultyMultiplier(difficultyMultiplier) +
   toSafeStreakBonus(streakBonus) +
   toSafeTimeBonus(timeBonus);
