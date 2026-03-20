@@ -5,7 +5,9 @@ import {
   SCOREBOARD_CACHE_KEY,
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PROFILE_IDENTITY_KEY,
+  SYNC_ROUND_EVENTS_MUTATION,
   UPDATE_SCORE_MUTATION,
+  WORDLE_SYNC_EVENTS_KEY,
 } from "./constants";
 import type { ScoreClientGatewayOverrides } from "./types";
 
@@ -534,5 +536,70 @@ describe("ScoreClient", () => {
       clientId: expect.any(String),
       clientRecordId: "remote-record",
     });
+  });
+
+  it("queues round events locally and syncs them as deltas", async () => {
+    const mutation = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "remote-client",
+      clientRecordId: "remote-record",
+      nick: "Ana",
+      playerCode: "AB12",
+      score: 24,
+      streak: 0,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 2000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        mutation,
+      }),
+      storage,
+    );
+
+    client.queueRoundEvent({
+      id: "win-1",
+      kind: "win",
+      pointsDelta: 8,
+      happenedAt: 1000,
+      version: 2,
+    });
+    client.queueRoundEvent({
+      id: "loss-1",
+      kind: "loss",
+      happenedAt: 2000,
+      version: 2,
+    });
+
+    await client.syncRoundEvents({
+      nick: "Ana",
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+    });
+
+    expect(mutation).toHaveBeenCalledWith(
+      SYNC_ROUND_EVENTS_MUTATION,
+      expect.objectContaining({
+        nick: "Ana",
+        events: [
+          {
+            id: "win-1",
+            kind: "win",
+            pointsDelta: 8,
+            happenedAt: 1000,
+            version: 2,
+          },
+          {
+            id: "loss-1",
+            kind: "loss",
+            happenedAt: 2000,
+            version: 2,
+          },
+        ],
+      }),
+    );
+    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
   });
 });

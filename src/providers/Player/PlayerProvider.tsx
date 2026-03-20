@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys, useLocalStorage } from "@hooks";
-import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
 import type { ProviderProps } from "../types";
@@ -16,7 +15,7 @@ import type {
   Player,
   PlayerDifficulty,
   PlayerKeyboardPreference,
-  VictorySyncEvent,
+  RoundSyncEvent,
 } from "@domain/wordle";
 
 const PlayerProvider = ({ children }: ProviderProps) => {
@@ -91,9 +90,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     });
   }, [setStoredPlayer]);
 
-  const syncQueuedVictories = useCallback(
+  const syncQueuedRoundEvents = useCallback(
     async (currentPlayer: Player) => {
-      const syncedProfile = await scoreClient.syncVictoryEvents({
+      const syncedProfile = await scoreClient.syncRoundEvents({
         nick: currentPlayer.name,
         difficulty: currentPlayer.difficulty,
         keyboardPreference: currentPlayer.keyboardPreference,
@@ -114,26 +113,24 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const current = normalizePlayer(storedPlayer);
 
       if (normalizedName === current.name && current.code.length > 0) {
-        await syncQueuedVictories(current);
+        await syncQueuedRoundEvents(current);
         return;
       }
 
       const remoteProfile = await scoreClient.upsertPlayerProfile({
         nick: normalizedName,
-        score: current.score,
-        streak: current.streak,
         difficulty: current.difficulty,
         keyboardPreference: current.keyboardPreference,
       });
 
       await applyRemoteProfile(remoteProfile);
-      await syncQueuedVictories({
+      await syncQueuedRoundEvents({
         ...current,
         name: remoteProfile.nick,
         code: remoteProfile.playerCode,
       });
     },
-    [applyRemoteProfile, scoreClient, storedPlayer, syncQueuedVictories],
+    [applyRemoteProfile, scoreClient, storedPlayer, syncQueuedRoundEvents],
   );
 
   const recoverPlayer = useCallback(
@@ -192,27 +189,26 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         overwriteExisting: true,
       });
 
-      const event: VictorySyncEvent = {
+      const event: RoundSyncEvent = {
         id:
           typeof crypto !== "undefined" && "randomUUID" in crypto
             ? crypto.randomUUID()
             : `${wonAt}-${Math.random().toString(36).slice(2)}`,
-        playerId: current.code || current.name,
-        score: nextPlayer.score,
-        streak: nextPlayer.streak,
-        wonAt,
-        version: 1,
+        kind: "win",
+        pointsDelta: safePoints,
+        happenedAt: wonAt,
+        version: 2,
       };
 
-      scoreClient.queueVictoryEvent(event);
+      scoreClient.queueRoundEvent(event);
 
       if (current.name === DEFAULT_PLAYER.name) {
         return;
       }
 
-      await syncQueuedVictories(nextPlayer);
+      await syncQueuedRoundEvents(nextPlayer);
     },
-    [scoreClient, setStoredPlayer, storedPlayer, syncQueuedVictories],
+    [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents],
   );
 
   const commitLoss = useCallback(async () => {
@@ -235,16 +231,18 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       return;
     }
 
-    await scoreClient.recordScore(
-      {
-        nick: nextPlayer.name,
-        score: nextPlayer.score,
-        streak: nextPlayer.streak,
-        overwriteExisting: true,
-      },
-      UPDATE_SCORE_MUTATION,
-    );
-  }, [scoreClient, setStoredPlayer, storedPlayer]);
+    scoreClient.queueRoundEvent({
+      id:
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      kind: "loss",
+      happenedAt: Date.now(),
+      version: 2,
+    });
+
+    await syncQueuedRoundEvents(nextPlayer);
+  }, [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents]);
 
   const updatePlayerDifficulty = useCallback(
     (difficulty: PlayerDifficulty) => {
@@ -342,7 +340,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
     didHydrateRemoteRef.current = true;
 
-    void syncQueuedVictories(player)
+    void syncQueuedRoundEvents(player)
       .then(async (syncedProfile) => {
         if (syncedProfile) {
           return;
@@ -359,7 +357,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     player,
     player.name,
     scoreClient,
-    syncQueuedVictories,
+    syncQueuedRoundEvents,
   ]);
 
   useEffect(() => {
@@ -383,8 +381,6 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     void scoreClient
       .upsertPlayerProfile({
         nick: player.name,
-        score: player.score,
-        streak: player.streak,
         difficulty: player.difficulty,
         keyboardPreference: player.keyboardPreference,
       })

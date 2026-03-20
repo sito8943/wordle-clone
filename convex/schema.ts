@@ -18,6 +18,16 @@ export default defineSchema({
     .index("by_score", ["score"])
     .index("by_client_record_id", ["clientRecordId"])
     .index("by_player_code", ["playerCode"]),
+  scoreEvents: defineTable({
+    profileId: v.string(),
+    eventId: v.string(),
+    kind: v.string(),
+    pointsDelta: v.optional(v.number()),
+    happenedAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_profile_id", ["profileId"])
+    .index("by_event_id", ["eventId"]),
   words: defineTable({
     language: v.string(),
     value: v.string(),

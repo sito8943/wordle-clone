@@ -91,7 +91,7 @@ describe("App", () => {
         clientRecordId: "test-record",
         nick: input.nick,
         playerCode: "AB12",
-        score: input.score,
+        score: input.score ?? 0,
         streak: input.streak ?? 0,
         difficulty: input.difficulty,
         keyboardPreference: input.keyboardPreference,
@@ -283,7 +283,11 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "Profile" }));
     expect(
-      await screen.findByRole("heading", { name: "Profile" }, { timeout: 5000 }),
+      await screen.findByRole(
+        "heading",
+        { name: "Profile" },
+        { timeout: 5000 },
+      ),
     ).toBeTruthy();
 
     const themeSelect = screen.getByLabelText(
@@ -470,7 +474,6 @@ describe("App", () => {
         }),
         UPDATE_SCORE_MUTATION,
       );
-      expect(screen.getByLabelText("Streak: 7")).toBeTruthy();
     } finally {
       recordScoreSpy.mockRestore();
     }

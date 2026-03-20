@@ -163,7 +163,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `player`: player profile and score/streak metadata, including recovery `code`.
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, and `showEndOfGameDialogs`.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
-- `wordle:sync-events`: local queue of pending `VictorySyncEvent` records for offline score synchronization.
+- `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp) for offline remote synchronization.
 - `wordle:dictionary:en`: cached dictionary words.
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - additional feature keys for theme/animations/scoreboard caches.

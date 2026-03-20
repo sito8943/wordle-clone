@@ -9,7 +9,7 @@ export const MAX_LIMIT = 50;
 export const ADD_SCORE_MUTATION = "scores:addScore";
 export const UPDATE_SCORE_MUTATION = "scores:updateScore";
 export const UPSERT_PLAYER_PROFILE_MUTATION = "scores:upsertPlayerProfile";
-export const SYNC_VICTORY_EVENTS_MUTATION = "scores:syncVictoryEvents";
+export const SYNC_ROUND_EVENTS_MUTATION = "scores:syncRoundEvents";
 export const GET_PLAYER_BY_CODE_QUERY = "scores:getPlayerByCode";
 export const GET_CURRENT_PLAYER_PROFILE_QUERY =
   "scores:getCurrentPlayerProfile";

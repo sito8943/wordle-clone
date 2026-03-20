@@ -89,6 +89,16 @@ type ScoreRecord = {
   createdAt: number;
 };
 
+type ScoreEventRecord = {
+  _id: string;
+  profileId: string;
+  eventId: string;
+  kind: string;
+  pointsDelta?: number;
+  happenedAt: number;
+  createdAt: number;
+};
+
 type ScoreIndexRangeBuilder = {
   eq: (field: string, value: string) => ScoreIndexRangeBuilder;
 };
@@ -159,14 +169,21 @@ const buildPlayerProfile = (record: ScoreRecord) => ({
   createdAt: record.createdAt,
 });
 
-const victoryEventValidator = v.object({
-  id: v.string(),
-  playerId: v.string(),
-  score: v.number(),
-  streak: v.number(),
-  wonAt: v.number(),
-  version: v.number(),
-});
+const roundSyncEventValidator = v.union(
+  v.object({
+    id: v.string(),
+    kind: v.literal("win"),
+    pointsDelta: v.number(),
+    happenedAt: v.number(),
+    version: v.number(),
+  }),
+  v.object({
+    id: v.string(),
+    kind: v.literal("loss"),
+    happenedAt: v.number(),
+    version: v.number(),
+  }),
+);
 
 const resolveProfileRecord = async (
   ctx: ScoresCtx,
@@ -221,6 +238,90 @@ const ensurePlayerCode = async (
   }
 
   return ensureUniquePlayerCode(ctx);
+};
+
+const upsertProfileRecord = async (
+  ctx: ScoresCtx,
+  args: {
+    clientId?: string;
+    clientRecordId?: string;
+    nick: string;
+    difficulty?: string;
+    keyboardPreference?: string;
+  },
+) => {
+  const nick = normalizeNick(args.nick);
+  const existing = await resolveProfileRecord(
+    ctx,
+    args.clientRecordId,
+    args.clientId,
+  );
+  const scores = (await ctx.db.query("scores").collect()) as ScoreRecord[];
+
+  assertNickAvailable(
+    scores,
+    nick,
+    args.clientId ?? existing?.clientId,
+    existing?._id,
+  );
+
+  if (existing) {
+    const patch = {
+      clientId: args.clientId ?? existing.clientId,
+      clientRecordId:
+        args.clientRecordId ?? existing.clientRecordId ?? existing._id,
+      nick,
+      difficulty: normalizeDifficulty(args.difficulty ?? existing.difficulty),
+      keyboardPreference: normalizeKeyboardPreference(
+        args.keyboardPreference ?? existing.keyboardPreference,
+      ),
+      playerCode: await ensurePlayerCode(ctx, existing.playerCode),
+    };
+
+    if (
+      existing.clientId !== patch.clientId ||
+      existing.clientRecordId !== patch.clientRecordId ||
+      existing.nick !== patch.nick ||
+      existing.difficulty !== patch.difficulty ||
+      existing.keyboardPreference !== patch.keyboardPreference ||
+      normalizeCode(existing.playerCode ?? "") !== patch.playerCode
+    ) {
+      await ctx.db.patch(existing._id, patch);
+    }
+
+    return {
+      ...existing,
+      ...patch,
+    };
+  }
+
+  const createdAt = Date.now();
+  const clientRecordId = args.clientRecordId ?? createClientRecordId();
+  const playerCode = await ensureUniquePlayerCode(ctx);
+  const insertedId = await ctx.db.insert("scores", {
+    clientId: args.clientId,
+    clientRecordId,
+    nick,
+    playerCode,
+    score: 0,
+    streak: 0,
+    difficulty: normalizeDifficulty(args.difficulty),
+    keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
+    createdAt,
+  });
+
+  return {
+    _id: insertedId,
+    clientId: args.clientId,
+    clientRecordId,
+    nick,
+    playerCode,
+    score: 0,
+    streak: 0,
+    difficulty: normalizeDifficulty(args.difficulty),
+    keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
+    createdAt,
+  };
 };
 
 const upsertScoreRecord = async (
@@ -331,90 +432,16 @@ export const upsertPlayerProfile = mutation({
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const nick = normalizeNick(args.nick);
-    const existing = await resolveProfileRecord(
-      ctx,
-      args.clientRecordId,
-      args.clientId,
-    );
-    const scores = (await ctx.db.query("scores").collect()) as ScoreRecord[];
-
-    assertNickAvailable(
-      scores,
-      nick,
-      args.clientId ?? existing?.clientId,
-      existing?._id,
-    );
-
-    if (existing) {
-      const patch = {
-        clientId: args.clientId ?? existing.clientId,
-        clientRecordId:
-          args.clientRecordId ?? existing.clientRecordId ?? existing._id,
-        nick,
-        score:
-          typeof args.score === "number"
-            ? normalizeScore(args.score)
-            : normalizeScore(existing.score),
-        streak:
-          typeof args.streak === "number"
-            ? normalizeStreak(args.streak)
-            : normalizeStreak(existing.streak),
-        difficulty: normalizeDifficulty(args.difficulty ?? existing.difficulty),
-        keyboardPreference: normalizeKeyboardPreference(
-          args.keyboardPreference ?? existing.keyboardPreference,
-        ),
-        playerCode: await ensurePlayerCode(ctx, existing.playerCode),
-      };
-
-      if (
-        existing.clientId !== patch.clientId ||
-        existing.clientRecordId !== patch.clientRecordId ||
-        existing.nick !== patch.nick ||
-        existing.score !== patch.score ||
-        (existing.streak ?? 0) !== patch.streak ||
-        existing.difficulty !== patch.difficulty ||
-        existing.keyboardPreference !== patch.keyboardPreference ||
-        normalizeCode(existing.playerCode ?? "") !== patch.playerCode
-      ) {
-        await ctx.db.patch(existing._id, patch);
-      }
-
-      return buildPlayerProfile({
-        ...existing,
-        ...patch,
-      });
-    }
-
-    const createdAt = Date.now();
-    const clientRecordId = args.clientRecordId ?? createClientRecordId();
-    const playerCode = await ensureUniquePlayerCode(ctx);
-    const insertedId = await ctx.db.insert("scores", {
-      clientId: args.clientId,
-      clientRecordId,
-      nick,
-      playerCode,
-      score: normalizeScore(args.score ?? 0),
-      streak: normalizeStreak(args.streak),
-      difficulty: normalizeDifficulty(args.difficulty),
-      keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
-      createdAt,
-    });
-
-    return buildPlayerProfile({
-      _id: insertedId,
-      clientId: args.clientId,
-      clientRecordId,
-      nick,
-      playerCode,
-      score: normalizeScore(args.score ?? 0),
-      streak: normalizeStreak(args.streak),
-      difficulty: normalizeDifficulty(args.difficulty),
-      keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
-      createdAt,
-    });
-  },
+  handler: async (ctx, args) =>
+    buildPlayerProfile(
+      await upsertProfileRecord(ctx, {
+        clientId: args.clientId,
+        clientRecordId: args.clientRecordId,
+        nick: args.nick,
+        difficulty: args.difficulty,
+        keyboardPreference: args.keyboardPreference,
+      }),
+    ),
 });
 
 export const getPlayerByCode = query({
@@ -456,75 +483,79 @@ export const getCurrentPlayerProfile = query({
   },
 });
 
-export const syncVictoryEvents = mutation({
+export const syncRoundEvents = mutation({
   args: {
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
-    events: v.array(victoryEventValidator),
+    events: v.array(roundSyncEventValidator),
   },
   handler: async (ctx, args) => {
     const orderedEvents = [...args.events]
-      .filter((event) => event.version === 1)
-      .sort((left, right) => left.wonAt - right.wonAt);
+      .filter((event) => event.version === 2)
+      .sort((left, right) => left.happenedAt - right.happenedAt);
 
-    const finalEvent = orderedEvents.at(-1);
-    const profileId = await upsertScoreRecord(
-      ctx,
-      {
-        clientId: args.clientId,
-        clientRecordId: args.clientRecordId,
-        nick: args.nick,
-        score: finalEvent?.score ?? 0,
-        streak: finalEvent?.streak ?? 0,
-        createdAt: finalEvent?.wonAt ?? Date.now(),
-      },
-      true,
-    );
+    const profile = await upsertProfileRecord(ctx, {
+      clientId: args.clientId,
+      clientRecordId: args.clientRecordId,
+      nick: args.nick,
+      difficulty: args.difficulty,
+      keyboardPreference: args.keyboardPreference,
+    });
 
-    const profileRecord = (await ctx.db
-      .query("scores")
-      .withIndex("by_client_record_id", (query) =>
-        query.eq("clientRecordId", args.clientRecordId ?? profileId),
-      )
-      .first()) as ScoreRecord | null;
+    let nextScore = normalizeScore(profile.score);
+    let nextStreak = normalizeStreak(profile.streak);
+    let nextCreatedAt = profile.createdAt;
+    let hasChanges = false;
 
-    const existing =
-      profileRecord ??
-      ((await resolveProfileRecord(
-        ctx,
-        args.clientRecordId,
-        args.clientId,
-      )) as ScoreRecord | null);
+    for (const event of orderedEvents) {
+      const existingEvent = (await ctx.db
+        .query("scoreEvents")
+        .withIndex("by_event_id", (query) => query.eq("eventId", event.id))
+        .first()) as ScoreEventRecord | null;
 
-    if (!existing) {
-      throw new Error("Could not resolve player profile after sync.");
+      if (existingEvent) {
+        continue;
+      }
+
+      if (event.kind === "win") {
+        nextScore = normalizeScore(
+          nextScore + normalizeScore(event.pointsDelta),
+        );
+        nextStreak += 1;
+      } else {
+        nextStreak = 0;
+      }
+
+      nextCreatedAt = Math.max(nextCreatedAt, event.happenedAt);
+      hasChanges = true;
+
+      await ctx.db.insert("scoreEvents", {
+        profileId: profile._id,
+        eventId: event.id,
+        kind: event.kind,
+        pointsDelta:
+          event.kind === "win" ? normalizeScore(event.pointsDelta) : undefined,
+        happenedAt: event.happenedAt,
+        createdAt: Date.now(),
+      });
     }
 
-    const patch = {
-      difficulty: normalizeDifficulty(args.difficulty ?? existing.difficulty),
-      keyboardPreference: normalizeKeyboardPreference(
-        args.keyboardPreference ?? existing.keyboardPreference,
-      ),
-      playerCode: await ensurePlayerCode(ctx, existing.playerCode),
-    };
-
-    if (
-      existing.difficulty !== patch.difficulty ||
-      existing.keyboardPreference !== patch.keyboardPreference ||
-      normalizeCode(existing.playerCode ?? "") !== patch.playerCode
-    ) {
-      await ctx.db.patch(existing._id, patch);
+    if (hasChanges) {
+      await ctx.db.patch(profile._id, {
+        score: nextScore,
+        streak: nextStreak,
+        createdAt: nextCreatedAt,
+      });
     }
 
     return buildPlayerProfile({
-      ...existing,
-      ...patch,
-      score: finalEvent?.score ?? existing.score,
-      streak: finalEvent?.streak ?? existing.streak,
-      createdAt: finalEvent?.wonAt ?? existing.createdAt,
+      ...profile,
+      score: nextScore,
+      streak: nextStreak,
+      createdAt: nextCreatedAt,
     });
   },
 });

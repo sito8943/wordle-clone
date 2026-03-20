@@ -30,11 +30,17 @@ export type GuessValidationResult =
       message: string;
     };
 
-export type VictorySyncEvent = {
-  id: string;
-  playerId: string;
-  score: number;
-  streak: number;
-  wonAt: number;
-  version: 1;
-};
+export type RoundSyncEvent =
+  | {
+      id: string;
+      kind: "win";
+      pointsDelta: number;
+      happenedAt: number;
+      version: 2;
+    }
+  | {
+      id: string;
+      kind: "loss";
+      happenedAt: number;
+      version: 2;
+    };

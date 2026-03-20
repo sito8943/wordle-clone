@@ -11,7 +11,7 @@ import {
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PENDING_KEY,
   SCOREBOARD_PROFILE_IDENTITY_KEY,
-  SYNC_VICTORY_EVENTS_MUTATION,
+  SYNC_ROUND_EVENTS_MUTATION,
   UPDATE_SCORE_MUTATION,
   UPSERT_PLAYER_PROFILE_MUTATION,
   WORDLE_SYNC_EVENTS_KEY,
@@ -25,8 +25,8 @@ import type {
   ScoreSource,
   StoredScoreIdentity,
   StoredScore,
-  StoredVictorySyncEvent,
-  SyncVictoryEventsInput,
+  StoredRoundSyncEvent,
+  SyncRoundEventsInput,
   SyncPendingScoresResult,
   TopScoresResult,
   UpsertPlayerProfileInput,
@@ -51,10 +51,12 @@ class ScoreClient {
 
     const currentRecord = this.getCurrentClientStoredScore();
     const identity = this.readProfileIdentity();
+    const normalizedScore = this.normalizeScore(input.score ?? 0);
+    const normalizedStreak = this.normalizeStreak(input.streak ?? 0);
     const clientRecordId =
       identity?.clientRecordId ??
       currentRecord?.localId ??
-      this.createLocalId(input.score > 0 ? Date.now() : undefined);
+      this.createLocalId(normalizedScore > 0 ? Date.now() : undefined);
 
     const response = await this.gateway.mutation<unknown>(
       UPSERT_PLAYER_PROFILE_MUTATION,
@@ -62,8 +64,8 @@ class ScoreClient {
         clientId: this.clientId,
         clientRecordId,
         nick: this.normalizeNick(input.nick),
-        score: this.normalizeScore(input.score),
-        streak: this.normalizeStreak(input.streak ?? 0),
+        score: normalizedScore,
+        streak: normalizedStreak,
         difficulty: input.difficulty,
         keyboardPreference: input.keyboardPreference,
       },
@@ -73,8 +75,8 @@ class ScoreClient {
       clientId: this.clientId,
       clientRecordId,
       nick: input.nick,
-      score: input.score,
-      streak: input.streak ?? 0,
+      score: normalizedScore,
+      streak: normalizedStreak,
       difficulty: input.difficulty,
       keyboardPreference: input.keyboardPreference,
       createdAt: Date.now(),
@@ -143,26 +145,36 @@ class ScoreClient {
     return profile;
   }
 
-  queueVictoryEvent(event: StoredVictorySyncEvent): void {
-    const pending = this.readVictoryEvents();
+  queueRoundEvent(event: StoredRoundSyncEvent): void {
+    const pending = this.readRoundEvents();
     const next = pending.filter((entry) => entry.id !== event.id);
-    next.push({
-      ...event,
-      score: this.normalizeScore(event.score),
-      streak: this.normalizeStreak(event.streak),
-      wonAt:
-        Number.isFinite(event.wonAt) && event.wonAt > 0
-          ? Math.floor(event.wonAt)
-          : Date.now(),
-      version: 1,
-    });
-    this.writeVictoryEvents(next);
+    if (event.kind === "win") {
+      next.push({
+        ...event,
+        pointsDelta: this.normalizeScore(event.pointsDelta),
+        happenedAt:
+          Number.isFinite(event.happenedAt) && event.happenedAt > 0
+            ? Math.floor(event.happenedAt)
+            : Date.now(),
+        version: 2,
+      });
+    } else {
+      next.push({
+        ...event,
+        happenedAt:
+          Number.isFinite(event.happenedAt) && event.happenedAt > 0
+            ? Math.floor(event.happenedAt)
+            : Date.now(),
+        version: 2,
+      });
+    }
+    this.writeRoundEvents(next);
   }
 
-  async syncVictoryEvents(
-    input: SyncVictoryEventsInput,
+  async syncRoundEvents(
+    input: SyncRoundEventsInput,
   ): Promise<RemotePlayerProfile | null> {
-    const events = this.readVictoryEvents();
+    const events = this.readRoundEvents();
     const identity = this.readProfileIdentity();
 
     if (events.length === 0 || !this.gateway.isConfigured || !this.isOnline()) {
@@ -170,12 +182,12 @@ class ScoreClient {
     }
 
     const orderedEvents = [...events].sort(
-      (left, right) => left.wonAt - right.wonAt,
+      (left, right) => left.happenedAt - right.happenedAt,
     );
 
     try {
       const response = await this.gateway.mutation<unknown>(
-        SYNC_VICTORY_EVENTS_MUTATION,
+        SYNC_ROUND_EVENTS_MUTATION,
         {
           clientId: this.clientId,
           clientRecordId: identity?.clientRecordId,
@@ -190,15 +202,15 @@ class ScoreClient {
         clientId: this.clientId,
         clientRecordId: identity?.clientRecordId ?? this.createLocalId(),
         nick: input.nick,
-        score: lastEvent.score,
-        streak: lastEvent.streak,
+        score: 0,
+        streak: 0,
         difficulty: input.difficulty,
         keyboardPreference: input.keyboardPreference,
-        createdAt: lastEvent.wonAt,
+        createdAt: lastEvent.happenedAt,
         playerCode: "",
       });
 
-      this.clearVictoryEvents();
+      this.clearRoundEvents();
       this.adoptRecoveredIdentity(profile);
       return profile;
     } catch (error) {
@@ -621,7 +633,7 @@ class ScoreClient {
     this.storage.setItem(key, JSON.stringify(scores));
   }
 
-  private readVictoryEvents(): StoredVictorySyncEvent[] {
+  private readRoundEvents(): StoredRoundSyncEvent[] {
     try {
       const raw = this.storage.getItem(WORDLE_SYNC_EVENTS_KEY);
       if (!raw) {
@@ -634,7 +646,7 @@ class ScoreClient {
       }
 
       return parsed.flatMap((entry) => {
-        const normalized = this.toStoredVictorySyncEvent(entry);
+        const normalized = this.toStoredRoundSyncEvent(entry);
         return normalized ? [normalized] : [];
       });
     } catch {
@@ -642,14 +654,16 @@ class ScoreClient {
     }
   }
 
-  private writeVictoryEvents(events: StoredVictorySyncEvent[]): void {
+  private writeRoundEvents(events: StoredRoundSyncEvent[]): void {
     this.storage.setItem(
       WORDLE_SYNC_EVENTS_KEY,
-      JSON.stringify(events.sort((left, right) => left.wonAt - right.wonAt)),
+      JSON.stringify(
+        events.sort((left, right) => left.happenedAt - right.happenedAt),
+      ),
     );
   }
 
-  private clearVictoryEvents(): void {
+  private clearRoundEvents(): void {
     this.storage.removeItem(WORDLE_SYNC_EVENTS_KEY);
   }
 
@@ -714,32 +728,43 @@ class ScoreClient {
     return Math.random().toString(36).slice(2);
   }
 
-  private toStoredVictorySyncEvent(
-    value: unknown,
-  ): StoredVictorySyncEvent | null {
+  private toStoredRoundSyncEvent(value: unknown): StoredRoundSyncEvent | null {
     if (!value || typeof value !== "object") {
       return null;
     }
 
-    const candidate = value as Partial<StoredVictorySyncEvent>;
+    const candidate = value as Partial<StoredRoundSyncEvent>;
     if (
       typeof candidate.id !== "string" ||
-      typeof candidate.playerId !== "string" ||
-      typeof candidate.score !== "number" ||
-      typeof candidate.streak !== "number" ||
-      typeof candidate.wonAt !== "number"
+      typeof candidate.kind !== "string"
     ) {
       return null;
     }
 
-    return {
-      id: candidate.id,
-      playerId: candidate.playerId,
-      score: this.normalizeScore(candidate.score),
-      streak: this.normalizeStreak(candidate.streak),
-      wonAt: Math.floor(candidate.wonAt),
-      version: 1,
-    };
+    if (
+      candidate.kind === "win" &&
+      typeof candidate.pointsDelta === "number" &&
+      typeof candidate.happenedAt === "number"
+    ) {
+      return {
+        id: candidate.id,
+        kind: "win",
+        pointsDelta: this.normalizeScore(candidate.pointsDelta),
+        happenedAt: Math.floor(candidate.happenedAt),
+        version: 2,
+      };
+    }
+
+    if (candidate.kind === "loss" && typeof candidate.happenedAt === "number") {
+      return {
+        id: candidate.id,
+        kind: "loss",
+        happenedAt: Math.floor(candidate.happenedAt),
+        version: 2,
+      };
+    }
+
+    return null;
   }
 
   private toStoredScore(value: unknown): StoredScore | null {

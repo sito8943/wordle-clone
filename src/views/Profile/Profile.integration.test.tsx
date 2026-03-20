@@ -26,7 +26,7 @@ describe("Profile integration", () => {
         clientRecordId: "test-record",
         nick: input.nick,
         playerCode: "AB12",
-        score: input.score,
+        score: input.score ?? 0,
         streak: input.streak ?? 0,
         difficulty: input.difficulty,
         keyboardPreference: input.keyboardPreference,

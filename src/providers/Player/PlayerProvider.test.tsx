@@ -3,7 +3,6 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { queryKeys } from "@hooks";
-import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { ApiContext } from "@providers/Api/ApiContext";
 import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
@@ -29,7 +28,7 @@ const makeWrapper =
       clientRecordId: "test-record",
       nick: input.nick,
       playerCode: "AB12",
-      score: input.score,
+      score: input.score ?? 0,
       streak: input.streak ?? 0,
       difficulty: input.difficulty,
       keyboardPreference: input.keyboardPreference,
@@ -48,16 +47,14 @@ const makeWrapper =
       createdAt: 1000,
     }),
     getCurrentPlayerProfile = vi.fn().mockResolvedValue(null),
-    queueVictoryEvent = vi.fn(),
-    syncVictoryEvents = vi.fn().mockResolvedValue(null),
-    recordScore = vi.fn().mockResolvedValue(undefined),
+    queueRoundEvent = vi.fn(),
+    syncRoundEvents = vi.fn().mockResolvedValue(null),
   }: {
     upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
     recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
     getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
-    queueVictoryEvent?: ApiContextType["scoreClient"]["queueVictoryEvent"];
-    syncVictoryEvents?: ApiContextType["scoreClient"]["syncVictoryEvents"];
-    recordScore?: ApiContextType["scoreClient"]["recordScore"];
+    queueRoundEvent?: ApiContextType["scoreClient"]["queueRoundEvent"];
+    syncRoundEvents?: ApiContextType["scoreClient"]["syncRoundEvents"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
     const apiValue = createTestApiContextValue({
@@ -72,9 +69,8 @@ const makeWrapper =
           upsertPlayerProfile,
           recoverPlayerByCode,
           getCurrentPlayerProfile,
-          queueVictoryEvent,
-          syncVictoryEvents,
-          recordScore,
+          queueRoundEvent,
+          syncRoundEvents,
         },
       ) as never,
     });
@@ -178,9 +174,9 @@ describe("PlayerProvider", () => {
   });
 
   it("commitVictory adds points, increments streak and enqueues an event", async () => {
-    const queueVictoryEvent = vi.fn();
+    const queueRoundEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ queueVictoryEvent }),
+      wrapper: makeWrapper({ queueRoundEvent }),
     });
 
     await act(async () => {
@@ -189,20 +185,20 @@ describe("PlayerProvider", () => {
 
     expect(result.current.player.score).toBe(5);
     expect(result.current.player.streak).toBe(1);
-    expect(queueVictoryEvent).toHaveBeenCalledWith(
+    expect(queueRoundEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        score: 5,
-        streak: 1,
-        wonAt: 1234,
-        version: 1,
+        kind: "win",
+        pointsDelta: 5,
+        happenedAt: 1234,
+        version: 2,
       }),
     );
   });
 
   it("commitVictory ignores zero and negative values", async () => {
-    const queueVictoryEvent = vi.fn();
+    const queueRoundEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ queueVictoryEvent }),
+      wrapper: makeWrapper({ queueRoundEvent }),
     });
 
     await act(async () => {
@@ -211,7 +207,7 @@ describe("PlayerProvider", () => {
     });
 
     expect(result.current.player.score).toBe(0);
-    expect(queueVictoryEvent).not.toHaveBeenCalled();
+    expect(queueRoundEvent).not.toHaveBeenCalled();
   });
 
   it("commitLoss resets streak to 0", async () => {
@@ -230,10 +226,10 @@ describe("PlayerProvider", () => {
     expect(result.current.player.streak).toBe(0);
   });
 
-  it("commitLoss syncs the reset streak for registered players", async () => {
-    const recordScore = vi.fn().mockResolvedValue(undefined);
+  it("commitLoss queues a loss event for registered players", async () => {
+    const queueRoundEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ recordScore }),
+      wrapper: makeWrapper({ queueRoundEvent }),
     });
 
     act(() => {
@@ -249,14 +245,11 @@ describe("PlayerProvider", () => {
       await result.current.commitLoss();
     });
 
-    expect(recordScore).toHaveBeenCalledWith(
-      {
-        nick: "Ana",
-        score: 42,
-        streak: 0,
-        overwriteExisting: true,
-      },
-      UPDATE_SCORE_MUTATION,
+    expect(queueRoundEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "loss",
+        version: 2,
+      }),
     );
   });
 
@@ -284,6 +277,52 @@ describe("PlayerProvider", () => {
     expect(result.current.player.keyboardPreference).toBe("native");
   });
 
+  it("syncs preference changes without sending cached score or streak snapshots", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      playerCode: "AB12",
+      score: 99,
+      streak: 7,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ upsertPlayerProfile }),
+    });
+
+    act(() => {
+      result.current.replacePlayer({
+        name: "Ana",
+        code: "AB12",
+        score: 12,
+        streak: 3,
+      });
+    });
+
+    upsertPlayerProfile.mockClear();
+
+    act(() => {
+      result.current.updatePlayerDifficulty("hard");
+    });
+
+    await waitFor(() => {
+      expect(upsertPlayerProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nick: "Ana",
+          difficulty: "hard",
+          keyboardPreference: "onscreen",
+        }),
+      );
+    });
+
+    expect(upsertPlayerProfile.mock.calls[0]?.[0]).not.toHaveProperty("score");
+    expect(upsertPlayerProfile.mock.calls[0]?.[0]).not.toHaveProperty("streak");
+  });
+
   it("updates the end-of-game dialogs preference", () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
@@ -297,7 +336,7 @@ describe("PlayerProvider", () => {
   });
 
   it("syncs victory events after a named player wins", async () => {
-    const syncVictoryEvents = vi.fn().mockResolvedValue({
+    const syncRoundEvents = vi.fn().mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",
@@ -310,7 +349,7 @@ describe("PlayerProvider", () => {
       createdAt: 1000,
     });
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ syncVictoryEvents }),
+      wrapper: makeWrapper({ syncRoundEvents }),
     });
 
     await act(async () => {
@@ -322,7 +361,7 @@ describe("PlayerProvider", () => {
     });
 
     await waitFor(() => {
-      expect(syncVictoryEvents).toHaveBeenCalledWith(
+      expect(syncRoundEvents).toHaveBeenCalledWith(
         expect.objectContaining({ nick: "Ana" }),
       );
     });
@@ -337,7 +376,7 @@ describe("PlayerProvider", () => {
       clientRecordId: "test-record",
       nick: input.nick,
       playerCode: "ZX90",
-      score: input.score,
+      score: input.score ?? 0,
       streak: input.streak ?? 0,
       difficulty: input.difficulty,
       keyboardPreference: input.keyboardPreference,
@@ -489,7 +528,7 @@ describe("PlayerProvider", () => {
         keyboardPreference: "onscreen",
       }),
     );
-    const syncVictoryEvents = vi.fn().mockResolvedValue({
+    const syncRoundEvents = vi.fn().mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",
@@ -504,11 +543,11 @@ describe("PlayerProvider", () => {
     const getCurrentPlayerProfile = vi.fn().mockResolvedValue(null);
 
     renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ syncVictoryEvents, getCurrentPlayerProfile }),
+      wrapper: makeWrapper({ syncRoundEvents, getCurrentPlayerProfile }),
     });
 
     await waitFor(() => {
-      expect(syncVictoryEvents).toHaveBeenCalled();
+      expect(syncRoundEvents).toHaveBeenCalled();
     });
 
     expect(getCurrentPlayerProfile).not.toHaveBeenCalled();
