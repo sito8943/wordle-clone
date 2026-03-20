@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys, useLocalStorage } from "@hooks";
+import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
 import type { ProviderProps } from "../types";
@@ -229,6 +230,20 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       streak: nextPlayer.streak,
       overwriteExisting: true,
     });
+
+    if (current.name === DEFAULT_PLAYER.name) {
+      return;
+    }
+
+    await scoreClient.recordScore(
+      {
+        nick: nextPlayer.name,
+        score: nextPlayer.score,
+        streak: nextPlayer.streak,
+        overwriteExisting: true,
+      },
+      UPDATE_SCORE_MUTATION,
+    );
   }, [scoreClient, setStoredPlayer, storedPlayer]);
 
   const updatePlayerDifficulty = useCallback(

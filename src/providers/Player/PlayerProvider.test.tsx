@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { queryKeys } from "@hooks";
+import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { ApiContext } from "@providers/Api/ApiContext";
 import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
@@ -49,12 +50,14 @@ const makeWrapper =
     getCurrentPlayerProfile = vi.fn().mockResolvedValue(null),
     queueVictoryEvent = vi.fn(),
     syncVictoryEvents = vi.fn().mockResolvedValue(null),
+    recordScore = vi.fn().mockResolvedValue(undefined),
   }: {
     upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
     recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
     getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
     queueVictoryEvent?: ApiContextType["scoreClient"]["queueVictoryEvent"];
     syncVictoryEvents?: ApiContextType["scoreClient"]["syncVictoryEvents"];
+    recordScore?: ApiContextType["scoreClient"]["recordScore"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
     const apiValue = createTestApiContextValue({
@@ -71,6 +74,7 @@ const makeWrapper =
           getCurrentPlayerProfile,
           queueVictoryEvent,
           syncVictoryEvents,
+          recordScore,
         },
       ) as never,
     });
@@ -224,6 +228,36 @@ describe("PlayerProvider", () => {
     });
 
     expect(result.current.player.streak).toBe(0);
+  });
+
+  it("commitLoss syncs the reset streak for registered players", async () => {
+    const recordScore = vi.fn().mockResolvedValue(undefined);
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ recordScore }),
+    });
+
+    act(() => {
+      result.current.replacePlayer({
+        name: "Ana",
+        code: "AB12",
+        score: 42,
+        streak: 3,
+      });
+    });
+
+    await act(async () => {
+      await result.current.commitLoss();
+    });
+
+    expect(recordScore).toHaveBeenCalledWith(
+      {
+        nick: "Ana",
+        score: 42,
+        streak: 0,
+        overwriteExisting: true,
+      },
+      UPDATE_SCORE_MUTATION,
+    );
   });
 
   it("updatePlayerDifficulty changes the difficulty", () => {
