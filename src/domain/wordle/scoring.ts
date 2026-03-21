@@ -40,13 +40,27 @@ const toSafeTimeBonus = (value: number): number => {
   return Math.floor(value);
 };
 
+export const getStreakScoreMultiplier = (streak: number): number => {
+  const safeStreak = toSafeStreakBonus(streak);
+
+  return 1 + 0.3 * Math.sqrt(safeStreak);
+};
+
+export const getBaseScoreForWin = (
+  guessesUsed: number,
+  difficultyMultiplier: number,
+  timeBonus = 0,
+): number =>
+  getPointsForWin(guessesUsed) * toSafeDifficultyMultiplier(difficultyMultiplier) +
+  toSafeTimeBonus(timeBonus);
+
 export const getTotalPointsForWin = (
   guessesUsed: number,
   difficultyMultiplier: number,
-  streakBonus: number,
+  streak: number,
   timeBonus = 0,
 ): number =>
-  getPointsForWin(guessesUsed) *
-    toSafeDifficultyMultiplier(difficultyMultiplier) +
-  toSafeStreakBonus(streakBonus) +
-  toSafeTimeBonus(timeBonus);
+  Math.round(
+    getBaseScoreForWin(guessesUsed, difficultyMultiplier, timeBonus) *
+      getStreakScoreMultiplier(streak),
+  );

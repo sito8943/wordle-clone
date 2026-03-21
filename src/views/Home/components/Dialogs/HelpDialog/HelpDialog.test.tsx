@@ -55,6 +55,13 @@ describe("HelpDialog", () => {
     ).toBeTruthy();
   });
 
+  it("renders the streak multiplier formula", () => {
+    render(<HelpDialog visible onClose={() => undefined} />);
+    expect(
+      screen.getByText("Streak scales your score with x(1 + 0.3 x sqrt(streak))."),
+    ).toBeTruthy();
+  });
+
   it("renders the Close button", () => {
     render(<HelpDialog visible onClose={() => undefined} />);
     expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();

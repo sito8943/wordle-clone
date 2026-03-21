@@ -42,6 +42,18 @@ npm run dev
 
 If `VITE_CONVEX_URL` is not set, the app still works with local-only behavior for scoreboard and dictionary cache.
 
+## Scoring
+
+- Base points are the remaining attempts after a win.
+- Difficulty multiplies base points: `easy x1`, `normal x2`, `hard x3`, `insane x4`.
+- `insane` also adds `+1` point for every `2` seconds left.
+- Final win score uses streak as a multiplier instead of a flat addition:
+
+```ts
+const scoreBase = basePoints * difficultyMultiplier + timeBonus;
+const scoreFinal = Math.round(scoreBase * (1 + 0.3 * Math.sqrt(streak)));
+```
+
 ## Environment Variables
 
 - `VITE_CONVEX_URL` (optional): Convex deployment URL.

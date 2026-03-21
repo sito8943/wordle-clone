@@ -26,7 +26,7 @@ describe("VictoryDialog", () => {
           items: [
             { key: "base", value: 4 },
             { key: "difficulty", value: 4 },
-            { key: "streak", value: 2 },
+            { key: "streak", value: 1.42 },
             { key: "time", value: 5 },
           ],
           total: 15,
@@ -40,8 +40,12 @@ describe("VictoryDialog", () => {
     expect(screen.getByText("APPLE")).toBeTruthy();
     expect(screen.getByText("Difficulty multiplier")).toBeTruthy();
     expect(screen.getByText("x4")).toBeTruthy();
+    expect(screen.getByText("Streak multiplier")).toBeTruthy();
+    expect(screen.getByText("x1.42")).toBeTruthy();
     expect(screen.getByText("Time bonus")).toBeTruthy();
     expect(screen.getByText("+15")).toBeTruthy();
+    expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
+    expect(document.querySelector(".streak-fire")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Play again" }));
     act(() => {

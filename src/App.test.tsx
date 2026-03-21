@@ -1475,12 +1475,12 @@ describe("App", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Streak bonus adds your current streak value to each win.",
+        "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
       ),
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Final score = (base points x difficulty multiplier) + streak bonus + time bonus in Insane.",
+        "Final score = round(score base x (1 + 0.3 x sqrt(streak))), where score base includes the difficulty multiplier and the Insane time bonus.",
       ),
     ).toBeTruthy();
 
@@ -1497,7 +1497,7 @@ describe("App", () => {
     expect(screen.queryByRole("dialog", { name: "How to play" })).toBeNull();
   });
 
-  it("applies easy difficulty multiplier and current streak bonus on win", async () => {
+  it("applies easy difficulty scoring on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1522,7 +1522,7 @@ describe("App", () => {
     });
   });
 
-  it("applies hard difficulty multiplier and current streak bonus on win", async () => {
+  it("applies hard difficulty scoring on win", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({

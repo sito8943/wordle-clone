@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
   getPointsForWin,
@@ -124,7 +125,7 @@ export default function useHomeController() {
       const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
         { key: "base", value: basePoints },
         { key: "difficulty", value: difficultyMultiplier },
-        { key: "streak", value: player.streak },
+        { key: "streak", value: getStreakScoreMultiplier(player.streak) },
       ];
 
       if (player.difficulty === "insane") {

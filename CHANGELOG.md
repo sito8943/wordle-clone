@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-03-21
+
+### Recent changes
+
+- Replaced the flat streak point bonus with a square-root streak multiplier: `Math.round(scoreBase * (1 + 0.3 * Math.sqrt(streak)))`.
+- Updated the Home help copy, victory score breakdown labels, and README scoring docs to match the new streak formula.
+- Expanded scoring tests and Home result assertions to cover the new streak scaling behavior.
+
 ## 2026-03-19
 
 ### Branch `features/performance`

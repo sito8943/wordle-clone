@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button } from "@components";
+import { Button, FireStreak } from "@components";
 import { Dialog, useDialogCloseTransition } from "@components/Dialogs";
 import { useTranslation } from "@i18n";
 import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog/constants";
@@ -8,8 +8,13 @@ import { VICTORY_DIALOG_TITLE_ID } from "./constants";
 import type { VictoryDialogProps } from "./types";
 import SettingsHint from "../SettingsHint";
 
-const formatScoreSummaryValue = (key: string, value: number): string =>
-  key === "difficulty" ? `x${value}` : `+${value}`;
+const formatScoreSummaryValue = (key: string, value: number): string => {
+  if (key === "difficulty" || key === "streak") {
+    return `x${Number.isInteger(value) ? value : value.toFixed(2)}`;
+  }
+
+  return `+${value}`;
+};
 
 const VictoryDialog = ({
   visible,
@@ -91,9 +96,12 @@ const VictoryDialog = ({
           </div>
         </section>
 
-        <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">
-          {t("common.streakLabel", { count: currentStreak })}
-        </p>
+        <div className="text-sm text-neutral-700 dark:text-neutral-200">
+          <FireStreak
+            streak={currentStreak}
+            className="text-neutral-700 dark:text-neutral-200"
+          />
+        </div>
 
         {showSettingsHint ? <SettingsHint /> : null}
 

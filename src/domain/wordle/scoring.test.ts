@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  getBaseScoreForWin,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
   getPointsForWin,
+  getStreakScoreMultiplier,
   getTotalPointsForWin,
 } from "./scoring";
 import { DIFFICULTY_SCORE_MULTIPLIERS } from "./constants";
@@ -20,18 +22,38 @@ describe("getPointsForWin", () => {
 });
 
 describe("getTotalPointsForWin", () => {
-  it("multiplies base points by difficulty and then adds streak bonuses", () => {
-    expect(getTotalPointsForWin(1, 2, 1)).toBe(13);
-    expect(getTotalPointsForWin(4, 3, 5)).toBe(14);
+  it("multiplies score base by the streak multiplier", () => {
+    expect(getTotalPointsForWin(1, 2, 1)).toBe(16);
+    expect(getTotalPointsForWin(4, 3, 5)).toBe(15);
   });
 
   it("adds a time bonus when provided", () => {
-    expect(getTotalPointsForWin(3, 4, 2, 5)).toBe(23);
+    expect(getTotalPointsForWin(3, 4, 2, 5)).toBe(30);
   });
 
-  it("normalizes invalid multipliers and streak bonus values", () => {
+  it("normalizes invalid multipliers and streak values", () => {
     expect(getTotalPointsForWin(1, 0, -4)).toBe(6);
     expect(getTotalPointsForWin(1, Number.NaN, Number.NaN)).toBe(6);
+  });
+});
+
+describe("getBaseScoreForWin", () => {
+  it("combines difficulty-scaled points and time bonus before streak scaling", () => {
+    expect(getBaseScoreForWin(3, 2)).toBe(8);
+    expect(getBaseScoreForWin(3, 4, 5)).toBe(21);
+  });
+});
+
+describe("getStreakScoreMultiplier", () => {
+  it("uses the square-root streak formula", () => {
+    expect(getStreakScoreMultiplier(0)).toBe(1);
+    expect(getStreakScoreMultiplier(1)).toBe(1.3);
+    expect(getStreakScoreMultiplier(4)).toBe(1.6);
+  });
+
+  it("normalizes invalid streak values", () => {
+    expect(getStreakScoreMultiplier(-2)).toBe(1);
+    expect(getStreakScoreMultiplier(Number.NaN)).toBe(1);
   });
 });
 
