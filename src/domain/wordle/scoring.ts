@@ -51,7 +51,8 @@ export const getBaseScoreForWin = (
   difficultyMultiplier: number,
   timeBonus = 0,
 ): number =>
-  getPointsForWin(guessesUsed) * toSafeDifficultyMultiplier(difficultyMultiplier) +
+  getPointsForWin(guessesUsed) *
+    toSafeDifficultyMultiplier(difficultyMultiplier) +
   toSafeTimeBonus(timeBonus);
 
 export const getTotalPointsForWin = (

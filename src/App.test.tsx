@@ -42,7 +42,23 @@ const renderApp = () =>
   );
 
 const waitForHomeReady = async () => {
+  await waitFor(() => {
+    expect(
+      screen.queryByRole("status", { name: "Loading Wordle" }),
+    ).toBeNull();
+  });
   await screen.findByRole("heading", { name: "WORDLE" }, { timeout: 5000 });
+};
+
+const waitForInitialPlayerDialog = async () => {
+  await waitFor(() => {
+    expect(
+      screen.queryByRole("status", { name: "Loading Wordle" }),
+    ).toBeNull();
+  });
+  await screen.findByRole("dialog", { name: "Welcome to Wordle" }, {
+    timeout: 5000,
+  });
 };
 
 const defaultEnvMode = env.mode;
@@ -67,17 +83,29 @@ const mockSystemTheme = (mode: "light" | "dark") => {
   });
 };
 
+const preloadAppRoutes = async () => {
+  await Promise.all([
+    import("@layouts/View"),
+    import("@views/Home"),
+    import("@views/Scoreboard"),
+    import("@views/Profile"),
+    import("@views/NotFound"),
+  ]);
+};
+
 describe("App", () => {
   afterEach(() => {
     vi.useRealTimers();
     cleanup();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await preloadAppRoutes();
     env.mode = defaultEnvMode;
     env.convexUrl = defaultEnvConvexUrl;
     localStorage.clear();
     sessionStorage.clear();
+    sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");
     document.documentElement.classList.remove("dark");
     document.documentElement.classList.remove("wordle-animations-disabled");
     document.documentElement.style.colorScheme = "";
@@ -118,10 +146,7 @@ describe("App", () => {
       JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
     );
     renderApp();
-
-    expect(
-      await screen.findByRole("heading", { name: "WORDLE" }, { timeout: 3000 }),
-    ).toBeTruthy();
+    await waitForHomeReady();
     expect(screen.getByRole("link", { name: "Play" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Profile" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
@@ -143,10 +168,9 @@ describe("App", () => {
 
     try {
       renderApp();
+      await waitForHomeReady();
 
-      const scoreboardLink = await screen.findByRole("link", {
-        name: "Scoreboard",
-      });
+      const scoreboardLink = screen.getByRole("link", { name: "Scoreboard" });
       expect(
         scoreboardLink.querySelector('[data-testid="scoreboard-rank-spinner"]'),
       ).toBeTruthy();
@@ -177,10 +201,7 @@ describe("App", () => {
       JSON.stringify({ name: "Player", score: 0, streak: 0 }),
     );
     renderApp();
-
-    expect(
-      await screen.findByRole("dialog", { name: "Welcome to Wordle" }),
-    ).toBeTruthy();
+    await waitForInitialPlayerDialog();
 
     const nameInput = screen.getByLabelText("Player nick name");
     fireEvent.change(nameInput, { target: { value: "Ana" } });
@@ -951,7 +972,7 @@ describe("App", () => {
     }
   });
 
-  it("pauses and restores insane mode timer when navigating away and back", () => {
+  it("pauses and restores insane mode timer when navigating away and back", async () => {
     vi.useFakeTimers();
     localStorage.setItem(
       "player",
@@ -1417,7 +1438,11 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
     expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
-    expect(screen.getByLabelText("Streak: 1")).toBeTruthy();
+    expect(
+      screen.getByRole("dialog", { name: "Victory" }).querySelector(
+        '[aria-label="Streak: 1"]',
+      ),
+    ).toBeTruthy();
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");

@@ -58,7 +58,9 @@ describe("HelpDialog", () => {
   it("renders the streak multiplier formula", () => {
     render(<HelpDialog visible onClose={() => undefined} />);
     expect(
-      screen.getByText("Streak scales your score with x(1 + 0.3 x sqrt(streak))."),
+      screen.getByText(
+        "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
+      ),
     ).toBeTruthy();
   });
 
