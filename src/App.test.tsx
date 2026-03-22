@@ -43,22 +43,22 @@ const renderApp = () =>
 
 const waitForHomeReady = async () => {
   await waitFor(() => {
-    expect(
-      screen.queryByRole("status", { name: "Loading Wordle" }),
-    ).toBeNull();
+    expect(screen.queryByRole("status", { name: "Loading Wordle" })).toBeNull();
   });
   await screen.findByRole("heading", { name: "WORDLE" }, { timeout: 5000 });
 };
 
 const waitForInitialPlayerDialog = async () => {
   await waitFor(() => {
-    expect(
-      screen.queryByRole("status", { name: "Loading Wordle" }),
-    ).toBeNull();
+    expect(screen.queryByRole("status", { name: "Loading Wordle" })).toBeNull();
   });
-  await screen.findByRole("dialog", { name: "Welcome to Wordle" }, {
-    timeout: 5000,
-  });
+  await screen.findByRole(
+    "dialog",
+    { name: "Welcome to Wordle" },
+    {
+      timeout: 5000,
+    },
+  );
 };
 
 const defaultEnvMode = env.mode;
@@ -1439,9 +1439,9 @@ describe("App", () => {
 
     expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
     expect(
-      screen.getByRole("dialog", { name: "Victory" }).querySelector(
-        '[aria-label="Streak: 1"]',
-      ),
+      screen
+        .getByRole("dialog", { name: "Victory" })
+        .querySelector('[aria-label="Streak: 1"]'),
     ).toBeTruthy();
 
     await waitFor(() => {
