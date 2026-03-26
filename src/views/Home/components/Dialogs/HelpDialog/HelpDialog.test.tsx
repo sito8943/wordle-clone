@@ -5,49 +5,60 @@ import {
   screen,
   act,
 } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import HelpDialog from "./HelpDialog";
 
 afterEach(cleanup);
+
+const renderHelpDialog = (
+  visible = true,
+  onClose: () => void = () => undefined,
+) =>
+  render(
+    <MemoryRouter>
+      <HelpDialog visible={visible} onClose={onClose} />
+    </MemoryRouter>,
+  );
 
 describe("HelpDialog", () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
   it("renders the dialog when visible", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(screen.getByRole("dialog")).toBeTruthy();
   });
 
   it("does not render when visible is false", () => {
-    render(<HelpDialog visible={false} onClose={() => undefined} />);
+    renderHelpDialog(false);
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("renders the title 'How to play'", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(screen.getByText("How to play")).toBeTruthy();
   });
 
   it("renders the description", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(
       screen.getByText("Guess the hidden 5-letter word in up to 6 attempts."),
     ).toBeTruthy();
   });
 
   it("renders the Rules section", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(screen.getByText("Rules")).toBeTruthy();
   });
 
   it("renders the Scoring section", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(screen.getByText("Scoring")).toBeTruthy();
   });
 
   it("renders the insane time bonus rule", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(
       screen.getByText(
         "Insane: x4 difficulty multiplier and +1 extra point per 2 seconds left.",
@@ -56,7 +67,7 @@ describe("HelpDialog", () => {
   });
 
   it("renders the streak multiplier formula", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(
       screen.getByText(
         "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
@@ -65,7 +76,7 @@ describe("HelpDialog", () => {
   });
 
   it("renders a link to change difficulty settings", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
 
     const difficultyLink = screen.getByRole("link", {
       name: "difficulty settings",
@@ -74,13 +85,13 @@ describe("HelpDialog", () => {
   });
 
   it("renders the Close button", () => {
-    render(<HelpDialog visible onClose={() => undefined} />);
+    renderHelpDialog();
     expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();
   });
 
   it("calls onClose after clicking Close and transition completes", () => {
     const onClose = vi.fn();
-    render(<HelpDialog visible onClose={onClose} />);
+    renderHelpDialog(true, onClose);
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
 

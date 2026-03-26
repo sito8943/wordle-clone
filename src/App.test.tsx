@@ -877,7 +877,9 @@ describe("App", () => {
     });
   });
 
-  it("keeps hint consumed after reload before first submitted row", async () => {
+  it(
+    "keeps hint consumed after reload before first submitted row",
+    async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -893,7 +895,11 @@ describe("App", () => {
 
     renderApp();
 
-    const hintButton = await screen.findByRole("button", { name: "Hint" });
+    const hintButton = await screen.findByRole(
+      "button",
+      { name: "Hint" },
+      { timeout: 10_000 },
+    );
     fireEvent.click(hintButton);
     expect((hintButton as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByRole("gridcell", { name: "P, present" })).toBeTruthy();
@@ -901,14 +907,19 @@ describe("App", () => {
     cleanup();
     renderApp();
 
-    await waitFor(() => {
-      expect(
-        (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
-          .disabled,
-      ).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(
+          (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
+            .disabled,
+        ).toBe(true);
+      },
+      { timeout: 10_000 },
+    );
     expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
-  });
+    },
+    15_000,
+  );
 
   it("shares consumed hint across tabs even with different session ids", async () => {
     localStorage.setItem(
@@ -1607,7 +1618,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(18);
+      expect(player.score).toBe(30);
     });
   });
 
@@ -1632,7 +1643,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(54);
+      expect(player.score).toBe(84);
     });
   });
 

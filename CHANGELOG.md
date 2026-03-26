@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-03-26
+
+### Branch `feedback_from_alberto`
+
+- Updated difficulty validation so only `easy` and `normal` allow non-dictionary guesses, while `hard` and `insane` now require dictionary words.
+- Rebalanced difficulty scoring multipliers to `hard x5` and `insane x9`, and aligned gameplay copy/tests with the stricter difficulty behavior.
+- Preserved local player preferences (`language`, `difficulty`, `keyboardPreference`) during background remote profile hydration while still applying remote score/streak updates.
+- Added hash-anchor scrolling support in the shared `View` layout so deep links like `/profile#difficulty` scroll correctly after lazy content mounts.
+- Added a shortcut from the Home help dialog to Profile difficulty settings and made the navbar logo/title link back to Home.
+- Expanded the Spanish dictionary dataset with additional 5-letter words to support dictionary-validated gameplay in harder modes.
+- Updated README gameplay documentation with the new multipliers and a consolidated gameplay constants reference table.
+
 ## 2026-03-21
 
 ### Recent changes
