@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { i18n } from "@i18n";
@@ -16,7 +16,7 @@ const InitialPlayerDialog = lazy(
 const View = () => {
   const { scoreClient } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(
@@ -70,6 +70,69 @@ const View = () => {
     },
     [scoreClient],
   );
+
+  useEffect(() => {
+    if (hash.length <= 1) {
+      return;
+    }
+
+    const targetId = (() => {
+      try {
+        return decodeURIComponent(hash.slice(1));
+      } catch {
+        return hash.slice(1);
+      }
+    })();
+
+    if (targetId.length === 0) {
+      return;
+    }
+
+    let isDone = false;
+    let observer: MutationObserver | null = null;
+    let disconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+    let initialCheckTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const scrollToTargetIfFound = (): void => {
+      if (isDone) {
+        return;
+      }
+
+      const element = document.getElementById(targetId);
+      if (!element) {
+        return;
+      }
+
+      isDone = true;
+      element.scrollIntoView({ block: "start" });
+      observer?.disconnect();
+      if (disconnectTimeoutId !== null) {
+        clearTimeout(disconnectTimeoutId);
+      }
+    };
+
+    initialCheckTimeoutId = setTimeout(scrollToTargetIfFound, 0);
+
+    if (typeof MutationObserver !== "undefined" && document.body) {
+      observer = new MutationObserver(scrollToTargetIfFound);
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    disconnectTimeoutId = setTimeout(() => {
+      observer?.disconnect();
+    }, 2000);
+
+    return () => {
+      isDone = true;
+      observer?.disconnect();
+      if (initialCheckTimeoutId !== null) {
+        clearTimeout(initialCheckTimeoutId);
+      }
+      if (disconnectTimeoutId !== null) {
+        clearTimeout(disconnectTimeoutId);
+      }
+    };
+  }, [hash, pathname]);
 
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">

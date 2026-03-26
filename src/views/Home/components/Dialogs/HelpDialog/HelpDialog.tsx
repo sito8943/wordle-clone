@@ -2,6 +2,7 @@ import { Dialog } from "@components";
 import { useTranslation } from "@i18n";
 import { HELP_DIALOG_TITLE_ID } from "./constants";
 import type { HelpDialogProps } from "./types";
+import { Link } from "react-router";
 
 const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
   const { t } = useTranslation();
@@ -44,6 +45,16 @@ const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
             <li>{t("home.helpDialog.scoring.insane")}</li>
             <li>{t("home.helpDialog.scoring.final")}</li>
           </ul>
+          <p className="mt-3 text-xs text-neutral-600 dark:text-neutral-300">
+            {t("home.helpDialog.changeDifficultyPrefix")}{" "}
+            <Link
+              to="/profile#difficulty"
+              className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
+            >
+              {t("home.helpDialog.changeDifficultyLink")}
+            </Link>
+            .
+          </p>
         </section>
       </div>
     </Dialog>

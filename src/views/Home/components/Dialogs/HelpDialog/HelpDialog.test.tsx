@@ -64,6 +64,15 @@ describe("HelpDialog", () => {
     ).toBeTruthy();
   });
 
+  it("renders a link to change difficulty settings", () => {
+    render(<HelpDialog visible onClose={() => undefined} />);
+
+    const difficultyLink = screen.getByRole("link", {
+      name: "difficulty settings",
+    });
+    expect(difficultyLink.getAttribute("href")).toBe("/profile#difficulty");
+  });
+
   it("renders the Close button", () => {
     render(<HelpDialog visible onClose={() => undefined} />);
     expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();

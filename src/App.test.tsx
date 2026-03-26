@@ -332,6 +332,37 @@ describe("App", () => {
     });
   });
 
+  it("scrolls to hash target after lazy profile content mounts", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "PlayerOne", score: 0, streak: 0 }),
+    );
+
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    const scrollIntoViewSpy = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoViewSpy,
+    });
+
+    window.history.pushState({}, "", "/profile#difficulty");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    try {
+      renderApp();
+      await screen.findByRole("heading", { name: "Profile" }, { timeout: 5000 });
+
+      await waitFor(() => {
+        expect(scrollIntoViewSpy).toHaveBeenCalled();
+      });
+    } finally {
+      Object.defineProperty(Element.prototype, "scrollIntoView", {
+        configurable: true,
+        value: originalScrollIntoView,
+      });
+    }
+  });
+
   it("defaults to normal difficulty from profile when missing in storage", async () => {
     localStorage.setItem(
       "player",
