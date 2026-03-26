@@ -10,6 +10,7 @@ import { useTranslation } from "@i18n";
 import NavLink from "./NavLink";
 import { getScoreboardToneClassName } from "./utils";
 import useNavbarController from "./useNavbarController";
+import { Link } from "react-router";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -50,9 +51,11 @@ const Navbar = () => {
 
   return (
     <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 sm:px-4 flex">
-      <h1 className="pointer-events-none text-center text-3xl max-sm:text-xl font-black tracking-[0.28em] text-black dark:text-neutral-100">
-        {t("app.title").toUpperCase()}
-      </h1>
+      <Link to="/">
+        <h1 className="pointer-events-none text-center text-3xl max-sm:text-xl font-black tracking-[0.28em] text-black dark:text-neutral-100">
+          {t("app.title").toUpperCase()}
+        </h1>
+      </Link>
       <nav>
         <ul className="m-auto flex items-center justify-center gap-4 max-sm:gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-300">
           {links.map((link) => (
