@@ -1,13 +1,51 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import type { ComponentType, ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import useScoreboardController from "./useScoreboardController";
 import { queryKeys } from "../../../hooks/queryKeys";
+import { DEFAULT_PLAYER } from "../../../providers/Player/constants";
+import { PlayerContext } from "../../../providers/Player/PlayerContext";
+import type { PlayerContextType } from "../../../providers/Player/types";
 import {
   createHookWrapper,
   createMockScoreClient,
   createTestApiContextValue,
   createTestQueryClient,
 } from "../../../test/utils";
+
+const createTestPlayerContextValue = (
+  overrides: Partial<PlayerContextType> = {},
+): PlayerContextType => ({
+  player: DEFAULT_PLAYER,
+  updatePlayer: vi.fn().mockResolvedValue(undefined),
+  recoverPlayer: vi.fn().mockResolvedValue(undefined),
+  refreshCurrentPlayerProfile: vi.fn().mockResolvedValue(undefined),
+  replacePlayer: vi.fn(),
+  updatePlayerDifficulty: vi.fn(),
+  updatePlayerKeyboardPreference: vi.fn(),
+  updatePlayerLanguage: vi.fn(),
+  updatePlayerShowEndOfGameDialogs: vi.fn(),
+  commitVictory: vi.fn().mockResolvedValue(undefined),
+  commitLoss: vi.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
+const createScoreboardWrapper = (
+  hookWrapper: ComponentType<{ children: ReactNode }>,
+  playerContextValue: PlayerContextType = createTestPlayerContextValue(),
+) => {
+  const HookWrapper = hookWrapper;
+
+  const ScoreboardWrapper = ({ children }: { children: ReactNode }) => (
+    <HookWrapper>
+      <PlayerContext.Provider value={playerContextValue}>
+        {children}
+      </PlayerContext.Provider>
+    </HookWrapper>
+  );
+
+  return ScoreboardWrapper;
+};
 
 describe("useScoreboardController", () => {
   afterEach(() => {
@@ -24,8 +62,11 @@ describe("useScoreboardController", () => {
         scoreClient: createMockScoreClient(listTopScores),
       }),
     );
+    const scoreboardWrapper = createScoreboardWrapper(wrapper);
 
-    const { result } = renderHook(() => useScoreboardController(), { wrapper });
+    const { result } = renderHook(() => useScoreboardController(), {
+      wrapper: scoreboardWrapper,
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.source).toBe("local");
@@ -65,8 +106,11 @@ describe("useScoreboardController", () => {
         scoreClient: createMockScoreClient(listTopScores),
       }),
     );
+    const scoreboardWrapper = createScoreboardWrapper(wrapper);
 
-    const { result } = renderHook(() => useScoreboardController(), { wrapper });
+    const { result } = renderHook(() => useScoreboardController(), {
+      wrapper: scoreboardWrapper,
+    });
 
     await waitFor(() => {
       expect(result.current.currentClientRank).toBe(12);
@@ -92,8 +136,11 @@ describe("useScoreboardController", () => {
         scoreClient: createMockScoreClient(listTopScores),
       }),
     );
+    const scoreboardWrapper = createScoreboardWrapper(wrapper);
 
-    const { result } = renderHook(() => useScoreboardController(), { wrapper });
+    const { result } = renderHook(() => useScoreboardController(), {
+      wrapper: scoreboardWrapper,
+    });
 
     await waitFor(() => {
       expect(result.current.error).toBe("Failed to load scoreboard.");
@@ -120,8 +167,11 @@ describe("useScoreboardController", () => {
         scoreClient: createMockScoreClient(listTopScores),
       }),
     );
+    const scoreboardWrapper = createScoreboardWrapper(wrapper);
 
-    const { result } = renderHook(() => useScoreboardController(), { wrapper });
+    const { result } = renderHook(() => useScoreboardController(), {
+      wrapper: scoreboardWrapper,
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
