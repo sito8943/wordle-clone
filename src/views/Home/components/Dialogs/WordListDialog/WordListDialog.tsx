@@ -28,6 +28,8 @@ const WordListDialog = ({
     if (visible) inputRef.current?.focus();
   }, [visible]);
 
+  const languageLabel = t(`profile.languageOptions.${language}`);
+
   return (
     <Dialog
       visible={visible}
@@ -35,7 +37,7 @@ const WordListDialog = ({
       titleId={WORD_LIST_DIALOG_TITLE_ID}
       title={t("home.wordListDialog.title")}
       description={t("home.wordListDialog.description", {
-        language: language.toUpperCase(),
+        language: languageLabel,
         filtered: filteredWords.length,
         total: words.length,
       })}

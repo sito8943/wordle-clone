@@ -2,9 +2,11 @@ import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { EN_WORDS } from "./data/wordsEn";
+import { ES_WORDS } from "./data/wordsEs";
 
 const EN_LANGUAGE = "en";
-const SUPPORTED_LANGUAGES = new Set([EN_LANGUAGE]);
+const ES_LANGUAGE = "es";
+const SUPPORTED_LANGUAGES = new Set([EN_LANGUAGE, ES_LANGUAGE]);
 
 const normalizeLanguage = (value: string): string => value.trim().toLowerCase();
 
@@ -22,12 +24,13 @@ const normalizeWords = (words: string[]): string[] => {
 };
 
 const EN_WORDS_NORMALIZED = normalizeWords(EN_WORDS);
+const ES_WORDS_NORMALIZED = normalizeWords(ES_WORDS);
 
 const assertLanguageSupported = (language: string): string => {
   const normalized = normalizeLanguage(language);
 
   if (!SUPPORTED_LANGUAGES.has(normalized)) {
-    throw new Error("Unsupported language. Only 'en' is available for now.");
+    throw new Error("Unsupported language. Supported languages: 'en', 'es'.");
   }
 
   return normalized;
@@ -84,7 +87,7 @@ export const ensureLanguageSeeded = mutation({
     }
 
     const seedWords =
-      language === EN_LANGUAGE ? EN_WORDS_NORMALIZED : ([] as string[]);
+      language === ES_LANGUAGE ? ES_WORDS_NORMALIZED : EN_WORDS_NORMALIZED;
     const createdAt = Date.now();
 
     for (const value of seedWords) {
@@ -101,6 +104,57 @@ export const ensureLanguageSeeded = mutation({
       language,
       inserted: seedWords.length,
       total: seedWords.length,
+    };
+  },
+});
+
+export const seedLanguageWords = mutation({
+  args: {
+    language: v.string(),
+    replaceExisting: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const language = assertLanguageSupported(args.language);
+    const shouldReplace = args.replaceExisting === true;
+    const seedWords =
+      language === ES_LANGUAGE ? ES_WORDS_NORMALIZED : EN_WORDS_NORMALIZED;
+    const existingWords = await ctx.db
+      .query("words")
+      .withIndex("by_language", (q) => q.eq("language", language))
+      .collect();
+
+    if (!shouldReplace && existingWords.length > 0) {
+      return {
+        language,
+        inserted: 0,
+        total: existingWords.length,
+        replaced: false,
+      };
+    }
+
+    if (shouldReplace) {
+      for (const row of existingWords) {
+        await ctx.db.delete(row._id);
+      }
+    }
+
+    const createdAt = Date.now();
+
+    for (const value of seedWords) {
+      await ctx.db.insert("words", {
+        language,
+        value,
+        createdAt,
+      });
+    }
+
+    await upsertWordsMeta(ctx, language, djb2Hash(seedWords));
+
+    return {
+      language,
+      inserted: seedWords.length,
+      total: shouldReplace ? seedWords.length : existingWords.length + seedWords.length,
+      replaced: shouldReplace,
     };
   },
 });

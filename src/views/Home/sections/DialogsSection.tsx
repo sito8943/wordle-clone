@@ -47,6 +47,7 @@ const DialogsSection = ({
   cancelRefreshBoard,
   confirmRefreshBoard,
   dictionaryWords,
+  currentLanguage,
   closeWordsDialog,
   closeHelpDialog,
   closeDeveloperConsoleDialog,
@@ -131,7 +132,7 @@ const DialogsSection = ({
           {wordListDialogVisible ? (
             <WordListDialog
               visible
-              language="en"
+              language={currentLanguage}
               words={dictionaryWords}
               onClose={closeWordsDialog}
             />

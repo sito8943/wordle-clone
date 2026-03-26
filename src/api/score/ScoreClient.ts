@@ -16,6 +16,7 @@ import {
   UPSERT_PLAYER_PROFILE_MUTATION,
   WORDLE_SYNC_EVENTS_KEY,
 } from "./constants";
+import type { PlayerLanguage } from "@domain/wordle";
 import type {
   RecordScoreInput,
   RemotePlayerProfile,
@@ -34,6 +35,8 @@ import type {
 import { resolveStorage, scoreSorter } from "./utils";
 
 class ScoreClient {
+  private static readonly DEFAULT_LANGUAGE: PlayerLanguage = "en";
+
   private readonly gateway: ConvexGateway;
   private readonly storage: Storage;
   private readonly clientId: string;
@@ -49,7 +52,8 @@ class ScoreClient {
   ): Promise<RemotePlayerProfile> {
     this.assertRemoteIdentityAvailable();
 
-    const currentRecord = this.getCurrentClientStoredScore();
+    const language = this.normalizeLanguage(input.language);
+    const currentRecord = this.getCurrentClientStoredScore(language);
     const identity = this.readProfileIdentity();
     const normalizedScore = this.normalizeScore(input.score ?? 0);
     const normalizedStreak = this.normalizeStreak(input.streak ?? 0);
@@ -64,6 +68,7 @@ class ScoreClient {
         clientId: this.clientId,
         clientRecordId,
         nick: this.normalizeNick(input.nick),
+        language,
         score: normalizedScore,
         streak: normalizedStreak,
         difficulty: input.difficulty,
@@ -75,6 +80,7 @@ class ScoreClient {
       clientId: this.clientId,
       clientRecordId,
       nick: input.nick,
+      language,
       score: normalizedScore,
       streak: normalizedStreak,
       difficulty: input.difficulty,
@@ -101,6 +107,7 @@ class ScoreClient {
       clientId: null,
       clientRecordId: "",
       nick: "Player",
+      language: ScoreClient.DEFAULT_LANGUAGE,
       score: 0,
       streak: 0,
       difficulty: "normal",
@@ -133,6 +140,7 @@ class ScoreClient {
       clientId: this.clientId,
       clientRecordId: identity?.clientRecordId ?? "",
       nick: "Player",
+      language: ScoreClient.DEFAULT_LANGUAGE,
       score: 0,
       streak: 0,
       difficulty: "normal",
@@ -192,6 +200,7 @@ class ScoreClient {
           clientId: this.clientId,
           clientRecordId: identity?.clientRecordId,
           nick: this.normalizeNick(input.nick),
+          language: this.normalizeLanguage(input.language),
           difficulty: input.difficulty,
           keyboardPreference: input.keyboardPreference,
           events: orderedEvents,
@@ -202,6 +211,7 @@ class ScoreClient {
         clientId: this.clientId,
         clientRecordId: identity?.clientRecordId ?? this.createLocalId(),
         nick: input.nick,
+        language: this.normalizeLanguage(input.language),
         score: 0,
         streak: 0,
         difficulty: input.difficulty,
@@ -224,6 +234,7 @@ class ScoreClient {
 
   cachePlayerScore(input: RecordScoreInput): void {
     const identity = this.readProfileIdentity();
+    const language = this.normalizeLanguage(input.language);
     const createdAt = input.createdAt ?? Date.now();
 
     this.addToCache(
@@ -231,6 +242,7 @@ class ScoreClient {
         localId: identity?.clientRecordId ?? this.createLocalId(createdAt),
         clientId: this.clientId,
         nick: this.normalizeNick(input.nick),
+        language,
         score: this.normalizeScore(input.score),
         streak: this.normalizeStreak(input.streak ?? 0),
         createdAt,
@@ -248,7 +260,8 @@ class ScoreClient {
     input: RecordScoreInput,
     mutation: string = ADD_SCORE_MUTATION,
   ): Promise<void> {
-    const currentRecord = this.getCurrentClientStoredScore();
+    const language = this.normalizeLanguage(input.language);
+    const currentRecord = this.getCurrentClientStoredScore(language);
     const identity = this.readProfileIdentity();
     const overwriteExisting = input.overwriteExisting === true;
     const normalizedInputScore = this.normalizeScore(input.score);
@@ -279,6 +292,7 @@ class ScoreClient {
         this.createLocalId(createdAt),
       clientId: this.clientId,
       nick: this.normalizeNick(input.nick),
+      language,
       score,
       streak,
       createdAt,
@@ -296,6 +310,7 @@ class ScoreClient {
         clientRecordId: identity?.clientRecordId ?? record.localId,
         clientId: this.clientId,
         nick: record.nick,
+        language: record.language,
         score: record.score,
         streak: record.streak,
         createdAt: record.createdAt,
@@ -348,12 +363,16 @@ class ScoreClient {
     }
   }
 
-  async listTopScores(limit = DEFAULT_LIMIT): Promise<TopScoresResult> {
+  async listTopScores(
+    limit = DEFAULT_LIMIT,
+    language: PlayerLanguage = ScoreClient.DEFAULT_LANGUAGE,
+  ): Promise<TopScoresResult> {
+    const safeLanguage = this.normalizeLanguage(language);
     const safeLimit = this.normalizeLimit(limit);
     const identity = this.readProfileIdentity();
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
-      return this.getCachedTopScores(safeLimit);
+      return this.getCachedTopScores(safeLimit, safeLanguage);
     }
 
     try {
@@ -361,6 +380,7 @@ class ScoreClient {
         RemoteScoresResponse | RemoteScore[]
       >(LIST_TOP_SCORES_QUERY, {
         limit: safeLimit,
+        language: safeLanguage,
         clientId: this.clientId,
         clientRecordId: identity?.clientRecordId,
       });
@@ -368,10 +388,15 @@ class ScoreClient {
       const mergedScores = this.mergeRemoteAndPending(
         parsedResponse.scores,
         safeLimit,
+        safeLanguage,
       );
       const currentClientEntry =
         parsedResponse.currentClientEntry !== null
-          ? this.toScoreEntry(parsedResponse.currentClientEntry, "convex")
+          ? this.toScoreEntry(
+              parsedResponse.currentClientEntry,
+              "convex",
+              safeLanguage,
+            )
           : (mergedScores.find((entry) => entry.isCurrentClient) ?? null);
 
       return {
@@ -385,13 +410,17 @@ class ScoreClient {
         throw error;
       }
 
-      return this.getCachedTopScores(safeLimit);
+      return this.getCachedTopScores(safeLimit, safeLanguage);
     }
   }
 
-  getCachedTopScores(limit = DEFAULT_LIMIT): TopScoresResult {
+  getCachedTopScores(
+    limit = DEFAULT_LIMIT,
+    language: PlayerLanguage = ScoreClient.DEFAULT_LANGUAGE,
+  ): TopScoresResult {
+    const safeLanguage = this.normalizeLanguage(language);
     const safeLimit = this.normalizeLimit(limit);
-    const localScores = this.localScoresRanked();
+    const localScores = this.localScoresRanked(safeLanguage);
     const localResult = this.buildTopScoresResult(localScores, safeLimit);
 
     return {
@@ -434,6 +463,7 @@ class ScoreClient {
               this.readProfileIdentity()?.clientRecordId ?? entry.localId,
             clientId: this.clientId,
             nick: entry.nick,
+            language: entry.language,
             score: entry.score,
             streak: entry.streak,
             createdAt: entry.createdAt,
@@ -457,9 +487,13 @@ class ScoreClient {
     return { flushed: stillPending.length !== pending.length };
   }
 
-  private localScoresRanked(): ScoreEntry[] {
+  private localScoresRanked(language: PlayerLanguage): ScoreEntry[] {
     return this.dedupeStoredByLocalId(
-      this.dedupeStoredByNick(this.readScores(SCOREBOARD_CACHE_KEY)),
+      this.dedupeStoredByNick(
+        this.readScores(SCOREBOARD_CACHE_KEY).filter(
+          (entry) => entry.language === language,
+        ),
+      ),
     )
       .sort(scoreSorter)
       .map((entry) => this.toLocalScoreEntry(entry));
@@ -468,13 +502,16 @@ class ScoreClient {
   private mergeRemoteAndPending(
     remoteScores: RemoteScore[],
     limit: number,
+    language: PlayerLanguage,
   ): ScoreEntry[] {
     const pending = this.dedupeStoredByNick(
-      this.readScores(SCOREBOARD_PENDING_KEY),
+      this.readScores(SCOREBOARD_PENDING_KEY).filter(
+        (entry) => entry.language === language,
+      ),
     );
 
     const remoteEntries: ScoreEntry[] = remoteScores.map((entry) =>
-      this.toScoreEntry(entry, "convex"),
+      this.toScoreEntry(entry, "convex", language),
     );
 
     const pendingEntries: ScoreEntry[] = pending.map((entry) =>
@@ -492,6 +529,7 @@ class ScoreClient {
     return {
       id: entry.localId,
       nick: entry.nick,
+      language: entry.language,
       score: entry.score,
       streak: entry.streak,
       createdAt: entry.createdAt,
@@ -502,12 +540,14 @@ class ScoreClient {
 
   private toScoreEntry(
     entry: Pick<RemoteScore, "id" | "nick" | "score" | "createdAt"> &
-      Partial<Pick<RemoteScore, "isCurrentClient" | "streak">>,
+      Partial<Pick<RemoteScore, "isCurrentClient" | "streak" | "language">>,
     source: ScoreSource,
+    defaultLanguage: PlayerLanguage,
   ): ScoreEntry {
     return {
       id: entry.id,
       nick: entry.nick,
+      language: this.normalizeLanguage(entry.language ?? defaultLanguage),
       score: entry.score,
       streak: this.normalizeStreak(entry.streak ?? 0),
       createdAt: entry.createdAt,
@@ -600,12 +640,18 @@ class ScoreClient {
     stored: StoredScore,
     nextEntry: StoredScore,
   ): boolean {
-    const sameNick = this.nickKey(stored.nick) === this.nickKey(nextEntry.nick);
+    const sameNickAndLanguage =
+      this.nickLanguageKey(stored.nick, stored.language) ===
+      this.nickLanguageKey(nextEntry.nick, nextEntry.language);
     const sameClient =
-      Boolean(nextEntry.clientId) && stored.clientId === nextEntry.clientId;
-    const sameLocalId = stored.localId === nextEntry.localId;
+      Boolean(nextEntry.clientId) &&
+      stored.clientId === nextEntry.clientId &&
+      stored.language === nextEntry.language;
+    const sameLocalId =
+      stored.localId === nextEntry.localId &&
+      stored.language === nextEntry.language;
 
-    return sameNick || sameClient || sameLocalId;
+    return sameNickAndLanguage || sameClient || sameLocalId;
   }
 
   private readScores(key: string): StoredScore[] {
@@ -678,6 +724,18 @@ class ScoreClient {
 
   private nickKey(nick: string): string {
     return this.normalizeNick(nick).toLowerCase();
+  }
+
+  private normalizeLanguage(value: unknown): PlayerLanguage {
+    if (value === "es") {
+      return "es";
+    }
+
+    return "en";
+  }
+
+  private nickLanguageKey(nick: string, language: PlayerLanguage): string {
+    return `${this.nickKey(nick)}::${this.normalizeLanguage(language)}`;
   }
 
   private normalizeScore(score: number): number {
@@ -788,6 +846,7 @@ class ScoreClient {
       localId: candidate.localId,
       clientId: candidate.clientId,
       nick: candidate.nick,
+      language: this.normalizeLanguage(candidate.language),
       score: this.normalizeScore(candidate.score),
       streak: this.normalizeStreak(candidate.streak ?? 0),
       createdAt: candidate.createdAt,
@@ -800,7 +859,7 @@ class ScoreClient {
     const byNick = new Map<string, StoredScore>();
 
     for (const entry of entries) {
-      const key = this.nickKey(entry.nick);
+      const key = this.nickLanguageKey(entry.nick, entry.language);
       const current = byNick.get(key);
       const comparison = current ? scoreSorter(entry, current) : 0;
 
@@ -827,15 +886,18 @@ class ScoreClient {
     return [...byLocalId.values()];
   }
 
-  private getCurrentClientStoredScore(): StoredScore | null {
+  private getCurrentClientStoredScore(
+    language: PlayerLanguage,
+  ): StoredScore | null {
     const identity = this.readProfileIdentity();
     const entries = [
       ...this.readScores(SCOREBOARD_CACHE_KEY),
       ...this.readScores(SCOREBOARD_PENDING_KEY),
     ].filter(
       (entry) =>
-        entry.clientId === this.clientId ||
-        (identity !== null && entry.localId === identity.clientRecordId),
+        entry.language === language &&
+        (entry.clientId === this.clientId ||
+          (identity !== null && entry.localId === identity.clientRecordId)),
     );
 
     let current: StoredScore | null = null;
@@ -853,7 +915,7 @@ class ScoreClient {
     const byNick = new Map<string, ScoreEntry>();
 
     for (const entry of entries) {
-      const key = this.nickKey(entry.nick);
+      const key = this.nickLanguageKey(entry.nick, entry.language);
       const current = byNick.get(key);
 
       if (!current || scoreSorter(entry, current) < 0) {
@@ -995,6 +1057,7 @@ class ScoreClient {
         typeof candidate.playerCode === "string"
           ? this.normalizeRecoveryCode(candidate.playerCode)
           : this.normalizeRecoveryCode(fallback.playerCode),
+      language: this.normalizeLanguage(candidate.language ?? fallback.language),
       score: this.normalizeScore(
         typeof candidate.score === "number" ? candidate.score : fallback.score,
       ),
@@ -1057,6 +1120,7 @@ class ScoreClient {
       localId: profile.clientRecordId,
       clientId: this.clientId,
       nick: profile.nick,
+      language: profile.language,
       score: profile.score,
       streak: profile.streak,
       createdAt: profile.createdAt,
@@ -1064,20 +1128,27 @@ class ScoreClient {
 
     const cache = [
       ...this.readScores(SCOREBOARD_CACHE_KEY).filter(
-        (entry) => !this.isCurrentBrowserEntry(entry),
+        (entry) => !this.isCurrentBrowserEntry(entry, profile.language),
       ),
       nextEntry,
     ];
     const pending = this.readScores(SCOREBOARD_PENDING_KEY).filter(
-      (entry) => !this.isCurrentBrowserEntry(entry),
+      (entry) => !this.isCurrentBrowserEntry(entry, profile.language),
     );
 
     this.writeScores(SCOREBOARD_CACHE_KEY, this.dedupeStoredByNick(cache));
     this.writeScores(SCOREBOARD_PENDING_KEY, pending);
   }
 
-  private isCurrentBrowserEntry(entry: StoredScore): boolean {
+  private isCurrentBrowserEntry(
+    entry: StoredScore,
+    language: PlayerLanguage,
+  ): boolean {
     const identity = this.readProfileIdentity();
+
+    if (entry.language !== language) {
+      return false;
+    }
 
     return (
       entry.clientId === this.clientId ||

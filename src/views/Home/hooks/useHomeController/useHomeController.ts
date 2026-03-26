@@ -7,7 +7,6 @@ import {
   getTotalPointsForWin,
   type Player,
 } from "@domain/wordle";
-import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useApi, usePlayer } from "@providers";
 import { useHardModeTimer } from "./useHardModeTimer";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
@@ -18,12 +17,14 @@ import {
   hasSeenEndOfGameDialogInSession,
   markEndOfGameDialogAsSeenInSession,
 } from "./utils";
+import { i18n } from "@i18n";
 
 export default function useHomeController() {
   const { scoreClient, wordDictionaryClient } = useApi();
   const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
   const wordle = useWordle({
     allowUnknownWords: player.difficulty !== "insane",
+    language: player.language,
   });
   const {
     sessionId,
@@ -271,23 +272,25 @@ export default function useHomeController() {
 
     try {
       const refreshed = await wordDictionaryClient.refreshRemoteChecksum(
-        WORDS_DEFAULT_LANGUAGE,
+        player.language,
       );
       setDictionaryChecksumMessage(
-        `Remote checksum updated to ${refreshed.checksum}.`,
+        i18n.t("home.developerConsole.checksumUpdated", {
+          checksum: refreshed.checksum,
+        }),
       );
       setDictionaryChecksumMessageKind("success");
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : "Could not refresh remote dictionary checksum.";
+          : i18n.t("home.developerConsole.checksumRefreshError");
       setDictionaryChecksumMessage(message);
       setDictionaryChecksumMessageKind("error");
     } finally {
       setIsRefreshingDictionaryChecksum(false);
     }
-  }, [isRefreshingDictionaryChecksum, wordDictionaryClient]);
+  }, [isRefreshingDictionaryChecksum, player.language, wordDictionaryClient]);
 
   const submitDeveloperPlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -303,6 +306,7 @@ export default function useHomeController() {
       void scoreClient.recordScore(
         {
           nick: nextNick,
+          language: player.language,
           score: nextScore,
           streak: nextStreak,
           overwriteExisting: true,
@@ -313,7 +317,14 @@ export default function useHomeController() {
       replacePlayer(nextPlayer);
       setShowDeveloperConsoleDialog(false);
     },
-    [player.name, player.score, player.streak, replacePlayer, scoreClient],
+    [
+      player.language,
+      player.name,
+      player.score,
+      player.streak,
+      replacePlayer,
+      scoreClient,
+    ],
   );
 
   useEffect(() => {
@@ -374,6 +385,7 @@ export default function useHomeController() {
 
   return {
     ...wordle,
+    currentLanguage: player.language,
     currentWinStreak: player.streak,
     showLegacyEndOfGameMessage:
       !showEndOfGameDialogs || showLegacyEndOfGameFeedback,

@@ -29,8 +29,8 @@ import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
   GAME_STATE_PERSIST_DEBOUNCE_MS,
   MESSAGE_VISIBILITY_DURATION_MS,
-  NO_PRESENT_HINT_AVAILABLE_MESSAGE,
-  ROW_ALREADY_FULL_MESSAGE,
+  NO_PRESENT_HINT_AVAILABLE_MESSAGE_KEY,
+  ROW_ALREADY_FULL_MESSAGE_KEY,
 } from "./constants";
 import { i18n } from "@i18n";
 import type { HintTileStatus, UseWordleOptions } from "./types";
@@ -45,13 +45,16 @@ import {
 } from "./utils";
 
 export default function useWordle(options: UseWordleOptions = {}) {
-  const { allowUnknownWords = false } = options;
+  const {
+    allowUnknownWords = false,
+    language = WORDS_DEFAULT_LANGUAGE,
+  } = options;
   const cachedWords = useMemo(
-    () => loadWordDictionaryFromCache(WORDS_DEFAULT_LANGUAGE),
-    [],
+    () => loadWordDictionaryFromCache(language),
+    [language],
   );
   const { data: dictionaryData, isLoading: dictionaryLoading } =
-    useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, cachedWords);
+    useDictionaryQuery(language, cachedWords);
 
   const dictionaryWords = useMemo(
     () =>
@@ -108,6 +111,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
   const persistenceTimeoutRef = useRef<number | null>(null);
   const latestGameStateRef = useRef(initialGameState);
+  const previousLanguageRef = useRef(language);
 
   const { sessionId, gameId, answer, guesses, current, gameOver } = gameState;
 
@@ -170,8 +174,8 @@ export default function useWordle(options: UseWordleOptions = {}) {
       return;
     }
 
-    setWordDictionary(dictionaryWords, WORDS_DEFAULT_LANGUAGE);
-  }, [dictionaryWords]);
+    setWordDictionary(dictionaryWords, language);
+  }, [dictionaryWords, language]);
 
   useEffect(() => {
     if (dictionaryLoading) {
@@ -237,6 +241,16 @@ export default function useWordle(options: UseWordleOptions = {}) {
       });
 
       if (!validation.ok) {
+        if (validation.message === "Not enough letters") {
+          showMessage(i18n.t("home.gameplay.messages.notEnoughLetters"));
+          return;
+        }
+
+        if (validation.message === "Not in word list") {
+          showMessage(i18n.t("home.gameplay.messages.notInWordList"));
+          return;
+        }
+
         showMessage(validation.message);
         return;
       }
@@ -293,7 +307,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       }
 
       if (current.length >= WORD_LENGTH) {
-        showMessage(ROW_ALREADY_FULL_MESSAGE);
+        showMessage(i18n.t(ROW_ALREADY_FULL_MESSAGE_KEY));
         return false;
       }
 
@@ -304,7 +318,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
           : getPresentHintLetter(answer, nextIndex, current);
 
       if (!letter) {
-        showMessage(NO_PRESENT_HINT_AVAILABLE_MESSAGE);
+        showMessage(i18n.t(NO_PRESENT_HINT_AVAILABLE_MESSAGE_KEY));
         return false;
       }
 
@@ -417,6 +431,15 @@ export default function useWordle(options: UseWordleOptions = {}) {
       };
     }, "immediate");
   }, [setGameStateWithPersistence]);
+
+  useEffect(() => {
+    if (previousLanguageRef.current === language) {
+      return;
+    }
+
+    previousLanguageRef.current = language;
+    resetBoard();
+  }, [language, resetBoard]);
 
   useEffect(() => {
     const persistLatestGameState = () => {

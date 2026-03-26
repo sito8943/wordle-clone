@@ -1,6 +1,7 @@
 import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
+  PlayerLanguage,
   RoundSyncEvent,
 } from "@domain/wordle";
 
@@ -9,6 +10,7 @@ export type ScoreSource = "convex" | "local";
 export type ScoreEntry = {
   id: string;
   nick: string;
+  language: PlayerLanguage;
   score: number;
   streak: number;
   createdAt: number;
@@ -18,6 +20,7 @@ export type ScoreEntry = {
 
 export type RecordScoreInput = {
   nick: string;
+  language?: PlayerLanguage;
   score: number;
   streak?: number;
   createdAt?: number;
@@ -26,6 +29,7 @@ export type RecordScoreInput = {
 
 export type UpsertPlayerProfileInput = {
   nick: string;
+  language: PlayerLanguage;
   score?: number;
   streak?: number;
   difficulty: PlayerDifficulty;
@@ -47,6 +51,7 @@ export type StoredScore = {
   localId: string;
   clientId?: string;
   nick: string;
+  language: PlayerLanguage;
   score: number;
   streak: number;
   createdAt: number;
@@ -56,6 +61,7 @@ export type StoredScore = {
 export type RemoteScore = {
   id: string;
   nick: string;
+  language?: PlayerLanguage;
   score: number;
   streak?: number;
   createdAt: number;
@@ -74,6 +80,7 @@ export type RemotePlayerProfile = {
   clientRecordId: string;
   nick: string;
   playerCode: string;
+  language: PlayerLanguage;
   score: number;
   streak: number;
   difficulty: PlayerDifficulty;
@@ -94,6 +101,7 @@ export type ScoreClientGatewayOverrides = {
 
 export type SyncRoundEventsInput = {
   nick: string;
+  language: PlayerLanguage;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
 };

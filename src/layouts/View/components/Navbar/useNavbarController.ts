@@ -24,6 +24,7 @@ const useNavbarController = () => {
       try {
         const result = await scoreClient.listTopScores(
           Math.max(env.scoreLimit, NAVBAR_TOP_TEN_LIMIT),
+          player.language,
         );
         if (!cancelled) {
           setCurrentClientRank(result.currentClientRank);
@@ -44,7 +45,14 @@ const useNavbarController = () => {
     return () => {
       cancelled = true;
     };
-  }, [location.pathname, player.code, player.name, player.score, scoreClient]);
+  }, [
+    location.pathname,
+    player.code,
+    player.language,
+    player.name,
+    player.score,
+    scoreClient,
+  ]);
 
   const rankTone = useMemo(
     () => (isCurrentClientRankLoading ? null : currentClientRank),

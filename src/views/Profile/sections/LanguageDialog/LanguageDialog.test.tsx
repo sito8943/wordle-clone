@@ -1,14 +1,8 @@
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { i18n } from "@i18n";
 import type { ProfileViewContextValue } from "@views/Profile/providers/types";
-import DifficultyChangeDialog from "./DifficultyChangeDialog";
+import { i18n } from "@i18n";
+import LanguageDialog from "./LanguageDialog";
 
 let mockProfileView: ProfileViewContextValue;
 
@@ -24,14 +18,14 @@ const buildMockProfileView = (
       name: "Player",
       code: "AB12",
       score: 14,
-      streak: 0,
+      streak: 1,
       language: "en",
       difficulty: "normal",
       keyboardPreference: "onscreen",
       showEndOfGameDialogs: true,
     },
     difficulty: "normal",
-    pendingDifficulty: "hard",
+    pendingDifficulty: "normal",
     editing: false,
     savedMessage: "",
     toggleEditing: vi.fn(),
@@ -61,52 +55,45 @@ const buildMockProfileView = (
   },
 });
 
-describe("DifficultyChangeDialog", () => {
+describe("LanguageDialog", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("does not render when not visible", () => {
-    mockProfileView = buildMockProfileView();
+  it("does not render when closed", () => {
+    mockProfileView = buildMockProfileView({
+      isLanguageDialogOpen: false,
+    });
 
-    render(<DifficultyChangeDialog />);
+    render(<LanguageDialog />);
 
     expect(
       screen.queryByRole("dialog", {
-        name: i18n.t("profile.difficultyChange.title"),
+        name: i18n.t("profile.languageDialog.title"),
       }),
-    ).toBe(null);
+    ).toBeNull();
   });
 
-  it("renders pending difficulty and confirms change", async () => {
-    const onClose = vi.fn();
-    const onConfirm = vi.fn();
+  it("changes language and submits", () => {
+    const changePendingLanguage = vi.fn();
+    const saveLanguage = vi.fn();
     mockProfileView = buildMockProfileView({
-      isDifficultyChangeConfirmationOpen: true,
-      cancelDifficultyChange: onClose,
-      confirmDifficultyChange: onConfirm,
+      isLanguageDialogOpen: true,
+      pendingLanguage: "en",
+      changePendingLanguage,
+      saveLanguage,
     });
 
-    render(<DifficultyChangeDialog />);
+    render(<LanguageDialog />);
 
-    expect(
-      screen.getByText(
-        i18n.t("profile.difficultyChange.nextDifficulty", {
-          difficulty: i18n.t("profile.difficultyOptions.hard"),
-        }),
-        { exact: false },
-      ),
-    ).toBeTruthy();
-
+    fireEvent.change(screen.getByLabelText(i18n.t("profile.labels.languageMode")), {
+      target: { value: "es" },
+    });
     fireEvent.click(
-      screen.getByRole("button", {
-        name: i18n.t("profile.difficultyChange.confirm"),
-      }),
+      screen.getByRole("button", { name: i18n.t("profile.languageDialog.save") }),
     );
 
-    await waitFor(() => {
-      expect(onConfirm).toHaveBeenCalledTimes(1);
-    });
-    expect(onClose).not.toHaveBeenCalled();
+    expect(changePendingLanguage).toHaveBeenCalledWith("es");
+    expect(saveLanguage).toHaveBeenCalledTimes(1);
   });
 });

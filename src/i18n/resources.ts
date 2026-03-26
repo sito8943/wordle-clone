@@ -82,6 +82,8 @@ export const resources = {
           score: "Score:",
           theme: "Theme",
           themeMode: "Theme mode",
+          language: "Language",
+          languageMode: "Language mode",
           keyboard: "Keyboard",
           keyboardMode: "Keyboard mode",
           difficulty: "Difficulty",
@@ -106,6 +108,18 @@ export const resources = {
           system: "System",
           light: "Light",
           dark: "Dark",
+        },
+        languageOptions: {
+          en: "English",
+          es: "Spanish",
+        },
+        languageDialog: {
+          title: "Choose language",
+          description:
+            "Select the game language. Changing language starts a new board.",
+          openAction: "Language: {{language}}",
+          save: "Apply language",
+          browserDetected: "Detected browser language: {{language}}.",
         },
         keyboardOptions: {
           onscreen: "On-screen keyboard",
@@ -193,6 +207,12 @@ export const resources = {
               present: "present",
               absent: "absent",
             },
+          },
+          messages: {
+            notEnoughLetters: "Not enough letters",
+            notInWordList: "Not in word list",
+            rowAlreadyFull: "Row is already full",
+            noHintAvailable: "No hint available for this position",
           },
         },
         toolbar: {
@@ -295,6 +315,8 @@ export const resources = {
             "Recompute checksum from current Convex words and patch existing words metadata.",
           refreshChecksum: "Refresh remote checksum",
           refreshing: "Refreshing...",
+          checksumUpdated: "Remote checksum updated to {{checksum}}.",
+          checksumRefreshError: "Could not refresh remote dictionary checksum.",
           apply: "Apply",
           cancel: "Cancel",
         },
@@ -388,6 +410,8 @@ export const resources = {
           score: "Puntuación:",
           theme: "Tema",
           themeMode: "Modo de tema",
+          language: "Idioma",
+          languageMode: "Modo de idioma",
           keyboard: "Teclado",
           keyboardMode: "Modo de teclado",
           difficulty: "Dificultad",
@@ -412,6 +436,18 @@ export const resources = {
           system: "Sistema",
           light: "Claro",
           dark: "Oscuro",
+        },
+        languageOptions: {
+          en: "Inglés",
+          es: "Español",
+        },
+        languageDialog: {
+          title: "Elegir idioma",
+          description:
+            "Selecciona el idioma del juego. Al cambiarlo se inicia un tablero nuevo.",
+          openAction: "Idioma: {{language}}",
+          save: "Aplicar idioma",
+          browserDetected: "Idioma detectado del navegador: {{language}}.",
         },
         keyboardOptions: {
           onscreen: "Teclado en pantalla",
@@ -500,6 +536,12 @@ export const resources = {
               absent: "ausente",
             },
           },
+          messages: {
+            notEnoughLetters: "Faltan letras",
+            notInWordList: "No está en la lista de palabras",
+            rowAlreadyFull: "La fila ya está completa",
+            noHintAvailable: "No hay pista disponible para esta posición",
+          },
         },
         toolbar: {
           wordListAriaLabel: "Lista de palabras",
@@ -581,7 +623,7 @@ export const resources = {
           },
         },
         defeatDialog: {
-          title: "Game Over",
+          title: "Fin de partida",
           description: "Esta ronda ha terminado.",
           bestStreak: "Mejor racha: {{count}}",
           closingMessage: "Suerte la próxima vez.",
@@ -605,6 +647,9 @@ export const resources = {
             "Recalcula el checksum a partir de las palabras actuales de Convex y actualiza sus metadatos.",
           refreshChecksum: "Actualizar checksum remoto",
           refreshing: "Actualizando...",
+          checksumUpdated: "Checksum remoto actualizado a {{checksum}}.",
+          checksumRefreshError:
+            "No se ha podido actualizar el checksum remoto del diccionario.",
           apply: "Aplicar",
           cancel: "Cancelar",
         },

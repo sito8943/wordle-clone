@@ -428,6 +428,7 @@ describe("ScoreClient", () => {
 
     const profile = await client.upsertPlayerProfile({
       nick: "Ana",
+      language: "en",
       score: 14,
       streak: 3,
       difficulty: "hard",
@@ -533,6 +534,7 @@ describe("ScoreClient", () => {
 
     expect(query).toHaveBeenNthCalledWith(2, "scores:listTopScores", {
       limit: 10,
+      language: "en",
       clientId: expect.any(String),
       clientRecordId: "remote-record",
     });
@@ -575,6 +577,7 @@ describe("ScoreClient", () => {
 
     await client.syncRoundEvents({
       nick: "Ana",
+      language: "en",
       difficulty: "normal",
       keyboardPreference: "onscreen",
     });

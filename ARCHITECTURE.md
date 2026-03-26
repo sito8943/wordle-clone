@@ -162,6 +162,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:hint-usage`: snapshot for hint usage (`gameId + derived gameKey + hintsUsed`) to keep hint limits after reload without persisting `answer`.
 - `player`: player profile and score/streak metadata, including recovery `code`.
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, and `showEndOfGameDialogs`.
+  - It also stores the selected `language` (`en` or `es`) used by i18n, dictionary loading, and scoreboard segmentation.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp) for offline remote synchronization.
 - `wordle:dictionary:en`: cached dictionary words.
@@ -179,7 +180,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations, keeps local score as cache, and syncs confirmed victories through the offline event queue
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
-4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible.
+4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible, scoped to the active player language.
 5. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
 
 ## Testing Layout

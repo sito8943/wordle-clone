@@ -5,6 +5,7 @@ import {
   readPersistedGameState,
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
+  type PlayerLanguage,
 } from "@domain/wordle";
 import { useApi, usePlayer } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
@@ -22,6 +23,7 @@ export default function useProfileController() {
     refreshCurrentPlayerProfile,
     updatePlayer,
     updatePlayerDifficulty,
+    updatePlayerLanguage,
     updatePlayerKeyboardPreference,
     updatePlayerShowEndOfGameDialogs,
   } = usePlayer();
@@ -33,6 +35,10 @@ export default function useProfileController() {
   const [savedMessage, setSavedMessage] = useState("");
   const [pendingDifficulty, setPendingDifficulty] =
     useState<PlayerDifficulty | null>(null);
+  const [isLanguageDialogOpen, setIsLanguageDialogOpen] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState<PlayerLanguage>(
+    player.language,
+  );
 
   useEffect(() => {
     if (player.name.length === 0 || player.code.length > 0) {
@@ -135,6 +141,29 @@ export default function useProfileController() {
     [player.showEndOfGameDialogs, updatePlayerShowEndOfGameDialogs],
   );
 
+  const openLanguageDialog = useCallback(() => {
+    setPendingLanguage(player.language);
+    setIsLanguageDialogOpen(true);
+  }, [player.language]);
+
+  const closeLanguageDialog = useCallback(() => {
+    setPendingLanguage(player.language);
+    setIsLanguageDialogOpen(false);
+  }, [player.language]);
+
+  const changePendingLanguage = useCallback((nextLanguage: PlayerLanguage) => {
+    setPendingLanguage(nextLanguage);
+  }, []);
+
+  const saveLanguage = useCallback(() => {
+    if (pendingLanguage !== player.language) {
+      clearPersistedGameState();
+      updatePlayerLanguage(pendingLanguage);
+    }
+
+    setIsLanguageDialogOpen(false);
+  }, [pendingLanguage, player.language, updatePlayerLanguage]);
+
   const changeDifficulty = useCallback(
     (nextDifficulty: PlayerDifficulty) => {
       if (nextDifficulty === player.difficulty) {
@@ -184,8 +213,15 @@ export default function useProfileController() {
     toggleStartAnimations,
     themePreference,
     changeThemePreference,
+    language: player.language,
     keyboardPreference: player.keyboardPreference,
     changeKeyboardPreference,
+    isLanguageDialogOpen,
+    pendingLanguage,
+    openLanguageDialog,
+    closeLanguageDialog,
+    changePendingLanguage,
+    saveLanguage,
     showEndOfGameDialogs: player.showEndOfGameDialogs,
     changeShowEndOfGameDialogs,
     changeDifficulty,

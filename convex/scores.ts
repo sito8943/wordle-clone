@@ -27,6 +27,11 @@ const normalizeScore = (value: number): number =>
 const normalizeStreak = (value: number | undefined): number =>
   Math.max(0, Math.floor(value ?? 0));
 
+type SupportedLanguage = "en" | "es";
+
+const normalizeLanguage = (value?: string): SupportedLanguage =>
+  value === "es" ? "es" : "en";
+
 const normalizeDifficulty = (value?: string): string =>
   value === "easy" ||
   value === "normal" ||
@@ -82,8 +87,12 @@ type ScoreRecord = {
   clientId?: string;
   clientRecordId?: string;
   playerCode?: string;
+  language?: string;
   score: number;
   streak?: number;
+  scoreByLanguage?: Partial<Record<SupportedLanguage, number>>;
+  streakByLanguage?: Partial<Record<SupportedLanguage, number>>;
+  createdAtByLanguage?: Partial<Record<SupportedLanguage, number>>;
   difficulty?: string;
   keyboardPreference?: string;
   createdAt: number;
@@ -117,6 +126,82 @@ type ScoresCtx = {
     query: (tableName: string) => ScoreQueryBuilder;
     insert: (...args: unknown[]) => Promise<string>;
     patch: (...args: unknown[]) => Promise<void>;
+  };
+};
+
+type LanguageStats = {
+  score: number;
+  streak: number;
+  createdAt: number;
+};
+
+const getLanguageStats = (
+  record: ScoreRecord,
+  language: SupportedLanguage,
+): LanguageStats => {
+  const legacyLanguage = normalizeLanguage(record.language);
+  const score =
+    typeof record.scoreByLanguage?.[language] === "number"
+      ? normalizeScore(record.scoreByLanguage[language] as number)
+      : language === legacyLanguage
+        ? normalizeScore(record.score)
+        : 0;
+  const streak =
+    typeof record.streakByLanguage?.[language] === "number"
+      ? normalizeStreak(record.streakByLanguage[language] as number)
+      : language === legacyLanguage
+        ? normalizeStreak(record.streak)
+        : 0;
+  const createdAt =
+    typeof record.createdAtByLanguage?.[language] === "number"
+      ? Math.floor(record.createdAtByLanguage[language] as number)
+      : language === legacyLanguage
+        ? record.createdAt
+        : record.createdAt;
+
+  return { score, streak, createdAt };
+};
+
+const withLanguageStats = (
+  record: ScoreRecord,
+  language: SupportedLanguage,
+  stats: LanguageStats,
+) => {
+  const legacyLanguage = normalizeLanguage(record.language);
+  const nextScoreByLanguage: Partial<Record<SupportedLanguage, number>> = {
+    ...(record.scoreByLanguage ?? {}),
+  };
+  const nextStreakByLanguage: Partial<Record<SupportedLanguage, number>> = {
+    ...(record.streakByLanguage ?? {}),
+  };
+  const nextCreatedAtByLanguage: Partial<Record<SupportedLanguage, number>> = {
+    ...(record.createdAtByLanguage ?? {}),
+  };
+
+  if (nextScoreByLanguage[legacyLanguage] === undefined) {
+    nextScoreByLanguage[legacyLanguage] = normalizeScore(record.score);
+  }
+
+  if (nextStreakByLanguage[legacyLanguage] === undefined) {
+    nextStreakByLanguage[legacyLanguage] = normalizeStreak(record.streak);
+  }
+
+  if (nextCreatedAtByLanguage[legacyLanguage] === undefined) {
+    nextCreatedAtByLanguage[legacyLanguage] = Math.floor(record.createdAt);
+  }
+
+  nextScoreByLanguage[language] = normalizeScore(stats.score);
+  nextStreakByLanguage[language] = normalizeStreak(stats.streak);
+  nextCreatedAtByLanguage[language] = Math.floor(stats.createdAt);
+
+  return {
+    language,
+    score: normalizeScore(stats.score),
+    streak: normalizeStreak(stats.streak),
+    createdAt: Math.floor(stats.createdAt),
+    scoreByLanguage: nextScoreByLanguage,
+    streakByLanguage: nextStreakByLanguage,
+    createdAtByLanguage: nextCreatedAtByLanguage,
   };
 };
 
@@ -156,18 +241,26 @@ const assertNickAvailable = (
   }
 };
 
-const buildPlayerProfile = (record: ScoreRecord) => ({
-  id: record._id,
-  clientId: record.clientId ?? null,
-  clientRecordId: record.clientRecordId ?? record._id,
-  nick: record.nick,
-  playerCode: normalizeCode(record.playerCode ?? ""),
-  score: normalizeScore(record.score),
-  streak: normalizeStreak(record.streak),
-  difficulty: normalizeDifficulty(record.difficulty),
-  keyboardPreference: normalizeKeyboardPreference(record.keyboardPreference),
-  createdAt: record.createdAt,
-});
+const buildPlayerProfile = (
+  record: ScoreRecord,
+  language: SupportedLanguage = normalizeLanguage(record.language),
+) => {
+  const stats = getLanguageStats(record, language);
+
+  return {
+    id: record._id,
+    clientId: record.clientId ?? null,
+    clientRecordId: record.clientRecordId ?? record._id,
+    nick: record.nick,
+    playerCode: normalizeCode(record.playerCode ?? ""),
+    language,
+    score: stats.score,
+    streak: stats.streak,
+    difficulty: normalizeDifficulty(record.difficulty),
+    keyboardPreference: normalizeKeyboardPreference(record.keyboardPreference),
+    createdAt: stats.createdAt,
+  };
+};
 
 const roundSyncEventValidator = v.union(
   v.object({
@@ -246,11 +339,13 @@ const upsertProfileRecord = async (
     clientId?: string;
     clientRecordId?: string;
     nick: string;
+    language?: string;
     difficulty?: string;
     keyboardPreference?: string;
   },
 ) => {
   const nick = normalizeNick(args.nick);
+  const language = normalizeLanguage(args.language);
   const existing = await resolveProfileRecord(
     ctx,
     args.clientRecordId,
@@ -266,11 +361,13 @@ const upsertProfileRecord = async (
   );
 
   if (existing) {
+    const languageStats = getLanguageStats(existing, language);
     const patch = {
       clientId: args.clientId ?? existing.clientId,
       clientRecordId:
         args.clientRecordId ?? existing.clientRecordId ?? existing._id,
       nick,
+      ...withLanguageStats(existing, language, languageStats),
       difficulty: normalizeDifficulty(args.difficulty ?? existing.difficulty),
       keyboardPreference: normalizeKeyboardPreference(
         args.keyboardPreference ?? existing.keyboardPreference,
@@ -282,6 +379,10 @@ const upsertProfileRecord = async (
       existing.clientId !== patch.clientId ||
       existing.clientRecordId !== patch.clientRecordId ||
       existing.nick !== patch.nick ||
+      normalizeLanguage(existing.language) !== patch.language ||
+      existing.score !== patch.score ||
+      normalizeStreak(existing.streak) !== patch.streak ||
+      existing.createdAt !== patch.createdAt ||
       existing.difficulty !== patch.difficulty ||
       existing.keyboardPreference !== patch.keyboardPreference ||
       normalizeCode(existing.playerCode ?? "") !== patch.playerCode
@@ -298,16 +399,30 @@ const upsertProfileRecord = async (
   const createdAt = Date.now();
   const clientRecordId = args.clientRecordId ?? createClientRecordId();
   const playerCode = await ensureUniquePlayerCode(ctx);
+  const baseLanguageStats = withLanguageStats(
+    {
+      ...({
+        _id: "",
+        nick,
+        score: 0,
+        streak: 0,
+        createdAt,
+      } as ScoreRecord),
+      scoreByLanguage: {},
+      streakByLanguage: {},
+      createdAtByLanguage: {},
+    },
+    language,
+    { score: 0, streak: 0, createdAt },
+  );
   const insertedId = await ctx.db.insert("scores", {
     clientId: args.clientId,
     clientRecordId,
     nick,
     playerCode,
-    score: 0,
-    streak: 0,
+    ...baseLanguageStats,
     difficulty: normalizeDifficulty(args.difficulty),
     keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
-    createdAt,
   });
 
   return {
@@ -316,11 +431,9 @@ const upsertProfileRecord = async (
     clientRecordId,
     nick,
     playerCode,
-    score: 0,
-    streak: 0,
+    ...baseLanguageStats,
     difficulty: normalizeDifficulty(args.difficulty),
     keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
-    createdAt,
   };
 };
 
@@ -330,6 +443,7 @@ const upsertScoreRecord = async (
     clientId?: string;
     clientRecordId?: string;
     nick: string;
+    language?: string;
     score: number;
     streak?: number;
     createdAt?: number;
@@ -337,6 +451,7 @@ const upsertScoreRecord = async (
   overwriteExisting: boolean,
 ) => {
   const nick = normalizeNick(args.nick);
+  const language = normalizeLanguage(args.language);
   const score = normalizeScore(args.score);
   const streak = normalizeStreak(args.streak);
   const createdAt = args.createdAt ?? Date.now();
@@ -355,21 +470,24 @@ const upsertScoreRecord = async (
   );
 
   if (existing) {
+    const existingLanguageStats = getLanguageStats(existing, language);
     const nextScore = overwriteExisting
       ? score
-      : Math.max(existing.score, score);
+      : Math.max(existingLanguageStats.score, score);
     const nextCreatedAt = overwriteExisting
       ? createdAt
-      : nextScore > existing.score
+      : nextScore > existingLanguageStats.score
         ? createdAt
-        : existing.createdAt;
+        : existingLanguageStats.createdAt;
     const nextPatch = {
       clientId: args.clientId ?? existing.clientId,
       clientRecordId: args.clientRecordId ?? existing.clientRecordId,
       nick,
-      score: nextScore,
-      streak,
-      createdAt: nextCreatedAt,
+      ...withLanguageStats(existing, language, {
+        score: nextScore,
+        streak,
+        createdAt: nextCreatedAt,
+      }),
     };
 
     if (
@@ -390,11 +508,19 @@ const upsertScoreRecord = async (
     clientId: args.clientId,
     clientRecordId: args.clientRecordId,
     nick,
-    score,
-    streak,
+    ...withLanguageStats(
+      {
+        _id: "",
+        nick,
+        score: 0,
+        streak: 0,
+        createdAt,
+      },
+      language,
+      { score, streak, createdAt },
+    ),
     difficulty: DEFAULT_DIFFICULTY,
     keyboardPreference: DEFAULT_KEYBOARD_PREFERENCE,
-    createdAt,
   });
 };
 
@@ -403,6 +529,7 @@ export const addScore = mutation({
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
+    language: v.optional(v.string()),
     score: v.number(),
     streak: v.optional(v.number()),
     createdAt: v.optional(v.number()),
@@ -415,6 +542,7 @@ export const updateScore = mutation({
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
+    language: v.optional(v.string()),
     score: v.number(),
     streak: v.optional(v.number()),
     createdAt: v.optional(v.number()),
@@ -427,6 +555,7 @@ export const upsertPlayerProfile = mutation({
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
+    language: v.optional(v.string()),
     score: v.optional(v.number()),
     streak: v.optional(v.number()),
     difficulty: v.optional(v.string()),
@@ -438,9 +567,11 @@ export const upsertPlayerProfile = mutation({
         clientId: args.clientId,
         clientRecordId: args.clientRecordId,
         nick: args.nick,
+        language: args.language,
         difficulty: args.difficulty,
         keyboardPreference: args.keyboardPreference,
       }),
+      normalizeLanguage(args.language),
     ),
 });
 
@@ -471,6 +602,7 @@ export const getCurrentPlayerProfile = query({
   args: {
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
+    language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await resolveProfileRecord(
@@ -479,7 +611,9 @@ export const getCurrentPlayerProfile = query({
       args.clientId,
     );
 
-    return existing ? buildPlayerProfile(existing) : null;
+    return existing
+      ? buildPlayerProfile(existing, normalizeLanguage(args.language))
+      : null;
   },
 });
 
@@ -488,11 +622,13 @@ export const syncRoundEvents = mutation({
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
+    language: v.optional(v.string()),
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
     events: v.array(roundSyncEventValidator),
   },
   handler: async (ctx, args) => {
+    const language = normalizeLanguage(args.language);
     const orderedEvents = [...args.events]
       .filter((event) => event.version === 2)
       .sort((left, right) => left.happenedAt - right.happenedAt);
@@ -501,13 +637,15 @@ export const syncRoundEvents = mutation({
       clientId: args.clientId,
       clientRecordId: args.clientRecordId,
       nick: args.nick,
+      language,
       difficulty: args.difficulty,
       keyboardPreference: args.keyboardPreference,
     });
 
-    let nextScore = normalizeScore(profile.score);
-    let nextStreak = normalizeStreak(profile.streak);
-    let nextCreatedAt = profile.createdAt;
+    const profileLanguageStats = getLanguageStats(profile, language);
+    let nextScore = normalizeScore(profileLanguageStats.score);
+    let nextStreak = normalizeStreak(profileLanguageStats.streak);
+    let nextCreatedAt = profileLanguageStats.createdAt;
     let hasChanges = false;
 
     for (const event of orderedEvents) {
@@ -544,19 +682,27 @@ export const syncRoundEvents = mutation({
     }
 
     if (hasChanges) {
-      await ctx.db.patch(profile._id, {
+      const nextStats = withLanguageStats(profile, language, {
         score: nextScore,
         streak: nextStreak,
         createdAt: nextCreatedAt,
       });
+      await ctx.db.patch(profile._id, {
+        ...nextStats,
+      });
     }
 
-    return buildPlayerProfile({
-      ...profile,
-      score: nextScore,
-      streak: nextStreak,
-      createdAt: nextCreatedAt,
-    });
+    return buildPlayerProfile(
+      {
+        ...profile,
+        ...withLanguageStats(profile, language, {
+          score: nextScore,
+          streak: nextStreak,
+          createdAt: nextCreatedAt,
+        }),
+      },
+      language,
+    );
   },
 });
 
@@ -616,10 +762,12 @@ export const isNickAvailable = query({
 export const listTopScores = query({
   args: {
     limit: v.optional(v.number()),
+    language: v.optional(v.string()),
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const language = normalizeLanguage(args.language);
     const limit = Math.max(
       1,
       Math.min(MAX_LIMIT, Math.floor(args.limit ?? DEFAULT_LIMIT)),
@@ -631,13 +779,31 @@ export const listTopScores = query({
     for (const entry of scores) {
       const key = nickKey(entry.nick);
       const current = byNick.get(key);
+      const entryStats = getLanguageStats(entry, language);
+      const currentStats = current ? getLanguageStats(current, language) : null;
 
-      if (!current || scoreSorter(entry, current) < 0) {
+      if (
+        !current ||
+        scoreSorter(
+          { score: entryStats.score, createdAt: entryStats.createdAt },
+          {
+            score: currentStats?.score ?? 0,
+            createdAt: currentStats?.createdAt ?? current.createdAt,
+          },
+        ) < 0
+      ) {
         byNick.set(key, entry);
       }
     }
 
-    const sortedScores = [...byNick.values()].sort(scoreSorter);
+    const sortedScores = [...byNick.values()].sort((left, right) => {
+      const leftStats = getLanguageStats(left, language);
+      const rightStats = getLanguageStats(right, language);
+      return scoreSorter(
+        { score: leftStats.score, createdAt: leftStats.createdAt },
+        { score: rightStats.score, createdAt: rightStats.createdAt },
+      );
+    });
     const currentProfile = await resolveProfileRecord(
       ctx,
       args.clientRecordId,
@@ -653,31 +819,39 @@ export const listTopScores = query({
     const currentClientScore =
       currentClientIndex >= 0 ? sortedScores[currentClientIndex] : null;
 
-    const mappedTopScores = sortedScores.slice(0, limit).map((score) => ({
-      id: score._id,
-      nick: score.nick,
-      score: score.score,
-      streak: normalizeStreak(score.streak),
-      createdAt: score.createdAt,
-      isCurrentClient:
-        currentProfile !== null &&
-        (score._id === currentProfile._id ||
-          score.clientRecordId === currentProfile.clientRecordId),
-    }));
+    const mappedTopScores = sortedScores.slice(0, limit).map((score) => {
+      const stats = getLanguageStats(score, language);
+      return {
+        id: score._id,
+        nick: score.nick,
+        language,
+        score: stats.score,
+        streak: normalizeStreak(stats.streak),
+        createdAt: stats.createdAt,
+        isCurrentClient:
+          currentProfile !== null &&
+          (score._id === currentProfile._id ||
+            score.clientRecordId === currentProfile.clientRecordId),
+      };
+    });
 
     return {
       scores: mappedTopScores,
       currentClientRank:
         currentClientIndex >= 0 ? currentClientIndex + 1 : null,
       currentClientEntry: currentClientScore
-        ? {
-            id: currentClientScore._id,
-            nick: currentClientScore.nick,
-            score: currentClientScore.score,
-            streak: normalizeStreak(currentClientScore.streak),
-            createdAt: currentClientScore.createdAt,
-            isCurrentClient: true,
-          }
+        ? (() => {
+            const stats = getLanguageStats(currentClientScore, language);
+            return {
+              id: currentClientScore._id,
+              nick: currentClientScore.nick,
+              language,
+              score: stats.score,
+              streak: normalizeStreak(stats.streak),
+              createdAt: stats.createdAt,
+              isCurrentClient: true,
+            };
+          })()
         : null,
     };
   },

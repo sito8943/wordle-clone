@@ -16,6 +16,8 @@ const SettingsSection = () => {
       toggleStartAnimations,
       themePreference,
       changeThemePreference,
+      language,
+      openLanguageDialog,
       keyboardPreference,
       changeKeyboardPreference,
       showEndOfGameDialogs,
@@ -56,6 +58,11 @@ const SettingsSection = () => {
           <option value="light">{t("profile.themeOptions.light")}</option>
           <option value="dark">{t("profile.themeOptions.dark")}</option>
         </select>
+        <Button onClick={openLanguageDialog} variant="outline" color="neutral">
+          {t("profile.languageDialog.openAction", {
+            language: t(`profile.languageOptions.${language}`),
+          })}
+        </Button>
       </div>
       <div id="end-dialogs" className="mt-4 max-w-xl">
         <div className="flex items-start gap-3">

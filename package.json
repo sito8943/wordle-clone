@@ -17,7 +17,7 @@
     "preview": "vite preview",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
-    "convex:backfill-player-codes": "node scripts/backfill-player-codes.mjs",
+    "convex:seed-es": "node scripts/seed-spanish-words.mjs",
     "firebase:deploy": "firebase deploy --only hosting:sito-wordle"
   },
   "dependencies": {

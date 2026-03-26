@@ -36,7 +36,7 @@ describe("useTopScoresQuery", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(listTopScores).toHaveBeenCalledWith(env.scoreLimit);
+    expect(listTopScores).toHaveBeenCalledWith(env.scoreLimit, "en");
   });
 
   it("uses the provided limit and exposes returned data", async () => {
@@ -70,7 +70,7 @@ describe("useTopScoresQuery", () => {
       expect(result.current.data?.currentClientRank).toBe(7);
     });
 
-    expect(listTopScores).toHaveBeenCalledWith(3);
+    expect(listTopScores).toHaveBeenCalledWith(3, "en");
     expect(result.current.data?.scores).toHaveLength(1);
     expect(result.current.data?.currentClientRank).toBe(7);
   });

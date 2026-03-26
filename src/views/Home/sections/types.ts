@@ -100,6 +100,7 @@ export type DialogsSectionProps = Pick<
   | "cancelRefreshBoard"
   | "confirmRefreshBoard"
   | "dictionaryWords"
+  | "currentLanguage"
   | "closeWordsDialog"
   | "closeHelpDialog"
   | "closeDeveloperConsoleDialog"

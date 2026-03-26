@@ -2,6 +2,7 @@ import type {
   Player,
   PlayerDifficulty,
   PlayerKeyboardPreference,
+  PlayerLanguage,
 } from "@domain/wordle";
 import { DEFAULT_PLAYER } from "./constants";
 
@@ -63,6 +64,23 @@ const normalizePlayerKeyboardPreference = (
   return value;
 };
 
+const normalizePlayerLanguage = (value: unknown): PlayerLanguage => {
+  if (value === "en" || value === "es") {
+    return value;
+  }
+
+  if (typeof navigator === "undefined") {
+    return DEFAULT_PLAYER.language;
+  }
+
+  const browserLanguage = navigator.language.trim().toLowerCase();
+  if (browserLanguage.startsWith("es")) {
+    return "es";
+  }
+
+  return DEFAULT_PLAYER.language;
+};
+
 const normalizeShowEndOfGameDialogs = (value: unknown): boolean => {
   if (typeof value !== "boolean") {
     return DEFAULT_PLAYER.showEndOfGameDialogs;
@@ -84,6 +102,7 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     code: normalizePlayerCode(value.code),
     score: normalizeCounter(value.score),
     streak: normalizeCounter(value.streak),
+    language: normalizePlayerLanguage(value.language),
     difficulty: normalizePlayerDifficulty(value.difficulty),
     keyboardPreference: normalizePlayerKeyboardPreference(
       value.keyboardPreference,
@@ -106,6 +125,7 @@ export const arePlayersEqual = (
     normalizedLeft.code === normalizedRight.code &&
     normalizedLeft.score === normalizedRight.score &&
     normalizedLeft.streak === normalizedRight.streak &&
+    normalizedLeft.language === normalizedRight.language &&
     normalizedLeft.difficulty === normalizedRight.difficulty &&
     normalizedLeft.keyboardPreference === normalizedRight.keyboardPreference &&
     normalizedLeft.showEndOfGameDialogs === normalizedRight.showEndOfGameDialogs
@@ -122,6 +142,7 @@ export const isStoredPlayerNormalized = (
     value?.code === normalized.code &&
     value?.score === normalized.score &&
     value?.streak === normalized.streak &&
+    value?.language === normalized.language &&
     value?.difficulty === normalized.difficulty &&
     value?.keyboardPreference === normalized.keyboardPreference &&
     value?.showEndOfGameDialogs === normalized.showEndOfGameDialogs

@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ScoreEntry, ScoreSource } from "@api/score";
 import { env } from "@config";
 import { i18n } from "@i18n";
-import { useApi } from "@providers";
+import { useApi, usePlayer } from "@providers";
 import { queryKeys } from "@hooks";
 import { formatDate } from "@hooks/utils";
 import type { ScoreboardRowEntry } from "./types";
@@ -11,13 +11,14 @@ import useTopScoresQuery from "./useTopScoresQuery";
 
 export default function useScoreboardController() {
   const { convexEnabled } = useApi();
+  const { player } = usePlayer();
   const queryClient = useQueryClient();
   const {
     data,
     isLoading,
     error: topScoresError,
     refetch,
-  } = useTopScoresQuery(env.scoreLimit);
+  } = useTopScoresQuery(env.scoreLimit, player.language);
   const scores = useMemo<ScoreEntry[]>(
     () => data?.scores ?? [],
     [data?.scores],

@@ -2,6 +2,7 @@ import type {
   Player,
   PlayerDifficulty,
   PlayerKeyboardPreference,
+  PlayerLanguage,
 } from "@domain/wordle";
 
 export type PlayerContextType = {
@@ -14,6 +15,7 @@ export type PlayerContextType = {
   updatePlayerKeyboardPreference: (
     preference: PlayerKeyboardPreference,
   ) => void;
+  updatePlayerLanguage: (language: PlayerLanguage) => void;
   updatePlayerShowEndOfGameDialogs: (showDialogs: boolean) => void;
   commitVictory: (points: number, wonAt?: number) => Promise<void>;
   commitLoss: () => Promise<void>;

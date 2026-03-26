@@ -34,6 +34,7 @@ const useHomeSections = (
     confirmRefreshBoard,
     continuePreviousBoard,
     current,
+    currentLanguage,
     currentWinStreak,
   } = controller;
   const {
@@ -234,6 +235,7 @@ const useHomeSections = (
       cancelRefreshBoard,
       confirmRefreshBoard,
       dictionaryWords,
+      currentLanguage,
       closeWordsDialog,
       closeHelpDialog,
       closeDeveloperConsoleDialog,
@@ -254,6 +256,7 @@ const useHomeSections = (
       closeWordsDialog,
       confirmRefreshBoard,
       continuePreviousBoard,
+      currentLanguage,
       dictionaryChecksumMessage,
       dictionaryChecksumMessageKind,
       dictionaryWords,

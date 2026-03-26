@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys, useLocalStorage } from "@hooks";
+import { i18n } from "@i18n";
 import { PlayerContext } from "./PlayerContext";
 import { DEFAULT_PLAYER } from "./constants";
 import type { ProviderProps } from "../types";
@@ -15,6 +16,7 @@ import type {
   Player,
   PlayerDifficulty,
   PlayerKeyboardPreference,
+  PlayerLanguage,
   RoundSyncEvent,
 } from "@domain/wordle";
 
@@ -29,6 +31,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   const player = useMemo(() => normalizePlayer(storedPlayer), [storedPlayer]);
   const didHydrateRemoteRef = useRef(false);
   const previousPreferencesRef = useRef({
+    language: player.language,
     difficulty: player.difficulty,
     keyboardPreference: player.keyboardPreference,
   });
@@ -39,6 +42,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       playerCode: string;
       score: number;
       streak: number;
+      language: PlayerLanguage;
       difficulty: PlayerDifficulty;
       keyboardPreference: PlayerKeyboardPreference;
     }) => {
@@ -51,12 +55,14 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           code: remoteProfile.playerCode,
           score: remoteProfile.score,
           streak: remoteProfile.streak,
+          language: remoteProfile.language,
           difficulty: remoteProfile.difficulty,
           keyboardPreference: remoteProfile.keyboardPreference,
           showEndOfGameDialogs: normalizedPrevious.showEndOfGameDialogs,
         };
 
         previousPreferencesRef.current = {
+          language: nextPlayer.language,
           difficulty: nextPlayer.difficulty,
           keyboardPreference: nextPlayer.keyboardPreference,
         };
@@ -94,6 +100,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     async (currentPlayer: Player) => {
       const syncedProfile = await scoreClient.syncRoundEvents({
         nick: currentPlayer.name,
+        language: currentPlayer.language,
         difficulty: currentPlayer.difficulty,
         keyboardPreference: currentPlayer.keyboardPreference,
       });
@@ -119,6 +126,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
       const remoteProfile = await scoreClient.upsertPlayerProfile({
         nick: normalizedName,
+        language: current.language,
         difficulty: current.difficulty,
         keyboardPreference: current.keyboardPreference,
       });
@@ -128,6 +136,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         ...current,
         name: remoteProfile.nick,
         code: remoteProfile.playerCode,
+        language: remoteProfile.language,
       });
     },
     [applyRemoteProfile, scoreClient, storedPlayer, syncQueuedRoundEvents],
@@ -183,6 +192,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,
+        language: nextPlayer.language,
         score: nextPlayer.score,
         streak: nextPlayer.streak,
         createdAt: wonAt,
@@ -222,6 +232,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     setStoredPlayer(nextPlayer);
     scoreClient.cachePlayerScore({
       nick: nextPlayer.name,
+      language: nextPlayer.language,
       score: nextPlayer.score,
       streak: nextPlayer.streak,
       overwriteExisting: true,
@@ -280,6 +291,24 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [setStoredPlayer],
   );
 
+  const updatePlayerLanguage = useCallback(
+    (language: PlayerLanguage) => {
+      setStoredPlayer((prev) => {
+        const normalized = normalizePlayer(prev);
+        if (normalized.language === language) {
+          if (prev.language === language) {
+            return prev;
+          }
+
+          return normalized;
+        }
+
+        return { ...normalized, language };
+      });
+    },
+    [setStoredPlayer],
+  );
+
   const updatePlayerShowEndOfGameDialogs = useCallback(
     (showDialogs: boolean) => {
       setStoredPlayer((prev) => {
@@ -307,6 +336,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
+      updatePlayerLanguage,
       updatePlayerShowEndOfGameDialogs,
       commitVictory,
       commitLoss,
@@ -319,6 +349,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       replacePlayer,
       updatePlayerDifficulty,
       updatePlayerKeyboardPreference,
+      updatePlayerLanguage,
       updatePlayerShowEndOfGameDialogs,
       commitVictory,
       commitLoss,
@@ -328,6 +359,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   useEffect(() => {
     if (player.name === DEFAULT_PLAYER.name) {
       previousPreferencesRef.current = {
+        language: player.language,
         difficulty: player.difficulty,
         keyboardPreference: player.keyboardPreference,
       };
@@ -362,18 +394,20 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   useEffect(() => {
     const previous = previousPreferencesRef.current;
+    const languageChanged = player.language !== previous.language;
     const difficultyChanged = player.difficulty !== previous.difficulty;
     const keyboardPreferenceChanged =
       player.keyboardPreference !== previous.keyboardPreference;
 
     previousPreferencesRef.current = {
+      language: player.language,
       difficulty: player.difficulty,
       keyboardPreference: player.keyboardPreference,
     };
 
     if (
       player.name === DEFAULT_PLAYER.name ||
-      (!difficultyChanged && !keyboardPreferenceChanged)
+      (!languageChanged && !difficultyChanged && !keyboardPreferenceChanged)
     ) {
       return;
     }
@@ -381,12 +415,21 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     void scoreClient
       .upsertPlayerProfile({
         nick: player.name,
+        language: player.language,
         difficulty: player.difficulty,
         keyboardPreference: player.keyboardPreference,
       })
       .then((remoteProfile) => applyRemoteProfile(remoteProfile))
       .catch(() => undefined);
   }, [applyRemoteProfile, player, scoreClient]);
+
+  useEffect(() => {
+    if (i18n.language === player.language) {
+      return;
+    }
+
+    void i18n.changeLanguage(player.language).catch(() => undefined);
+  }, [player.language]);
 
   return (
     <PlayerContext.Provider value={contextValue}>

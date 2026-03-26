@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { ProfileViewProvider } from "./providers";
 import {
   DifficultyChangeDialog,
+  LanguageDialog,
   ProfileEditorSection,
   ProfileHeader,
   RecoverySection,
@@ -12,6 +13,7 @@ const ProfileContent = (): JSX.Element => {
   return (
     <main className="page-centered gap-10">
       <DifficultyChangeDialog />
+      <LanguageDialog />
       <ProfileHeader />
       <ProfileEditorSection />
       <SettingsSection />

@@ -7,8 +7,27 @@ export default defineSchema({
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
     playerCode: v.optional(v.string()),
+    language: v.optional(v.string()),
     score: v.number(),
     streak: v.optional(v.number()),
+    scoreByLanguage: v.optional(
+      v.object({
+        en: v.optional(v.number()),
+        es: v.optional(v.number()),
+      }),
+    ),
+    streakByLanguage: v.optional(
+      v.object({
+        en: v.optional(v.number()),
+        es: v.optional(v.number()),
+      }),
+    ),
+    createdAtByLanguage: v.optional(
+      v.object({
+        en: v.optional(v.number()),
+        es: v.optional(v.number()),
+      }),
+    ),
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
     createdAt: v.number(),
@@ -16,6 +35,7 @@ export default defineSchema({
     .index("by_client_id", ["clientId"])
     .index("by_created_at", ["createdAt"])
     .index("by_score", ["score"])
+    .index("by_language", ["language"])
     .index("by_client_record_id", ["clientRecordId"])
     .index("by_player_code", ["playerCode"]),
   scoreEvents: defineTable({
