@@ -877,9 +877,7 @@ describe("App", () => {
     });
   });
 
-  it(
-    "keeps hint consumed after reload before first submitted row",
-    async () => {
+  it("keeps hint consumed after reload before first submitted row", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -917,9 +915,7 @@ describe("App", () => {
       { timeout: 10_000 },
     );
     expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
-    },
-    15_000,
-  );
+  }, 15_000);
 
   it("shares consumed hint across tabs even with different session ids", async () => {
     localStorage.setItem(
