@@ -60,63 +60,63 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 
 ### Core Gameplay
 
-| Constant | Value | Source |
-| --- | --- | --- |
-| `WORD_LENGTH` | `5` | `src/domain/wordle/constants.ts` |
-| `MAX_GUESSES` | `6` | `src/domain/wordle/constants.ts` |
-| `BOARD_ROWS` | `6` | `src/domain/wordle/board/constants.ts` |
-| `BOARD_COLUMNS` | `5` | `src/domain/wordle/board/constants.ts` |
-| `DIFFICULTY_SCORE_MULTIPLIERS` | `{ easy: 1, normal: 2, hard: 5, insane: 9 }` | `src/domain/wordle/constants.ts` |
-| `PlayerDifficulty` | `"easy" \| "normal" \| "hard" \| "insane"` | `src/domain/wordle/player.ts` |
+| Constant                       | Value                                        | Source                                 |
+| ------------------------------ | -------------------------------------------- | -------------------------------------- |
+| `WORD_LENGTH`                  | `5`                                          | `src/domain/wordle/constants.ts`       |
+| `MAX_GUESSES`                  | `6`                                          | `src/domain/wordle/constants.ts`       |
+| `BOARD_ROWS`                   | `6`                                          | `src/domain/wordle/board/constants.ts` |
+| `BOARD_COLUMNS`                | `5`                                          | `src/domain/wordle/board/constants.ts` |
+| `DIFFICULTY_SCORE_MULTIPLIERS` | `{ easy: 1, normal: 2, hard: 5, insane: 9 }` | `src/domain/wordle/constants.ts`       |
+| `PlayerDifficulty`             | `"easy" \| "normal" \| "hard" \| "insane"`   | `src/domain/wordle/player.ts`          |
 
 ### Timer and Hints
 
-| Constant | Value | Source |
-| --- | --- | --- |
-| `HARD_MODE_TOTAL_SECONDS` | `60` | `src/views/Home/hooks/useHomeController/constants.ts` |
-| `HARD_MODE_FINAL_STRETCH_SECONDS` | `15` | `src/views/Home/hooks/useHomeController/constants.ts` |
-| `EASY_MODE_HINT_LIMIT` | `2` | `src/views/Home/hooks/useHintController/constants.ts` |
-| `NORMAL_MODE_HINT_LIMIT` | `1` | `src/views/Home/hooks/useHintController/constants.ts` |
-| `HARD_MODE_HINT_LIMIT` | `0` | `src/views/Home/hooks/useHintController/constants.ts` |
+| Constant                          | Value | Source                                                |
+| --------------------------------- | ----- | ----------------------------------------------------- |
+| `HARD_MODE_TOTAL_SECONDS`         | `60`  | `src/views/Home/hooks/useHomeController/constants.ts` |
+| `HARD_MODE_FINAL_STRETCH_SECONDS` | `15`  | `src/views/Home/hooks/useHomeController/constants.ts` |
+| `EASY_MODE_HINT_LIMIT`            | `2`   | `src/views/Home/hooks/useHintController/constants.ts` |
+| `NORMAL_MODE_HINT_LIMIT`          | `1`   | `src/views/Home/hooks/useHintController/constants.ts` |
+| `HARD_MODE_HINT_LIMIT`            | `0`   | `src/views/Home/hooks/useHintController/constants.ts` |
 
 ### Player Defaults
 
-| Constant | Value | Source |
-| --- | --- | --- |
-| `DEFAULT_PLAYER_DIFFICULTY` | `"normal"` | `src/providers/Player/constants.ts` |
-| `DEFAULT_PLAYER_KEYBOARD_PREFERENCE` | `"onscreen"` | `src/providers/Player/constants.ts` |
-| `DEFAULT_PLAYER_LANGUAGE` | `"en"` | `src/providers/Player/constants.ts` |
-| `PlayerKeyboardPreference` | `"onscreen" \| "native"` | `src/domain/wordle/player.ts` |
-| `PlayerLanguage` | `"en" \| "es"` | `src/domain/wordle/player.ts` |
+| Constant                             | Value                    | Source                              |
+| ------------------------------------ | ------------------------ | ----------------------------------- |
+| `DEFAULT_PLAYER_DIFFICULTY`          | `"normal"`               | `src/providers/Player/constants.ts` |
+| `DEFAULT_PLAYER_KEYBOARD_PREFERENCE` | `"onscreen"`             | `src/providers/Player/constants.ts` |
+| `DEFAULT_PLAYER_LANGUAGE`            | `"en"`                   | `src/providers/Player/constants.ts` |
+| `PlayerKeyboardPreference`           | `"onscreen" \| "native"` | `src/domain/wordle/player.ts`       |
+| `PlayerLanguage`                     | `"en" \| "es"`           | `src/domain/wordle/player.ts`       |
 
 ### Dictionary and Language
 
-| Constant | Value | Source |
-| --- | --- | --- |
-| `WORDS_DEFAULT_LANGUAGE` | `"en"` | `src/api/words/constants.ts` |
-| `WORDS_SUPPORTED_LANGUAGES` | `["en", "es"]` | `src/api/words/constants.ts` |
-| `WORDS_CACHE_KEY_PREFIX` | `"wordle:dictionary"` | `src/api/words/constants.ts` |
+| Constant                    | Value                          | Source                       |
+| --------------------------- | ------------------------------ | ---------------------------- |
+| `WORDS_DEFAULT_LANGUAGE`    | `"en"`                         | `src/api/words/constants.ts` |
+| `WORDS_SUPPORTED_LANGUAGES` | `["en", "es"]`                 | `src/api/words/constants.ts` |
+| `WORDS_CACHE_KEY_PREFIX`    | `"wordle:dictionary"`          | `src/api/words/constants.ts` |
 | `WORDS_CHECKSUM_KEY_PREFIX` | `"wordle:dictionary:checksum"` | `src/api/words/constants.ts` |
 
 ### Persistence and Session Keys
 
-| Constant | Value | Source |
-| --- | --- | --- |
-| `WORDLE_GAME_STORAGE_KEY` | `"wordle:game"` | `src/config/constants.ts` |
-| `WORDLE_SESSION_STORAGE_KEY` | `"wordle:session-id"` | `src/domain/wordle/constants.ts` |
-| `HINT_USAGE_STORAGE_KEY` | `"wordle:hint-usage"` | `src/views/Home/hooks/useHintController/constants.ts` |
-| `WORDLE_SYNC_EVENTS_KEY` | `"wordle:sync-events"` | `src/api/score/constants.ts` |
-| `END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY` | `"wordle:end-of-game-dialog-seen"` | `src/views/Home/hooks/useHomeController/constants.ts` |
-| `WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY` | `"wordle:disable-start-animations"` | `src/domain/wordle/constants.ts` |
-| `WORDLE_START_ANIMATION_SESSION_KEY` | `"wordle:start-animation-session-seen"` | `src/domain/wordle/constants.ts` |
-| `WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY` | `"wordle:keyboard-entry-animation-seen"` | `src/domain/wordle/constants.ts` |
+| Constant                                      | Value                                    | Source                                                |
+| --------------------------------------------- | ---------------------------------------- | ----------------------------------------------------- |
+| `WORDLE_GAME_STORAGE_KEY`                     | `"wordle:game"`                          | `src/config/constants.ts`                             |
+| `WORDLE_SESSION_STORAGE_KEY`                  | `"wordle:session-id"`                    | `src/domain/wordle/constants.ts`                      |
+| `HINT_USAGE_STORAGE_KEY`                      | `"wordle:hint-usage"`                    | `src/views/Home/hooks/useHintController/constants.ts` |
+| `WORDLE_SYNC_EVENTS_KEY`                      | `"wordle:sync-events"`                   | `src/api/score/constants.ts`                          |
+| `END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY` | `"wordle:end-of-game-dialog-seen"`       | `src/views/Home/hooks/useHomeController/constants.ts` |
+| `WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY`      | `"wordle:disable-start-animations"`      | `src/domain/wordle/constants.ts`                      |
+| `WORDLE_START_ANIMATION_SESSION_KEY`          | `"wordle:start-animation-session-seen"`  | `src/domain/wordle/constants.ts`                      |
+| `WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY` | `"wordle:keyboard-entry-animation-seen"` | `src/domain/wordle/constants.ts`                      |
 
 ### Gameplay UX Timing
 
-| Constant | Value | Source |
-| --- | --- | --- |
+| Constant                         | Value  | Source                             |
+| -------------------------------- | ------ | ---------------------------------- |
 | `MESSAGE_VISIBILITY_DURATION_MS` | `1800` | `src/hooks/useWordle/constants.ts` |
-| `GAME_STATE_PERSIST_DEBOUNCE_MS` | `150` | `src/hooks/useWordle/constants.ts` |
+| `GAME_STATE_PERSIST_DEBOUNCE_MS` | `150`  | `src/hooks/useWordle/constants.ts` |
 
 ## Environment Variables
 

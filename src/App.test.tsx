@@ -350,7 +350,11 @@ describe("App", () => {
 
     try {
       renderApp();
-      await screen.findByRole("heading", { name: "Profile" }, { timeout: 5000 });
+      await screen.findByRole(
+        "heading",
+        { name: "Profile" },
+        { timeout: 5000 },
+      );
 
       await waitFor(() => {
         expect(scrollIntoViewSpy).toHaveBeenCalled();

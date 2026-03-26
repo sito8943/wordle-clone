@@ -37,16 +37,18 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   });
 
   const applyRemoteProfile = useCallback(
-    async (remoteProfile: {
-      nick: string;
-      playerCode: string;
-      score: number;
-      streak: number;
-      language: PlayerLanguage;
-      difficulty: PlayerDifficulty;
-      keyboardPreference: PlayerKeyboardPreference;
-    },
-    options?: { preserveLocalPreferences?: boolean }) => {
+    async (
+      remoteProfile: {
+        nick: string;
+        playerCode: string;
+        score: number;
+        streak: number;
+        language: PlayerLanguage;
+        difficulty: PlayerDifficulty;
+        keyboardPreference: PlayerKeyboardPreference;
+      },
+      options?: { preserveLocalPreferences?: boolean },
+    ) => {
       const preserveLocalPreferences =
         options?.preserveLocalPreferences === true;
       let shouldInvalidateTopScores = false;

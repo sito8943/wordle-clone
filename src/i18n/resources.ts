@@ -467,8 +467,7 @@ export const resources = {
         difficultyRules: {
           easy: "Fácil muestra la lista de palabras.",
           normal: "Normal oculta la lista de palabras.",
-          hard:
-            "Difícil desactiva las pistas y solo acepta palabras del diccionario.",
+          hard: "Difícil desactiva las pistas y solo acepta palabras del diccionario.",
           insane:
             "Insano activa un temporizador de {{seconds}} segundos y solo acepta palabras del diccionario.",
         },
