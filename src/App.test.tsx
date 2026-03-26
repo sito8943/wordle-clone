@@ -1526,10 +1526,12 @@ describe("App", () => {
     ).toBeTruthy();
     expect(screen.getByText("Press Enter to submit your guess.")).toBeTruthy();
     expect(
-      screen.getByText("Easy, Normal, and Hard accept non-dictionary words."),
+      screen.getByText("Easy and Normal accept non-dictionary words."),
     ).toBeTruthy();
     expect(
-      screen.getByText("Insane only accepts words from the dictionary."),
+      screen.getByText(
+        "Hard and Insane only accept words from the dictionary.",
+      ),
     ).toBeTruthy();
     expect(
       screen.getByText(
@@ -1746,7 +1748,7 @@ describe("App", () => {
     });
   });
 
-  it("accepts unknown words in hard difficulty and counts the attempt", async () => {
+  it("rejects unknown words in hard difficulty", async () => {
     localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
     localStorage.setItem(
       "player",
@@ -1765,11 +1767,8 @@ describe("App", () => {
     }
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
-    await waitFor(() => {
-      expect(
-        screen.getAllByRole("gridcell", { name: "Z, absent" }).length,
-      ).toBe(5);
-    });
+    expect(await screen.findByText("Not in word list")).toBeTruthy();
+    expect(screen.queryByRole("gridcell", { name: "Z, absent" })).toBeNull();
   });
 
   it("rejects unknown words in insane difficulty", async () => {

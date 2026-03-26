@@ -32,6 +32,11 @@ describe("useHomeController", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    mockUseApi.mockClear();
+    mockUsePlayer.mockClear();
+    mockUseWordle.mockClear();
+    mockUseHintController.mockClear();
+    mockUseHardModeTimer.mockClear();
     window.sessionStorage.clear();
     wordleState = {
       sessionId: "session-1",
@@ -131,6 +136,42 @@ describe("useHomeController", () => {
 
     expect(commitVictory).toHaveBeenCalledTimes(1);
     expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
+  });
+
+  it("allows unknown words in normal difficulty", () => {
+    renderHook(() => useHomeController());
+
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowUnknownWords: true,
+      }),
+    );
+  });
+
+  it("rejects unknown words in hard difficulty", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        difficulty: "hard",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      replacePlayer: vi.fn(),
+      commitVictory: vi.fn().mockResolvedValue(undefined),
+      commitLoss: vi.fn().mockResolvedValue(undefined),
+    });
+
+    renderHook(() => useHomeController());
+
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowUnknownWords: false,
+      }),
+    );
   });
 
   it("adds insane time bonus to the committed victory score", () => {

@@ -23,7 +23,8 @@ export default function useHomeController() {
   const { scoreClient, wordDictionaryClient } = useApi();
   const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
   const wordle = useWordle({
-    allowUnknownWords: player.difficulty !== "insane",
+    allowUnknownWords:
+      player.difficulty === "easy" || player.difficulty === "normal",
     language: player.language,
   });
   const {
