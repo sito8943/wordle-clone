@@ -90,7 +90,9 @@ const initI18n = (): Promise<void> => {
     )
     .then(() => {
       if (typeof document !== "undefined") {
-        document.documentElement.lang = normalizeSupportedLanguage(i18n.language);
+        document.documentElement.lang = normalizeSupportedLanguage(
+          i18n.language,
+        );
       }
 
       i18n.on("languageChanged", (language) => {

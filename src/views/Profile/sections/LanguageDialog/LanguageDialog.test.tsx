@@ -86,11 +86,16 @@ describe("LanguageDialog", () => {
 
     render(<LanguageDialog />);
 
-    fireEvent.change(screen.getByLabelText(i18n.t("profile.labels.languageMode")), {
-      target: { value: "es" },
-    });
+    fireEvent.change(
+      screen.getByLabelText(i18n.t("profile.labels.languageMode")),
+      {
+        target: { value: "es" },
+      },
+    );
     fireEvent.click(
-      screen.getByRole("button", { name: i18n.t("profile.languageDialog.save") }),
+      screen.getByRole("button", {
+        name: i18n.t("profile.languageDialog.save"),
+      }),
     );
 
     expect(changePendingLanguage).toHaveBeenCalledWith("es");

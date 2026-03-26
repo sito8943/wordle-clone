@@ -71,7 +71,9 @@ const LanguageDialog = () => {
         <Button onClick={closeLanguageDialog} variant="ghost" color="neutral">
           {t("common.cancel")}
         </Button>
-        <Button onClick={saveLanguage}>{t("profile.languageDialog.save")}</Button>
+        <Button onClick={saveLanguage}>
+          {t("profile.languageDialog.save")}
+        </Button>
       </div>
     </Dialog>
   );

@@ -112,12 +112,15 @@ export const seedLanguageWords = mutation({
   args: {
     language: v.string(),
     replaceExisting: v.optional(v.boolean()),
+    words: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const language = assertLanguageSupported(args.language);
     const shouldReplace = args.replaceExisting === true;
-    const seedWords =
-      language === ES_LANGUAGE ? ES_WORDS_NORMALIZED : EN_WORDS_NORMALIZED;
+    const seedWords = normalizeWords(
+      args.words ??
+        (language === ES_LANGUAGE ? ES_WORDS_NORMALIZED : EN_WORDS_NORMALIZED),
+    );
     const existingWords = await ctx.db
       .query("words")
       .withIndex("by_language", (q) => q.eq("language", language))
@@ -153,7 +156,9 @@ export const seedLanguageWords = mutation({
     return {
       language,
       inserted: seedWords.length,
-      total: shouldReplace ? seedWords.length : existingWords.length + seedWords.length,
+      total: shouldReplace
+        ? seedWords.length
+        : existingWords.length + seedWords.length,
       replaced: shouldReplace,
     };
   },

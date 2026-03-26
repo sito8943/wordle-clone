@@ -45,10 +45,8 @@ import {
 } from "./utils";
 
 export default function useWordle(options: UseWordleOptions = {}) {
-  const {
-    allowUnknownWords = false,
-    language = WORDS_DEFAULT_LANGUAGE,
-  } = options;
+  const { allowUnknownWords = false, language = WORDS_DEFAULT_LANGUAGE } =
+    options;
   const cachedWords = useMemo(
     () => loadWordDictionaryFromCache(language),
     [language],
