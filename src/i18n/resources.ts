@@ -137,7 +137,8 @@ export const resources = {
           easy: "Easy shows the word list.",
           normal: "Normal hides the word list.",
           hard: "Hard disables hints and only accepts dictionary words.",
-          insane: "Insane enables the timer and only accepts dictionary words.",
+          insane:
+            "Insane enables a {{seconds}}-second timer and only accepts dictionary words.",
         },
         difficultyChange: {
           title: "Change difficulty?",
@@ -469,7 +470,7 @@ export const resources = {
           hard:
             "Difícil desactiva las pistas y solo acepta palabras del diccionario.",
           insane:
-            "Insano activa el temporizador y solo acepta palabras del diccionario.",
+            "Insano activa un temporizador de {{seconds}} segundos y solo acepta palabras del diccionario.",
         },
         difficultyChange: {
           title: "¿Cambiar dificultad?",

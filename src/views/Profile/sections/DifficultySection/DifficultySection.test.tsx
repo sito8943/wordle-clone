@@ -32,7 +32,7 @@ describe("DifficultySection", () => {
     expect(screen.getByText("Easy shows the word list.")).toBeTruthy();
     expect(
       screen.getByText(
-        "Insane enables the timer and only accepts dictionary words.",
+        "Insane enables a 60-second timer and only accepts dictionary words.",
       ),
     ).toBeTruthy();
 
