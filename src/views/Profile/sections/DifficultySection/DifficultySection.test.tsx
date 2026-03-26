@@ -30,7 +30,11 @@ describe("DifficultySection", () => {
     expect(keyboardMode.value).toBe("onscreen");
     expect(difficultyMode.value).toBe("normal");
     expect(screen.getByText("Easy shows the word list.")).toBeTruthy();
-    expect(screen.getByText("Insane enables the timer.")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Insane enables a 60-second timer and only accepts dictionary words.",
+      ),
+    ).toBeTruthy();
 
     fireEvent.change(keyboardMode, { target: { value: "native" } });
     fireEvent.change(difficultyMode, { target: { value: "hard" } });

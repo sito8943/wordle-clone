@@ -14,8 +14,8 @@ export const WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY =
 export const DIFFICULTY_SCORE_MULTIPLIERS: Record<PlayerDifficulty, number> = {
   easy: 1,
   normal: 2,
-  hard: 3,
-  insane: 4,
+  hard: 5,
+  insane: 9,
 };
 
 export const KEYBOARD_ROWS = [

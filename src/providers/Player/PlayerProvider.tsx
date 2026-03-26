@@ -37,27 +37,41 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   });
 
   const applyRemoteProfile = useCallback(
-    async (remoteProfile: {
-      nick: string;
-      playerCode: string;
-      score: number;
-      streak: number;
-      language: PlayerLanguage;
-      difficulty: PlayerDifficulty;
-      keyboardPreference: PlayerKeyboardPreference;
-    }) => {
+    async (
+      remoteProfile: {
+        nick: string;
+        playerCode: string;
+        score: number;
+        streak: number;
+        language: PlayerLanguage;
+        difficulty: PlayerDifficulty;
+        keyboardPreference: PlayerKeyboardPreference;
+      },
+      options?: { preserveLocalPreferences?: boolean },
+    ) => {
+      const preserveLocalPreferences =
+        options?.preserveLocalPreferences === true;
       let shouldInvalidateTopScores = false;
 
       setStoredPlayer((previous) => {
         const normalizedPrevious = normalizePlayer(previous);
+        const language = preserveLocalPreferences
+          ? normalizedPrevious.language
+          : remoteProfile.language;
+        const difficulty = preserveLocalPreferences
+          ? normalizedPrevious.difficulty
+          : remoteProfile.difficulty;
+        const keyboardPreference = preserveLocalPreferences
+          ? normalizedPrevious.keyboardPreference
+          : remoteProfile.keyboardPreference;
         const nextPlayer = {
           name: remoteProfile.nick,
           code: remoteProfile.playerCode,
           score: remoteProfile.score,
           streak: remoteProfile.streak,
-          language: remoteProfile.language,
-          difficulty: remoteProfile.difficulty,
-          keyboardPreference: remoteProfile.keyboardPreference,
+          language,
+          difficulty,
+          keyboardPreference,
           showEndOfGameDialogs: normalizedPrevious.showEndOfGameDialogs,
         };
 
@@ -106,7 +120,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       });
 
       if (syncedProfile) {
-        await applyRemoteProfile(syncedProfile);
+        await applyRemoteProfile(syncedProfile, {
+          preserveLocalPreferences: true,
+        });
       }
 
       return syncedProfile;
@@ -158,7 +174,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       return;
     }
 
-    await applyRemoteProfile(remoteProfile);
+    await applyRemoteProfile(remoteProfile, {
+      preserveLocalPreferences: true,
+    });
   }, [applyRemoteProfile, scoreClient]);
 
   const replacePlayer = useCallback(
@@ -380,7 +398,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
         const remoteProfile = await scoreClient.getCurrentPlayerProfile();
         if (remoteProfile) {
-          await applyRemoteProfile(remoteProfile);
+          await applyRemoteProfile(remoteProfile, {
+            preserveLocalPreferences: true,
+          });
         }
       })
       .catch(() => undefined);
@@ -419,7 +439,11 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         difficulty: player.difficulty,
         keyboardPreference: player.keyboardPreference,
       })
-      .then((remoteProfile) => applyRemoteProfile(remoteProfile))
+      .then((remoteProfile) =>
+        applyRemoteProfile(remoteProfile, {
+          preserveLocalPreferences: true,
+        }),
+      )
       .catch(() => undefined);
   }, [applyRemoteProfile, player, scoreClient]);
 

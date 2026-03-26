@@ -8,6 +8,7 @@ import {
   PROFILE_DIFFICULTY_MODE_INPUT_ID,
   PROFILE_KEYBOARD_MODE_INPUT_ID,
 } from "@views/Profile/constants";
+import { HARD_MODE_TOTAL_SECONDS } from "@views/Home/hooks/useHomeController/constants";
 
 const DifficultySection = ({
   keyboardPreference,
@@ -74,7 +75,11 @@ const DifficultySection = ({
           <li>{t("profile.difficultyRules.easy")}</li>
           <li>{t("profile.difficultyRules.normal")}</li>
           <li>{t("profile.difficultyRules.hard")}</li>
-          <li>{t("profile.difficultyRules.insane")}</li>
+          <li>
+            {t("profile.difficultyRules.insane", {
+              seconds: HARD_MODE_TOTAL_SECONDS,
+            })}
+          </li>
         </ul>
       </div>
     </div>

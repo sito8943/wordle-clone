@@ -524,6 +524,49 @@ describe("PlayerProvider", () => {
     expect(result.current.player.difficulty).toBe("normal");
   });
 
+  it("keeps local language preferences after background remote hydration", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Ana",
+        code: "ZX90",
+        score: 3,
+        streak: 1,
+        language: "es",
+        difficulty: "hard",
+        keyboardPreference: "native",
+      }),
+    );
+
+    const getCurrentPlayerProfile = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      language: "en",
+      playerCode: "ZX90",
+      score: 12,
+      streak: 4,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ getCurrentPlayerProfile }),
+    });
+
+    await waitFor(() => {
+      expect(getCurrentPlayerProfile).toHaveBeenCalled();
+    });
+
+    expect(result.current.player.language).toBe("es");
+    expect(result.current.player.difficulty).toBe("hard");
+    expect(result.current.player.keyboardPreference).toBe("native");
+    expect(result.current.player.score).toBe(12);
+    expect(result.current.player.streak).toBe(4);
+  });
+
   it("skips duplicate current-profile fetch when queued victories already hydrate remote state", async () => {
     localStorage.setItem(
       "player",

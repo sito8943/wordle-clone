@@ -136,8 +136,9 @@ export const resources = {
         difficultyRules: {
           easy: "Easy shows the word list.",
           normal: "Normal hides the word list.",
-          hard: "Hard disables hints.",
-          insane: "Insane enables the timer.",
+          hard: "Hard disables hints and only accepts dictionary words.",
+          insane:
+            "Insane enables a {{seconds}}-second timer and only accepts dictionary words.",
         },
         difficultyChange: {
           title: "Change difficulty?",
@@ -252,9 +253,9 @@ export const resources = {
           rules: {
             guessLength: "Each guess must be 5 letters long.",
             pressEnter: "Press Enter to submit your guess.",
-            nonDictionary:
-              "Easy, Normal, and Hard accept non-dictionary words.",
-            insaneDictionary: "Insane only accepts words from the dictionary.",
+            nonDictionary: "Easy and Normal accept non-dictionary words.",
+            insaneDictionary:
+              "Hard and Insane only accept words from the dictionary.",
             green: "Green tile: correct letter in the correct position.",
             yellow: "Yellow tile: correct letter in the wrong position.",
             gray: "Gray tile: letter is not in the word.",
@@ -271,6 +272,8 @@ export const resources = {
             final:
               "Final score = round(score base x (1 + 0.3 x sqrt(streak))), where score base includes the difficulty multiplier and the Insane time bonus.",
           },
+          changeDifficultyPrefix: "Want to adjust the challenge? Go to",
+          changeDifficultyLink: "difficulty settings",
         },
         endOfGame: {
           wordLabel: "Correct word",
@@ -464,8 +467,9 @@ export const resources = {
         difficultyRules: {
           easy: "Fácil muestra la lista de palabras.",
           normal: "Normal oculta la lista de palabras.",
-          hard: "Difícil desactiva las pistas.",
-          insane: "Insano activa el temporizador.",
+          hard: "Difícil desactiva las pistas y solo acepta palabras del diccionario.",
+          insane:
+            "Insano activa un temporizador de {{seconds}} segundos y solo acepta palabras del diccionario.",
         },
         difficultyChange: {
           title: "¿Cambiar dificultad?",
@@ -582,8 +586,9 @@ export const resources = {
             guessLength: "Cada intento debe tener 5 letras.",
             pressEnter: "Pulsa Enter para enviar tu intento.",
             nonDictionary:
-              "Fácil, Normal y Difícil aceptan palabras fuera del diccionario.",
-            insaneDictionary: "Insano solo acepta palabras del diccionario.",
+              "Fácil y Normal aceptan palabras fuera del diccionario.",
+            insaneDictionary:
+              "Difícil e Insano solo aceptan palabras del diccionario.",
             green: "Casilla verde: letra correcta en la posición correcta.",
             yellow:
               "Casilla amarilla: letra correcta en la posición incorrecta.",
@@ -602,6 +607,8 @@ export const resources = {
             final:
               "Puntuación final = round(puntuación base x (1 + 0.3 x sqrt(racha))), donde la puntuación base incluye el multiplicador de dificultad y el bonus de tiempo en Insano.",
           },
+          changeDifficultyPrefix: "¿Quieres ajustar el desafío? Ve a",
+          changeDifficultyLink: "ajustes de dificultad",
         },
         endOfGame: {
           wordLabel: "Palabra correcta",

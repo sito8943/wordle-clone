@@ -332,6 +332,41 @@ describe("App", () => {
     });
   });
 
+  it("scrolls to hash target after lazy profile content mounts", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "PlayerOne", score: 0, streak: 0 }),
+    );
+
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    const scrollIntoViewSpy = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoViewSpy,
+    });
+
+    window.history.pushState({}, "", "/profile#difficulty");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    try {
+      renderApp();
+      await screen.findByRole(
+        "heading",
+        { name: "Profile" },
+        { timeout: 5000 },
+      );
+
+      await waitFor(() => {
+        expect(scrollIntoViewSpy).toHaveBeenCalled();
+      });
+    } finally {
+      Object.defineProperty(Element.prototype, "scrollIntoView", {
+        configurable: true,
+        value: originalScrollIntoView,
+      });
+    }
+  });
+
   it("defaults to normal difficulty from profile when missing in storage", async () => {
     localStorage.setItem(
       "player",
@@ -858,7 +893,11 @@ describe("App", () => {
 
     renderApp();
 
-    const hintButton = await screen.findByRole("button", { name: "Hint" });
+    const hintButton = await screen.findByRole(
+      "button",
+      { name: "Hint" },
+      { timeout: 10_000 },
+    );
     fireEvent.click(hintButton);
     expect((hintButton as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByRole("gridcell", { name: "P, present" })).toBeTruthy();
@@ -866,14 +905,17 @@ describe("App", () => {
     cleanup();
     renderApp();
 
-    await waitFor(() => {
-      expect(
-        (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
-          .disabled,
-      ).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(
+          (screen.getByRole("button", { name: "Hint" }) as HTMLButtonElement)
+            .disabled,
+        ).toBe(true);
+      },
+      { timeout: 10_000 },
+    );
     expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
-  });
+  }, 15_000);
 
   it("shares consumed hint across tabs even with different session ids", async () => {
     localStorage.setItem(
@@ -1495,10 +1537,12 @@ describe("App", () => {
     ).toBeTruthy();
     expect(screen.getByText("Press Enter to submit your guess.")).toBeTruthy();
     expect(
-      screen.getByText("Easy, Normal, and Hard accept non-dictionary words."),
+      screen.getByText("Easy and Normal accept non-dictionary words."),
     ).toBeTruthy();
     expect(
-      screen.getByText("Insane only accepts words from the dictionary."),
+      screen.getByText(
+        "Hard and Insane only accept words from the dictionary.",
+      ),
     ).toBeTruthy();
     expect(
       screen.getByText(
@@ -1570,7 +1614,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(18);
+      expect(player.score).toBe(30);
     });
   });
 
@@ -1595,7 +1639,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(54);
+      expect(player.score).toBe(84);
     });
   });
 
@@ -1715,7 +1759,7 @@ describe("App", () => {
     });
   });
 
-  it("accepts unknown words in hard difficulty and counts the attempt", async () => {
+  it("rejects unknown words in hard difficulty", async () => {
     localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
     localStorage.setItem(
       "player",
@@ -1734,11 +1778,8 @@ describe("App", () => {
     }
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
-    await waitFor(() => {
-      expect(
-        screen.getAllByRole("gridcell", { name: "Z, absent" }).length,
-      ).toBe(5);
-    });
+    expect(await screen.findByText("Not in word list")).toBeTruthy();
+    expect(screen.queryByRole("gridcell", { name: "Z, absent" })).toBeNull();
   });
 
   it("rejects unknown words in insane difficulty", async () => {

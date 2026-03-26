@@ -1,6 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
+import { i18n, initI18n } from "@i18n";
 import useHomeController from "./useHomeController";
 import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "./constants";
 
@@ -16,22 +17,29 @@ vi.mock("@providers", () => ({
 }));
 
 vi.mock("@hooks", () => ({
-  useWordle: () => mockUseWordle(),
+  useWordle: (...args: unknown[]) => mockUseWordle(...args),
 }));
 
 vi.mock("../useHintController", () => ({
-  useHintController: () => mockUseHintController(),
+  useHintController: (...args: unknown[]) => mockUseHintController(...args),
 }));
 
 vi.mock("./useHardModeTimer", () => ({
-  useHardModeTimer: () => mockUseHardModeTimer(),
+  useHardModeTimer: (...args: unknown[]) => mockUseHardModeTimer(...args),
 }));
 
 describe("useHomeController", () => {
   let wordleState: Record<string, unknown>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await initI18n();
+    await i18n.changeLanguage("en");
     vi.useFakeTimers();
+    mockUseApi.mockClear();
+    mockUsePlayer.mockClear();
+    mockUseWordle.mockClear();
+    mockUseHintController.mockClear();
+    mockUseHardModeTimer.mockClear();
     window.sessionStorage.clear();
     wordleState = {
       sessionId: "session-1",
@@ -65,6 +73,7 @@ describe("useHomeController", () => {
         code: "AB12",
         score: 20,
         streak: 2,
+        language: "en",
         difficulty: "normal",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: true,
@@ -110,6 +119,7 @@ describe("useHomeController", () => {
         code: "AB12",
         score: 20,
         streak: 2,
+        language: "en",
         difficulty: "normal",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: true,
@@ -133,6 +143,45 @@ describe("useHomeController", () => {
     expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
   });
 
+  it("allows unknown words in normal difficulty", () => {
+    renderHook(() => useHomeController());
+
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowUnknownWords: true,
+        language: "en",
+      }),
+    );
+  });
+
+  it("rejects unknown words in hard difficulty", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "hard",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      replacePlayer: vi.fn(),
+      commitVictory: vi.fn().mockResolvedValue(undefined),
+      commitLoss: vi.fn().mockResolvedValue(undefined),
+    });
+
+    renderHook(() => useHomeController());
+
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowUnknownWords: false,
+        language: "en",
+      }),
+    );
+  });
+
   it("adds insane time bonus to the committed victory score", () => {
     const commitVictory = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
@@ -142,6 +191,7 @@ describe("useHomeController", () => {
         code: "AB12",
         score: 20,
         streak: 2,
+        language: "en",
         difficulty: "insane",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: true,
@@ -165,9 +215,11 @@ describe("useHomeController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 4, 2, 5),
+      getTotalPointsForWin(3, 9, 2, 5),
     );
-    expect(result.current.victoryScoreSummary?.total).toBe(30);
+    expect(result.current.victoryScoreSummary?.total).toBe(
+      getTotalPointsForWin(3, 9, 2, 5),
+    );
     expect(result.current.showVictoryDialog).toBe(true);
   });
 
@@ -244,6 +296,7 @@ describe("useHomeController", () => {
         code: "AB12",
         score: 20,
         streak: 2,
+        language: "en",
         difficulty: "normal",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: false,
@@ -323,6 +376,7 @@ describe("useHomeController", () => {
         code: "AB12",
         score: 20,
         streak: 2,
+        language: "en",
         difficulty: "easy",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: true,
@@ -359,7 +413,9 @@ describe("useHomeController", () => {
 
     expect(refreshRemoteChecksum).toHaveBeenCalledTimes(1);
     expect(result.current.dictionaryChecksumMessage).toBe(
-      "Remote checksum updated to 42.",
+      i18n.t("home.developerConsole.checksumUpdated", {
+        checksum: 42,
+      }),
     );
     expect(result.current.dictionaryChecksumMessageKind).toBe("success");
   });
