@@ -1,0 +1,70 @@
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import Home from "./Home";
+import { HOME_ENTRY_ANIMATION_SESSION_KEY } from "./constants";
+
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const dictionary: Record<string, string> = {
+        "app.title": "Wordle",
+        "nav.play": "Play",
+        "profile.settingsTitle": "Settings",
+        "nav.scoreboard": "Scoreboard",
+      };
+
+      return dictionary[key] ?? key;
+    },
+  }),
+}));
+
+afterEach(() => {
+  cleanup();
+  sessionStorage.clear();
+  vi.restoreAllMocks();
+});
+
+const renderHome = () => {
+  return render(
+    <MemoryRouter>
+      <Home />
+    </MemoryRouter>,
+  );
+};
+
+describe("Home entry animation", () => {
+  it("plays title/menu intro once and stores the session flag", async () => {
+    renderHome();
+
+    const heading = screen.getByRole("heading", { name: "WORDLE" });
+    const nav = screen.getByRole("navigation");
+
+    expect(sessionStorage.getItem(HOME_ENTRY_ANIMATION_SESSION_KEY)).toBe(
+      "seen",
+    );
+
+    await waitFor(() => {
+      expect(heading.className).toContain("opacity-100");
+      expect(heading.className).toContain("scale-100");
+      expect(nav.className).toContain("opacity-100");
+      expect(nav.className).toContain("scale-100");
+    });
+  });
+
+  it("does not replay the intro when the session flag already exists", () => {
+    sessionStorage.setItem(HOME_ENTRY_ANIMATION_SESSION_KEY, "seen");
+    const requestAnimationFrameSpy = vi.spyOn(window, "requestAnimationFrame");
+
+    renderHome();
+
+    const heading = screen.getByRole("heading", { name: "WORDLE" });
+    const nav = screen.getByRole("navigation");
+
+    expect(requestAnimationFrameSpy).not.toHaveBeenCalled();
+    expect(heading.className).toContain("opacity-100");
+    expect(heading.className).toContain("scale-100");
+    expect(nav.className).toContain("opacity-100");
+    expect(nav.className).toContain("scale-100");
+  });
+});
