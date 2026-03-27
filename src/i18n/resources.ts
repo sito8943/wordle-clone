@@ -16,7 +16,7 @@ export const resources = {
       },
       nav: {
         play: "Play",
-        profile: "Profile",
+        profile: "Settings",
         scoreboard: "Scoreboard",
       },
       footer: {
@@ -69,7 +69,7 @@ export const resources = {
         empty: "No scores yet.",
       },
       profile: {
-        pageTitle: "Profile",
+        pageTitle: "Settings",
         editAction: "Edit",
         cancelAction: "Cancel",
         settingsTitle: "Settings",
@@ -92,13 +92,13 @@ export const resources = {
         endOfGameDialogsDescription:
           "Show dialogs when you win or lose a board.",
         codeHelp:
-          "Use this 4-character code to recover your profile on another browser.",
+          "Use this 4-character code to recover your settings on another browser.",
         recovery: {
-          title: "Recover profile",
+          title: "Recover settings",
           inputLabel: "Recovery code",
-          action: "Load profile",
+          action: "Load settings",
           emptyCodeError: "Recovery code cannot be empty.",
-          successMessage: "Profile recovered successfully.",
+          successMessage: "Settings recovered successfully.",
         },
         saveAction: "Save",
         savingAction: "Saving...",
@@ -153,15 +153,15 @@ export const resources = {
         initialPlayer: {
           title: "Welcome to Wordle",
           description:
-            "Create a unique player name or recover an existing profile with your code.",
-          createMode: "Create profile",
-          recoverMode: "Recover profile",
+            "Create a unique player name or recover existing settings with your code.",
+          createMode: "Create settings",
+          recoverMode: "Recover settings",
           createAction: "Start playing",
-          recoverAction: "Recover profile",
+          recoverAction: "Recover settings",
           nameLabel: "Player nick name",
           recoveryCodeLabel: "Recovery code",
           recoveryHelp:
-            "Use the 4-character code from your profile to load that player on this browser.",
+            "Use the 4-character code from your settings to load that player on this browser.",
           emptyNameError: "Name cannot be empty.",
           emptyCodeError: "Recovery code cannot be empty.",
           nameNotAvailable: "Name is not available.",
@@ -279,7 +279,7 @@ export const resources = {
           wordLabel: "Correct word",
           playAgain: "Play again",
           settingsHintPrefix: "You can disable these dialogs in",
-          settingsHintLink: "Profile settings",
+          settingsHintLink: "Settings",
           settingsHintSuffix: "if you prefer.",
         },
         victoryDialog: {
@@ -346,7 +346,7 @@ export const resources = {
       },
       nav: {
         play: "Jugar",
-        profile: "Perfil",
+        profile: "Ajustes",
         scoreboard: "Clasificación",
       },
       footer: {
@@ -400,7 +400,7 @@ export const resources = {
         empty: "Todavía no hay puntuaciones.",
       },
       profile: {
-        pageTitle: "Perfil",
+        pageTitle: "Ajustes",
         editAction: "Editar",
         cancelAction: "Cancelar",
         settingsTitle: "Ajustes",
@@ -423,13 +423,13 @@ export const resources = {
         endOfGameDialogsDescription:
           "Muestra diálogos cuando ganas o pierdes un tablero.",
         codeHelp:
-          "Usa este código de 4 caracteres para recuperar tu perfil en otro navegador.",
+          "Usa este código de 4 caracteres para recuperar tus ajustes en otro navegador.",
         recovery: {
-          title: "Recuperar perfil",
+          title: "Recuperar ajustes",
           inputLabel: "Código de recuperación",
-          action: "Cargar perfil",
+          action: "Cargar ajustes",
           emptyCodeError: "El código de recuperación no puede estar vacío.",
-          successMessage: "Perfil recuperado correctamente.",
+          successMessage: "Ajustes recuperados correctamente.",
         },
         saveAction: "Guardar",
         savingAction: "Guardando...",
@@ -484,15 +484,15 @@ export const resources = {
         initialPlayer: {
           title: "Bienvenido a Wordle",
           description:
-            "Crea un nombre de jugador único o recupera un perfil existente con tu código.",
-          createMode: "Crear perfil",
-          recoverMode: "Recuperar perfil",
+            "Crea un nombre de jugador único o recupera unos ajustes existentes con tu código.",
+          createMode: "Crear ajustes",
+          recoverMode: "Recuperar ajustes",
           createAction: "Empezar a jugar",
-          recoverAction: "Recuperar perfil",
+          recoverAction: "Recuperar ajustes",
           nameLabel: "Nombre del jugador",
           recoveryCodeLabel: "Código de recuperación",
           recoveryHelp:
-            "Usa el código de 4 caracteres de tu perfil para cargar ese jugador en este navegador.",
+            "Usa el código de 4 caracteres de tus ajustes para cargar ese jugador en este navegador.",
           emptyNameError: "El nombre no puede estar vacío.",
           emptyCodeError: "El código de recuperación no puede estar vacío.",
           nameNotAvailable: "El nombre no está disponible.",
@@ -614,7 +614,7 @@ export const resources = {
           wordLabel: "Palabra correcta",
           playAgain: "Jugar otra vez",
           settingsHintPrefix: "Puedes desactivar estos diálogos en",
-          settingsHintLink: "Ajustes del perfil",
+          settingsHintLink: "Ajustes",
           settingsHintSuffix: "si lo prefieres.",
         },
         victoryDialog: {

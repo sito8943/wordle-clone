@@ -78,7 +78,7 @@ const DialogsSection = ({
 
   const changeDifficulty = () => {
     closeEndOfGameDialog();
-    navigate("/profile#difficulty");
+    navigate("/settings#difficulty");
   };
 
   return (

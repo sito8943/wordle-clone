@@ -80,7 +80,7 @@ describe("VictoryDialog", () => {
     expect(onPlayAgain).toHaveBeenCalledTimes(1);
   });
 
-  it("shows the profile settings hint when requested", () => {
+  it("shows the settings hint when requested", () => {
     render(
       <VictoryDialog
         visible
@@ -96,11 +96,11 @@ describe("VictoryDialog", () => {
       />,
     );
 
-    const settingsLink = screen.getByRole("link", { name: "Profile settings" });
+    const settingsLink = screen.getByRole("link", { name: "Settings" });
 
     expect(settingsLink.closest("p")?.textContent).toContain(
       "You can disable these dialogs in",
     );
-    expect(settingsLink.getAttribute("href")).toBe("/profile#end-dialogs");
+    expect(settingsLink.getAttribute("href")).toBe("/settings#end-dialogs");
   });
 });

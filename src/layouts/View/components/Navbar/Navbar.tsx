@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faGear,
   faPlayCircle,
   faSpinner,
   faTrophy,
-  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@i18n";
 import NavLink from "./NavLink";
@@ -35,8 +35,8 @@ const Navbar = () => {
   );
   const links = useMemo(
     () => [
-      { to: "/", label: t("nav.play"), icon: faPlayCircle },
-      { to: "/profile", label: t("nav.profile"), icon: faUser },
+      { to: "/play", label: t("nav.play"), icon: faPlayCircle },
+      { to: "/settings", label: t("nav.profile"), icon: faGear },
       {
         to: "/scoreboard",
         label: t("nav.scoreboard"),

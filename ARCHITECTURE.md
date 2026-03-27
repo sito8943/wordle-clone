@@ -20,8 +20,10 @@
 2. `src/App.tsx` renders `RouterProvider` inside `Suspense`.
 3. `src/routes.tsx` maps:
 
-- `/` -> `Home`
-- `/profile` -> `Profile`
+- `/` -> `Landing`
+- `/play` -> `Home` (gameplay)
+- `/settings` -> `Profile`
+- `/profile` -> `Profile` (legacy alias)
 - `/scoreboard` -> `Scoreboard`
 - fallback -> `NotFound`
 
@@ -169,9 +171,9 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - additional feature keys for theme/animations/scoreboard caches.
 
-## Data Flow (Home Gameplay)
+## Data Flow (Play Gameplay)
 
-1. `Home` route wrapper delegates to `src/features/home/page`.
+1. `Home` route wrapper at `/play` delegates to `src/features/home/page`.
 2. `useHomeController` composes:
 
 - player preferences from `usePlayer`

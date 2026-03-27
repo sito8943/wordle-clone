@@ -81,7 +81,7 @@ describe("HelpDialog", () => {
     const difficultyLink = screen.getByRole("link", {
       name: "difficulty settings",
     });
-    expect(difficultyLink.getAttribute("href")).toBe("/profile#difficulty");
+    expect(difficultyLink.getAttribute("href")).toBe("/settings#difficulty");
   });
 
   it("renders the Close button", () => {

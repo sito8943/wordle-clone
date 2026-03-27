@@ -7,7 +7,7 @@ const SettingsHint = () => {
     <p className="text-xs text-neutral-600 dark:text-neutral-300">
       {t("home.endOfGame.settingsHintPrefix")}{" "}
       <a
-        href="/profile#end-dialogs"
+        href="/settings#end-dialogs"
         className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
       >
         {t("home.endOfGame.settingsHintLink")}

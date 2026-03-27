@@ -70,9 +70,7 @@ describe("Profile integration", () => {
 
     renderProfile();
 
-    expect(
-      await screen.findByRole("heading", { name: "Profile" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Name:"), {
@@ -138,7 +136,7 @@ describe("Profile integration", () => {
     fireEvent.change(screen.getByLabelText("Recovery code"), {
       target: { value: "zx90" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Load profile" }));
+    fireEvent.click(screen.getByRole("button", { name: "Load settings" }));
 
     await waitFor(() => {
       const storedPlayer = JSON.parse(localStorage.getItem("player") || "{}");

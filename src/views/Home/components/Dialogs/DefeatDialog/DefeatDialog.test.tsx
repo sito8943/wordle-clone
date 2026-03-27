@@ -68,7 +68,7 @@ describe("DefeatDialog", () => {
     expect(onPlayAgain).toHaveBeenCalledTimes(1);
   });
 
-  it("hides the profile settings hint when not requested", () => {
+  it("hides the settings hint when not requested", () => {
     render(
       <DefeatDialog
         visible
@@ -80,6 +80,6 @@ describe("DefeatDialog", () => {
       />,
     );
 
-    expect(screen.queryByRole("link", { name: "Profile settings" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 });

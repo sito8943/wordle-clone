@@ -61,7 +61,7 @@ describe("InitialPlayerDialog", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Recover profile" }));
+    fireEvent.click(screen.getByRole("button", { name: "Recover settings" }));
     fireEvent.change(screen.getByLabelText("Recovery code"), {
       target: { value: "ab12" },
     });
@@ -71,7 +71,7 @@ describe("InitialPlayerDialog", () => {
     ).toBe("AB12");
 
     fireEvent.click(
-      screen.getAllByRole("button", { name: "Recover profile" })[1],
+      screen.getAllByRole("button", { name: "Recover settings" })[1],
     );
 
     expect(onRecover).toHaveBeenCalledWith("AB12");
