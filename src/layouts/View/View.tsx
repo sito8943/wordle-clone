@@ -17,6 +17,7 @@ const View = () => {
   const { scoreClient } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
   const { pathname, hash } = useLocation();
+  const isPlayRoute = pathname === "/";
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(
@@ -155,7 +156,7 @@ const View = () => {
           <Outlet />
         </ErrorBoundary>
       </div>
-      <Footer />
+      <Footer alwaysVisible={isPlayRoute} />
       <Suspense fallback={null}>
         {showInitialPlayerDialog ? (
           <InitialPlayerDialog

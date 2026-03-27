@@ -20,8 +20,8 @@
 2. `src/App.tsx` renders `RouterProvider` inside `Suspense`.
 3. `src/routes.tsx` maps:
 
-- `/` -> `Landing`
-- `/play` -> `Home` (gameplay)
+- `/` -> `Home`
+- `/play` -> `Play` (gameplay)
 - `/settings` -> `Profile`
 - `/profile` -> `Profile` (legacy alias)
 - `/scoreboard` -> `Scoreboard`

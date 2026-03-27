@@ -8,7 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@i18n";
 
-const Landing = () => {
+const Home = () => {
   const { t } = useTranslation();
   const links = useMemo(
     () => [
@@ -43,4 +43,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default Home;

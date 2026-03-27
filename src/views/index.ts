@@ -1,6 +1,6 @@
-import Landing from "./Landing";
+import Home from "./Home";
 import Play from "./Play";
 import Scoreboard from "./Scoreboard";
 import Profile from "./Profile";
 import NotFound from "./NotFound";
-export { Landing, Play, Scoreboard, Profile, NotFound };
+export { Home, Play, Scoreboard, Profile, NotFound };
