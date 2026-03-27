@@ -1666,4 +1666,14 @@ export const ES_WORDS = [
   "lindo",
   "julio",
   "junio",
+  "mujer",
+  "padre",
+  "madre",
+  "jamon",
+  "queso",
+  "pedro",
+  "curro",
+  "ostra",
+  "tonto",
+  "tonta"
 ];
