@@ -11,6 +11,7 @@ import {
   isStoredPlayerNormalized,
   normalizePlayer,
   normalizePlayerName,
+  resolveInitialPlayer,
 } from "./utils";
 import type {
   Player,
@@ -26,7 +27,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const [storedPlayer, setStoredPlayer] = useLocalStorage<Player>(
     "player",
-    DEFAULT_PLAYER,
+    resolveInitialPlayer,
   );
   const player = useMemo(() => normalizePlayer(storedPlayer), [storedPlayer]);
   const didHydrateRemoteRef = useRef(false);

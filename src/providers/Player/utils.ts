@@ -64,21 +64,35 @@ const normalizePlayerKeyboardPreference = (
   return value;
 };
 
+const resolveDevicePlayerLanguage = (): PlayerLanguage => {
+  if (typeof navigator === "undefined") {
+    return DEFAULT_PLAYER.language;
+  }
+
+  const navigatorLanguages = Array.isArray(navigator.languages)
+    ? navigator.languages
+    : [];
+  const candidates = [navigator.language, ...navigatorLanguages];
+  const preferredLanguage = candidates.find(
+    (candidate): candidate is string =>
+      typeof candidate === "string" && candidate.trim().length > 0,
+  );
+
+  if (!preferredLanguage) {
+    return DEFAULT_PLAYER.language;
+  }
+
+  return preferredLanguage.trim().toLowerCase().startsWith("es")
+    ? "es"
+    : DEFAULT_PLAYER.language;
+};
+
 const normalizePlayerLanguage = (value: unknown): PlayerLanguage => {
   if (value === "en" || value === "es") {
     return value;
   }
 
-  if (typeof navigator === "undefined") {
-    return DEFAULT_PLAYER.language;
-  }
-
-  const browserLanguage = navigator.language.trim().toLowerCase();
-  if (browserLanguage.startsWith("es")) {
-    return "es";
-  }
-
-  return DEFAULT_PLAYER.language;
+  return resolveDevicePlayerLanguage();
 };
 
 const normalizeShowEndOfGameDialogs = (value: unknown): boolean => {
@@ -91,7 +105,10 @@ const normalizeShowEndOfGameDialogs = (value: unknown): boolean => {
 
 export const normalizePlayer = (value: Partial<Player> | null): Player => {
   if (!value) {
-    return DEFAULT_PLAYER;
+    return {
+      ...DEFAULT_PLAYER,
+      language: resolveDevicePlayerLanguage(),
+    };
   }
 
   return {
@@ -112,6 +129,11 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     ),
   };
 };
+
+export const resolveInitialPlayer = (): Player => ({
+  ...DEFAULT_PLAYER,
+  language: resolveDevicePlayerLanguage(),
+});
 
 export const arePlayersEqual = (
   left: Partial<Player> | null,
