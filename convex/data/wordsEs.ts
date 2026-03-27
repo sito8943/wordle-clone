@@ -1657,4 +1657,13 @@ export const ES_WORDS = [
   "fumar",
   "funda",
   "furia",
+  "letra",
+  "mango",
+  "jabon",
+  "perra",
+  "perro",
+  "manco",
+  "lindo",
+  "julio",
+  "junio",
 ];

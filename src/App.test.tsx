@@ -1072,7 +1072,7 @@ describe("App", () => {
       expect(screen.getByLabelText("Insane timer: 57 seconds")).toBeTruthy();
 
       fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-      expect(screen.getByRole("heading", { name: "Settings" })).toBeTruthy();
+      expect(screen.getByLabelText("Theme mode")).toBeTruthy();
       expect(screen.queryByLabelText(/Insane timer:/)).toBeNull();
 
       act(() => {
@@ -1514,15 +1514,21 @@ describe("App", () => {
 
   it("shows the settings hint only on the first end-of-game dialog in a tab", async () => {
     renderApp();
+    await waitForHomeReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
     }
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
-    expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
+    const victoryDialog = await screen.findByRole("dialog", {
+      name: "Victory",
+    });
+    expect(victoryDialog).toBeTruthy();
     expect(
-      screen.getByRole("link", { name: "Settings" }).getAttribute("href"),
+      within(victoryDialog)
+        .getByRole("link", { name: "Settings" })
+        .getAttribute("href"),
     ).toBe("/settings#end-dialogs");
     expect(
       sessionStorage.getItem(END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY),
