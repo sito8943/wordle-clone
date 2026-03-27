@@ -23,6 +23,18 @@ const normalizeWords = (words: string[]): string[] => {
   return [...unique].sort();
 };
 
+const countNormalizedRows = (rows: Array<{ value: string }>): number =>
+  normalizeWords(rows.map((row) => row.value)).length;
+
+const normalizeRows = (rows: Array<{ value: string }>): string[] =>
+  normalizeWords(rows.map((row) => row.value));
+
+const getLanguageRows = async (ctx: MutationCtx, language: string) =>
+  ctx.db
+    .query("words")
+    .withIndex("by_language", (q) => q.eq("language", language))
+    .collect();
+
 const EN_WORDS_NORMALIZED = normalizeWords(EN_WORDS);
 const ES_WORDS_NORMALIZED = normalizeWords(ES_WORDS);
 
@@ -73,16 +85,14 @@ export const ensureLanguageSeeded = mutation({
   },
   handler: async (ctx, args) => {
     const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
-    const existingWords = await ctx.db
-      .query("words")
-      .withIndex("by_language", (q) => q.eq("language", language))
-      .collect();
+    const existingWords = await getLanguageRows(ctx, language);
+    const existingTotal = countNormalizedRows(existingWords);
 
-    if (existingWords.length > 0) {
+    if (existingTotal > 0) {
       return {
         language,
         inserted: 0,
-        total: existingWords.length,
+        total: existingTotal,
       };
     }
 
@@ -98,12 +108,15 @@ export const ensureLanguageSeeded = mutation({
       });
     }
 
-    await upsertWordsMeta(ctx, language, djb2Hash(seedWords));
+    const persistedRows = await getLanguageRows(ctx, language);
+    const persistedWords = normalizeRows(persistedRows);
+    const total = persistedWords.length;
+    await upsertWordsMeta(ctx, language, djb2Hash(persistedWords));
 
     return {
       language,
-      inserted: seedWords.length,
-      total: seedWords.length,
+      inserted: total,
+      total,
     };
   },
 });
@@ -121,16 +134,14 @@ export const seedLanguageWords = mutation({
       args.words ??
         (language === ES_LANGUAGE ? ES_WORDS_NORMALIZED : EN_WORDS_NORMALIZED),
     );
-    const existingWords = await ctx.db
-      .query("words")
-      .withIndex("by_language", (q) => q.eq("language", language))
-      .collect();
+    const existingWords = await getLanguageRows(ctx, language);
+    const existingTotal = countNormalizedRows(existingWords);
 
-    if (!shouldReplace && existingWords.length > 0) {
+    if (!shouldReplace && existingTotal > 0) {
       return {
         language,
         inserted: 0,
-        total: existingWords.length,
+        total: existingTotal,
         replaced: false,
       };
     }
@@ -151,14 +162,16 @@ export const seedLanguageWords = mutation({
       });
     }
 
-    await upsertWordsMeta(ctx, language, djb2Hash(seedWords));
+    const persistedRows = await getLanguageRows(ctx, language);
+    const persistedWords = normalizeRows(persistedRows);
+    const total = persistedWords.length;
+    await upsertWordsMeta(ctx, language, djb2Hash(persistedWords));
+    const inserted = shouldReplace ? total : Math.max(0, total - existingTotal);
 
     return {
       language,
-      inserted: seedWords.length,
-      total: shouldReplace
-        ? seedWords.length
-        : existingWords.length + seedWords.length,
+      inserted,
+      total,
       replaced: shouldReplace,
     };
   },
@@ -201,11 +214,9 @@ export const refreshLanguageChecksum = mutation({
   },
   handler: async (ctx, args) => {
     const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
-    const rows = await ctx.db
-      .query("words")
-      .withIndex("by_language", (q) => q.eq("language", language))
-      .collect();
-    const checksum = djb2Hash(normalizeWords(rows.map((row) => row.value)));
+    const rows = await getLanguageRows(ctx, language);
+    const words = normalizeRows(rows);
+    const checksum = djb2Hash(words);
     const updatedAt = Date.now();
     const meta = await ctx.db
       .query("wordsMeta")
@@ -218,6 +229,6 @@ export const refreshLanguageChecksum = mutation({
       await ctx.db.insert("wordsMeta", { language, checksum, updatedAt });
     }
 
-    return { language, checksum, updatedAt, total: rows.length };
+    return { language, checksum, updatedAt, total: words.length };
   },
 });
