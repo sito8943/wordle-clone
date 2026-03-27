@@ -180,7 +180,7 @@ describe("App", () => {
     expect(within(main).getByRole("link", { name: "Scoreboard" })).toBeTruthy();
   });
 
-  it("keeps the footer visible on play", async () => {
+  it("hides the footer on play", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
@@ -197,8 +197,8 @@ describe("App", () => {
     });
 
     const footer = await screen.findByRole("contentinfo");
-    expect(footer.className).toContain("translate-y-0");
-    expect(footer.className).not.toContain("translate-y-full");
+    expect(footer.className).toContain("translate-y-full");
+    expect(footer.className).not.toContain("translate-y-0");
   });
 
   it("shows a spinner in scoreboard navbar label while rank is loading", async () => {
