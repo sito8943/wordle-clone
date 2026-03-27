@@ -87,7 +87,7 @@ const mockSystemTheme = (mode: "light" | "dark") => {
 const preloadAppRoutes = async () => {
   await Promise.all([
     import("@layouts/View"),
-    import("@views/Landing"),
+    import("@views/Home"),
     import("@views/Play"),
     import("@views/Scoreboard"),
     import("@views/Profile"),
@@ -156,7 +156,7 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
   });
 
-  it("renders the play landing page at / with play, settings and scoreboard links", async () => {
+  it("renders the home page at / with play, settings and scoreboard links", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
@@ -178,6 +178,27 @@ describe("App", () => {
     expect(within(main).getByRole("link", { name: "Play" })).toBeTruthy();
     expect(within(main).getByRole("link", { name: "Settings" })).toBeTruthy();
     expect(within(main).getByRole("link", { name: "Scoreboard" })).toBeTruthy();
+  });
+
+  it("keeps the footer visible on play", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
+    );
+    window.history.pushState({}, "", "/play");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    renderApp();
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("status", { name: "Loading Wordle" }),
+      ).toBeNull();
+    });
+
+    const footer = await screen.findByRole("contentinfo");
+    expect(footer.className).toContain("translate-y-0");
+    expect(footer.className).not.toContain("translate-y-full");
   });
 
   it("shows a spinner in scoreboard navbar label while rank is loading", async () => {
