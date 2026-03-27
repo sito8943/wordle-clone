@@ -15,9 +15,7 @@ const hasSeenEntryAnimationInSession = (): boolean => {
   }
 
   try {
-    return (
-      sessionStorage.getItem(HOME_ENTRY_ANIMATION_SESSION_KEY) === "seen"
-    );
+    return sessionStorage.getItem(HOME_ENTRY_ANIMATION_SESSION_KEY) === "seen";
   } catch {
     return false;
   }
@@ -37,7 +35,9 @@ const markEntryAnimationAsSeenInSession = (): void => {
 
 const Home = () => {
   const { t } = useTranslation();
-  const [shouldAnimateEntry] = useState(() => !hasSeenEntryAnimationInSession());
+  const [shouldAnimateEntry] = useState(
+    () => !hasSeenEntryAnimationInSession(),
+  );
   const [entryAnimationReady, setEntryAnimationReady] = useState(
     () => !shouldAnimateEntry,
   );
