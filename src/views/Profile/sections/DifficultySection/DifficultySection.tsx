@@ -8,7 +8,7 @@ import {
   PROFILE_DIFFICULTY_MODE_INPUT_ID,
   PROFILE_KEYBOARD_MODE_INPUT_ID,
 } from "@views/Profile/constants";
-import { HARD_MODE_TOTAL_SECONDS } from "@views/Home/hooks/useHomeController/constants";
+import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 
 const DifficultySection = ({
   keyboardPreference,

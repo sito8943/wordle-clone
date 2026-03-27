@@ -6,11 +6,20 @@ import {
   SCROLL_VISIBILITY_THRESHOLD,
 } from "./constants";
 
-const Footer = () => {
+type FooterProps = {
+  alwaysVisible?: boolean;
+};
+
+const Footer = ({ alwaysVisible = false }: FooterProps) => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    if (alwaysVisible) {
+      setIsVisible(true);
+      return;
+    }
+
     const handleScroll = () => {
       const nextVisible = window.scrollY > SCROLL_VISIBILITY_THRESHOLD;
 
@@ -25,12 +34,14 @@ const Footer = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [alwaysVisible]);
+
+  const footerVisible = alwaysVisible || isVisible;
 
   return (
     <footer
       className={`fixed inset-x-0 bottom-0 z-30 px-3 pb-3 transition-all duration-200 ${
-        isVisible
+        footerVisible
           ? "translate-y-0 opacity-100"
           : "pointer-events-none translate-y-full opacity-0"
       }`}

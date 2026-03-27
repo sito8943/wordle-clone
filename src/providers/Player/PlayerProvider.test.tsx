@@ -100,6 +100,16 @@ describe("PlayerProvider", () => {
     expect(result.current.player.showEndOfGameDialogs).toBe(true);
   });
 
+  it("uses the device language on first initialization", () => {
+    vi.spyOn(window.navigator, "language", "get").mockReturnValue("es-ES");
+
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper(),
+    });
+
+    expect(result.current.player.language).toBe("es");
+  });
+
   it("reads stored player from localStorage", () => {
     localStorage.setItem(
       "player",
