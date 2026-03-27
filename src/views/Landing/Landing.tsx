@@ -21,7 +21,7 @@ const Landing = () => {
 
   return (
     <main className="page-centered flex-1 gap-8 px-4">
-      <h2 className="slab text-center text-6xl font-black tracking-[0.28em] text-black sm:text-8xl dark:text-neutral-100">
+      <h2 className="slab text-center text-6xl font-black tracking-widest text-black sm:text-8xl dark:text-neutral-100">
         {t("app.title").toUpperCase()}
       </h2>
       <nav className="w-full max-w-sm">

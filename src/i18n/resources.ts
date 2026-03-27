@@ -48,7 +48,7 @@ export const resources = {
       notFound: {
         title: "404 - Not Found",
         description: "The page you are looking for does not exist.",
-        action: "Go back home",
+        action: "Go to play",
       },
       scoreboard: {
         title: "Scoreboard",
@@ -168,7 +168,7 @@ export const resources = {
           nameValidationError: "Could not validate name.",
         },
       },
-      home: {
+      play: {
         sections: {
           boardError: {
             title: "The board crashed.",
@@ -379,7 +379,7 @@ export const resources = {
       notFound: {
         title: "404 - No encontrado",
         description: "La página que buscas no existe.",
-        action: "Volver al inicio",
+        action: "Ir a jugar",
       },
       scoreboard: {
         title: "Clasificación",
@@ -499,7 +499,7 @@ export const resources = {
           nameValidationError: "No se ha podido validar el nombre.",
         },
       },
-      home: {
+      play: {
         sections: {
           boardError: {
             title: "El tablero ha fallado.",

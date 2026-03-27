@@ -1675,5 +1675,5 @@ export const ES_WORDS = [
   "curro",
   "ostra",
   "tonto",
-  "tonta"
+  "tonta",
 ];

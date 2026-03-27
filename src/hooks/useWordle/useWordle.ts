@@ -64,7 +64,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const dictionaryError = useMemo(
     () =>
       !dictionaryLoading && dictionaryWords.length === 0
-        ? i18n.t("home.toolbar.wordListUnavailable")
+        ? i18n.t("play.toolbar.wordListUnavailable")
         : null,
     [dictionaryLoading, dictionaryWords.length],
   );
@@ -240,12 +240,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
       if (!validation.ok) {
         if (validation.message === "Not enough letters") {
-          showMessage(i18n.t("home.gameplay.messages.notEnoughLetters"));
+          showMessage(i18n.t("play.gameplay.messages.notEnoughLetters"));
           return;
         }
 
         if (validation.message === "Not in word list") {
-          showMessage(i18n.t("home.gameplay.messages.notInWordList"));
+          showMessage(i18n.t("play.gameplay.messages.notInWordList"));
           return;
         }
 

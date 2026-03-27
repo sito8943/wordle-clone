@@ -110,7 +110,7 @@ describe("useWordle dictionary query integration", () => {
 
     expect(result.current.dictionaryWords).toEqual([]);
     expect(result.current.dictionaryError).toBe(
-      i18n.t("home.toolbar.wordListUnavailable"),
+      i18n.t("play.toolbar.wordListUnavailable"),
     );
   });
 

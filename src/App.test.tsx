@@ -20,8 +20,8 @@ import {
 import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
 import { ApiProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
-import { HINT_USAGE_STORAGE_KEY } from "@views/Home/hooks/useHintController";
-import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Home/hooks/useHomeController/constants";
+import { HINT_USAGE_STORAGE_KEY } from "@views/Play/hooks/useHintController";
+import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Play/hooks/usePlayController/constants";
 
 vi.mock("./utils/words", async () => {
   const actual =
@@ -42,7 +42,7 @@ const renderApp = () =>
     </ApiProvider>,
   );
 
-const waitForHomeReady = async () => {
+const waitForPlayReady = async () => {
   await waitFor(() => {
     expect(screen.queryByRole("status", { name: "Loading Wordle" })).toBeNull();
   });
@@ -88,7 +88,7 @@ const preloadAppRoutes = async () => {
   await Promise.all([
     import("@layouts/View"),
     import("@views/Landing"),
-    import("@views/Home"),
+    import("@views/Play"),
     import("@views/Scoreboard"),
     import("@views/Profile"),
     import("@views/NotFound"),
@@ -150,13 +150,13 @@ describe("App", () => {
       JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
     );
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
     expect(screen.getByRole("link", { name: "Play" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Settings" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
   });
 
-  it("renders the home landing page at / with play, settings and scoreboard links", async () => {
+  it("renders the play landing page at / with play, settings and scoreboard links", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
@@ -196,7 +196,7 @@ describe("App", () => {
 
     try {
       renderApp();
-      await waitForHomeReady();
+      await waitForPlayReady();
 
       const scoreboardLink = screen.getByRole("link", { name: "Scoreboard" });
       expect(
@@ -328,7 +328,7 @@ describe("App", () => {
     );
 
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
     expect(
@@ -394,9 +394,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     const difficultySelect = screen.getByLabelText(
       "Difficulty",
@@ -418,9 +416,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     const difficultySelect = screen.getByLabelText(
       "Difficulty",
@@ -458,9 +454,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     const keyboardModeSelect = screen.getByLabelText(
       "Keyboard mode",
@@ -667,9 +661,7 @@ describe("App", () => {
     expect(screen.queryByRole("button", { name: "Word list" })).toBeNull();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "easy" },
@@ -681,9 +673,7 @@ describe("App", () => {
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "normal" },
@@ -711,9 +701,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Hint" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "hard" },
@@ -725,9 +713,7 @@ describe("App", () => {
     });
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "insane" },
@@ -739,9 +725,7 @@ describe("App", () => {
     });
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "easy" },
@@ -1190,9 +1174,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     const difficultySelect = screen.getByLabelText(
       "Difficulty",
@@ -1240,9 +1222,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     const difficultySelect = screen.getByLabelText(
       "Difficulty",
@@ -1280,9 +1260,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     const difficultySelect = screen.getByLabelText(
       "Difficulty",
@@ -1489,7 +1467,7 @@ describe("App", () => {
     });
   });
 
-  it("shows and increments win streak in home after a victory", async () => {
+  it("shows and increments win streak in play after a victory", async () => {
     renderApp();
 
     expect(await screen.findByLabelText("Streak: 0")).toBeTruthy();
@@ -1514,7 +1492,7 @@ describe("App", () => {
 
   it("shows the settings hint only on the first end-of-game dialog in a tab", async () => {
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1535,7 +1513,7 @@ describe("App", () => {
     ).toBe("seen");
   });
 
-  it("opens the help dialog from home and shows rules and scoring", async () => {
+  it("opens the help dialog from play and shows rules and scoring", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1547,7 +1525,7 @@ describe("App", () => {
     );
 
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     fireEvent.click(await screen.findByRole("button", { name: "Help" }));
 
@@ -1602,7 +1580,7 @@ describe("App", () => {
     );
 
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1627,7 +1605,7 @@ describe("App", () => {
     );
 
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1652,7 +1630,7 @@ describe("App", () => {
     );
 
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1677,7 +1655,7 @@ describe("App", () => {
     );
 
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1839,7 +1817,7 @@ describe("App", () => {
     );
 
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -1933,7 +1911,7 @@ describe("App", () => {
       }),
     );
     renderApp();
-    await waitForHomeReady();
+    await waitForPlayReady();
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -2061,9 +2039,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Name:"), {
@@ -2096,9 +2072,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Name:"), {
@@ -2116,9 +2090,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Name:"), {
@@ -2150,9 +2122,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Name:"), {
@@ -2171,9 +2141,7 @@ describe("App", () => {
     renderApp();
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    expect(
-      await screen.findByRole("button", { name: "Edit" }),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Anim: on" }));
 
