@@ -1616,5 +1616,5 @@ export const ES_WORDS = [
   "hiena",
   "largo",
   "frito",
-  "firme"
+  "firme",
 ];
