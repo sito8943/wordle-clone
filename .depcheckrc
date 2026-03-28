@@ -11,5 +11,6 @@
     "@providers/*",
     "@hooks/*",
     "@vitest/coverage-v8",
-    "i18next-browser-languagedetector"
+    "i18next-browser-languagedetector",
+    "@config/env"
   ]
