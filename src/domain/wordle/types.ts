@@ -5,6 +5,13 @@ export type GuessResult = {
   statuses: TileStatus[];
 };
 
+export type GuessComboTone = Extract<TileStatus, "correct" | "present">;
+
+export type GuessCombo = {
+  count: number;
+  tone: GuessComboTone;
+};
+
 export type PersistedGameRef = {
   sessionId: string;
   gameId: string;

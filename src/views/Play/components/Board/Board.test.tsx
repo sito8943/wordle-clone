@@ -122,6 +122,36 @@ describe("Board", () => {
     expect(cells[1].style.animationDelay).toBe("16ms");
   });
 
+  it("renders a green combo flash beside the board", () => {
+    render(
+      <Board
+        guesses={[]}
+        current=""
+        gameOver={false}
+        comboFlash={{ count: 3, tone: "correct", pulse: 1 }}
+      />,
+    );
+
+    const combo = screen.getByText("x3");
+    expect(combo.className).toContain("combo-flash-animation");
+    expect(combo.className).toContain("text-green-800");
+  });
+
+  it("renders a yellow combo flash beside the board", () => {
+    render(
+      <Board
+        guesses={[]}
+        current=""
+        gameOver={false}
+        comboFlash={{ count: 2, tone: "present", pulse: 1 }}
+      />,
+    );
+
+    const combo = screen.getByText("x2");
+    expect(combo.className).toContain("combo-flash-animation");
+    expect(combo.className).toContain("text-yellow-900");
+  });
+
   it("highlights only the current active tile", () => {
     render(<Board guesses={[]} current="AB" gameOver={false} />);
 

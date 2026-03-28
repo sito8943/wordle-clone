@@ -49,6 +49,7 @@ export type BoardContentProps = Pick<
   | "activeRowHintStatuses"
   | "hintRevealPulse"
   | "hintRevealTileIndex"
+  | "comboFlash"
 > & {
   animateTileEntry: boolean;
   answer: string;

@@ -363,6 +363,23 @@ h1,
   }
 }
 
+@keyframes combo-flash-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.85);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateX(0) scale(1.05);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(10px) scale(1);
+  }
+}
+
 .board-entry-animation {
   animation: smooth-entry 360ms ease-out both;
 }
@@ -392,6 +409,11 @@ h1,
 
 .row-active-indicator-animation {
   animation: row-active-indicator-pulse 3s ease-in-out infinite;
+}
+
+.combo-flash-animation {
+  animation: combo-flash-pop 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
 }
 
 .dialog-backdrop-enter-animation {
@@ -485,7 +507,8 @@ h1,
   .tile-entry-animation,
   .tile-hint-reveal-animation,
   .board-shake-pulse-animation,
-  .boost-animation {
+  .boost-animation,
+  .combo-flash-animation {
     animation: none;
     opacity: 1;
     transform: none;

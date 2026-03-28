@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getGuessCombo,
   getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
@@ -12,12 +13,17 @@ import { useHardModeTimer } from "./useHardModeTimer";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
-import type { EndOfGameSnapshot, EndOfGameScoreSummaryItem } from "./types";
+import type {
+  ComboFlash,
+  EndOfGameSnapshot,
+  EndOfGameScoreSummaryItem,
+} from "./types";
 import {
   hasSeenEndOfGameDialogInSession,
   markEndOfGameDialogAsSeenInSession,
 } from "./utils";
 import { i18n } from "@i18n";
+import { COMBO_FLASH_VISIBILITY_DURATION_MS } from "./constants";
 
 export default function usePlayController() {
   const { scoreClient, wordDictionaryClient } = useApi();
@@ -46,6 +52,7 @@ export default function usePlayController() {
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
+  const previousGuessesLengthRef = useRef(guesses.length);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
   const [showWordsDialog, setShowWordsDialog] = useState(false);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
@@ -62,6 +69,7 @@ export default function usePlayController() {
     useState<EndOfGameSnapshot | null>(null);
   const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
     useState(false);
+  const [comboFlash, setComboFlash] = useState<ComboFlash | null>(null);
   const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
   const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] =
     useState(false);
@@ -193,9 +201,49 @@ export default function usePlayController() {
     revealHint,
   });
 
+  useEffect(() => {
+    const previousGuessesLength = previousGuessesLengthRef.current;
+    previousGuessesLengthRef.current = guesses.length;
+
+    if (guesses.length <= previousGuessesLength) {
+      if (guesses.length === 0) {
+        setComboFlash(null);
+      }
+      return;
+    }
+
+    const latestGuess = guesses[guesses.length - 1];
+    const combo = getGuessCombo(latestGuess);
+
+    if (!combo) {
+      setComboFlash(null);
+      return;
+    }
+
+    setComboFlash((previous) => ({
+      ...combo,
+      pulse: (previous?.pulse ?? 0) + 1,
+    }));
+  }, [guesses]);
+
+  useEffect(() => {
+    if (!comboFlash) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setComboFlash(null);
+    }, COMBO_FLASH_VISIBILITY_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [comboFlash?.pulse]);
+
   const refreshBoardNow = useCallback(() => {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
+    setComboFlash(null);
     resetHints();
     resetHardModeTimer();
     refresh();
@@ -204,6 +252,7 @@ export default function usePlayController() {
   const startNewBoard = useCallback(() => {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
+    setComboFlash(null);
     resetHints();
     resetHardModeTimer();
     startNewWordleBoard();
@@ -332,6 +381,7 @@ export default function usePlayController() {
     if (showResumeDialog) {
       setEndOfGameSnapshot(null);
       setShowLegacyEndOfGameFeedback(false);
+      setComboFlash(null);
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
       setShowHelpDialog(false);
@@ -414,6 +464,7 @@ export default function usePlayController() {
     hintsRemaining,
     hintsEnabledForDifficulty,
     hintButtonDisabled,
+    comboFlash,
     startNewBoard,
     refreshBoard,
     showRefreshDialog,

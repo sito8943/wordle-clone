@@ -1,3 +1,9 @@
+import type { GuessCombo } from "@domain/wordle";
+
+export type ComboFlash = GuessCombo & {
+  pulse: number;
+};
+
 export type HardModeTimerSnapshot = {
   sessionId: string;
   secondsLeft: number;

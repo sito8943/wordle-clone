@@ -18,6 +18,7 @@ const BoardContent = memo(
     activeRowHintStatuses,
     hintRevealPulse,
     hintRevealTileIndex,
+    comboFlash,
     animateTileEntry,
   }: BoardContentProps): JSX.Element => {
     const { t } = useTranslation();
@@ -36,6 +37,7 @@ const BoardContent = memo(
           activeRowHintStatuses={activeRowHintStatuses}
           hintRevealPulse={hintRevealPulse}
           hintRevealTileIndex={hintRevealTileIndex}
+          comboFlash={comboFlash}
         />
 
         {gameOver && showLegacyEndOfGameMessage && (

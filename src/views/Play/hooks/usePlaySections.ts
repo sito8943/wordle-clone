@@ -31,6 +31,7 @@ const usePlaySections = (
     closeEndOfGameDialog,
     closeHelpDialog,
     closeWordsDialog,
+    comboFlash,
     confirmRefreshBoard,
     continuePreviousBoard,
     current,
@@ -163,6 +164,7 @@ const usePlaySections = (
         activeRowHintStatuses,
         hintRevealPulse,
         hintRevealTileIndex,
+        comboFlash,
         animateTileEntry,
       },
       hardModeProgress: {
@@ -183,6 +185,7 @@ const usePlaySections = (
       hardModeSecondsLeft,
       hintRevealPulse,
       hintRevealTileIndex,
+      comboFlash,
       showHardModeFinalStretchBar,
       showLegacyEndOfGameMessage,
       startAnimationSeed,

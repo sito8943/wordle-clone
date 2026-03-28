@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import { i18n, initI18n } from "@i18n";
 import usePlayController from "./usePlayController";
-import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "./constants";
+import {
+  COMBO_FLASH_VISIBILITY_DURATION_MS,
+  END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+} from "./constants";
 
 const mockUseApi = vi.fn();
 const mockUsePlayer = vi.fn();
@@ -317,6 +320,54 @@ describe("usePlayController", () => {
     expect(result.current.showLegacyEndOfGameMessage).toBe(true);
     expect(result.current.showRefreshAttention).toBe(true);
     expect(result.current.refreshAttentionPulse).toBeGreaterThan(0);
+  });
+
+  it("shows a combo flash when a new guess has yellow or green tiles", () => {
+    const { result, rerender } = renderHook(() => usePlayController());
+
+    expect(result.current.comboFlash).toBeNull();
+
+    wordleState = {
+      ...wordleState,
+      guesses: [
+        {
+          word: "CRANE",
+          statuses: ["correct", "present", "absent", "absent", "absent"],
+        },
+      ],
+    };
+
+    rerender();
+
+    expect(result.current.comboFlash).toEqual({
+      count: 2,
+      tone: "correct",
+      pulse: 1,
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(COMBO_FLASH_VISIBILITY_DURATION_MS);
+    });
+
+    expect(result.current.comboFlash).toBeNull();
+  });
+
+  it("does not show a combo flash when a new guess has only gray tiles", () => {
+    const { result, rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: [
+        {
+          word: "CRANE",
+          statuses: ["absent", "absent", "absent", "absent", "absent"],
+        },
+      ],
+    };
+
+    rerender();
+
+    expect(result.current.comboFlash).toBeNull();
   });
 
   it("opens a confirmation dialog before refreshing an active game", () => {

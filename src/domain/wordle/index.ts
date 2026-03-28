@@ -1,4 +1,5 @@
 export * from "./board";
+export * from "./combo";
 export * from "./constants";
 export * from "./keyboard";
 export * from "./scoring";

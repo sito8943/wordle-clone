@@ -11,6 +11,7 @@ export type BoardPropsType = {
   activeRowHintStatuses?: Partial<Record<number, HintTileStatus>>;
   hintRevealPulse?: number;
   hintRevealTileIndex?: number | null;
+  comboFlash?: ComboFlash | null;
 };
 
 export type RowPropsType = {
@@ -39,6 +40,13 @@ export type BoardRowViewModel = {
 
 export type Status = BoardCellStatus;
 export type HintTileStatus = Extract<Status, "correct" | "present">;
+export type ComboFlashTone = HintTileStatus;
+
+export type ComboFlash = {
+  count: number;
+  tone: ComboFlashTone;
+  pulse: number;
+};
 
 export type TilePropsType = {
   letter?: string;
