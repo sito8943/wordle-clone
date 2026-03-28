@@ -219,7 +219,6 @@ export const ES_WORDS = [
   "aforo",
   "afosa",
   "afose",
-  "afoso",
   "aftas",
   "afufa",
   "afufe",
@@ -879,7 +878,6 @@ export const ES_WORDS = [
   "arles",
   "arlos",
   "armad",
-  "arman",
   "armar",
   "armas",
   "armen",
@@ -1617,4 +1615,5 @@ export const ES_WORDS = [
   "largo",
   "frito",
   "firme",
+  "sordo",
 ];
