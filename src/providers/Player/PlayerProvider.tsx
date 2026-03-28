@@ -169,7 +169,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 
   const refreshCurrentPlayerProfile = useCallback(async () => {
-    const remoteProfile = await scoreClient.getCurrentPlayerProfile();
+    const remoteProfile = await scoreClient.getCurrentPlayerProfile(
+      player.language,
+    );
 
     if (!remoteProfile) {
       return;
@@ -178,7 +180,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     await applyRemoteProfile(remoteProfile, {
       preserveLocalPreferences: true,
     });
-  }, [applyRemoteProfile, scoreClient]);
+  }, [applyRemoteProfile, player.language, scoreClient]);
 
   const replacePlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -397,7 +399,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           return;
         }
 
-        const remoteProfile = await scoreClient.getCurrentPlayerProfile();
+        const remoteProfile = await scoreClient.getCurrentPlayerProfile(
+          player.language,
+        );
         if (remoteProfile) {
           await applyRemoteProfile(remoteProfile, {
             preserveLocalPreferences: true,

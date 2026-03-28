@@ -117,8 +117,11 @@ class ScoreClient {
     });
   }
 
-  async getCurrentPlayerProfile(): Promise<RemotePlayerProfile | null> {
+  async getCurrentPlayerProfile(
+    language: PlayerLanguage = ScoreClient.DEFAULT_LANGUAGE,
+  ): Promise<RemotePlayerProfile | null> {
     const identity = this.readProfileIdentity();
+    const safeLanguage = this.normalizeLanguage(language);
 
     if (!this.gateway.isConfigured || !this.isOnline()) {
       return null;
@@ -129,6 +132,7 @@ class ScoreClient {
       {
         clientId: this.clientId,
         clientRecordId: identity?.clientRecordId,
+        language: safeLanguage,
       },
     );
 
@@ -140,7 +144,7 @@ class ScoreClient {
       clientId: this.clientId,
       clientRecordId: identity?.clientRecordId ?? "",
       nick: "Player",
-      language: ScoreClient.DEFAULT_LANGUAGE,
+      language: safeLanguage,
       score: 0,
       streak: 0,
       difficulty: "normal",

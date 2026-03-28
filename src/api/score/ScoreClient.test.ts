@@ -540,6 +540,38 @@ describe("ScoreClient", () => {
     });
   });
 
+  it("requests the current player profile using the provided language", async () => {
+    const query = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "remote-client",
+      clientRecordId: "remote-record",
+      nick: "Ana",
+      playerCode: "AB12",
+      score: 14,
+      streak: 3,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    const profile = await client.getCurrentPlayerProfile("es");
+
+    expect(query).toHaveBeenCalledWith("scores:getCurrentPlayerProfile", {
+      clientId: expect.any(String),
+      clientRecordId: undefined,
+      language: "es",
+    });
+    expect(profile?.language).toBe("es");
+  });
+
   it("queues round events locally and syncs them as deltas", async () => {
     const mutation = vi.fn().mockResolvedValue({
       id: "remote-player",

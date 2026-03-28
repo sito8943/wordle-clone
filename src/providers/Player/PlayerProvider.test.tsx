@@ -500,6 +500,7 @@ describe("PlayerProvider", () => {
         code: "",
         score: 3,
         streak: 1,
+        language: "es",
         difficulty: "normal",
         keyboardPreference: "onscreen",
       }),
@@ -528,10 +529,11 @@ describe("PlayerProvider", () => {
       await result.current.refreshCurrentPlayerProfile();
     });
 
-    expect(getCurrentPlayerProfile).toHaveBeenCalled();
+    expect(getCurrentPlayerProfile).toHaveBeenCalledWith("es");
     expect(result.current.player.code).toBe("ZX90");
     expect(result.current.player.score).toBe(12);
     expect(result.current.player.difficulty).toBe("normal");
+    expect(result.current.player.language).toBe("es");
   });
 
   it("keeps local language preferences after background remote hydration", async () => {
@@ -567,7 +569,7 @@ describe("PlayerProvider", () => {
     });
 
     await waitFor(() => {
-      expect(getCurrentPlayerProfile).toHaveBeenCalled();
+      expect(getCurrentPlayerProfile).toHaveBeenCalledWith("es");
     });
 
     expect(result.current.player.language).toBe("es");
