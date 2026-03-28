@@ -6,6 +6,7 @@ on:
 
 env:
   VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
+  VITE_WORD_REPORT_PHONE_NUMBER: ${{ vars.VITE_WORD_REPORT_PHONE_NUMBER }}
 
 jobs:
   verify:

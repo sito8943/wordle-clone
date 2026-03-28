@@ -277,6 +277,7 @@ export const resources = {
         },
         endOfGame: {
           wordLabel: "Correct word",
+          invalidWordReport: "I think this word is not valid",
           playAgain: "Play again",
           settingsHintPrefix: "You can disable these dialogs in",
           settingsHintLink: "Settings",
@@ -612,6 +613,7 @@ export const resources = {
         },
         endOfGame: {
           wordLabel: "Palabra correcta",
+          invalidWordReport: "Pienso que la palabra no es valida",
           playAgain: "Jugar otra vez",
           settingsHintPrefix: "Puedes desactivar estos diálogos en",
           settingsHintLink: "Ajustes",

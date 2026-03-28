@@ -6,6 +6,9 @@ const env: RuntimeEnv = {
   mode: import.meta.env.MODE,
   baseUrl: readString(import.meta.env.BASE_URL, "/"),
   convexUrl: readOptionalString(import.meta.env.VITE_CONVEX_URL),
+  wordReportPhoneNumber: readOptionalString(
+    import.meta.env.VITE_WORD_REPORT_PHONE_NUMBER,
+  ),
   wordListButtonEnabled: readBoolean(
     import.meta.env.VITE_WORD_LIST_BUTTON_ENABLED,
     true,
