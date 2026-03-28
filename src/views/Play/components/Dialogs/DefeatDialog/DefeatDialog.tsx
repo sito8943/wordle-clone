@@ -7,6 +7,7 @@ import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDial
 import { DEFEAT_DIALOG_TITLE_ID } from "./constants";
 import type { DefeatDialogProps } from "./types";
 import SettingsHint from "../SettingsHint";
+import { EndOfGameWordSection } from "../EndOfGameWordSection";
 
 const DefeatDialog = ({
   visible,
@@ -57,12 +58,10 @@ const DefeatDialog = ({
       panelAnimationClassName={panelAnimationClassName}
     >
       <div className="mt-5 space-y-5">
-        <section className="rounded-2xl bg-rose-50 px-4 py-3 text-rose-950 dark:bg-rose-950/40 dark:text-rose-100">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em]">
-            {t("play.endOfGame.wordLabel")}
-          </p>
-          <p className="mt-2 text-3xl font-black tracking-[0.18em]">{answer}</p>
-        </section>
+        <EndOfGameWordSection
+          answer={answer}
+          sectionClassName="rounded-2xl bg-rose-50 px-4 py-3 text-rose-950 dark:bg-rose-950/40 dark:text-rose-100"
+        />
 
         <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">
           {t("play.defeatDialog.bestStreak", { count: bestStreak })}

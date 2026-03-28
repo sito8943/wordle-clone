@@ -7,6 +7,7 @@ import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDial
 import { VICTORY_DIALOG_TITLE_ID } from "./constants";
 import type { VictoryDialogProps } from "./types";
 import SettingsHint from "../SettingsHint";
+import { EndOfGameWordSection } from "../EndOfGameWordSection";
 
 const formatScoreSummaryValue = (key: string, value: number): string => {
   if (key === "difficulty" || key === "streak") {
@@ -65,14 +66,10 @@ const VictoryDialog = ({
       panelAnimationClassName={panelAnimationClassName}
     >
       <div className="mt-5 space-y-5">
-        <section className="rounded-2xl bg-emerald-200 px-4 py-3 text-emerald-950 dark:bg-emerald-950/90 dark:text-emerald-400">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em]">
-            {t("play.endOfGame.wordLabel")}
-          </p>
-          <p className="mt-2 text-3xl font-black tracking-[0.18em] slab">
-            {answer}
-          </p>
-        </section>
+        <EndOfGameWordSection
+          answer={answer}
+          sectionClassName="rounded-2xl bg-emerald-200 px-4 py-3 text-emerald-950 dark:bg-emerald-950/90 dark:text-emerald-400"
+        />
 
         <section>
           <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
