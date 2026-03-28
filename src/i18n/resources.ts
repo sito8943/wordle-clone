@@ -194,6 +194,7 @@ export const resources = {
         gameplay: {
           boardAriaLabel: "Wordle board",
           onScreenKeyboardAriaLabel: "On-screen keyboard",
+          comboFlashValue: "x{{count}}",
           keys: {
             deleteLetter: "Delete letter",
             submitGuess: "Submit guess",
@@ -526,6 +527,7 @@ export const resources = {
         gameplay: {
           boardAriaLabel: "Tablero de Wordle",
           onScreenKeyboardAriaLabel: "Teclado en pantalla",
+          comboFlashValue: "x{{count}}",
           keys: {
             deleteLetter: "Borrar letra",
             submitGuess: "Enviar intento",

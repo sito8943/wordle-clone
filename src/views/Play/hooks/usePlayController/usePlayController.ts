@@ -238,7 +238,7 @@ export default function usePlayController() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [comboFlash?.pulse]);
+  }, [comboFlash]);
 
   const refreshBoardNow = useCallback(() => {
     setEndOfGameSnapshot(null);

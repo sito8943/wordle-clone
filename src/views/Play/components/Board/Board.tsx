@@ -71,7 +71,7 @@ export function Board({
               key={`combo-${comboFlash.pulse}`}
               className={`combo-flash-animation block rounded-full border px-2.5 py-1 text-sm font-black tracking-wide shadow-lg ${comboFlashStyleClass}`}
             >
-              x{comboFlash.count}
+              {t("play.gameplay.comboFlashValue", { count: comboFlash.count })}
             </span>
           </span>
         ) : null}

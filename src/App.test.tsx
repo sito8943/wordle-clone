@@ -1099,7 +1099,6 @@ describe("App", () => {
   });
 
   it("shows final-stretch bar and shakes board in insane mode under 15 seconds", async () => {
-    vi.useFakeTimers();
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1112,7 +1111,12 @@ describe("App", () => {
 
     try {
       renderApp();
-      fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
+      await waitForPlayReady();
+      const letterAButton = await screen.findByRole("button", {
+        name: "Letter A",
+      });
+      vi.useFakeTimers();
+      fireEvent.click(letterAButton);
 
       act(() => {
         vi.advanceTimersByTime(45000);
@@ -1123,10 +1127,10 @@ describe("App", () => {
       });
       expect(countdown.getAttribute("aria-valuenow")).toBe("15");
 
-      expect(
-        screen.getByRole("grid", { name: "Wordle board" }).parentElement
-          ?.className,
-      ).toContain("board-shake-pulse-animation");
+      const boardWrapper = screen
+        .getByRole("grid", { name: "Wordle board" })
+        .closest("div.mx-auto");
+      expect(boardWrapper?.className).toContain("board-shake-pulse-animation");
     } finally {
       vi.useRealTimers();
     }
@@ -1162,8 +1166,9 @@ describe("App", () => {
       fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
 
       const board = screen.getByRole("grid", { name: "Wordle board" });
+      const boardWrapper = board.closest("div.mx-auto");
       expect(board.className).toContain("board-entry-animation");
-      expect(board.parentElement?.className).not.toContain(
+      expect(boardWrapper?.className).not.toContain(
         "board-shake-pulse-animation",
       );
     } finally {
