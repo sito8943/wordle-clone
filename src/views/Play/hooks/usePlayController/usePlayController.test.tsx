@@ -220,11 +220,11 @@ describe("usePlayController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(4, 2, 2) + 1.2,
+      getTotalPointsForWin(4, 3.2, 2),
     );
   });
 
-  it("adds dictionary bonus as a dedicated score summary line on normal wins", () => {
+  it("adds dictionary-row bonus into the difficulty multiplier on normal wins", () => {
     setWordDictionary(["apple", "slate", "crane", "brick"]);
 
     const { rerender, result } = renderHook(() => usePlayController());
@@ -240,7 +240,10 @@ describe("usePlayController", () => {
     rerender();
 
     expect(result.current.victoryScoreSummary?.items).toEqual(
-      expect.arrayContaining([{ key: "dictionary", value: 1.2 }]),
+      expect.arrayContaining([{ key: "difficulty", value: 3.2 }]),
+    );
+    expect(result.current.victoryScoreSummary?.items).toEqual(
+      expect.not.arrayContaining([expect.objectContaining({ key: "dictionary" })]),
     );
   });
 

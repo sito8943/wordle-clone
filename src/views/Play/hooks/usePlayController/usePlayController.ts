@@ -158,17 +158,19 @@ export default function usePlayController() {
     if (won) {
       setShowLegacyEndOfGameFeedback(false);
       const basePoints = getPointsForWin(guesses.length);
-      const difficultyMultiplier = getDifficultyScoreMultiplier(
+      const baseDifficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
       );
       const timeBonus =
         player.difficulty === "insane"
           ? getInsaneTimeBonus(hardModeSecondsLeft)
           : 0;
-      const normalDictionaryRowsBonusPoints =
+      const normalDictionaryRowsBonusMultiplier =
         player.difficulty === "normal"
           ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
           : 0;
+      const difficultyMultiplier =
+        baseDifficultyMultiplier + normalDictionaryRowsBonusMultiplier;
       const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
         { key: "base", value: basePoints },
         { key: "difficulty", value: difficultyMultiplier },
@@ -179,20 +181,12 @@ export default function usePlayController() {
         scoreSummaryItems.push({ key: "time", value: timeBonus });
       }
 
-      if (normalDictionaryRowsBonusPoints > 0) {
-        scoreSummaryItems.push({
-          key: "dictionary",
-          value: normalDictionaryRowsBonusPoints,
-        });
-      }
-
       const totalPoints = getTotalPointsForWin(
         guesses.length,
         difficultyMultiplier,
         player.streak,
         timeBonus,
       );
-      const totalPointsWithBonus = totalPoints + normalDictionaryRowsBonusPoints;
 
       setEndOfGameSnapshot({
         answer,
@@ -200,11 +194,11 @@ export default function usePlayController() {
         bestStreak: player.streak,
         scoreSummary: {
           items: scoreSummaryItems,
-          total: totalPointsWithBonus,
+          total: totalPoints,
         },
       });
 
-      void commitVictory(totalPointsWithBonus);
+      void commitVictory(totalPoints);
     } else {
       setShowLegacyEndOfGameFeedback(false);
       setEndOfGameSnapshot({

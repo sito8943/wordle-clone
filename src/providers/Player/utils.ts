@@ -27,15 +27,7 @@ const normalizePlayerCode = (value: unknown): string => {
     .slice(0, 4);
 };
 
-const normalizeScoreCounter = (value: unknown): number => {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return 0;
-  }
-
-  return Math.max(0, Math.round(value * 10) / 10);
-};
-
-const normalizeStreakCounter = (value: unknown): number => {
+const normalizeCounter = (value: unknown): number => {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return 0;
   }
@@ -125,8 +117,8 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
         ? normalizePlayerName(value.name)
         : DEFAULT_PLAYER.name,
     code: normalizePlayerCode(value.code),
-    score: normalizeScoreCounter(value.score),
-    streak: normalizeStreakCounter(value.streak),
+    score: normalizeCounter(value.score),
+    streak: normalizeCounter(value.streak),
     language: normalizePlayerLanguage(value.language),
     difficulty: normalizePlayerDifficulty(value.difficulty),
     keyboardPreference: normalizePlayerKeyboardPreference(

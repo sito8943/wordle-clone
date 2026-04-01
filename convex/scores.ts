@@ -22,7 +22,7 @@ const normalizeNick = (value: string): string => {
 const nickKey = (value: string): string => normalizeNick(value).toLowerCase();
 
 const normalizeScore = (value: number): number =>
-  Math.max(0, Math.round(value * 10) / 10);
+  Math.max(0, Math.floor(value));
 
 const normalizeStreak = (value: number | undefined): number =>
   Math.max(0, Math.floor(value ?? 0));

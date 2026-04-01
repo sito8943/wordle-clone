@@ -76,7 +76,7 @@ describe("HelpDialog", () => {
   it("renders the normal dictionary-row bonus rule and marker tooltip", () => {
     renderHelpDialog();
 
-    const bonusText = `Normal: each incorrect dictionary-word row adds +${NORMAL_DICTIONARY_ROW_BONUS} points (○ marker).`;
+    const bonusText = `Normal: each incorrect dictionary-word row adds +${NORMAL_DICTIONARY_ROW_BONUS} to the difficulty multiplier (○ marker).`;
     const tooltip = i18n.t("play.gameplay.normalDictionaryBonusTooltip", {
       bonus: NORMAL_DICTIONARY_ROW_BONUS,
     });

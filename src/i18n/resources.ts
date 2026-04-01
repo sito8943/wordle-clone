@@ -196,7 +196,7 @@ export const resources = {
           onScreenKeyboardAriaLabel: "On-screen keyboard",
           comboFlashValue: "x{{count}}",
           normalDictionaryBonusTooltip:
-            "Incorrect guess, but valid dictionary word: +{{bonus}} points.",
+            "Incorrect guess, but valid dictionary word: +{{bonus}} to the difficulty multiplier.",
           keys: {
             deleteLetter: "Delete letter",
             submitGuess: "Submit guess",
@@ -270,7 +270,7 @@ export const resources = {
             easy: "Easy: x1 difficulty multiplier.",
             normal: "Normal: x2 difficulty multiplier.",
             normalDictionaryBonus:
-              "Normal: each incorrect dictionary-word row adds +{{bonus}} points (○ marker).",
+              "Normal: each incorrect dictionary-word row adds +{{bonus}} to the difficulty multiplier (○ marker).",
             hard: "Hard: x5 difficulty multiplier.",
             insane:
               "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
@@ -297,7 +297,6 @@ export const resources = {
             difficulty: "Difficulty multiplier",
             streak: "Streak multiplier",
             time: "Time bonus",
-            dictionary: "Dictionary word bonus",
             total: "Total",
           },
         },
@@ -534,7 +533,7 @@ export const resources = {
           onScreenKeyboardAriaLabel: "Teclado en pantalla",
           comboFlashValue: "x{{count}}",
           normalDictionaryBonusTooltip:
-            "Intento incorrecto, pero palabra válida del diccionario: +{{bonus}} puntos.",
+            "Intento incorrecto, pero palabra válida del diccionario: +{{bonus}} al multiplicador de dificultad.",
           keys: {
             deleteLetter: "Borrar letra",
             submitGuess: "Enviar intento",
@@ -612,7 +611,7 @@ export const resources = {
             easy: "Fácil: multiplicador de dificultad x1.",
             normal: "Normal: multiplicador de dificultad x2.",
             normalDictionaryBonus:
-              "Normal: cada fila incorrecta con palabra del diccionario suma +{{bonus}} puntos (marca ○).",
+              "Normal: cada fila incorrecta con palabra del diccionario suma +{{bonus}} al multiplicador de dificultad (marca ○).",
             hard: "Difícil: multiplicador de dificultad x5.",
             insane:
               "Insano: multiplicador de dificultad x9 y +1 punto extra por cada 2 segundos restantes.",
@@ -639,7 +638,6 @@ export const resources = {
             difficulty: "Multiplicador de dificultad",
             streak: "Multiplicador de racha",
             time: "Bonus de tiempo",
-            dictionary: "Bonus por palabra de diccionario",
             total: "Total",
           },
         },

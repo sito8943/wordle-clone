@@ -45,6 +45,10 @@ describe("getBaseScoreForWin", () => {
     expect(getBaseScoreForWin(3, 2)).toBe(8);
     expect(getBaseScoreForWin(3, 4, 5)).toBe(21);
   });
+
+  it("supports decimal difficulty multipliers", () => {
+    expect(getBaseScoreForWin(4, 3.2)).toBeCloseTo(9.6);
+  });
 });
 
 describe("getStreakScoreMultiplier", () => {

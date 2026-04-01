@@ -15,7 +15,7 @@ const toSafeDifficultyMultiplier = (value: number): number => {
     return 1;
   }
 
-  return Math.floor(value);
+  return value;
 };
 
 const toSafeStreakBonus = (value: number): number => {

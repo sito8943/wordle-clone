@@ -14,8 +14,7 @@ export type EndOfGameScoreSummaryItemKey =
   | "base"
   | "difficulty"
   | "streak"
-  | "time"
-  | "dictionary";
+  | "time";
 
 export type EndOfGameScoreSummaryItem = {
   key: EndOfGameScoreSummaryItemKey;
