@@ -58,7 +58,7 @@ const Footer = ({ alwaysVisible = false }: FooterProps) => {
           {t("footer.madeBy")}
         </a>
         <div className="flex gap-1">
-           <a
+          <a
             href={FOOTER_GITHUB_REPOSITORY_URL}
             target="_blank"
             rel="noreferrer"
@@ -75,7 +75,6 @@ const Footer = ({ alwaysVisible = false }: FooterProps) => {
           >
             <FontAwesomeIcon icon={faPaypal} />
           </a>
-
         </div>
       </div>
     </footer>
