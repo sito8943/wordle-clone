@@ -12,6 +12,7 @@ vi.mock("@i18n", () => ({
         "nav.play": "Play",
         "profile.settingsTitle": "Settings",
         "nav.scoreboard": "Scoreboard",
+        "home.donate": "Donate",
         "home.donationThankYouAlert":
           "Thanks for supporting Wordle with your donation.",
       };
@@ -36,20 +37,12 @@ const renderHome = (initialEntry = "/") => {
 };
 
 describe("Home entry animation", () => {
-  it("shows a donation thank-you alert when the hash is #donated", () => {
-    const alertMock = vi.fn();
-    Object.defineProperty(window, "alert", {
-      value: alertMock,
-      writable: true,
-      configurable: true,
-    });
-
+  it("shows a donation thank-you banner when the hash is #donated", () => {
     renderHome("/#donated");
 
-    expect(alertMock).toHaveBeenCalledTimes(1);
-    expect(alertMock).toHaveBeenCalledWith(
-      "Thanks for supporting Wordle with your donation.",
-    );
+    expect(
+      screen.getByText("Thanks for supporting Wordle with your donation."),
+    ).toBeTruthy();
   });
 
   it("plays title/menu intro once and stores the session flag", async () => {

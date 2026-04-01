@@ -20,6 +20,7 @@ export const resources = {
         scoreboard: "Scoreboard",
       },
       home: {
+        donate: "Donate",
         donationThankYouAlert:
           "Thanks for supporting Wordle with your donation.",
       },
@@ -361,6 +362,7 @@ export const resources = {
         scoreboard: "Clasificación",
       },
       home: {
+        donate: "Donar",
         donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
       },
       footer: {

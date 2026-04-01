@@ -6,4 +6,5 @@ export type RuntimeEnv = {
   wordListButtonEnabled: boolean;
   scoreLimit: number;
   wordleGameStorageKey: string;
+  paypalDonationButtonUrl?: string;
 };

@@ -7,6 +7,7 @@ import {
 } from "./constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaypal, faGithub } from "@fortawesome/free-brands-svg-icons";
+import { env } from "@config/env";
 
 type FooterProps = {
   alwaysVisible?: boolean;
@@ -68,7 +69,7 @@ const Footer = ({ alwaysVisible = false }: FooterProps) => {
             <FontAwesomeIcon icon={faGithub} />
           </a>
           <a
-            href="https://www.paypal.com/donate/?hosted_button_id=TGFCRW9NBTJZY"
+            href={env.paypalDonationButtonUrl}
             target="_blank"
             rel="noreferrer"
             className="rounded-full flex items-center bg-paypal px-1.5 p-1 text-white transition-colors hover:bg-paypal/55"
