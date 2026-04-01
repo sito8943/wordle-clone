@@ -54,8 +54,6 @@ const VictoryDialog = ({
     };
   }, [closeWithAction, onPlayAgain, visible]);
 
-  console.log(scoreSummary);
-
   return (
     <Dialog
       visible={visible}
