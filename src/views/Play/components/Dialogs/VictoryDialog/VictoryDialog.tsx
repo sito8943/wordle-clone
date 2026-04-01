@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Button, FireStreak } from "@components";
 import { Dialog, useDialogCloseTransition } from "@components/Dialogs";
+import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog/constants";
 import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDialog/utils";
@@ -14,7 +15,7 @@ const formatScoreSummaryValue = (key: string, value: number): string => {
     return `x${Number.isInteger(value) ? value : value.toFixed(2)}`;
   }
 
-  return `+${value}`;
+  return `+${Number.isInteger(value) ? value : value.toFixed(1)}`;
 };
 
 const VictoryDialog = ({
@@ -78,7 +79,11 @@ const VictoryDialog = ({
           <div className="mt-3 space-y-2 text-sm text-neutral-700 dark:text-neutral-200">
             {scoreSummary.items.map((item) => (
               <div key={item.key} className="flex items-center justify-between">
-                <span>{t(`play.victoryDialog.scoreItems.${item.key}`)}</span>
+                <span>
+                  {t(`play.victoryDialog.scoreItems.${item.key}`, {
+                    bonus: NORMAL_DICTIONARY_ROW_BONUS,
+                  })}
+                </span>
                 <span className="font-semibold">
                   {formatScoreSummaryValue(item.key, item.value)}
                 </span>

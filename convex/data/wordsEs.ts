@@ -463,7 +463,6 @@ export const ES_WORDS = [
   "alole",
   "alolo",
   "aloma",
-  "alome",
   "alomo",
   "alona",
   "alora",

@@ -28,6 +28,7 @@ describe("VictoryDialog", () => {
             { key: "difficulty", value: 4.4 },
             { key: "streak", value: 1.42 },
             { key: "time", value: 5 },
+            { key: "dictionary", value: 1.2 },
           ],
           total: 15,
         }}
@@ -43,6 +44,8 @@ describe("VictoryDialog", () => {
     expect(screen.getByText("Streak multiplier")).toBeTruthy();
     expect(screen.getByText("x1.42")).toBeTruthy();
     expect(screen.getByText("Time bonus")).toBeTruthy();
+    expect(screen.getByText("Dictionary word bonus (+0.4/word)")).toBeTruthy();
+    expect(screen.getByText("+1.2")).toBeTruthy();
     expect(screen.getByText("+15")).toBeTruthy();
     expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
     expect(document.querySelector(".streak-fire")).toBeTruthy();

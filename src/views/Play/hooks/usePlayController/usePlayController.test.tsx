@@ -243,7 +243,7 @@ describe("usePlayController", () => {
       expect.arrayContaining([{ key: "difficulty", value: 3.2 }]),
     );
     expect(result.current.victoryScoreSummary?.items).toEqual(
-      expect.not.arrayContaining([expect.objectContaining({ key: "dictionary" })]),
+      expect.arrayContaining([{ key: "dictionary", value: 1.2 }]),
     );
   });
 

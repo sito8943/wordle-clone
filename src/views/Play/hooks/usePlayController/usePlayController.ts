@@ -181,6 +181,13 @@ export default function usePlayController() {
         scoreSummaryItems.push({ key: "time", value: timeBonus });
       }
 
+      if (normalDictionaryRowsBonusMultiplier > 0) {
+        scoreSummaryItems.push({
+          key: "dictionary",
+          value: normalDictionaryRowsBonusMultiplier,
+        });
+      }
+
       const totalPoints = getTotalPointsForWin(
         guesses.length,
         difficultyMultiplier,
