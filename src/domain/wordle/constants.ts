@@ -18,6 +18,8 @@ export const DIFFICULTY_SCORE_MULTIPLIERS: Record<PlayerDifficulty, number> = {
   insane: 9,
 };
 
+export const NORMAL_DICTIONARY_ROW_BONUS = 0.4;
+
 export const KEYBOARD_ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L"],

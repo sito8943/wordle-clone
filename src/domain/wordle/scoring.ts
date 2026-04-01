@@ -1,8 +1,10 @@
-import { DIFFICULTY_SCORE_MULTIPLIERS, MAX_GUESSES } from "./constants";
+import {
+  DIFFICULTY_SCORE_MULTIPLIERS,
+  MAX_GUESSES,
+  NORMAL_DICTIONARY_ROW_BONUS,
+} from "./constants";
 import type { PlayerDifficulty } from "./player";
 import { isValidWord } from "@utils/words";
-
-export const NORMAL_DICTIONARY_ROW_BONUS = 0.4;
 
 const roundScoreToSingleDecimal = (value: number): number =>
   Math.round(value * 10) / 10;
