@@ -61,9 +61,14 @@ describe("HelpDialog", () => {
     renderHelpDialog();
     expect(
       screen.getByText(
-        "Insane: x4 difficulty multiplier and +1 extra point per 2 seconds left.",
+        "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
       ),
     ).toBeTruthy();
+  });
+
+  it("renders the hard difficulty multiplier rule", () => {
+    renderHelpDialog();
+    expect(screen.getByText("Hard: x5 difficulty multiplier.")).toBeTruthy();
   });
 
   it("renders the streak multiplier formula", () => {

@@ -267,9 +267,9 @@ export const resources = {
               "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
             easy: "Easy: x1 difficulty multiplier.",
             normal: "Normal: x2 difficulty multiplier.",
-            hard: "Hard: x3 difficulty multiplier.",
+            hard: "Hard: x5 difficulty multiplier.",
             insane:
-              "Insane: x4 difficulty multiplier and +1 extra point per 2 seconds left.",
+              "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
             final:
               "Final score = round(score base x (1 + 0.3 x sqrt(streak))), where score base includes the difficulty multiplier and the Insane time bonus.",
           },
@@ -604,9 +604,9 @@ export const resources = {
               "La racha escala tu puntuación con x(1 + 0.3 x sqrt(racha)).",
             easy: "Fácil: multiplicador de dificultad x1.",
             normal: "Normal: multiplicador de dificultad x2.",
-            hard: "Difícil: multiplicador de dificultad x3.",
+            hard: "Difícil: multiplicador de dificultad x5.",
             insane:
-              "Insano: multiplicador de dificultad x4 y +1 punto extra por cada 2 segundos restantes.",
+              "Insano: multiplicador de dificultad x9 y +1 punto extra por cada 2 segundos restantes.",
             final:
               "Puntuación final = round(puntuación base x (1 + 0.3 x sqrt(racha))), donde la puntuación base incluye el multiplicador de dificultad y el bonus de tiempo en Insano.",
           },
