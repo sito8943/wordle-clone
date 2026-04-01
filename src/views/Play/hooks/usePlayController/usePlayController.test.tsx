@@ -219,7 +219,29 @@ describe("usePlayController", () => {
 
     rerender();
 
-    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(4, 2, 2) + 1);
+    expect(commitVictory).toHaveBeenCalledWith(
+      getTotalPointsForWin(4, 2, 2) + 1.2,
+    );
+  });
+
+  it("adds dictionary bonus as a dedicated score summary line on normal wins", () => {
+    setWordDictionary(["apple", "slate", "crane", "brick"]);
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: ["SLATE", "CRANE", "BRICK", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.victoryScoreSummary?.items).toEqual(
+      expect.arrayContaining([{ key: "dictionary", value: 1.2 }]),
+    );
   });
 
   it("rejects unknown words in hard difficulty", () => {

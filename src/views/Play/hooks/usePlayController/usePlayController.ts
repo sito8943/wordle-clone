@@ -165,6 +165,10 @@ export default function usePlayController() {
         player.difficulty === "insane"
           ? getInsaneTimeBonus(hardModeSecondsLeft)
           : 0;
+      const normalDictionaryRowsBonusPoints =
+        player.difficulty === "normal"
+          ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
+          : 0;
       const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
         { key: "base", value: basePoints },
         { key: "difficulty", value: difficultyMultiplier },
@@ -175,16 +179,19 @@ export default function usePlayController() {
         scoreSummaryItems.push({ key: "time", value: timeBonus });
       }
 
+      if (normalDictionaryRowsBonusPoints > 0) {
+        scoreSummaryItems.push({
+          key: "dictionary",
+          value: normalDictionaryRowsBonusPoints,
+        });
+      }
+
       const totalPoints = getTotalPointsForWin(
         guesses.length,
         difficultyMultiplier,
         player.streak,
         timeBonus,
       );
-      const normalDictionaryRowsBonusPoints =
-        player.difficulty === "normal"
-          ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
-          : 0;
       const totalPointsWithBonus = totalPoints + normalDictionaryRowsBonusPoints;
 
       setEndOfGameSnapshot({

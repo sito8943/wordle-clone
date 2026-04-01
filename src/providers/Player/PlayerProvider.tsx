@@ -21,6 +21,14 @@ import type {
   RoundSyncEvent,
 } from "@domain/wordle";
 
+const normalizeScoreDelta = (value: number): number => {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return Math.max(0, Math.round(value * 10) / 10);
+};
+
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
   const queryClient = useQueryClient();
@@ -196,8 +204,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const commitVictory = useCallback(
     async (points: number, wonAt = Date.now()) => {
-      const safePoints =
-        Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
+      const safePoints = normalizeScoreDelta(points);
 
       if (safePoints === 0) {
         return;
@@ -206,7 +213,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const current = normalizePlayer(storedPlayer);
       const nextPlayer = normalizePlayer({
         ...current,
-        score: current.score + safePoints,
+        score: Math.round((current.score + safePoints) * 10) / 10,
         streak: current.streak + 1,
       });
 

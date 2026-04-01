@@ -4,6 +4,9 @@ import { isValidWord } from "@utils/words";
 
 export const NORMAL_DICTIONARY_ROW_BONUS = 0.4;
 
+const roundScoreToSingleDecimal = (value: number): number =>
+  Math.round(value * 10) / 10;
+
 export const getPointsForWin = (guessesUsed: number): number =>
   Math.max(0, MAX_GUESSES - guessesUsed + 1);
 
@@ -119,5 +122,5 @@ export const getNormalDictionaryRowsBonusPoints = (
     answer,
   ).filter(Boolean).length;
 
-  return Math.round(validNonAnswerRows * safePerRowBonus);
+  return roundScoreToSingleDecimal(validNonAnswerRows * safePerRowBonus);
 };

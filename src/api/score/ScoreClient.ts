@@ -747,7 +747,7 @@ class ScoreClient {
       return 0;
     }
 
-    return Math.max(0, Math.floor(score));
+    return Math.max(0, Math.round(score * 10) / 10);
   }
 
   private normalizeStreak(streak: number): number {

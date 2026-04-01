@@ -14,7 +14,7 @@ const formatScoreSummaryValue = (key: string, value: number): string => {
     return `x${Number.isInteger(value) ? value : value.toFixed(2)}`;
   }
 
-  return `+${value}`;
+  return `+${Number.isInteger(value) ? value : value.toFixed(1)}`;
 };
 
 const VictoryDialog = ({
@@ -87,7 +87,12 @@ const VictoryDialog = ({
             <div className="border-t border-neutral-200 pt-3 font-semibold text-neutral-950 dark:border-neutral-700 dark:text-neutral-50">
               <div className="flex items-center justify-between">
                 <span>{t("play.victoryDialog.scoreItems.total")}</span>
-                <span>+{scoreSummary.total}</span>
+                <span>
+                  +
+                  {Number.isInteger(scoreSummary.total)
+                    ? scoreSummary.total
+                    : scoreSummary.total.toFixed(1)}
+                </span>
               </div>
             </div>
           </div>

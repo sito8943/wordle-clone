@@ -106,7 +106,13 @@ describe("getNormalDictionaryRowsBonusPoints", () => {
         ["CRANE", "SLATE", "BRICK", "PRIDE", "CLOUD", "LEMON"],
         "APPLE",
       ),
-    ).toBe(2);
+    ).toBe(2.4);
+  });
+
+  it("returns 0.4 for one valid wrong dictionary row", () => {
+    setWordDictionary(["apple", "crane"]);
+
+    expect(getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE")).toBe(0.4);
   });
 
   it("excludes answer rows from the loss bonus", () => {
