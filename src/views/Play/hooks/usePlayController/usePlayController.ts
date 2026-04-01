@@ -174,18 +174,24 @@ export default function usePlayController() {
       const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
         { key: "base", value: basePoints },
         { key: "difficulty", value: difficultyMultiplier },
-        { key: "streak", value: getStreakScoreMultiplier(player.streak) },
       ];
-
-      if (player.difficulty === "insane") {
-        scoreSummaryItems.push({ key: "time", value: timeBonus });
-      }
 
       if (normalDictionaryRowsBonusMultiplier > 0) {
         scoreSummaryItems.push({
           key: "dictionary",
           value: normalDictionaryRowsBonusMultiplier,
         });
+      }
+
+      if (getStreakScoreMultiplier(player.streak)) {
+        scoreSummaryItems.push({
+          key: "streak",
+          value: getStreakScoreMultiplier(player.streak),
+        });
+      }
+
+      if (player.difficulty === "insane") {
+        scoreSummaryItems.push({ key: "time", value: timeBonus });
       }
 
       const totalPoints = getTotalPointsForWin(

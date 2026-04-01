@@ -54,6 +54,8 @@ const VictoryDialog = ({
     };
   }, [closeWithAction, onPlayAgain, visible]);
 
+  console.log(scoreSummary);
+
   return (
     <Dialog
       visible={visible}
@@ -79,12 +81,17 @@ const VictoryDialog = ({
           <div className="mt-3 space-y-2 text-sm text-neutral-700 dark:text-neutral-200">
             {scoreSummary.items.map((item) => (
               <div key={item.key} className="flex items-center justify-between">
-                <span>
+                <span
+                  className={`${item.key === "dictionary" ? "text-xs text-gray-400" : ""} `}
+                >
                   {t(`play.victoryDialog.scoreItems.${item.key}`, {
                     bonus: NORMAL_DICTIONARY_ROW_BONUS,
                   })}
                 </span>
-                <span className="font-semibold">
+
+                <span
+                  className={`font-semibold ${item.key === "dictionary" ? "text-xs text-gray-400" : ""}`}
+                >
                   {formatScoreSummaryValue(item.key, item.value)}
                 </span>
               </div>
