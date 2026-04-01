@@ -2,6 +2,7 @@ import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import { i18n, initI18n } from "@i18n";
+import { setWordDictionary } from "@utils/words";
 import usePlayController from "./usePlayController";
 import {
   COMBO_FLASH_VISIBILITY_DURATION_MS,
@@ -44,6 +45,7 @@ describe("usePlayController", () => {
     mockUseHintController.mockClear();
     mockUseHardModeTimer.mockClear();
     window.sessionStorage.clear();
+    setWordDictionary(["apple"]);
     wordleState = {
       sessionId: "session-1",
       gameId: "game-1",
@@ -155,6 +157,39 @@ describe("usePlayController", () => {
         language: "en",
       }),
     );
+  });
+
+  it("awards dictionary-row bonus only on wins in normal difficulty", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+    setWordDictionary(["apple", "slate", "crane", "brick"]);
+
+    const { rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: ["SLATE", "CRANE", "BRICK", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(4, 2, 2) + 1);
   });
 
   it("rejects unknown words in hard difficulty", () => {

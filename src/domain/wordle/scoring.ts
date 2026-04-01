@@ -1,5 +1,8 @@
 import { DIFFICULTY_SCORE_MULTIPLIERS, MAX_GUESSES } from "./constants";
 import type { PlayerDifficulty } from "./player";
+import { isValidWord } from "@utils/words";
+
+export const NORMAL_DICTIONARY_ROW_BONUS = 0.4;
 
 export const getPointsForWin = (guessesUsed: number): number =>
   Math.max(0, MAX_GUESSES - guessesUsed + 1);
@@ -40,6 +43,14 @@ const toSafeTimeBonus = (value: number): number => {
   return Math.floor(value);
 };
 
+const toSafeDictionaryRowBonus = (value: number): number => {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return value;
+};
+
 export const getStreakScoreMultiplier = (streak: number): number => {
   const safeStreak = toSafeStreakBonus(streak);
 
@@ -65,3 +76,28 @@ export const getTotalPointsForWin = (
     getBaseScoreForWin(guessesUsed, difficultyMultiplier, timeBonus) *
       getStreakScoreMultiplier(streak),
   );
+
+export const getNormalDictionaryRowsBonusPoints = (
+  guesses: string[],
+  answer: string,
+  perRowBonus = NORMAL_DICTIONARY_ROW_BONUS,
+): number => {
+  const safePerRowBonus = toSafeDictionaryRowBonus(perRowBonus);
+
+  if (safePerRowBonus === 0) {
+    return 0;
+  }
+
+  const normalizedAnswer = answer.trim().toLowerCase();
+  const validNonAnswerRows = guesses.reduce((count, guess) => {
+    const normalizedGuess = guess.trim().toLowerCase();
+
+    if (normalizedGuess.length === 0 || normalizedGuess === normalizedAnswer) {
+      return count;
+    }
+
+    return isValidWord(normalizedGuess) ? count + 1 : count;
+  }, 0);
+
+  return Math.round(validNonAnswerRows * safePerRowBonus);
+};

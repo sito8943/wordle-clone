@@ -3,11 +3,13 @@ import {
   getBaseScoreForWin,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
+  getNormalDictionaryRowsBonusPoints,
   getPointsForWin,
   getStreakScoreMultiplier,
   getTotalPointsForWin,
 } from "./scoring";
 import { DIFFICULTY_SCORE_MULTIPLIERS } from "./constants";
+import { setWordDictionary } from "@utils/words";
 
 describe("getPointsForWin", () => {
   it("returns points based on attempts used with minimum 1 on valid wins", () => {
@@ -83,5 +85,46 @@ describe("getInsaneTimeBonus", () => {
   it("returns 0 when there are 0 or 1 seconds left", () => {
     expect(getInsaneTimeBonus(0)).toBe(0);
     expect(getInsaneTimeBonus(1)).toBe(0);
+  });
+});
+
+describe("getNormalDictionaryRowsBonusPoints", () => {
+  it("applies the default 0.4 bonus only to dictionary rows that are not the answer", () => {
+    setWordDictionary([
+      "apple",
+      "crane",
+      "slate",
+      "brick",
+      "pride",
+      "cloud",
+      "lemon",
+    ]);
+
+    expect(
+      getNormalDictionaryRowsBonusPoints(
+        ["CRANE", "SLATE", "BRICK", "PRIDE", "CLOUD", "LEMON"],
+        "APPLE",
+      ),
+    ).toBe(2);
+  });
+
+  it("excludes answer rows from the loss bonus", () => {
+    setWordDictionary(["apple", "crane"]);
+
+    expect(
+      getNormalDictionaryRowsBonusPoints(["APPLE", "CRANE"], "APPLE", 1),
+    ).toBe(1);
+  });
+
+  it("returns 0 for invalid or non-positive per-row bonuses", () => {
+    setWordDictionary(["apple", "crane"]);
+
+    expect(
+      getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", Number.NaN),
+    ).toBe(0);
+    expect(getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", 0)).toBe(0);
+    expect(getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", -1)).toBe(
+      0,
+    );
   });
 });

@@ -4,6 +4,7 @@ import {
   getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
+  getNormalDictionaryRowsBonusPoints,
   getPointsForWin,
   getTotalPointsForWin,
   type Player,
@@ -24,6 +25,26 @@ import {
 } from "./utils";
 import { i18n } from "@i18n";
 import { COMBO_FLASH_VISIBILITY_DURATION_MS } from "./constants";
+
+const getGuessWords = (guesses: unknown[]): string[] =>
+  guesses.reduce<string[]>((words, guess) => {
+    if (typeof guess === "string") {
+      words.push(guess);
+      return words;
+    }
+
+    if (!guess || typeof guess !== "object") {
+      return words;
+    }
+
+    const maybeWord = (guess as { word?: unknown }).word;
+
+    if (typeof maybeWord === "string") {
+      words.push(maybeWord);
+    }
+
+    return words;
+  }, []);
 
 export default function usePlayController() {
   const { scoreClient, wordDictionaryClient } = useApi();
@@ -148,6 +169,14 @@ export default function usePlayController() {
         player.streak,
         timeBonus,
       );
+      const normalDictionaryRowsBonusPoints =
+        player.difficulty === "normal"
+          ? getNormalDictionaryRowsBonusPoints(
+              getGuessWords(guesses as unknown[]),
+              answer,
+            )
+          : 0;
+      const totalPointsWithBonus = totalPoints + normalDictionaryRowsBonusPoints;
 
       setEndOfGameSnapshot({
         answer,
@@ -155,11 +184,11 @@ export default function usePlayController() {
         bestStreak: player.streak,
         scoreSummary: {
           items: scoreSummaryItems,
-          total: totalPoints,
+          total: totalPointsWithBonus,
         },
       });
 
-      void commitVictory(totalPoints);
+      void commitVictory(totalPointsWithBonus);
     } else {
       setShowLegacyEndOfGameFeedback(false);
       setEndOfGameSnapshot({
@@ -174,6 +203,7 @@ export default function usePlayController() {
     roundSettled.current = true;
   }, [
     gameOver,
+    guesses,
     guesses.length,
     commitLoss,
     commitVictory,
