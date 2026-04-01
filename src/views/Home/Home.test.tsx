@@ -12,6 +12,8 @@ vi.mock("@i18n", () => ({
         "nav.play": "Play",
         "profile.settingsTitle": "Settings",
         "nav.scoreboard": "Scoreboard",
+        "home.donationThankYouAlert":
+          "Thanks for supporting Wordle with your donation.",
       };
 
       return dictionary[key] ?? key;
@@ -25,15 +27,31 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const renderHome = () => {
+const renderHome = (initialEntry = "/") => {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <Home />
     </MemoryRouter>,
   );
 };
 
 describe("Home entry animation", () => {
+  it("shows a donation thank-you alert when the hash is #donated", () => {
+    const alertMock = vi.fn();
+    Object.defineProperty(window, "alert", {
+      value: alertMock,
+      writable: true,
+      configurable: true,
+    });
+
+    renderHome("/#donated");
+
+    expect(alertMock).toHaveBeenCalledTimes(1);
+    expect(alertMock).toHaveBeenCalledWith(
+      "Thanks for supporting Wordle with your donation.",
+    );
+  });
+
   it("plays title/menu intro once and stores the session flag", async () => {
     renderHome();
 

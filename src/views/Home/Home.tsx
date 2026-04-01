@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
@@ -7,7 +7,10 @@ import {
   faTrophy,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@i18n";
-import { HOME_ENTRY_ANIMATION_SESSION_KEY } from "./constants";
+import {
+  HOME_DONATED_HASH,
+  HOME_ENTRY_ANIMATION_SESSION_KEY,
+} from "./constants";
 
 const hasSeenEntryAnimationInSession = (): boolean => {
   if (typeof window === "undefined") {
@@ -34,6 +37,7 @@ const markEntryAnimationAsSeenInSession = (): void => {
 };
 
 const Home = () => {
+  const location = useLocation();
   const { t } = useTranslation();
   const [shouldAnimateEntry] = useState(
     () => !hasSeenEntryAnimationInSession(),
@@ -41,6 +45,7 @@ const Home = () => {
   const [entryAnimationReady, setEntryAnimationReady] = useState(
     () => !shouldAnimateEntry,
   );
+  const hasShownDonatedAlertRef = useRef(false);
 
   useEffect(() => {
     if (!shouldAnimateEntry) {
@@ -56,6 +61,19 @@ const Home = () => {
       window.cancelAnimationFrame(frameId);
     };
   }, [shouldAnimateEntry]);
+
+  useEffect(() => {
+    if (hasShownDonatedAlertRef.current) {
+      return;
+    }
+
+    if (location.hash !== HOME_DONATED_HASH) {
+      return;
+    }
+
+    hasShownDonatedAlertRef.current = true;
+    window.alert(t("home.donationThankYouAlert"));
+  }, [location.hash, t]);
 
   const links = useMemo(
     () => [

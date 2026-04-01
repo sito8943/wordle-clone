@@ -19,6 +19,10 @@ export const resources = {
         profile: "Settings",
         scoreboard: "Scoreboard",
       },
+      home: {
+        donationThankYouAlert:
+          "Thanks for supporting Wordle with your donation.",
+      },
       footer: {
         madeBy: "Made by @sito8943",
         githubRepository: "GitHub repository",
@@ -355,6 +359,9 @@ export const resources = {
         play: "Jugar",
         profile: "Ajustes",
         scoreboard: "Clasificación",
+      },
+      home: {
+        donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
       },
       footer: {
         madeBy: "Hecho por @sito8943",
