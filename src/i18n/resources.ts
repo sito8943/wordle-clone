@@ -195,6 +195,8 @@ export const resources = {
           boardAriaLabel: "Wordle board",
           onScreenKeyboardAriaLabel: "On-screen keyboard",
           comboFlashValue: "x{{count}}",
+          normalDictionaryBonusTooltip:
+            "Incorrect guess, but valid dictionary word: +{{bonus}} points.",
           keys: {
             deleteLetter: "Delete letter",
             submitGuess: "Submit guess",
@@ -267,6 +269,8 @@ export const resources = {
               "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
             easy: "Easy: x1 difficulty multiplier.",
             normal: "Normal: x2 difficulty multiplier.",
+            normalDictionaryBonus:
+              "Normal: each incorrect dictionary-word row adds +{{bonus}} points (○ marker).",
             hard: "Hard: x5 difficulty multiplier.",
             insane:
               "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
@@ -528,6 +532,8 @@ export const resources = {
           boardAriaLabel: "Tablero de Wordle",
           onScreenKeyboardAriaLabel: "Teclado en pantalla",
           comboFlashValue: "x{{count}}",
+          normalDictionaryBonusTooltip:
+            "Intento incorrecto, pero palabra válida del diccionario: +{{bonus}} puntos.",
           keys: {
             deleteLetter: "Borrar letra",
             submitGuess: "Enviar intento",
@@ -604,6 +610,8 @@ export const resources = {
               "La racha escala tu puntuación con x(1 + 0.3 x sqrt(racha)).",
             easy: "Fácil: multiplicador de dificultad x1.",
             normal: "Normal: multiplicador de dificultad x2.",
+            normalDictionaryBonus:
+              "Normal: cada fila incorrecta con palabra del diccionario suma +{{bonus}} puntos (marca ○).",
             hard: "Difícil: multiplicador de dificultad x5.",
             insane:
               "Insano: multiplicador de dificultad x9 y +1 punto extra por cada 2 segundos restantes.",

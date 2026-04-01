@@ -19,6 +19,7 @@ const BoardContent = memo(
     hintRevealPulse,
     hintRevealTileIndex,
     comboFlash,
+    normalDictionaryBonusRowFlags,
     animateTileEntry,
   }: BoardContentProps): JSX.Element => {
     const { t } = useTranslation();
@@ -38,6 +39,7 @@ const BoardContent = memo(
           hintRevealPulse={hintRevealPulse}
           hintRevealTileIndex={hintRevealTileIndex}
           comboFlash={comboFlash}
+          normalDictionaryBonusRowFlags={normalDictionaryBonusRowFlags}
         />
 
         {gameOver && showLegacyEndOfGameMessage && (

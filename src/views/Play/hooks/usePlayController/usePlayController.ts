@@ -4,6 +4,7 @@ import {
   getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
+  getNormalDictionaryBonusRowFlags,
   getNormalDictionaryRowsBonusPoints,
   getPointsForWin,
   getTotalPointsForWin,
@@ -99,6 +100,17 @@ export default function usePlayController() {
     () => !gameOver && (guesses.length > 0 || current.length > 0),
     [current.length, gameOver, guesses.length],
   );
+  const guessWords = useMemo(
+    () => getGuessWords(guesses as unknown[]),
+    [guesses],
+  );
+  const normalDictionaryBonusRowFlags = useMemo(
+    () =>
+      player.difficulty === "normal"
+        ? getNormalDictionaryBonusRowFlags(guessWords, answer)
+        : [],
+    [answer, guessWords, player.difficulty],
+  );
   const hasInProgressGameAtMount = hasActiveGame;
   const wordListEnabledForDifficulty = player.difficulty === "easy";
   const {
@@ -171,10 +183,7 @@ export default function usePlayController() {
       );
       const normalDictionaryRowsBonusPoints =
         player.difficulty === "normal"
-          ? getNormalDictionaryRowsBonusPoints(
-              getGuessWords(guesses as unknown[]),
-              answer,
-            )
+          ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
           : 0;
       const totalPointsWithBonus = totalPoints + normalDictionaryRowsBonusPoints;
 
@@ -208,6 +217,7 @@ export default function usePlayController() {
     commitLoss,
     commitVictory,
     answer,
+    guessWords,
     hardModeSecondsLeft,
     player.difficulty,
     player.streak,
@@ -495,6 +505,7 @@ export default function usePlayController() {
     hintsEnabledForDifficulty,
     hintButtonDisabled,
     comboFlash,
+    normalDictionaryBonusRowFlags,
     startNewBoard,
     refreshBoard,
     showRefreshDialog,

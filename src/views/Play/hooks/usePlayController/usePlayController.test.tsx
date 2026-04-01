@@ -159,6 +159,36 @@ describe("usePlayController", () => {
     );
   });
 
+  it("exposes normal dictionary bonus row flags for wrong dictionary rows", () => {
+    setWordDictionary(["apple", "crane", "slate"]);
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: [
+        {
+          word: "CRANE",
+          statuses: ["absent", "absent", "absent", "absent", "absent"],
+        },
+        {
+          word: "ZZZZZ",
+          statuses: ["absent", "absent", "absent", "absent", "absent"],
+        },
+        {
+          word: "APPLE",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.normalDictionaryBonusRowFlags).toEqual([
+      true,
+      false,
+      false,
+    ]);
+  });
+
   it("awards dictionary-row bonus only on wins in normal difficulty", () => {
     const commitVictory = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({

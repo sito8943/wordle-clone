@@ -77,6 +77,32 @@ export const getTotalPointsForWin = (
       getStreakScoreMultiplier(streak),
   );
 
+const normalizeGuessWord = (word: string): string => word.trim().toLowerCase();
+
+const isNormalDictionaryBonusRow = (
+  guess: string,
+  normalizedAnswer: string,
+): boolean => {
+  const normalizedGuess = normalizeGuessWord(guess);
+
+  if (normalizedGuess.length === 0 || normalizedGuess === normalizedAnswer) {
+    return false;
+  }
+
+  return isValidWord(normalizedGuess);
+};
+
+export const getNormalDictionaryBonusRowFlags = (
+  guesses: string[],
+  answer: string,
+): boolean[] => {
+  const normalizedAnswer = normalizeGuessWord(answer);
+
+  return guesses.map((guess) =>
+    isNormalDictionaryBonusRow(guess, normalizedAnswer),
+  );
+};
+
 export const getNormalDictionaryRowsBonusPoints = (
   guesses: string[],
   answer: string,
@@ -88,16 +114,10 @@ export const getNormalDictionaryRowsBonusPoints = (
     return 0;
   }
 
-  const normalizedAnswer = answer.trim().toLowerCase();
-  const validNonAnswerRows = guesses.reduce((count, guess) => {
-    const normalizedGuess = guess.trim().toLowerCase();
-
-    if (normalizedGuess.length === 0 || normalizedGuess === normalizedAnswer) {
-      return count;
-    }
-
-    return isValidWord(normalizedGuess) ? count + 1 : count;
-  }, 0);
+  const validNonAnswerRows = getNormalDictionaryBonusRowFlags(
+    guesses,
+    answer,
+  ).filter(Boolean).length;
 
   return Math.round(validNonAnswerRows * safePerRowBonus);
 };

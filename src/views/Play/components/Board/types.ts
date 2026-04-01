@@ -12,6 +12,7 @@ export type BoardPropsType = {
   hintRevealPulse?: number;
   hintRevealTileIndex?: number | null;
   comboFlash?: ComboFlash | null;
+  normalDictionaryBonusRowFlags?: boolean[];
 };
 
 export type RowPropsType = {
@@ -25,6 +26,8 @@ export type RowPropsType = {
   isLoss?: boolean;
   hintRevealPulse?: number;
   hintRevealTileIndex?: number | null;
+  showNormalDictionaryBonusIndicator?: boolean;
+  normalDictionaryBonusTooltip?: string;
 };
 
 export type BoardRowViewModel = {

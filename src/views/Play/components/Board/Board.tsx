@@ -1,5 +1,6 @@
 import { Row } from "./Row";
 import { useTranslation } from "@i18n";
+import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import type { BoardPropsType } from "./types";
 import useBoardController from "./useBoardController";
 
@@ -15,6 +16,7 @@ export function Board({
   hintRevealPulse = 0,
   hintRevealTileIndex = null,
   comboFlash = null,
+  normalDictionaryBonusRowFlags = [],
 }: BoardPropsType) {
   const { t } = useTranslation();
   const { rows, isShaking } = useBoardController({
@@ -35,6 +37,12 @@ export function Board({
     comboFlash?.tone === "correct"
       ? "border-green-500 bg-green-500/15 text-green-800 dark:bg-green-500/25 dark:text-green-200"
       : "border-yellow-500 bg-yellow-400/20 text-yellow-900 dark:bg-yellow-500/20 dark:text-yellow-200";
+  const normalDictionaryBonusTooltip = t(
+    "play.gameplay.normalDictionaryBonusTooltip",
+    {
+      bonus: NORMAL_DICTIONARY_ROW_BONUS,
+    },
+  );
 
   return (
     <div className={boardWrapperClassName}>
@@ -58,6 +66,10 @@ export function Board({
                 isLoss={isLoss}
                 hintRevealPulse={hintRevealPulse}
                 hintRevealTileIndex={row.hintRevealTileIndex}
+                showNormalDictionaryBonusIndicator={Boolean(
+                  normalDictionaryBonusRowFlags[row.key],
+                )}
+                normalDictionaryBonusTooltip={normalDictionaryBonusTooltip}
               />
             );
           })}

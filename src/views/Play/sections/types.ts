@@ -50,6 +50,7 @@ export type BoardContentProps = Pick<
   | "hintRevealPulse"
   | "hintRevealTileIndex"
   | "comboFlash"
+  | "normalDictionaryBonusRowFlags"
 > & {
   animateTileEntry: boolean;
   answer: string;

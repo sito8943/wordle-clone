@@ -62,6 +62,7 @@ const usePlaySections = (
     isRefreshingDictionaryChecksum,
     keyboardEntryAnimationEnabled,
     message,
+    normalDictionaryBonusRowFlags,
     openDeveloperConsoleDialog,
     openHelpDialog,
     openWordsDialog,
@@ -165,6 +166,7 @@ const usePlaySections = (
         hintRevealPulse,
         hintRevealTileIndex,
         comboFlash,
+        normalDictionaryBonusRowFlags,
         animateTileEntry,
       },
       hardModeProgress: {
@@ -186,6 +188,7 @@ const usePlaySections = (
       hintRevealPulse,
       hintRevealTileIndex,
       comboFlash,
+      normalDictionaryBonusRowFlags,
       showHardModeFinalStretchBar,
       showLegacyEndOfGameMessage,
       startAnimationSeed,

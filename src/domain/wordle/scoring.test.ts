@@ -3,6 +3,7 @@ import {
   getBaseScoreForWin,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
+  getNormalDictionaryBonusRowFlags,
   getNormalDictionaryRowsBonusPoints,
   getPointsForWin,
   getStreakScoreMultiplier,
@@ -126,5 +127,18 @@ describe("getNormalDictionaryRowsBonusPoints", () => {
     expect(getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", -1)).toBe(
       0,
     );
+  });
+});
+
+describe("getNormalDictionaryBonusRowFlags", () => {
+  it("marks only wrong dictionary words as bonus rows", () => {
+    setWordDictionary(["apple", "crane", "slate"]);
+
+    expect(
+      getNormalDictionaryBonusRowFlags(
+        ["CRANE", "ZZZZZ", "APPLE", "", "slate"],
+        "APPLE",
+      ),
+    ).toEqual([true, false, false, false, true]);
   });
 });
