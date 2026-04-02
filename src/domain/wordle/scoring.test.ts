@@ -134,9 +134,7 @@ describe("getNormalDictionaryRowsBonusPoints", () => {
       getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", Number.NaN),
     ).toBe(0);
     expect(getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", 0)).toBe(0);
-    expect(getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", -1)).toBe(
-      0,
-    );
+    expect(getNormalDictionaryRowsBonusPoints(["CRANE"], "APPLE", -1)).toBe(0);
   });
 });
 

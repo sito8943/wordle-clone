@@ -9,11 +9,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak, Alert } from "@components";
 import { useTranslation } from "@i18n";
-import type {
-  NativeKeyboardClockStyle,
-  ToolbarProps,
-  ToolbarTimerProps,
-} from "./types";
+import { usePlayView } from "@views/Play/providers";
+import type { NativeKeyboardClockStyle, ToolbarTimerProps } from "./types";
 
 const HardModeTimerIndicator = memo(
   ({
@@ -62,27 +59,31 @@ const HardModeTimerIndicator = memo(
   },
 );
 
-const Toolbar = ({
-  currentWinStreak,
-  dictionaryLoading,
-  dictionaryWords,
-  openWordsDialog,
-  hintsEnabledForDifficulty,
-  useHint,
-  hintButtonDisabled,
-  hintsRemaining,
-  openHelpDialog,
-  openDeveloperConsoleDialog,
-  showRefreshAttention,
-  refreshAttentionPulse,
-  refreshAttentionScale,
-  refreshBoard,
-  dictionaryError,
-  wordListButtonEnabled,
-  developerConsoleEnabled,
-  timer,
-}: ToolbarProps): JSX.Element => {
+const Toolbar = (): JSX.Element => {
   const { t } = useTranslation();
+  const { controller, wordListButtonEnabled, developerConsoleEnabled } =
+    usePlayView();
+  const {
+    currentWinStreak,
+    dictionaryLoading,
+    dictionaryWords,
+    openWordsDialog,
+    hintsEnabledForDifficulty,
+    useHint,
+    hintButtonDisabled,
+    hintsRemaining,
+    openHelpDialog,
+    openDeveloperConsoleDialog,
+    showRefreshAttention,
+    refreshAttentionPulse,
+    refreshAttentionScale,
+    refreshBoard,
+    dictionaryError,
+    showHardModeTimer,
+    hardModeSecondsLeft,
+    hardModeTickPulse,
+    hardModeClockBoostScale,
+  } = controller;
 
   return (
     <>
@@ -142,10 +143,10 @@ const Toolbar = ({
             </Button>
           )}
           <HardModeTimerIndicator
-            showHardModeTimer={timer.showHardModeTimer}
-            hardModeSecondsLeft={timer.hardModeSecondsLeft}
-            hardModeTickPulse={timer.hardModeTickPulse}
-            hardModeClockBoostScale={timer.hardModeClockBoostScale}
+            showHardModeTimer={showHardModeTimer}
+            hardModeSecondsLeft={hardModeSecondsLeft}
+            hardModeTickPulse={hardModeTickPulse}
+            hardModeClockBoostScale={hardModeClockBoostScale}
           />
           <span
             key={showRefreshAttention ? refreshAttentionPulse : "idle"}

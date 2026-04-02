@@ -1,8 +1,9 @@
 import { memo, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
+import { usePlayView } from "@views/Play/providers";
 import { Board } from "../components";
-import type { BoardContentProps, BoardSectionProps } from "./types";
+import type { BoardContentProps, HardModeProgressProps } from "./types";
 
 const BoardContent = memo(
   ({
@@ -59,7 +60,7 @@ const HardModeProgressBar = memo(
     showHardModeFinalStretchBar,
     hardModeSecondsLeft,
     hardModeFinalStretchProgressPercent,
-  }: BoardSectionProps["hardModeProgress"]): JSX.Element | null => {
+  }: HardModeProgressProps): JSX.Element | null => {
     const { t } = useTranslation();
 
     if (!showHardModeFinalStretchBar) {
@@ -88,22 +89,39 @@ const HardModeProgressBar = memo(
   },
 );
 
-const BoardSection = ({
-  board,
-  hardModeProgress,
-}: BoardSectionProps): JSX.Element => {
+const BoardSection = (): JSX.Element => {
   const { t } = useTranslation();
+  const { controller, animateTileEntry } = usePlayView();
+  const {
+    guesses,
+    current,
+    gameOver,
+    won,
+    answer,
+    showLegacyEndOfGameMessage,
+    startAnimationSeed,
+    startAnimationsEnabled,
+    boardShakePulse,
+    activeRowHintStatuses,
+    hintRevealPulse,
+    hintRevealTileIndex,
+    comboFlash,
+    normalDictionaryBonusRowFlags,
+    showHardModeFinalStretchBar,
+    hardModeSecondsLeft,
+    hardModeFinalStretchProgressPercent,
+  } = controller;
 
   return (
     <ErrorBoundary
       name="play-board"
       resetKeys={[
-        board.guesses.length,
-        board.current,
-        board.gameOver,
-        board.won,
-        board.startAnimationSeed,
-        board.boardShakePulse,
+        guesses.length,
+        current,
+        gameOver,
+        won,
+        startAnimationSeed,
+        boardShakePulse,
       ]}
       fallback={({ reset }) => (
         <ErrorFallback
@@ -116,28 +134,28 @@ const BoardSection = ({
     >
       <>
         <HardModeProgressBar
-          showHardModeFinalStretchBar={hardModeProgress.showHardModeFinalStretchBar}
-          hardModeSecondsLeft={hardModeProgress.hardModeSecondsLeft}
+          showHardModeFinalStretchBar={showHardModeFinalStretchBar}
+          hardModeSecondsLeft={hardModeSecondsLeft}
           hardModeFinalStretchProgressPercent={
-            hardModeProgress.hardModeFinalStretchProgressPercent
+            hardModeFinalStretchProgressPercent
           }
         />
         <BoardContent
-          guesses={board.guesses}
-          current={board.current}
-          gameOver={board.gameOver}
-          won={board.won}
-          answer={board.answer}
-          showLegacyEndOfGameMessage={board.showLegacyEndOfGameMessage}
-          startAnimationSeed={board.startAnimationSeed}
-          startAnimationsEnabled={board.startAnimationsEnabled}
-          boardShakePulse={board.boardShakePulse}
-          activeRowHintStatuses={board.activeRowHintStatuses}
-          hintRevealPulse={board.hintRevealPulse}
-          hintRevealTileIndex={board.hintRevealTileIndex}
-          comboFlash={board.comboFlash}
-          normalDictionaryBonusRowFlags={board.normalDictionaryBonusRowFlags}
-          animateTileEntry={board.animateTileEntry}
+          guesses={guesses}
+          current={current}
+          gameOver={gameOver}
+          won={won}
+          answer={answer}
+          showLegacyEndOfGameMessage={showLegacyEndOfGameMessage}
+          startAnimationSeed={startAnimationSeed}
+          startAnimationsEnabled={startAnimationsEnabled}
+          boardShakePulse={boardShakePulse}
+          activeRowHintStatuses={activeRowHintStatuses}
+          hintRevealPulse={hintRevealPulse}
+          hintRevealTileIndex={hintRevealTileIndex}
+          comboFlash={comboFlash}
+          normalDictionaryBonusRowFlags={normalDictionaryBonusRowFlags}
+          animateTileEntry={animateTileEntry}
         />
       </>
     </ErrorBoundary>

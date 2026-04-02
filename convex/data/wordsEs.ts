@@ -1582,5 +1582,5 @@ export const ES_WORDS = [
   "gordo",
   "manto",
   "menos",
-  "tanto"
+  "tanto",
 ];

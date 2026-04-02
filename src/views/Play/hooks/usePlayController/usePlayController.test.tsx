@@ -219,9 +219,7 @@ describe("usePlayController", () => {
 
     rerender();
 
-    expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(4, 3.2, 2),
-    );
+    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(4, 3.2, 2));
   });
 
   it("adds dictionary-row bonus into the difficulty multiplier on normal wins", () => {

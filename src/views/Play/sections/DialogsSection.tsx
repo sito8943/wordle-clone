@@ -2,7 +2,7 @@ import { lazy, memo, Suspense, type JSX } from "react";
 import { useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
-import type { DialogsSectionProps } from "./types";
+import { usePlayView } from "@views/Play/providers";
 
 const SessionResumeDialog = lazy(
   () => import("../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
@@ -27,40 +27,40 @@ const DefeatDialog = lazy(
   () => import("../components/Dialogs/DefeatDialog/DefeatDialog"),
 );
 
-const DialogsSection = ({
-  message,
-  showResumeDialog,
-  showRefreshDialog,
-  showWordsDialog,
-  showHelpDialog,
-  showDeveloperConsoleDialog,
-  showVictoryDialog,
-  showDefeatDialog,
-  showEndOfGameSettingsHint,
-  endOfGameAnswer,
-  victoryScoreSummary,
-  endOfGameCurrentStreak,
-  endOfGameBestStreak,
-  continuePreviousBoard,
-  startNewBoard,
-  closeEndOfGameDialog,
-  cancelRefreshBoard,
-  confirmRefreshBoard,
-  dictionaryWords,
-  currentLanguage,
-  closeWordsDialog,
-  closeHelpDialog,
-  closeDeveloperConsoleDialog,
-  wordListButtonEnabled,
-  developerConsoleEnabled,
-  player,
-  submitDeveloperPlayer,
-  refreshRemoteDictionaryChecksum,
-  isRefreshingDictionaryChecksum,
-  dictionaryChecksumMessage,
-  dictionaryChecksumMessageKind,
-}: DialogsSectionProps): JSX.Element => {
+const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
+  const { controller, player, wordListButtonEnabled, developerConsoleEnabled } =
+    usePlayView();
+  const {
+    message,
+    showResumeDialog,
+    showRefreshDialog,
+    showWordsDialog,
+    showHelpDialog,
+    showDeveloperConsoleDialog,
+    showVictoryDialog,
+    showDefeatDialog,
+    showEndOfGameSettingsHint,
+    endOfGameAnswer,
+    victoryScoreSummary,
+    endOfGameCurrentStreak,
+    endOfGameBestStreak,
+    continuePreviousBoard,
+    startNewBoard,
+    closeEndOfGameDialog,
+    cancelRefreshBoard,
+    confirmRefreshBoard,
+    dictionaryWords,
+    currentLanguage,
+    closeWordsDialog,
+    closeHelpDialog,
+    closeDeveloperConsoleDialog,
+    submitDeveloperPlayer,
+    refreshRemoteDictionaryChecksum,
+    isRefreshingDictionaryChecksum,
+    dictionaryChecksumMessage,
+    dictionaryChecksumMessageKind,
+  } = controller;
   const navigate = useNavigate();
   const resumeDialogVisible = showResumeDialog;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
