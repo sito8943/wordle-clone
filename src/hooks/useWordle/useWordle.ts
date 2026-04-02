@@ -418,6 +418,19 @@ export default function useWordle(options: UseWordleOptions = {}) {
     [gameOver, manualTileSelection, maxSelectableTileIndex, showResumeDialog],
   );
 
+  const moveActiveTile = useCallback(
+    (direction: -1 | 1) => {
+      if (!manualTileSelection || gameOver || showResumeDialog) {
+        return;
+      }
+
+      setActiveTileIndex((previous) =>
+        Math.min(Math.max(previous + direction, 0), maxSelectableTileIndex),
+      );
+    },
+    [gameOver, manualTileSelection, maxSelectableTileIndex, showResumeDialog],
+  );
+
   const revealHint = useCallback(
     (hintStatus: HintTileStatus): boolean => {
       if (gameOver || showResumeDialog) {
@@ -476,6 +489,16 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return;
       }
 
+      if (key === "ARROWLEFT") {
+        moveActiveTile(-1);
+        return;
+      }
+
+      if (key === "ARROWRIGHT") {
+        moveActiveTile(1);
+        return;
+      }
+
       if (isLetterKey(key)) {
         addCurrentLetter(key);
       }
@@ -485,6 +508,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       checkInput,
       current,
       gameOver,
+      moveActiveTile,
       removeCurrentLetter,
       showResumeDialog,
     ],

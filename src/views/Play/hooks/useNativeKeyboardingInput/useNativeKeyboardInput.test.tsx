@@ -92,6 +92,12 @@ describe("useNativeKeyboardInput", () => {
       key: "Backspace",
     });
     fireEvent.keyDown(screen.getByLabelText("Native keyboard input"), {
+      key: "ArrowLeft",
+    });
+    fireEvent.keyDown(screen.getByLabelText("Native keyboard input"), {
+      key: "ArrowRight",
+    });
+    fireEvent.keyDown(screen.getByLabelText("Native keyboard input"), {
       key: "a",
       ctrlKey: true,
     });
@@ -99,7 +105,9 @@ describe("useNativeKeyboardInput", () => {
     expect(onKey).toHaveBeenNthCalledWith(1, "A");
     expect(onKey).toHaveBeenNthCalledWith(2, "ENTER");
     expect(onKey).toHaveBeenNthCalledWith(3, "BACKSPACE");
-    expect(onKey).toHaveBeenCalledTimes(3);
+    expect(onKey).toHaveBeenNthCalledWith(4, "ARROWLEFT");
+    expect(onKey).toHaveBeenNthCalledWith(5, "ARROWRIGHT");
+    expect(onKey).toHaveBeenCalledTimes(5);
   });
 
   it("extracts typed letters from input events", () => {

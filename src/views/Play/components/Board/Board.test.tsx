@@ -167,12 +167,7 @@ describe("Board", () => {
 
   it("uses a provided active tile index for the current row", () => {
     render(
-      <Board
-        guesses={[]}
-        current="AB"
-        gameOver={false}
-        activeTileIndex={0}
-      />,
+      <Board guesses={[]} current="AB" gameOver={false} activeTileIndex={0} />,
     );
 
     const cells = screen.getAllByRole("gridcell");
