@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-04-02
+
+### Branch `0.0.10`
+
+- Bumped package version to `0.0.10`.
+- Added Normal difficulty dictionary-row bonus scoring: each incorrect valid dictionary guess adds `+0.4` to the difficulty multiplier (`NORMAL_DICTIONARY_ROW_BONUS`), integrated into win score computation and score summaries.
+- Updated score presentation to support decimal multipliers/bonuses in victory breakdowns, including one-decimal formatting where needed.
+- Added board-level dictionary bonus markers (`○`) for qualifying rows, with localized tooltip/help copy in English and Spanish.
+- Added victory board sharing from the result dialog by capturing the board as a PNG (`html2canvas`) and sharing it through the Web Share API, including loading/error states and localized messages.
+- Added manual tile selection mode: persisted `player.manualTileSelection`, Profile settings toggle, click-to-select tile editing, arrow-key cursor movement (`ArrowLeft`/`ArrowRight`), and indexed add/remove behavior in `useWordle`.
+- Refactored Play composition to reduce prop drilling: sections now consume `PlayViewProvider` context directly, `usePlaySections` was removed, and board row/tile props were consolidated into view models.
+- Added lint guardrails to block JSX props spread in app components (with scoped exceptions for `Button` and tests), and documented the refactor in `docs/prop-drilling-analysis.md` and `docs/props-spread-audit.md`.
+- Added donation UX/config support: optional `VITE_PAYPAL_DONATION_BUTTON_URL`, PayPal actions in Home and Footer, and Home donation feedback via `#donated`.
+- Updated the Spanish dictionary seed list (`convex/data/wordsEs.ts`) and expanded automated coverage across scoring, Play controller/board flows, Profile settings, and dialog behavior for these changes.
+
 ## 2026-03-26
 
 ### Branch `feedback_from_alberto`
