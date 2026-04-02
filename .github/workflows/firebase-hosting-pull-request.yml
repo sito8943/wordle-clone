@@ -11,6 +11,7 @@ env:
   VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
   VITE_WORD_LIST_BUTTON_ENABLED: ${{ vars.VITE_WORD_LIST_BUTTON_ENABLED }}
   VITE_WORD_REPORT_PHONE_NUMBER: ${{ vars.VITE_WORD_REPORT_PHONE_NUMBER }}
+  VITE_PAYPAL_DONATION_BUTTON_URL: ${{ vars.VITE_PAYPAL_DONATION_BUTTON_URL }}
 jobs:
   build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
@@ -23,6 +24,7 @@ jobs:
             echo "VITE_CONVEX_URL=${VITE_CONVEX_URL}"
             echo "VITE_WORD_LIST_BUTTON_ENABLED=${VITE_WORD_LIST_BUTTON_ENABLED:-true}"
             echo "VITE_WORD_REPORT_PHONE_NUMBER=${VITE_WORD_REPORT_PHONE_NUMBER}"
+            echo "VITE_PAYPAL_DONATION_BUTTON_URL=${VITE_PAYPAL_DONATION_BUTTON_URL}"
           } > .env
       - run: npm ci && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
