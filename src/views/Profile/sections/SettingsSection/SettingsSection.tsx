@@ -97,7 +97,9 @@ const SettingsSection = () => {
             id={PROFILE_MANUAL_TILE_SELECTION_INPUT_ID}
             type="checkbox"
             checked={manualTileSelection}
-            onChange={(event) => changeManualTileSelection(event.target.checked)}
+            onChange={(event) =>
+              changeManualTileSelection(event.target.checked)
+            }
             className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
           />
           <div>
