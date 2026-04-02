@@ -12,6 +12,14 @@ export const toWordleKeyFromNativeKeyboardEvent = (
     return "BACKSPACE";
   }
 
+  if (eventKey === "ArrowLeft") {
+    return "ARROWLEFT";
+  }
+
+  if (eventKey === "ArrowRight") {
+    return "ARROWRIGHT";
+  }
+
   if (eventKey.length === 1 && LETTER_KEY_PATTERN.test(eventKey)) {
     return eventKey.toUpperCase();
   }

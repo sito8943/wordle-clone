@@ -48,6 +48,35 @@ export default defineConfig([
           message:
             "Visible JSX string literals must come from i18n (`t(...)`) instead of inline text.",
         },
+        {
+          selector: "JSXSpreadAttribute",
+          message:
+            "Avoid JSX props spread in app components. Pass props explicitly.",
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/components/Button/Button.tsx"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXText[value=/[A-Za-zÀ-ÿ]/]",
+          message:
+            "Visible JSX text must come from i18n (`t(...)`) instead of literal strings.",
+        },
+        {
+          selector:
+            "JSXAttribute[name.name=/^(aria-label|title|placeholder|alt)$/][value.type='Literal'][value.value=/[A-Za-zÀ-ÿ]/]",
+          message:
+            "User-facing JSX attributes must use i18n (`t(...)`) instead of literal strings.",
+        },
+        {
+          selector: "JSXExpressionContainer > Literal[value=/[A-Za-zÀ-ÿ]/]",
+          message:
+            "Visible JSX string literals must come from i18n (`t(...)`) instead of inline text.",
+        },
       ],
     },
   },

@@ -1,21 +1,22 @@
 import { memo, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
+import { usePlayView } from "@views/Play/providers";
 import { Keyboard } from "../components";
 import { useNativeKeyboardInput } from "../hooks";
-import type { KeyboardSectionProps } from "./types";
 
-const KeyboardSection = ({
-  guesses,
-  current,
-  handleKey,
-  gameOver,
-  won,
-  keyboardEntryAnimationEnabled,
-  showResumeDialog,
-  preferNativeKeyboard,
-}: KeyboardSectionProps): JSX.Element => {
+const KeyboardSection = (): JSX.Element => {
   const { t } = useTranslation();
+  const { controller, preferNativeKeyboard } = usePlayView();
+  const {
+    guesses,
+    current,
+    handleKey,
+    gameOver,
+    won,
+    keyboardEntryAnimationEnabled,
+    showResumeDialog,
+  } = controller;
 
   const nativeKeyboardBlocked = showResumeDialog || gameOver;
   const {

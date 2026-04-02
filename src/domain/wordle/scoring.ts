@@ -1,5 +1,13 @@
-import { DIFFICULTY_SCORE_MULTIPLIERS, MAX_GUESSES } from "./constants";
+import {
+  DIFFICULTY_SCORE_MULTIPLIERS,
+  MAX_GUESSES,
+  NORMAL_DICTIONARY_ROW_BONUS,
+} from "./constants";
 import type { PlayerDifficulty } from "./player";
+import { isValidWord } from "@utils/words";
+
+const roundScoreToSingleDecimal = (value: number): number =>
+  Math.round(value * 10) / 10;
 
 export const getPointsForWin = (guessesUsed: number): number =>
   Math.max(0, MAX_GUESSES - guessesUsed + 1);
@@ -9,7 +17,7 @@ const toSafeDifficultyMultiplier = (value: number): number => {
     return 1;
   }
 
-  return Math.floor(value);
+  return value;
 };
 
 const toSafeStreakBonus = (value: number): number => {
@@ -40,6 +48,14 @@ const toSafeTimeBonus = (value: number): number => {
   return Math.floor(value);
 };
 
+const toSafeDictionaryRowBonus = (value: number): number => {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return value;
+};
+
 export const getStreakScoreMultiplier = (streak: number): number => {
   const safeStreak = toSafeStreakBonus(streak);
 
@@ -65,3 +81,48 @@ export const getTotalPointsForWin = (
     getBaseScoreForWin(guessesUsed, difficultyMultiplier, timeBonus) *
       getStreakScoreMultiplier(streak),
   );
+
+const normalizeGuessWord = (word: string): string => word.trim().toLowerCase();
+
+const isNormalDictionaryBonusRow = (
+  guess: string,
+  normalizedAnswer: string,
+): boolean => {
+  const normalizedGuess = normalizeGuessWord(guess);
+
+  if (normalizedGuess.length === 0 || normalizedGuess === normalizedAnswer) {
+    return false;
+  }
+
+  return isValidWord(normalizedGuess);
+};
+
+export const getNormalDictionaryBonusRowFlags = (
+  guesses: string[],
+  answer: string,
+): boolean[] => {
+  const normalizedAnswer = normalizeGuessWord(answer);
+
+  return guesses.map((guess) =>
+    isNormalDictionaryBonusRow(guess, normalizedAnswer),
+  );
+};
+
+export const getNormalDictionaryRowsBonusPoints = (
+  guesses: string[],
+  answer: string,
+  perRowBonus = NORMAL_DICTIONARY_ROW_BONUS,
+): number => {
+  const safePerRowBonus = toSafeDictionaryRowBonus(perRowBonus);
+
+  if (safePerRowBonus === 0) {
+    return 0;
+  }
+
+  const validNonAnswerRows = getNormalDictionaryBonusRowFlags(
+    guesses,
+    answer,
+  ).filter(Boolean).length;
+
+  return roundScoreToSingleDecimal(validNonAnswerRows * safePerRowBonus);
+};

@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak } from "@components";
 import { Dialog, useDialogCloseTransition } from "@components/Dialogs";
+import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog/constants";
 import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDialog/utils";
@@ -14,7 +16,7 @@ const formatScoreSummaryValue = (key: string, value: number): string => {
     return `x${Number.isInteger(value) ? value : value.toFixed(2)}`;
   }
 
-  return `+${value}`;
+  return `+${Number.isInteger(value) ? value : value.toFixed(1)}`;
 };
 
 const VictoryDialog = ({
@@ -23,8 +25,12 @@ const VictoryDialog = ({
   currentStreak,
   scoreSummary,
   showSettingsHint = false,
+  shareEnabled = false,
+  isSharing = false,
+  shareErrorMessage = null,
   onClose,
   onPlayAgain,
+  onShare,
 }: VictoryDialogProps) => {
   const { t } = useTranslation();
   const { isClosing, closeWithAction } = useDialogCloseTransition(
@@ -78,8 +84,17 @@ const VictoryDialog = ({
           <div className="mt-3 space-y-2 text-sm text-neutral-700 dark:text-neutral-200">
             {scoreSummary.items.map((item) => (
               <div key={item.key} className="flex items-center justify-between">
-                <span>{t(`play.victoryDialog.scoreItems.${item.key}`)}</span>
-                <span className="font-semibold">
+                <span
+                  className={`${item.key === "dictionary" ? "text-xs text-gray-400" : ""} `}
+                >
+                  {t(`play.victoryDialog.scoreItems.${item.key}`, {
+                    bonus: NORMAL_DICTIONARY_ROW_BONUS,
+                  })}
+                </span>
+
+                <span
+                  className={`font-semibold ${item.key === "dictionary" ? "text-xs text-gray-400" : ""}`}
+                >
                   {formatScoreSummaryValue(item.key, item.value)}
                 </span>
               </div>
@@ -102,7 +117,38 @@ const VictoryDialog = ({
 
         {showSettingsHint ? <SettingsHint /> : null}
 
-        <div className="flex justify-end">
+        {isSharing ? (
+          <p className="sr-only" role="status" aria-live="polite">
+            {t("play.victoryDialog.shareInProgress")}
+          </p>
+        ) : null}
+
+        {shareErrorMessage ? (
+          <p
+            className="text-sm text-red-600 dark:text-red-400"
+            role="alert"
+            aria-live="assertive"
+          >
+            {shareErrorMessage}
+          </p>
+        ) : null}
+
+        <div className="flex flex-wrap justify-end gap-3">
+          {shareEnabled && onShare ? (
+            <Button
+              onClick={onShare}
+              variant="outline"
+              color="neutral"
+              disabled={isClosing || isSharing}
+              aria-label={t("play.victoryDialog.shareAction")}
+              aria-busy={isSharing}
+              icon={faShareNodes}
+            >
+              {isSharing
+                ? t("play.victoryDialog.shareInProgress")
+                : t("play.victoryDialog.shareAction")}
+            </Button>
+          ) : null}
           <Button
             onClick={() => closeWithAction(onPlayAgain)}
             disabled={isClosing}

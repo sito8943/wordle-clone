@@ -74,6 +74,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           difficulty,
           keyboardPreference,
           showEndOfGameDialogs: normalizedPrevious.showEndOfGameDialogs,
+          manualTileSelection: normalizedPrevious.manualTileSelection,
         };
 
         previousPreferencesRef.current = {
@@ -348,6 +349,24 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [setStoredPlayer],
   );
 
+  const updatePlayerManualTileSelection = useCallback(
+    (enabled: boolean) => {
+      setStoredPlayer((prev) => {
+        const normalized = normalizePlayer(prev);
+        if (normalized.manualTileSelection === enabled) {
+          if (prev.manualTileSelection === enabled) {
+            return prev;
+          }
+
+          return normalized;
+        }
+
+        return { ...normalized, manualTileSelection: enabled };
+      });
+    },
+    [setStoredPlayer],
+  );
+
   const contextValue = useMemo(
     () => ({
       player,
@@ -359,6 +378,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerKeyboardPreference,
       updatePlayerLanguage,
       updatePlayerShowEndOfGameDialogs,
+      updatePlayerManualTileSelection,
       commitVictory,
       commitLoss,
     }),
@@ -372,6 +392,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerKeyboardPreference,
       updatePlayerLanguage,
       updatePlayerShowEndOfGameDialogs,
+      updatePlayerManualTileSelection,
       commitVictory,
       commitLoss,
     ],

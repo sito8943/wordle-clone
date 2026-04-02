@@ -19,6 +19,11 @@ export const resources = {
         profile: "Settings",
         scoreboard: "Scoreboard",
       },
+      home: {
+        donate: "Donate",
+        donationThankYouAlert:
+          "Thanks for supporting Wordle with your donation.",
+      },
       footer: {
         madeBy: "Made by @sito8943",
         githubRepository: "GitHub repository",
@@ -88,9 +93,12 @@ export const resources = {
           keyboardMode: "Keyboard mode",
           difficulty: "Difficulty",
           endOfGameDialogs: "End-of-game dialogs",
+          manualTileSelection: "Manual tile selection",
         },
         endOfGameDialogsDescription:
           "Show dialogs when you win or lose a board.",
+        manualTileSelectionDescription:
+          "Click a tile before typing. The cursor will not advance automatically.",
         codeHelp:
           "Use this 4-character code to recover your settings on another browser.",
         recovery: {
@@ -195,6 +203,8 @@ export const resources = {
           boardAriaLabel: "Wordle board",
           onScreenKeyboardAriaLabel: "On-screen keyboard",
           comboFlashValue: "x{{count}}",
+          normalDictionaryBonusTooltip:
+            "Incorrect guess, but valid dictionary word: +{{bonus}} to the difficulty multiplier.",
           keys: {
             deleteLetter: "Delete letter",
             submitGuess: "Submit guess",
@@ -267,9 +277,11 @@ export const resources = {
               "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
             easy: "Easy: x1 difficulty multiplier.",
             normal: "Normal: x2 difficulty multiplier.",
-            hard: "Hard: x3 difficulty multiplier.",
+            normalDictionaryBonus:
+              "Normal: each incorrect dictionary-word row adds +{{bonus}} to the difficulty multiplier (○ marker).",
+            hard: "Hard: x5 difficulty multiplier.",
             insane:
-              "Insane: x4 difficulty multiplier and +1 extra point per 2 seconds left.",
+              "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
             final:
               "Final score = round(score base x (1 + 0.3 x sqrt(streak))), where score base includes the difficulty multiplier and the Insane time bonus.",
           },
@@ -288,11 +300,21 @@ export const resources = {
           title: "Victory",
           description: "Board cleared. Here is your score breakdown.",
           scoreSummaryTitle: "Score summary",
+          shareAction: "Share board",
+          shareInProgress: "Sharing...",
+          sharePayloadTitle: "Wordle victory",
+          sharePayloadText: "I solved this board in {{count}} tries.",
+          shareErrors: {
+            captureUnavailable: "The board screenshot is not available yet.",
+            unavailable: "This device cannot share image files from the game.",
+            captureFailed: "Could not prepare the board screenshot. Try again.",
+          },
           scoreItems: {
             base: "Base points",
             difficulty: "Difficulty multiplier",
             streak: "Streak multiplier",
             time: "Time bonus",
+            dictionary: "Dictionary word bonus (+{{bonus}}/word)",
             total: "Total",
           },
         },
@@ -350,6 +372,10 @@ export const resources = {
         play: "Jugar",
         profile: "Ajustes",
         scoreboard: "Clasificación",
+      },
+      home: {
+        donate: "Donar",
+        donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
       },
       footer: {
         madeBy: "Hecho por @sito8943",
@@ -421,9 +447,12 @@ export const resources = {
           keyboardMode: "Modo de teclado",
           difficulty: "Dificultad",
           endOfGameDialogs: "Diálogos de fin de partida",
+          manualTileSelection: "Selección manual de casillas",
         },
         endOfGameDialogsDescription:
           "Muestra diálogos cuando ganas o pierdes un tablero.",
+        manualTileSelectionDescription:
+          "Haz clic en una casilla antes de escribir. El cursor no avanzará automáticamente.",
         codeHelp:
           "Usa este código de 4 caracteres para recuperar tus ajustes en otro navegador.",
         recovery: {
@@ -528,6 +557,8 @@ export const resources = {
           boardAriaLabel: "Tablero de Wordle",
           onScreenKeyboardAriaLabel: "Teclado en pantalla",
           comboFlashValue: "x{{count}}",
+          normalDictionaryBonusTooltip:
+            "Intento incorrecto, pero palabra válida del diccionario: +{{bonus}} al multiplicador de dificultad.",
           keys: {
             deleteLetter: "Borrar letra",
             submitGuess: "Enviar intento",
@@ -604,9 +635,11 @@ export const resources = {
               "La racha escala tu puntuación con x(1 + 0.3 x sqrt(racha)).",
             easy: "Fácil: multiplicador de dificultad x1.",
             normal: "Normal: multiplicador de dificultad x2.",
-            hard: "Difícil: multiplicador de dificultad x3.",
+            normalDictionaryBonus:
+              "Normal: cada fila incorrecta con palabra del diccionario suma +{{bonus}} al multiplicador de dificultad (marca ○).",
+            hard: "Difícil: multiplicador de dificultad x5.",
             insane:
-              "Insano: multiplicador de dificultad x4 y +1 punto extra por cada 2 segundos restantes.",
+              "Insano: multiplicador de dificultad x9 y +1 punto extra por cada 2 segundos restantes.",
             final:
               "Puntuación final = round(puntuación base x (1 + 0.3 x sqrt(racha))), donde la puntuación base incluye el multiplicador de dificultad y el bonus de tiempo en Insano.",
           },
@@ -625,11 +658,24 @@ export const resources = {
           title: "Victoria",
           description: "Partida superada. Aquí tienes el desglose.",
           scoreSummaryTitle: "Resumen de puntuación",
+          shareAction: "Compartir tablero",
+          shareInProgress: "Compartiendo...",
+          sharePayloadTitle: "Victoria en Wordle",
+          sharePayloadText: "He resuelto este tablero en {{count}} intentos.",
+          shareErrors: {
+            captureUnavailable:
+              "La captura del tablero todavía no está disponible.",
+            unavailable:
+              "Este dispositivo no permite compartir imágenes desde el juego.",
+            captureFailed:
+              "No se ha podido preparar la captura del tablero. Inténtalo de nuevo.",
+          },
           scoreItems: {
             base: "Puntos base",
             difficulty: "Multiplicador de dificultad",
             streak: "Multiplicador de racha",
             time: "Bonus de tiempo",
+            dictionary: "Bonus por palabra de diccionario (+{{bonus}}/palabra)",
             total: "Total",
           },
         },

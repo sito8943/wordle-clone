@@ -4,6 +4,7 @@ import { useTranslation } from "@i18n";
 import { DifficultySection } from "../DifficultySection";
 import {
   PROFILE_END_OF_GAME_DIALOGS_INPUT_ID,
+  PROFILE_MANUAL_TILE_SELECTION_INPUT_ID,
   PROFILE_THEME_MODE_INPUT_ID,
 } from "@views/Profile/constants";
 import { useProfileView } from "@views/Profile/providers";
@@ -22,6 +23,8 @@ const SettingsSection = () => {
       changeKeyboardPreference,
       showEndOfGameDialogs,
       changeShowEndOfGameDialogs,
+      manualTileSelection,
+      changeManualTileSelection,
       difficulty,
       changeDifficulty,
     },
@@ -84,6 +87,30 @@ const SettingsSection = () => {
             </label>
             <p className="text-xs text-neutral-600 dark:text-neutral-300">
               {t("profile.endOfGameDialogsDescription")}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div id="manual-tile-selection" className="mt-4 max-w-xl">
+        <div className="flex items-start gap-3">
+          <input
+            id={PROFILE_MANUAL_TILE_SELECTION_INPUT_ID}
+            type="checkbox"
+            checked={manualTileSelection}
+            onChange={(event) =>
+              changeManualTileSelection(event.target.checked)
+            }
+            className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
+          />
+          <div>
+            <label
+              htmlFor={PROFILE_MANUAL_TILE_SELECTION_INPUT_ID}
+              className="profile-field-label"
+            >
+              {t("profile.labels.manualTileSelection")}
+            </label>
+            <p className="text-xs text-neutral-600 dark:text-neutral-300">
+              {t("profile.manualTileSelectionDescription")}
             </p>
           </div>
         </div>

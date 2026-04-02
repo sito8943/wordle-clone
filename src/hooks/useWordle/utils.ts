@@ -81,7 +81,11 @@ export const isEditableKeyboardTarget = (
 };
 
 export const isDirectGameKeyboardKey = (key: string): boolean =>
-  key === "Backspace" || key === "Enter" || /^[a-zA-Z]$/.test(key);
+  key === "Backspace" ||
+  key === "Enter" ||
+  key === "ArrowLeft" ||
+  key === "ArrowRight" ||
+  /^[a-zA-Z]$/.test(key);
 
 export const blurRefreshButtonIfFocused = (): void => {
   const activeElement = document.activeElement;

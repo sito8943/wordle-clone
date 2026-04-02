@@ -26,6 +26,7 @@ export default function useProfileController() {
     updatePlayerLanguage,
     updatePlayerKeyboardPreference,
     updatePlayerShowEndOfGameDialogs,
+    updatePlayerManualTileSelection,
   } = usePlayer();
   const { startAnimationsEnabled, toggleAnimationsDisabled } =
     useAnimationsPreference();
@@ -141,6 +142,17 @@ export default function useProfileController() {
     [player.showEndOfGameDialogs, updatePlayerShowEndOfGameDialogs],
   );
 
+  const changeManualTileSelection = useCallback(
+    (enabled: boolean) => {
+      if (enabled === player.manualTileSelection) {
+        return;
+      }
+
+      updatePlayerManualTileSelection(enabled);
+    },
+    [player.manualTileSelection, updatePlayerManualTileSelection],
+  );
+
   const openLanguageDialog = useCallback(() => {
     setPendingLanguage(player.language);
     setIsLanguageDialogOpen(true);
@@ -224,6 +236,8 @@ export default function useProfileController() {
     saveLanguage,
     showEndOfGameDialogs: player.showEndOfGameDialogs,
     changeShowEndOfGameDialogs,
+    manualTileSelection: player.manualTileSelection,
+    changeManualTileSelection,
     changeDifficulty,
     isDifficultyChangeConfirmationOpen,
     confirmDifficultyChange,

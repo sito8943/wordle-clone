@@ -4,6 +4,8 @@ import {
   getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
+  getNormalDictionaryBonusRowFlags,
+  getNormalDictionaryRowsBonusPoints,
   getPointsForWin,
   getTotalPointsForWin,
   type Player,
@@ -19,11 +21,35 @@ import type {
   EndOfGameScoreSummaryItem,
 } from "./types";
 import {
+  canShareVictoryBoardFile,
+  captureVictoryBoardImageFile,
+  getVictoryBoardShareCaptureElement,
   hasSeenEndOfGameDialogInSession,
+  isVictoryBoardShareSupported,
   markEndOfGameDialogAsSeenInSession,
 } from "./utils";
 import { i18n } from "@i18n";
 import { COMBO_FLASH_VISIBILITY_DURATION_MS } from "./constants";
+
+const getGuessWords = (guesses: unknown[]): string[] =>
+  guesses.reduce<string[]>((words, guess) => {
+    if (typeof guess === "string") {
+      words.push(guess);
+      return words;
+    }
+
+    if (!guess || typeof guess !== "object") {
+      return words;
+    }
+
+    const maybeWord = (guess as { word?: unknown }).word;
+
+    if (typeof maybeWord === "string") {
+      words.push(maybeWord);
+    }
+
+    return words;
+  }, []);
 
 export default function usePlayController() {
   const { scoreClient, wordDictionaryClient } = useApi();
@@ -32,6 +58,7 @@ export default function usePlayController() {
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
     language: player.language,
+    manualTileSelection: player.manualTileSelection === true,
   });
   const {
     sessionId,
@@ -73,10 +100,29 @@ export default function usePlayController() {
   const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
   const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] =
     useState(false);
+  const [isSharingVictoryBoard, setIsSharingVictoryBoard] = useState(false);
+  const [victoryBoardShareError, setVictoryBoardShareError] = useState<
+    string | null
+  >(null);
+  const victoryBoardShareSupported = useMemo(
+    () => isVictoryBoardShareSupported(),
+    [],
+  );
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
     [current.length, gameOver, guesses.length],
+  );
+  const guessWords = useMemo(
+    () => getGuessWords(guesses as unknown[]),
+    [guesses],
+  );
+  const normalDictionaryBonusRowFlags = useMemo(
+    () =>
+      player.difficulty === "normal"
+        ? getNormalDictionaryBonusRowFlags(guessWords, answer)
+        : [],
+    [answer, guessWords, player.difficulty],
   );
   const hasInProgressGameAtMount = hasActiveGame;
   const wordListEnabledForDifficulty = player.difficulty === "easy";
@@ -125,18 +171,37 @@ export default function usePlayController() {
     if (won) {
       setShowLegacyEndOfGameFeedback(false);
       const basePoints = getPointsForWin(guesses.length);
-      const difficultyMultiplier = getDifficultyScoreMultiplier(
+      const baseDifficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
       );
       const timeBonus =
         player.difficulty === "insane"
           ? getInsaneTimeBonus(hardModeSecondsLeft)
           : 0;
+      const normalDictionaryRowsBonusMultiplier =
+        player.difficulty === "normal"
+          ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
+          : 0;
+      const difficultyMultiplier =
+        baseDifficultyMultiplier + normalDictionaryRowsBonusMultiplier;
       const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
         { key: "base", value: basePoints },
         { key: "difficulty", value: difficultyMultiplier },
-        { key: "streak", value: getStreakScoreMultiplier(player.streak) },
       ];
+
+      if (normalDictionaryRowsBonusMultiplier > 0) {
+        scoreSummaryItems.push({
+          key: "dictionary",
+          value: normalDictionaryRowsBonusMultiplier,
+        });
+      }
+
+      if (getStreakScoreMultiplier(player.streak)) {
+        scoreSummaryItems.push({
+          key: "streak",
+          value: getStreakScoreMultiplier(player.streak),
+        });
+      }
 
       if (player.difficulty === "insane") {
         scoreSummaryItems.push({ key: "time", value: timeBonus });
@@ -174,10 +239,12 @@ export default function usePlayController() {
     roundSettled.current = true;
   }, [
     gameOver,
+    guesses,
     guesses.length,
     commitLoss,
     commitVictory,
     answer,
+    guessWords,
     hardModeSecondsLeft,
     player.difficulty,
     player.streak,
@@ -244,6 +311,8 @@ export default function usePlayController() {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setComboFlash(null);
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
     resetHints();
     resetHardModeTimer();
     refresh();
@@ -253,6 +322,8 @@ export default function usePlayController() {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setComboFlash(null);
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
     resetHints();
     resetHardModeTimer();
     startNewWordleBoard();
@@ -261,6 +332,8 @@ export default function usePlayController() {
   const closeEndOfGameDialog = useCallback(() => {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(true);
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
   }, []);
 
   const refreshBoard = useCallback(() => {
@@ -386,6 +459,8 @@ export default function usePlayController() {
       setShowWordsDialog(false);
       setShowHelpDialog(false);
       setShowDeveloperConsoleDialog(false);
+      setIsSharingVictoryBoard(false);
+      setVictoryBoardShareError(null);
     }
   }, [showResumeDialog]);
 
@@ -403,6 +478,62 @@ export default function usePlayController() {
   const showRefreshAttention = gameOver;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
 
+  const shareVictoryBoard = useCallback(async () => {
+    if (
+      !victoryBoardShareSupported ||
+      isSharingVictoryBoard ||
+      !showVictoryDialog
+    ) {
+      return;
+    }
+
+    const boardElement = getVictoryBoardShareCaptureElement();
+
+    if (!boardElement) {
+      setVictoryBoardShareError(
+        i18n.t("play.victoryDialog.shareErrors.captureUnavailable"),
+      );
+      return;
+    }
+
+    setVictoryBoardShareError(null);
+    setIsSharingVictoryBoard(true);
+
+    try {
+      const boardImageFile = await captureVictoryBoardImageFile(boardElement);
+
+      if (!canShareVictoryBoardFile(boardImageFile)) {
+        setVictoryBoardShareError(
+          i18n.t("play.victoryDialog.shareErrors.unavailable"),
+        );
+        return;
+      }
+
+      await navigator.share({
+        files: [boardImageFile],
+        title: i18n.t("play.victoryDialog.sharePayloadTitle"),
+        text: i18n.t("play.victoryDialog.sharePayloadText", {
+          count: guesses.length,
+        }),
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      setVictoryBoardShareError(
+        i18n.t("play.victoryDialog.shareErrors.captureFailed"),
+      );
+    } finally {
+      setIsSharingVictoryBoard(false);
+    }
+  }, [
+    guesses.length,
+    isSharingVictoryBoard,
+    showVictoryDialog,
+    victoryBoardShareSupported,
+  ]);
+
   useEffect(() => {
     if (!endOfGameDialogVisible) {
       return;
@@ -416,6 +547,15 @@ export default function usePlayController() {
     markEndOfGameDialogAsSeenInSession();
     setShowEndOfGameSettingsHint(true);
   }, [endOfGameDialogVisible]);
+
+  useEffect(() => {
+    if (showVictoryDialog) {
+      return;
+    }
+
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
+  }, [showVictoryDialog]);
 
   useEffect(() => {
     if (!showRefreshAttention) {
@@ -436,6 +576,7 @@ export default function usePlayController() {
 
   return {
     ...wordle,
+    manualTileSelection: player.manualTileSelection === true,
     currentLanguage: player.language,
     currentWinStreak: player.streak,
     showLegacyEndOfGameMessage:
@@ -445,6 +586,10 @@ export default function usePlayController() {
     refreshAttentionScale: 0.14,
     showVictoryDialog,
     showDefeatDialog,
+    victoryBoardShareSupported,
+    isSharingVictoryBoard,
+    victoryBoardShareError,
+    shareVictoryBoard,
     showEndOfGameSettingsHint,
     endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
     victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,
@@ -465,6 +610,7 @@ export default function usePlayController() {
     hintsEnabledForDifficulty,
     hintButtonDisabled,
     comboFlash,
+    normalDictionaryBonusRowFlags,
     startNewBoard,
     refreshBoard,
     showRefreshDialog,

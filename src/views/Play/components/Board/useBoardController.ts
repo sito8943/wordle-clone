@@ -8,18 +8,30 @@ type UseBoardControllerParams = Pick<
   | "guesses"
   | "current"
   | "gameOver"
+  | "animateTileEntry"
+  | "isLoss"
   | "shakePulse"
+  | "hintRevealPulse"
   | "activeRowHintStatuses"
   | "hintRevealTileIndex"
+  | "normalDictionaryBonusRowFlags"
+  | "activeTileIndex"
+  | "onTileSelect"
 >;
 
 const useBoardController = ({
   guesses,
   current,
   gameOver,
+  animateTileEntry = false,
+  isLoss = false,
   shakePulse = 0,
+  hintRevealPulse = 0,
   activeRowHintStatuses = {},
   hintRevealTileIndex = null,
+  normalDictionaryBonusRowFlags = [],
+  activeTileIndex = null,
+  onTileSelect,
 }: UseBoardControllerParams) => {
   const [isShaking, setIsShaking] = useState(false);
 
@@ -50,24 +62,52 @@ const useBoardController = ({
               (status, cellIndex) => activeRowHintStatuses[cellIndex] ?? status,
             )
           : row.statuses;
-      const activeTileIndex =
-        index === activeRowIndex && current.length < row.letters.length
-          ? current.length
+      const resolvedActiveTileIndex =
+        index === activeRowIndex
+          ? activeTileIndex !== null
+            ? Math.min(Math.max(activeTileIndex, 0), row.letters.length - 1)
+            : current.length < row.letters.length
+              ? current.length
+              : null
           : null;
+      const rowHintRevealTileIndex =
+        index === activeRowIndex ? hintRevealTileIndex : null;
+      const tiles = row.letters.map((letter, cellIndex) => ({
+        key: cellIndex,
+        letter,
+        status: statuses[cellIndex],
+        animationOrder: index * row.letters.length + cellIndex,
+        animateEntry: animateTileEntry,
+        isActive: resolvedActiveTileIndex === cellIndex,
+        onClick: index === activeRowIndex ? onTileSelect : undefined,
+        isLoss,
+        isHintReveal: rowHintRevealTileIndex === cellIndex,
+        hintRevealPulse,
+      }));
 
       return {
         key: index,
-        letters: row.letters,
-        statuses,
-        startTileIndex: index * row.letters.length,
-        activeTileIndex,
+        tiles,
         isPastRow: index < guesses.length,
         isActiveRow: index === activeRowIndex,
-        hintRevealTileIndex:
-          index === activeRowIndex ? hintRevealTileIndex : null,
+        showNormalDictionaryBonusIndicator: Boolean(
+          normalDictionaryBonusRowFlags[index],
+        ),
       };
     });
-  }, [activeRowHintStatuses, current, gameOver, guesses, hintRevealTileIndex]);
+  }, [
+    activeRowHintStatuses,
+    animateTileEntry,
+    current,
+    gameOver,
+    guesses,
+    hintRevealPulse,
+    hintRevealTileIndex,
+    isLoss,
+    normalDictionaryBonusRowFlags,
+    activeTileIndex,
+    onTileSelect,
+  ]);
 
   return {
     rows,

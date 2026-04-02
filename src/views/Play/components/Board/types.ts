@@ -12,30 +12,22 @@ export type BoardPropsType = {
   hintRevealPulse?: number;
   hintRevealTileIndex?: number | null;
   comboFlash?: ComboFlash | null;
+  normalDictionaryBonusRowFlags?: boolean[];
+  activeTileIndex?: number | null;
+  onTileSelect?: (index: number) => void;
 };
 
 export type RowPropsType = {
-  letters: string[];
-  statuses: BoardCellStatus[];
-  startTileIndex?: number;
-  activeTileIndex?: number | null;
-  isPastRow?: boolean;
-  isActiveRow?: boolean;
-  animateTileEntry?: boolean;
-  isLoss?: boolean;
-  hintRevealPulse?: number;
-  hintRevealTileIndex?: number | null;
+  row: BoardRowViewModel;
+  normalDictionaryBonusTooltip?: string;
 };
 
 export type BoardRowViewModel = {
   key: number;
-  letters: string[];
-  statuses: BoardCellStatus[];
-  startTileIndex: number;
-  activeTileIndex: number | null;
+  tiles: TileViewModel[];
   isPastRow: boolean;
   isActiveRow: boolean;
-  hintRevealTileIndex: number | null;
+  showNormalDictionaryBonusIndicator: boolean;
 };
 
 export type Status = BoardCellStatus;
@@ -49,12 +41,18 @@ export type ComboFlash = {
 };
 
 export type TilePropsType = {
+  tile: TileViewModel;
+};
+
+export type TileViewModel = {
+  key: number;
   letter?: string;
   status: Status;
-  animationOrder?: number;
-  animateEntry?: boolean;
-  isActive?: boolean;
-  isLoss?: boolean;
-  isHintReveal?: boolean;
-  hintRevealPulse?: number;
+  animationOrder: number;
+  animateEntry: boolean;
+  isActive: boolean;
+  onClick?: (key: number) => void;
+  isLoss: boolean;
+  isHintReveal: boolean;
+  hintRevealPulse: number;
 };

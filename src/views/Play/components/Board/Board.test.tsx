@@ -1,6 +1,7 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@i18n";
+import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import type { TileStatus } from "@utils/types";
 import { Board } from "./Board";
 
@@ -164,6 +165,34 @@ describe("Board", () => {
     expect(cells[1].querySelector(".tile-active-border-animation")).toBeNull();
   });
 
+  it("uses a provided active tile index for the current row", () => {
+    render(
+      <Board guesses={[]} current="AB" gameOver={false} activeTileIndex={0} />,
+    );
+
+    const cells = screen.getAllByRole("gridcell");
+    expect(
+      cells[0].querySelector(".tile-active-border-animation"),
+    ).toBeTruthy();
+    expect(cells[1].querySelector(".tile-active-border-animation")).toBeNull();
+    expect(cells[2].querySelector(".tile-active-border-animation")).toBeNull();
+  });
+
+  it("calls onTileSelect when clicking a tile in the active row", () => {
+    const onTileSelect = vi.fn();
+    render(
+      <Board
+        guesses={[]}
+        current="AB"
+        gameOver={false}
+        onTileSelect={onTileSelect}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole("gridcell")[1]);
+    expect(onTileSelect).toHaveBeenCalledWith(1);
+  });
+
   it("shows animated indicator only on the current row", () => {
     const correct: TileStatus[] = [
       "correct",
@@ -212,5 +241,44 @@ describe("Board", () => {
     expect(rows[0].className).toContain("scale-[0.95]");
     expect(rows[1].className).toContain("scale-[1.05]");
     expect(rows[1].className).toContain("transition-transform");
+  });
+
+  it("shows the gray hollow-circle bonus marker with tooltip for marked rows", () => {
+    const absent: TileStatus[] = [
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+    ];
+
+    render(
+      <Board
+        guesses={[
+          { word: "CRANE", statuses: absent },
+          { word: "ZZZZZ", statuses: absent },
+        ]}
+        current=""
+        gameOver={false}
+        normalDictionaryBonusRowFlags={[true, false]}
+      />,
+    );
+
+    const tooltip = i18n.t("play.gameplay.normalDictionaryBonusTooltip", {
+      bonus: NORMAL_DICTIONARY_ROW_BONUS,
+    });
+    const marker = screen.getByRole("img", {
+      name: tooltip,
+    });
+
+    expect(marker.getAttribute("title")).toBe(tooltip);
+    expect(marker.querySelector("span")?.className).toContain(
+      "border-neutral-400",
+    );
+    expect(
+      screen.getAllByRole("img", {
+        name: tooltip,
+      }),
+    ).toHaveLength(1);
   });
 });

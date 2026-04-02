@@ -7,6 +7,8 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
+import { i18n } from "@i18n";
 import HelpDialog from "./HelpDialog";
 
 afterEach(cleanup);
@@ -61,8 +63,29 @@ describe("HelpDialog", () => {
     renderHelpDialog();
     expect(
       screen.getByText(
-        "Insane: x4 difficulty multiplier and +1 extra point per 2 seconds left.",
+        "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
       ),
+    ).toBeTruthy();
+  });
+
+  it("renders the hard difficulty multiplier rule", () => {
+    renderHelpDialog();
+    expect(screen.getByText("Hard: x5 difficulty multiplier.")).toBeTruthy();
+  });
+
+  it("renders the normal dictionary-row bonus rule and marker tooltip", () => {
+    renderHelpDialog();
+
+    const bonusText = `Normal: each incorrect dictionary-word row adds +${NORMAL_DICTIONARY_ROW_BONUS} to the difficulty multiplier (○ marker).`;
+    const tooltip = i18n.t("play.gameplay.normalDictionaryBonusTooltip", {
+      bonus: NORMAL_DICTIONARY_ROW_BONUS,
+    });
+
+    expect(screen.getByText(bonusText)).toBeTruthy();
+    expect(
+      screen.getByRole("img", {
+        name: tooltip,
+      }),
     ).toBeTruthy();
   });
 

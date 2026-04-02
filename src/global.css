@@ -22,6 +22,7 @@
 @theme {
   --color-primary: #2563eb;
   --color-secondary: #0f766e;
+  --color-paypal: #142c8e;
 }
 
 * {

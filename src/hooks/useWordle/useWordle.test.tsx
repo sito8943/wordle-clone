@@ -148,4 +148,125 @@ describe("useWordle dictionary query integration", () => {
       '"current":"A"',
     );
   });
+
+  it("supports manual tile selection without automatic cursor advance", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(
+      () => useWordle({ manualTileSelection: true }),
+      { wrapper },
+    );
+
+    expect(result.current.activeTileIndex).toBe(0);
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+    expect(result.current.current).toBe("A");
+    expect(result.current.activeTileIndex).toBe(0);
+
+    act(() => {
+      result.current.handleKey("B");
+    });
+    expect(result.current.current).toBe("B");
+    expect(result.current.activeTileIndex).toBe(0);
+
+    act(() => {
+      result.current.selectActiveTile(1);
+    });
+    act(() => {
+      result.current.handleKey("C");
+    });
+    expect(result.current.current).toBe("BC");
+    expect(result.current.activeTileIndex).toBe(1);
+  });
+
+  it("removes the selected letter with backspace in manual mode", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(
+      () => useWordle({ manualTileSelection: true }),
+      { wrapper },
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+    act(() => {
+      result.current.selectActiveTile(1);
+    });
+    act(() => {
+      result.current.handleKey("B");
+    });
+    expect(result.current.current).toBe("AB");
+
+    act(() => {
+      result.current.selectActiveTile(0);
+    });
+    act(() => {
+      result.current.handleKey("BACKSPACE");
+    });
+    expect(result.current.current).toBe("B");
+    expect(result.current.activeTileIndex).toBe(0);
+  });
+
+  it("moves active tile with arrow keys in manual mode", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(
+      () => useWordle({ manualTileSelection: true }),
+      { wrapper },
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+    act(() => {
+      result.current.selectActiveTile(1);
+    });
+    act(() => {
+      result.current.handleKey("B");
+    });
+    expect(result.current.current).toBe("AB");
+    expect(result.current.activeTileIndex).toBe(1);
+
+    act(() => {
+      result.current.handleKey("ARROWLEFT");
+    });
+    expect(result.current.activeTileIndex).toBe(0);
+
+    act(() => {
+      result.current.handleKey("ARROWRIGHT");
+    });
+    expect(result.current.activeTileIndex).toBe(1);
+
+    act(() => {
+      result.current.handleKey("ARROWRIGHT");
+    });
+    act(() => {
+      result.current.handleKey("ARROWRIGHT");
+    });
+    expect(result.current.activeTileIndex).toBe(3);
+  });
 });

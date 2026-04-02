@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
@@ -7,7 +7,13 @@ import {
   faTrophy,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@i18n";
-import { HOME_ENTRY_ANIMATION_SESSION_KEY } from "./constants";
+import { Alert } from "@components";
+import {
+  HOME_DONATED_HASH,
+  HOME_ENTRY_ANIMATION_SESSION_KEY,
+} from "./constants";
+import { env } from "@config/env";
+import { faPaypal } from "@fortawesome/free-brands-svg-icons";
 
 const hasSeenEntryAnimationInSession = (): boolean => {
   if (typeof window === "undefined") {
@@ -34,6 +40,7 @@ const markEntryAnimationAsSeenInSession = (): void => {
 };
 
 const Home = () => {
+  const location = useLocation();
   const { t } = useTranslation();
   const [shouldAnimateEntry] = useState(
     () => !hasSeenEntryAnimationInSession(),
@@ -41,6 +48,7 @@ const Home = () => {
   const [entryAnimationReady, setEntryAnimationReady] = useState(
     () => !shouldAnimateEntry,
   );
+  const showDonationAlert = location.hash === HOME_DONATED_HASH;
 
   useEffect(() => {
     if (!shouldAnimateEntry) {
@@ -75,6 +83,11 @@ const Home = () => {
       >
         {t("app.title").toUpperCase()}
       </h2>
+      {showDonationAlert && (
+        <div className="w-full max-w-sm">
+          <Alert message={t("home.donationThankYouAlert")} color="success" />
+        </div>
+      )}
       <nav
         className={`w-full max-w-sm transition-[opacity,transform] duration-500 ease-out delay-150 motion-reduce:transition-none ${
           entryAnimationReady ? "opacity-100 scale-100" : "opacity-0 scale-95"
@@ -92,6 +105,17 @@ const Home = () => {
               </Link>
             </li>
           ))}
+          <li>
+            <a
+              href={env.paypalDonationButtonUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-300 bg-white/80 px-5 py-4 text-lg font-semibold text-neutral-800 transition-colors hover:border-primary hover:text-primary dark:border-neutral-700 dark:bg-neutral-800/60 dark:text-neutral-100 dark:hover:border-primary dark:hover:text-primary"
+            >
+              <FontAwesomeIcon icon={faPaypal} aria-hidden="true" />
+              <span>{t("home.donate")}</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </main>

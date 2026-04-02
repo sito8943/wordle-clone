@@ -25,9 +25,10 @@ describe("VictoryDialog", () => {
         scoreSummary={{
           items: [
             { key: "base", value: 4 },
-            { key: "difficulty", value: 4 },
+            { key: "difficulty", value: 4.4 },
             { key: "streak", value: 1.42 },
             { key: "time", value: 5 },
+            { key: "dictionary", value: 1.2 },
           ],
           total: 15,
         }}
@@ -39,10 +40,12 @@ describe("VictoryDialog", () => {
     expect(screen.getByRole("dialog", { name: "Victory" })).toBeTruthy();
     expect(screen.getByText("APPLE")).toBeTruthy();
     expect(screen.getByText("Difficulty multiplier")).toBeTruthy();
-    expect(screen.getByText("x4")).toBeTruthy();
+    expect(screen.getByText("x4.40")).toBeTruthy();
     expect(screen.getByText("Streak multiplier")).toBeTruthy();
     expect(screen.getByText("x1.42")).toBeTruthy();
     expect(screen.getByText("Time bonus")).toBeTruthy();
+    expect(screen.getByText("Dictionary word bonus (+0.4/word)")).toBeTruthy();
+    expect(screen.getByText("+1.2")).toBeTruthy();
     expect(screen.getByText("+15")).toBeTruthy();
     expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
     expect(document.querySelector(".streak-fire")).toBeTruthy();
@@ -102,5 +105,63 @@ describe("VictoryDialog", () => {
       "You can disable these dialogs in",
     );
     expect(settingsLink.getAttribute("href")).toBe("/settings#end-dialogs");
+  });
+
+  it("shows a share action when enabled and triggers the callback", () => {
+    const onShare = vi.fn();
+
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 4,
+        }}
+        shareEnabled
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+        onShare={onShare}
+      />,
+    );
+
+    const shareButton = screen.getByRole("button", { name: "Share board" });
+    const shareIcon = shareButton.querySelector("svg");
+
+    expect(shareButton.getAttribute("aria-label")).toBe("Share board");
+    expect(shareButton.getAttribute("aria-busy")).toBe("false");
+    expect(shareIcon).toBeTruthy();
+
+    fireEvent.click(shareButton);
+
+    expect(onShare).toHaveBeenCalledTimes(1);
+  });
+
+  it("announces share progress accessibly", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 4,
+        }}
+        shareEnabled
+        isSharing
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+        onShare={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole("status")).toBeTruthy();
+    expect(screen.getAllByText("Sharing...").length).toBeGreaterThan(0);
+    expect(
+      screen
+        .getByRole("button", { name: "Share board" })
+        .getAttribute("disabled"),
+    ).not.toBeNull();
   });
 });

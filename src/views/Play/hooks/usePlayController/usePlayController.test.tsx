@@ -2,6 +2,9 @@ import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import { i18n, initI18n } from "@i18n";
+import { setWordDictionary } from "@utils/words";
+import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
+import * as usePlayControllerUtils from "./utils";
 import usePlayController from "./usePlayController";
 import {
   COMBO_FLASH_VISIBILITY_DURATION_MS,
@@ -33,6 +36,8 @@ vi.mock("./useHardModeTimer", () => ({
 
 describe("usePlayController", () => {
   let wordleState: Record<string, unknown>;
+  let originalNavigatorShare: Navigator["share"] | undefined;
+  let originalNavigatorCanShare: Navigator["canShare"] | undefined;
 
   beforeEach(async () => {
     await initI18n();
@@ -44,6 +49,10 @@ describe("usePlayController", () => {
     mockUseHintController.mockClear();
     mockUseHardModeTimer.mockClear();
     window.sessionStorage.clear();
+    document.body.innerHTML = "";
+    originalNavigatorShare = navigator.share;
+    originalNavigatorCanShare = navigator.canShare;
+    setWordDictionary(["apple"]);
     wordleState = {
       sessionId: "session-1",
       gameId: "game-1",
@@ -109,6 +118,17 @@ describe("usePlayController", () => {
   afterEach(() => {
     cleanup();
     window.sessionStorage.clear();
+    document.body.innerHTML = "";
+    Object.defineProperty(navigator, "share", {
+      value: originalNavigatorShare,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(navigator, "canShare", {
+      value: originalNavigatorCanShare,
+      configurable: true,
+      writable: true,
+    });
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -154,6 +174,92 @@ describe("usePlayController", () => {
         allowUnknownWords: true,
         language: "en",
       }),
+    );
+  });
+
+  it("exposes normal dictionary bonus row flags for wrong dictionary rows", () => {
+    setWordDictionary(["apple", "crane", "slate"]);
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: [
+        {
+          word: "CRANE",
+          statuses: ["absent", "absent", "absent", "absent", "absent"],
+        },
+        {
+          word: "ZZZZZ",
+          statuses: ["absent", "absent", "absent", "absent", "absent"],
+        },
+        {
+          word: "APPLE",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.normalDictionaryBonusRowFlags).toEqual([
+      true,
+      false,
+      false,
+    ]);
+  });
+
+  it("awards dictionary-row bonus only on wins in normal difficulty", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+    setWordDictionary(["apple", "slate", "crane", "brick"]);
+
+    const { rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: ["SLATE", "CRANE", "BRICK", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(4, 3.2, 2));
+  });
+
+  it("adds dictionary-row bonus into the difficulty multiplier on normal wins", () => {
+    setWordDictionary(["apple", "slate", "crane", "brick"]);
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: ["SLATE", "CRANE", "BRICK", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.victoryScoreSummary?.items).toEqual(
+      expect.arrayContaining([{ key: "difficulty", value: 3.2 }]),
+    );
+    expect(result.current.victoryScoreSummary?.items).toEqual(
+      expect.arrayContaining([{ key: "dictionary", value: 1.2 }]),
     );
   });
 
@@ -469,5 +575,80 @@ describe("usePlayController", () => {
       }),
     );
     expect(result.current.dictionaryChecksumMessageKind).toBe("success");
+  });
+
+  it("shares the victory board screenshot through the system share api", async () => {
+    const boardElement = document.createElement("div");
+    boardElement.id = PLAY_BOARD_SHARE_CAPTURE_ID;
+    document.body.append(boardElement);
+
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", {
+      value: share,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(navigator, "canShare", {
+      value: vi.fn().mockReturnValue(true),
+      configurable: true,
+      writable: true,
+    });
+
+    vi.spyOn(
+      usePlayControllerUtils,
+      "captureVictoryBoardImageFile",
+    ).mockResolvedValue(new File([new Blob(["board"])], "wordle-board.png"));
+
+    const { result, rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+    rerender();
+
+    await act(async () => {
+      await result.current.shareVictoryBoard();
+    });
+
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(share).toHaveBeenCalledWith(
+      expect.objectContaining({
+        files: expect.any(Array),
+        title: i18n.t("play.victoryDialog.sharePayloadTitle"),
+        text: i18n.t("play.victoryDialog.sharePayloadText", { count: 3 }),
+      }),
+    );
+    expect(result.current.victoryBoardShareError).toBeNull();
+  });
+
+  it("sets a share error when the board element is not available", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", {
+      value: share,
+      configurable: true,
+      writable: true,
+    });
+
+    const { result, rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+    rerender();
+
+    await act(async () => {
+      await result.current.shareVictoryBoard();
+    });
+
+    expect(share).not.toHaveBeenCalled();
+    expect(result.current.victoryBoardShareError).toBe(
+      i18n.t("play.victoryDialog.shareErrors.captureUnavailable"),
+    );
   });
 });

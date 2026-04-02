@@ -15,6 +15,9 @@ const env: RuntimeEnv = {
   ),
   scoreLimit: SCORE_LIMIT,
   wordleGameStorageKey: WORDLE_GAME_STORAGE_KEY,
+  paypalDonationButtonUrl: readOptionalString(
+    import.meta.env.VITE_PAYPAL_DONATION_BUTTON_URL,
+  ),
 };
 
 export { env };

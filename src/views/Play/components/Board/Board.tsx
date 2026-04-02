@@ -1,5 +1,7 @@
 import { Row } from "./Row";
 import { useTranslation } from "@i18n";
+import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
+import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import type { BoardPropsType } from "./types";
 import useBoardController from "./useBoardController";
 
@@ -15,15 +17,24 @@ export function Board({
   hintRevealPulse = 0,
   hintRevealTileIndex = null,
   comboFlash = null,
+  normalDictionaryBonusRowFlags = [],
+  activeTileIndex = null,
+  onTileSelect,
 }: BoardPropsType) {
   const { t } = useTranslation();
   const { rows, isShaking } = useBoardController({
     guesses,
     current,
     gameOver,
+    animateTileEntry,
+    isLoss,
     shakePulse,
+    hintRevealPulse,
     activeRowHintStatuses,
     hintRevealTileIndex,
+    normalDictionaryBonusRowFlags,
+    activeTileIndex,
+    onTileSelect,
   });
   const boardClassName = `space-y-1.5 sm:space-y-2 mt-4 ${
     animateEntry ? "board-entry-animation" : ""
@@ -35,9 +46,15 @@ export function Board({
     comboFlash?.tone === "correct"
       ? "border-green-500 bg-green-500/15 text-green-800 dark:bg-green-500/25 dark:text-green-200"
       : "border-yellow-500 bg-yellow-400/20 text-yellow-900 dark:bg-yellow-500/20 dark:text-yellow-200";
+  const normalDictionaryBonusTooltip = t(
+    "play.gameplay.normalDictionaryBonusTooltip",
+    {
+      bonus: NORMAL_DICTIONARY_ROW_BONUS,
+    },
+  );
 
   return (
-    <div className={boardWrapperClassName}>
+    <div id={PLAY_BOARD_SHARE_CAPTURE_ID} className={boardWrapperClassName}>
       <div className="relative">
         <div
           role="grid"
@@ -48,16 +65,8 @@ export function Board({
             return (
               <Row
                 key={row.key}
-                letters={row.letters}
-                statuses={row.statuses}
-                startTileIndex={row.startTileIndex}
-                activeTileIndex={row.activeTileIndex}
-                isPastRow={row.isPastRow}
-                isActiveRow={row.isActiveRow}
-                animateTileEntry={animateTileEntry}
-                isLoss={isLoss}
-                hintRevealPulse={hintRevealPulse}
-                hintRevealTileIndex={row.hintRevealTileIndex}
+                row={row}
+                normalDictionaryBonusTooltip={normalDictionaryBonusTooltip}
               />
             );
           })}
