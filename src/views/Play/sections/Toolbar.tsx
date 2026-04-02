@@ -141,7 +141,12 @@ const Toolbar = ({
               {t("play.toolbar.developerConsoleButton")}
             </Button>
           )}
-          <HardModeTimerIndicator {...timer} />
+          <HardModeTimerIndicator
+            showHardModeTimer={timer.showHardModeTimer}
+            hardModeSecondsLeft={timer.hardModeSecondsLeft}
+            hardModeTickPulse={timer.hardModeTickPulse}
+            hardModeClockBoostScale={timer.hardModeClockBoostScale}
+          />
           <span
             key={showRefreshAttention ? refreshAttentionPulse : "idle"}
             className={

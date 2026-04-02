@@ -115,8 +115,30 @@ const BoardSection = ({
       )}
     >
       <>
-        <HardModeProgressBar {...hardModeProgress} />
-        <BoardContent {...board} />
+        <HardModeProgressBar
+          showHardModeFinalStretchBar={hardModeProgress.showHardModeFinalStretchBar}
+          hardModeSecondsLeft={hardModeProgress.hardModeSecondsLeft}
+          hardModeFinalStretchProgressPercent={
+            hardModeProgress.hardModeFinalStretchProgressPercent
+          }
+        />
+        <BoardContent
+          guesses={board.guesses}
+          current={board.current}
+          gameOver={board.gameOver}
+          won={board.won}
+          answer={board.answer}
+          showLegacyEndOfGameMessage={board.showLegacyEndOfGameMessage}
+          startAnimationSeed={board.startAnimationSeed}
+          startAnimationsEnabled={board.startAnimationsEnabled}
+          boardShakePulse={board.boardShakePulse}
+          activeRowHintStatuses={board.activeRowHintStatuses}
+          hintRevealPulse={board.hintRevealPulse}
+          hintRevealTileIndex={board.hintRevealTileIndex}
+          comboFlash={board.comboFlash}
+          normalDictionaryBonusRowFlags={board.normalDictionaryBonusRowFlags}
+          animateTileEntry={board.animateTileEntry}
+        />
       </>
     </ErrorBoundary>
   );
