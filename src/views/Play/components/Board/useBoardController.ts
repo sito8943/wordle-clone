@@ -8,18 +8,26 @@ type UseBoardControllerParams = Pick<
   | "guesses"
   | "current"
   | "gameOver"
+  | "animateTileEntry"
+  | "isLoss"
   | "shakePulse"
+  | "hintRevealPulse"
   | "activeRowHintStatuses"
   | "hintRevealTileIndex"
+  | "normalDictionaryBonusRowFlags"
 >;
 
 const useBoardController = ({
   guesses,
   current,
   gameOver,
+  animateTileEntry = false,
+  isLoss = false,
   shakePulse = 0,
+  hintRevealPulse = 0,
   activeRowHintStatuses = {},
   hintRevealTileIndex = null,
+  normalDictionaryBonusRowFlags = [],
 }: UseBoardControllerParams) => {
   const [isShaking, setIsShaking] = useState(false);
 
@@ -54,20 +62,41 @@ const useBoardController = ({
         index === activeRowIndex && current.length < row.letters.length
           ? current.length
           : null;
+      const rowHintRevealTileIndex =
+        index === activeRowIndex ? hintRevealTileIndex : null;
+      const tiles = row.letters.map((letter, cellIndex) => ({
+        key: cellIndex,
+        letter,
+        status: statuses[cellIndex],
+        animationOrder: index * row.letters.length + cellIndex,
+        animateEntry: animateTileEntry,
+        isActive: activeTileIndex === cellIndex,
+        isLoss,
+        isHintReveal: rowHintRevealTileIndex === cellIndex,
+        hintRevealPulse,
+      }));
 
       return {
         key: index,
-        letters: row.letters,
-        statuses,
-        startTileIndex: index * row.letters.length,
-        activeTileIndex,
+        tiles,
         isPastRow: index < guesses.length,
         isActiveRow: index === activeRowIndex,
-        hintRevealTileIndex:
-          index === activeRowIndex ? hintRevealTileIndex : null,
+        showNormalDictionaryBonusIndicator: Boolean(
+          normalDictionaryBonusRowFlags[index],
+        ),
       };
     });
-  }, [activeRowHintStatuses, current, gameOver, guesses, hintRevealTileIndex]);
+  }, [
+    activeRowHintStatuses,
+    animateTileEntry,
+    current,
+    gameOver,
+    guesses,
+    hintRevealPulse,
+    hintRevealTileIndex,
+    isLoss,
+    normalDictionaryBonusRowFlags,
+  ]);
 
   return {
     rows,

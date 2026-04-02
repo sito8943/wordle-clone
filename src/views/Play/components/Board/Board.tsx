@@ -23,9 +23,13 @@ export function Board({
     guesses,
     current,
     gameOver,
+    animateTileEntry,
+    isLoss,
     shakePulse,
+    hintRevealPulse,
     activeRowHintStatuses,
     hintRevealTileIndex,
+    normalDictionaryBonusRowFlags,
   });
   const boardClassName = `space-y-1.5 sm:space-y-2 mt-4 ${
     animateEntry ? "board-entry-animation" : ""
@@ -56,19 +60,7 @@ export function Board({
             return (
               <Row
                 key={row.key}
-                letters={row.letters}
-                statuses={row.statuses}
-                startTileIndex={row.startTileIndex}
-                activeTileIndex={row.activeTileIndex}
-                isPastRow={row.isPastRow}
-                isActiveRow={row.isActiveRow}
-                animateTileEntry={animateTileEntry}
-                isLoss={isLoss}
-                hintRevealPulse={hintRevealPulse}
-                hintRevealTileIndex={row.hintRevealTileIndex}
-                showNormalDictionaryBonusIndicator={Boolean(
-                  normalDictionaryBonusRowFlags[row.key],
-                )}
+                row={row}
                 normalDictionaryBonusTooltip={normalDictionaryBonusTooltip}
               />
             );

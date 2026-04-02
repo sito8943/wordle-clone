@@ -2,16 +2,17 @@ import { useTranslation } from "@i18n";
 import { STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "./constants";
 import type { TilePropsType } from "./types";
 
-export function Tile({
-  letter,
-  status,
-  animationOrder = 0,
-  animateEntry = false,
-  isActive = false,
-  isLoss = false,
-  isHintReveal = false,
-  hintRevealPulse = 0,
-}: TilePropsType) {
+export function Tile({ tile }: TilePropsType) {
+  const {
+    letter,
+    status,
+    animationOrder,
+    animateEntry,
+    isActive,
+    isLoss,
+    isHintReveal,
+    hintRevealPulse,
+  } = tile;
   const { t } = useTranslation();
   const tileStyle =
     isLoss &&
