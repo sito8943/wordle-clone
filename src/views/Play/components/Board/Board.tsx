@@ -17,6 +17,8 @@ export function Board({
   hintRevealTileIndex = null,
   comboFlash = null,
   normalDictionaryBonusRowFlags = [],
+  activeTileIndex = null,
+  onTileSelect,
 }: BoardPropsType) {
   const { t } = useTranslation();
   const { rows, isShaking } = useBoardController({
@@ -30,6 +32,8 @@ export function Board({
     activeRowHintStatuses,
     hintRevealTileIndex,
     normalDictionaryBonusRowFlags,
+    activeTileIndex,
+    onTileSelect,
   });
   const boardClassName = `space-y-1.5 sm:space-y-2 mt-4 ${
     animateEntry ? "board-entry-animation" : ""

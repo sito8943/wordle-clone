@@ -184,11 +184,50 @@ export const addLetter = (
   return { ...state, current: state.current + letter };
 };
 
+export const setLetterAt = (
+  state: PersistedGameState,
+  index: number,
+  letter: string,
+): PersistedGameState => {
+  console.log("Setting letter at index:", index, "to", letter);
+  console.log(
+    index < 0 || index > state.current.length || index >= WORD_LENGTH,
+  );
+  if (index < 0 || index > state.current.length || index >= WORD_LENGTH) {
+    return state;
+  }
+
+  console.log(index === state.current.length);
+  if (index === state.current.length) {
+    return addLetter(state, letter);
+  }
+
+  return {
+    ...state,
+    current:
+      state.current.slice(0, index) + letter + state.current.slice(index + 1),
+  };
+};
+
 export const removeLetter = (
   state: PersistedGameState,
 ): PersistedGameState => ({
   ...state,
   current: state.current.slice(0, -1),
 });
+
+export const removeLetterAt = (
+  state: PersistedGameState,
+  index: number,
+): PersistedGameState => {
+  if (index < 0 || index >= state.current.length) {
+    return state;
+  }
+
+  return {
+    ...state,
+    current: state.current.slice(0, index) + state.current.slice(index + 1),
+  };
+};
 
 export const isLetterKey = (key: string): boolean => /^[A-Z]$/.test(key);

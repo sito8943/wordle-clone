@@ -93,9 +93,12 @@ export const resources = {
           keyboardMode: "Keyboard mode",
           difficulty: "Difficulty",
           endOfGameDialogs: "End-of-game dialogs",
+          manualTileSelection: "Manual tile selection",
         },
         endOfGameDialogsDescription:
           "Show dialogs when you win or lose a board.",
+        manualTileSelectionDescription:
+          "Click a tile before typing. The cursor will not advance automatically.",
         codeHelp:
           "Use this 4-character code to recover your settings on another browser.",
         recovery: {
@@ -435,9 +438,12 @@ export const resources = {
           keyboardMode: "Modo de teclado",
           difficulty: "Dificultad",
           endOfGameDialogs: "Diálogos de fin de partida",
+          manualTileSelection: "Selección manual de casillas",
         },
         endOfGameDialogsDescription:
           "Muestra diálogos cuando ganas o pierdes un tablero.",
+        manualTileSelectionDescription:
+          "Haz clic en una casilla antes de escribir. El cursor no avanzará automáticamente.",
         codeHelp:
           "Usa este código de 4 caracteres para recuperar tus ajustes en otro navegador.",
         recovery: {

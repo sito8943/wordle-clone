@@ -103,6 +103,14 @@ const normalizeShowEndOfGameDialogs = (value: unknown): boolean => {
   return value;
 };
 
+const normalizeManualTileSelection = (value: unknown): boolean => {
+  if (typeof value !== "boolean") {
+    return DEFAULT_PLAYER.manualTileSelection;
+  }
+
+  return value;
+};
+
 export const normalizePlayer = (value: Partial<Player> | null): Player => {
   if (!value) {
     return {
@@ -127,6 +135,9 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     showEndOfGameDialogs: normalizeShowEndOfGameDialogs(
       value.showEndOfGameDialogs,
     ),
+    manualTileSelection: normalizeManualTileSelection(
+      value.manualTileSelection,
+    ),
   };
 };
 
@@ -150,7 +161,9 @@ export const arePlayersEqual = (
     normalizedLeft.language === normalizedRight.language &&
     normalizedLeft.difficulty === normalizedRight.difficulty &&
     normalizedLeft.keyboardPreference === normalizedRight.keyboardPreference &&
-    normalizedLeft.showEndOfGameDialogs === normalizedRight.showEndOfGameDialogs
+    normalizedLeft.showEndOfGameDialogs ===
+      normalizedRight.showEndOfGameDialogs &&
+    normalizedLeft.manualTileSelection === normalizedRight.manualTileSelection
   );
 };
 
@@ -167,6 +180,7 @@ export const isStoredPlayerNormalized = (
     value?.language === normalized.language &&
     value?.difficulty === normalized.difficulty &&
     value?.keyboardPreference === normalized.keyboardPreference &&
-    value?.showEndOfGameDialogs === normalized.showEndOfGameDialogs
+    value?.showEndOfGameDialogs === normalized.showEndOfGameDialogs &&
+    value?.manualTileSelection === normalized.manualTileSelection
   );
 };

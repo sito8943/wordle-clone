@@ -13,6 +13,8 @@ export type BoardPropsType = {
   hintRevealTileIndex?: number | null;
   comboFlash?: ComboFlash | null;
   normalDictionaryBonusRowFlags?: boolean[];
+  activeTileIndex?: number | null;
+  onTileSelect?: (index: number) => void;
 };
 
 export type RowPropsType = {
@@ -49,6 +51,7 @@ export type TileViewModel = {
   animationOrder: number;
   animateEntry: boolean;
   isActive: boolean;
+  onClick?: (key: number) => void;
   isLoss: boolean;
   isHintReveal: boolean;
   hintRevealPulse: number;

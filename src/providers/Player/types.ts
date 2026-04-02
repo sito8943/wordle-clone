@@ -17,6 +17,7 @@ export type PlayerContextType = {
   ) => void;
   updatePlayerLanguage: (language: PlayerLanguage) => void;
   updatePlayerShowEndOfGameDialogs: (showDialogs: boolean) => void;
+  updatePlayerManualTileSelection: (enabled: boolean) => void;
   commitVictory: (points: number, wonAt?: number) => Promise<void>;
   commitLoss: () => Promise<void>;
 };

@@ -23,6 +23,7 @@ const buildMockProfileView = (
     difficulty: "normal",
     keyboardPreference: "onscreen",
     showEndOfGameDialogs: true,
+    manualTileSelection: false,
   };
 
   return {
@@ -51,6 +52,8 @@ const buildMockProfileView = (
       saveLanguage: vi.fn(),
       showEndOfGameDialogs: true,
       changeShowEndOfGameDialogs: vi.fn(),
+      manualTileSelection: false,
+      changeManualTileSelection: vi.fn(),
       changeDifficulty: vi.fn(),
       isDifficultyChangeConfirmationOpen: false,
       confirmDifficultyChange: vi.fn(),

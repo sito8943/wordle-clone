@@ -98,6 +98,7 @@ describe("PlayerProvider", () => {
     expect(result.current.player.streak).toBe(0);
     expect(result.current.player.difficulty).toBe(DEFAULT_PLAYER.difficulty);
     expect(result.current.player.showEndOfGameDialogs).toBe(true);
+    expect(result.current.player.manualTileSelection).toBe(false);
   });
 
   it("uses the device language on first initialization", () => {
@@ -131,6 +132,7 @@ describe("PlayerProvider", () => {
     expect(result.current.player.streak).toBe(3);
     expect(result.current.player.difficulty).toBe("hard");
     expect(result.current.player.showEndOfGameDialogs).toBe(true);
+    expect(result.current.player.manualTileSelection).toBe(false);
   });
 
   it("does not rewrite normalized player state on mount", () => {
@@ -346,6 +348,18 @@ describe("PlayerProvider", () => {
     });
 
     expect(result.current.player.showEndOfGameDialogs).toBe(false);
+  });
+
+  it("updates the manual tile selection preference", () => {
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper(),
+    });
+
+    act(() => {
+      result.current.updatePlayerManualTileSelection(true);
+    });
+
+    expect(result.current.player.manualTileSelection).toBe(true);
   });
 
   it("syncs victory events after a named player wins", async () => {

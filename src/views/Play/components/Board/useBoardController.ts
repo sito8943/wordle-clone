@@ -15,6 +15,8 @@ type UseBoardControllerParams = Pick<
   | "activeRowHintStatuses"
   | "hintRevealTileIndex"
   | "normalDictionaryBonusRowFlags"
+  | "activeTileIndex"
+  | "onTileSelect"
 >;
 
 const useBoardController = ({
@@ -28,6 +30,8 @@ const useBoardController = ({
   activeRowHintStatuses = {},
   hintRevealTileIndex = null,
   normalDictionaryBonusRowFlags = [],
+  activeTileIndex = null,
+  onTileSelect,
 }: UseBoardControllerParams) => {
   const [isShaking, setIsShaking] = useState(false);
 
@@ -58,9 +62,13 @@ const useBoardController = ({
               (status, cellIndex) => activeRowHintStatuses[cellIndex] ?? status,
             )
           : row.statuses;
-      const activeTileIndex =
-        index === activeRowIndex && current.length < row.letters.length
-          ? current.length
+      const resolvedActiveTileIndex =
+        index === activeRowIndex
+          ? activeTileIndex !== null
+            ? Math.min(Math.max(activeTileIndex, 0), row.letters.length - 1)
+            : current.length < row.letters.length
+              ? current.length
+              : null
           : null;
       const rowHintRevealTileIndex =
         index === activeRowIndex ? hintRevealTileIndex : null;
@@ -70,7 +78,8 @@ const useBoardController = ({
         status: statuses[cellIndex],
         animationOrder: index * row.letters.length + cellIndex,
         animateEntry: animateTileEntry,
-        isActive: activeTileIndex === cellIndex,
+        isActive: resolvedActiveTileIndex === cellIndex,
+        onClick: index === activeRowIndex ? onTileSelect : undefined,
         isLoss,
         isHintReveal: rowHintRevealTileIndex === cellIndex,
         hintRevealPulse,
@@ -96,6 +105,8 @@ const useBoardController = ({
     hintRevealTileIndex,
     isLoss,
     normalDictionaryBonusRowFlags,
+    activeTileIndex,
+    onTileSelect,
   ]);
 
   return {

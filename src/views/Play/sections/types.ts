@@ -27,6 +27,9 @@ export type BoardContentProps = Pick<
   | "hintRevealTileIndex"
   | "comboFlash"
   | "normalDictionaryBonusRowFlags"
+  | "activeTileIndex"
+  | "selectActiveTile"
+  | "manualTileSelection"
 > & {
   animateTileEntry: boolean;
   answer: string;

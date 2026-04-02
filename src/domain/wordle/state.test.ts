@@ -9,6 +9,8 @@ import {
   isWon,
   normalizePersistedGameState,
   removeLetter,
+  removeLetterAt,
+  setLetterAt,
   shouldAskToResume,
   validateGuessInput,
 } from "./state";
@@ -174,6 +176,38 @@ describe("removeLetter", () => {
     const state = makeState({ current: "CRA" });
     removeLetter(state);
     expect(state.current).toBe("CRA");
+  });
+});
+
+describe("setLetterAt", () => {
+  it("replaces an existing letter at the provided index", () => {
+    const next = setLetterAt(makeState({ current: "CRANE" }), 1, "L");
+    expect(next.current).toBe("CLANE");
+  });
+
+  it("appends when index points to the next empty cell", () => {
+    const next = setLetterAt(makeState({ current: "CRA" }), 3, "N");
+    expect(next.current).toBe("CRAN");
+  });
+
+  it("ignores out-of-range indexes", () => {
+    const state = makeState({ current: "CRA" });
+    expect(setLetterAt(state, -1, "Z").current).toBe("CRA");
+    expect(setLetterAt(state, 5, "Z").current).toBe("CRA");
+    expect(setLetterAt(state, 4, "Z").current).toBe("CRA");
+  });
+});
+
+describe("removeLetterAt", () => {
+  it("removes the letter at the provided index", () => {
+    const next = removeLetterAt(makeState({ current: "CRANE" }), 2);
+    expect(next.current).toBe("CRNE");
+  });
+
+  it("ignores out-of-range indexes", () => {
+    const state = makeState({ current: "CRA" });
+    expect(removeLetterAt(state, -1).current).toBe("CRA");
+    expect(removeLetterAt(state, 3).current).toBe("CRA");
   });
 });
 

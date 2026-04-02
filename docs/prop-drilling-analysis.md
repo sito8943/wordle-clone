@@ -1,110 +1,68 @@
 # Prop Drilling Analysis
 
-Fecha: 2026-04-02
-Repositorio: `wordle-clone`
+Fecha del análisis inicial: 2026-04-02  
+Fecha de re-auditoría: 2026-04-02 (actualizada tras refactor de `Board`)
 
-## Objetivo
+## Estado del audit (hecho vs pendiente)
 
-Analizar dónde se están pasando props por demasiados niveles y cuantificar los puntos con mayor complejidad de paso.
+| Ítem del audit anterior                                             | Estado    | Evidencia                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integrar provider de `Play` para cortar paso manual entre secciones | `HECHO`   | [Play.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/Play.tsx:28)                                                                                                                                                                                                                   |
+| Quitar paso masivo de props en `Play -> Sections`                   | `HECHO`   | [Play.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/Play.tsx:13)                                                                                                                                                                                                                   |
+| Eliminar `usePlaySections` (hook embudo)                            | `HECHO`   | no hay referencias en `src` (`rg usePlaySections` sin resultados)                                                                                                                                                                                                                                                                       |
+| Reducir tamaño de contratos de `sections/types.ts`                  | `HECHO`   | [types.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/sections/types.ts:8)                                                                                                                                                                                                           |
+| Reducir cadena profunda de board (`Board -> Row -> Tile`)           | `HECHO`   | `Row` ahora recibe `row` único y `Tile` recibe `tile` único: [Row.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/Row.tsx:5), [Tile.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/Tile.tsx:6) |
+| Reducir fan-out de datos en `DialogsSection`                        | `PARCIAL` | ya no hay drilling desde `Play`, pero sigue orquestando muchos campos: [DialogsSection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/sections/DialogsSection.tsx:34)                                                                                                               |
 
-## Metodología
+## Resultado actual (resumen)
 
-- Revisión de contratos de props en `src/views/*/sections/types.ts`.
-- Revisión de flujo `controller -> sección -> componente hoja` en `Play`.
-- Comparativa con `Profile` para ver un patrón alternativo existente en el repo.
+- Se eliminó el **prop drilling crítico de capa de ruta** en `Play`.
+- Ya no existe el contrato gigante de props entre `Play` y sus secciones.
+- El problema que queda es **local** y está más concentrado en `DialogsSection`.
 
-## Resumen ejecutivo
+## Prop drilling que todavía queda
 
-- El problema está concentrado en `Play`.
-- El mayor hotspot es `DialogsSection`, con un contrato de **31 props**.
-- Hay cadenas de paso de hasta **8 capas** (caso `Board -> Row -> Tile` para estados de hint/animación).
-- `usePlaySections` está actuando como gran “re-empaquetador” de estado (desestructura **65 campos** del controller).
-- `Profile` ya usa provider local y evita casi todo el drilling transversal.
+### 1) Board chain (`BAJO`, mejorado)
 
-## Hallazgos principales
+Estado actual:
 
-### 1) Hotspot crítico: `DialogsSection` (31 props)
+1. `Board` pasa un único `row` a `Row`: [Board.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/Board.tsx:61)
+2. `Row` pasa un único `tile` a `Tile`: [Row.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/Row.tsx:37)
+3. El armado del view-model quedó centralizado en `useBoardController`: [useBoardController.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/useBoardController.ts:67)
 
-Evidencia:
+Indicadores de mejora:
 
-- Contrato de `DialogsSectionProps` con 31 props en [types.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/sections/types.ts:84).
-- Construcción masiva de `dialogsProps` en [usePlaySections.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/hooks/usePlaySections.ts:223).
-- Paso explícito de todas esas props desde `Play` en [Play.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/Play.tsx:19).
-- `DialogsSection` vuelve a repartir parte de ese contrato a subdiálogos en [DialogsSection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/sections/DialogsSection.tsx:30).
-
-Impacto:
-
-- Alto acoplamiento entre `usePlayController`, `usePlaySections`, `Play` y `DialogsSection`.
-- Cualquier cambio de una prop de diálogo impacta múltiples archivos/capas.
-
-### 2) Cadena larga en board rendering (hasta 8 capas)
-
-Caso representativo: `hintRevealPulse`.
-
-Ruta de paso:
-
-1. `useWordle` expone `hintRevealPulse` en [useWordle.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/hooks/useWordle/useWordle.ts:505).
-2. `usePlayController` arrastra todo `wordle` con spread en [usePlayController.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/hooks/usePlayController/usePlayController.ts:492).
-3. `usePlaySections` lo mete en `board` en [usePlaySections.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/hooks/usePlaySections.ts:166).
-4. `Play` pasa `board` a `BoardSection` en [Play.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/Play.tsx:78).
-5. `BoardSection` lo pasa a `BoardContent` en [BoardSection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/sections/BoardSection.tsx:136).
-6. `BoardContent` lo pasa a `Board` en [BoardSection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/sections/BoardSection.tsx:39).
-7. `Board` lo pasa a `Row` en [Board.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/Board.tsx:67).
-8. `Row` lo pasa a `Tile` en [Row.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/Row.tsx:57).
+- `RowPropsType`: de múltiples escalares a 2 campos (`row` + tooltip): [types.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/types.ts:18)
+- `TilePropsType`: 1 campo (`tile`): [types.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/types.ts:41)
+- `BoardRowViewModel` ahora contiene `tiles` precomputados: [types.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Board/types.ts:23)
 
 Impacto:
 
-- Profundidad alta para estado visual fino (hint/animación).
-- Dificulta detectar “quién necesita realmente qué”.
+- Se redujo significativamente el drilling dentro de `Board`.
+- Aun existe paso de datos entre `BoardSection -> BoardContent -> Board`, pero la parte más costosa (`Row`/`Tile`) quedó compactada.
 
-### 3) `usePlaySections` como embudo de acoplamiento
+### 2) Dialog orchestration fan-out (`MEDIO`)
 
-Evidencia:
+`DialogsSection` ahora consume contexto (bien), pero sigue extrayendo y repartiendo muchas piezas del controller:
 
-- Doble destructuring muy grande del controller en [usePlaySections.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/hooks/usePlaySections.ts:25).
-- Re-empaquetado en `toolbarProps`, `boardProps`, `keyboardProps`, `dialogsProps` en [usePlaySections.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/hooks/usePlaySections.ts:102).
-
-Métricas aproximadas:
-
-- Campos leídos de `controller` en este hook: **65**.
-- Tamaño de contratos por sección:
-  - `DialogsSectionProps`: **31**
-  - `ToolbarProps`: **18** (incluyendo objeto `timer`)
-  - `BoardContentProps`: **15**
-  - `KeyboardSectionProps`: **8**
+- extracción extensa: [DialogsSection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/sections/DialogsSection.tsx:34)
+- ejemplo de contrato aún grande (`DeveloperConsoleDialogProps`, 10 campos): [types.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/components/Dialogs/types.ts:6)
 
 Impacto:
 
-- El hook centraliza demasiado conocimiento de subárboles de UI.
-- Incrementa coste de mantenimiento y revisiones.
+- Ya no es drilling transversal de ruta, pero sí hay acoplamiento en la sección de diálogos.
 
-### 4) Contraste positivo: `Profile` evita drilling entre secciones
+### 3) Caso menor fuera de Play (`BAJO`)
 
-Evidencia:
+`SettingsSection -> DifficultySection` pasa 4 props en un salto:
 
-- `Profile` envuelve en provider en [Profile.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Profile/Profile.tsx:27).
-- Secciones consumen contexto directamente (ejemplo) en [ProfileEditorSection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Profile/sections/ProfileEditorSection/ProfileEditorSection.tsx:5).
+- origen: [SettingsSection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Profile/sections/SettingsSection/SettingsSection.tsx:91)
+- destino: [DifficultySection.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Profile/sections/DifficultySection/DifficultySection.tsx:13)
 
-Observación:
-
-- Este patrón reduce el paso manual de props a través de múltiples capas de composición.
-
-### 5) Oportunidad clara: existe `PlayViewProvider`, pero no está integrado
-
-Evidencia:
-
-- Provider de `Play` ya implementado en [PlayViewProvider.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/providers/PlayViewProvider.tsx:8).
-- Hook de consumo listo en [usePlayView.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/providers/usePlayView.ts:5).
-- `Play.tsx` actual no lo utiliza en [Play.tsx](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/src/views/Play/Play.tsx:11).
-
-## Priorización de problemas
-
-1. `DialogsSection` por tamaño de contrato y fan-out a varios diálogos.
-2. Cadena de board/hints por profundidad de paso.
-3. `usePlaySections` por concentración de dependencias.
+Esto es aceptable y no es un hotspot.
 
 ## Conclusión
 
-El “prop drilling” fuerte no está repartido por toda la app: está principalmente en `Play`.  
-`Profile` ya demuestra un patrón más estable basado en provider local.  
-La base para aplicar ese mismo patrón en `Play` ya existe (`PlayViewProvider`), por lo que el problema es más de integración/modularización que de ausencia de infraestructura.
+- `Play` dejó de tener el problema grave de drilling por capas.
+- El audit anterior está mayormente completado y el punto de `Board -> Row -> Tile` ya está cerrado.
+- Lo pendiente principal queda en `DialogsSection` (fan-out/orquestación).

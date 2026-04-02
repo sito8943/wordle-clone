@@ -19,4 +19,5 @@ export const DEFAULT_PLAYER: Player = {
   difficulty: DEFAULT_PLAYER_DIFFICULTY,
   keyboardPreference: DEFAULT_PLAYER_KEYBOARD_PREFERENCE,
   showEndOfGameDialogs: true,
+  manualTileSelection: false,
 };

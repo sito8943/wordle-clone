@@ -54,6 +54,7 @@ export default function usePlayController() {
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
     language: player.language,
+    manualTileSelection: player.manualTileSelection === true,
   });
   const {
     sessionId,
@@ -490,6 +491,7 @@ export default function usePlayController() {
 
   return {
     ...wordle,
+    manualTileSelection: player.manualTileSelection === true,
     currentLanguage: player.language,
     currentWinStreak: player.streak,
     showLegacyEndOfGameMessage:

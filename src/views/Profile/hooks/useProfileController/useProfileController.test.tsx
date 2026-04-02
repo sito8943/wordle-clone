@@ -52,6 +52,7 @@ describe("useProfileController", () => {
         difficulty: "normal",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: true,
+        manualTileSelection: false,
       },
       recoverPlayer: vi.fn().mockResolvedValue(undefined),
       refreshCurrentPlayerProfile: vi.fn().mockResolvedValue(undefined),
@@ -59,6 +60,7 @@ describe("useProfileController", () => {
       updatePlayerDifficulty: vi.fn(),
       updatePlayerKeyboardPreference: vi.fn(),
       updatePlayerShowEndOfGameDialogs: vi.fn(),
+      updatePlayerManualTileSelection: vi.fn(),
     });
     mockUseAnimationsPreference.mockReturnValue({
       startAnimationsEnabled: true,
@@ -163,6 +165,7 @@ describe("useProfileController", () => {
         difficulty: "normal",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: true,
+        manualTileSelection: false,
       },
       refreshCurrentPlayerProfile,
     });
@@ -216,5 +219,21 @@ describe("useProfileController", () => {
     });
 
     expect(updatePlayerShowEndOfGameDialogs).toHaveBeenCalledWith(false);
+  });
+
+  it("updates the manual tile selection preference", () => {
+    const updatePlayerManualTileSelection = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      updatePlayerManualTileSelection,
+    });
+
+    const { result } = renderHook(() => useProfileController());
+
+    act(() => {
+      result.current.changeManualTileSelection(true);
+    });
+
+    expect(updatePlayerManualTileSelection).toHaveBeenCalledWith(true);
   });
 });

@@ -10,8 +10,10 @@ import {
   normalizePersistedGameState,
   persistGameState,
   readPersistedGameState,
+  removeLetterAt,
   resolveAnswerFromGameReference,
   removeLetter,
+  setLetterAt,
   shouldAskToResume,
   type PersistedGameState,
   validateGuessInput,
@@ -44,9 +46,42 @@ import {
   shouldAnimateOnFirstSessionView,
 } from "./utils";
 
+const shiftHintStatusesLeftFromIndex = (
+  previous: Record<number, HintTileStatus>,
+  removedIndex: number,
+): Record<number, HintTileStatus> => {
+  let changed = false;
+  const next: Record<number, HintTileStatus> = {};
+
+  for (const [rawIndex, status] of Object.entries(previous)) {
+    const index = Number(rawIndex);
+    if (!Number.isInteger(index)) {
+      continue;
+    }
+
+    if (index === removedIndex) {
+      changed = true;
+      continue;
+    }
+
+    if (index > removedIndex) {
+      next[index - 1] = status;
+      changed = true;
+      continue;
+    }
+
+    next[index] = status;
+  }
+
+  return changed ? next : previous;
+};
+
 export default function useWordle(options: UseWordleOptions = {}) {
-  const { allowUnknownWords = false, language = WORDS_DEFAULT_LANGUAGE } =
-    options;
+  const {
+    allowUnknownWords = false,
+    language = WORDS_DEFAULT_LANGUAGE,
+    manualTileSelection = false,
+  } = options;
   const cachedWords = useMemo(
     () => loadWordDictionaryFromCache(language),
     [language],
@@ -103,6 +138,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const [activeRowHintStatuses, setActiveRowHintStatuses] = useState<
     Record<number, HintTileStatus>
   >({});
+  const [activeTileIndex, setActiveTileIndex] = useState(0);
   const [hintRevealPulse, setHintRevealPulse] = useState(0);
   const [hintRevealTileIndex, setHintRevealTileIndex] = useState<number | null>(
     null,
@@ -112,6 +148,20 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const previousLanguageRef = useRef(language);
 
   const { sessionId, gameId, answer, guesses, current, gameOver } = gameState;
+  const maxSelectableTileIndex = WORD_LENGTH - 1;
+  const selectedTileIndex = manualTileSelection
+    ? Math.min(Math.max(activeTileIndex, 0), maxSelectableTileIndex)
+    : null;
+
+  useEffect(() => {
+    if (!manualTileSelection) {
+      return;
+    }
+
+    setActiveTileIndex((previous) =>
+      Math.min(Math.max(previous, 0), maxSelectableTileIndex),
+    );
+  }, [manualTileSelection, maxSelectableTileIndex]);
 
   const flushPersistedGameState = useCallback((state: PersistedGameState) => {
     persistGameState(state);
@@ -273,6 +323,34 @@ export default function useWordle(options: UseWordleOptions = {}) {
       return;
     }
 
+    if (manualTileSelection) {
+      const removedIndex = selectedTileIndex ?? 0;
+      if (removedIndex < 0 || removedIndex >= current.length) {
+        return;
+      }
+
+      setGameStateWithPersistence((prev) => removeLetterAt(prev, removedIndex));
+      setActiveRowHintStatuses((previous) =>
+        shiftHintStatusesLeftFromIndex(previous, removedIndex),
+      );
+      setHintRevealTileIndex((previous) => {
+        if (previous === null) {
+          return null;
+        }
+
+        if (previous === removedIndex) {
+          return null;
+        }
+
+        if (previous > removedIndex) {
+          return previous - 1;
+        }
+
+        return previous;
+      });
+      return;
+    }
+
     const removedIndex = current.length - 1;
 
     setGameStateWithPersistence((prev) => removeLetter(prev));
@@ -289,13 +367,55 @@ export default function useWordle(options: UseWordleOptions = {}) {
     if (hintRevealTileIndex === removedIndex) {
       setHintRevealTileIndex(null);
     }
-  }, [current.length, hintRevealTileIndex, setGameStateWithPersistence]);
+  }, [
+    current.length,
+    hintRevealTileIndex,
+    manualTileSelection,
+    selectedTileIndex,
+    setGameStateWithPersistence,
+  ]);
 
   const addCurrentLetter = useCallback(
     (letter: string) => {
-      setGameStateWithPersistence((prev) => addLetter(prev, letter));
+      console.log("Adding letter:", letter);
+      console.log(manualTileSelection);
+
+      if (!manualTileSelection) {
+        setGameStateWithPersistence((prev) => addLetter(prev, letter));
+        return;
+      }
+
+      const targetIndex = selectedTileIndex ?? 0;
+
+      console.log(targetIndex);
+      setGameStateWithPersistence((prev) =>
+        setLetterAt(prev, targetIndex, letter),
+      );
+      setActiveRowHintStatuses((previous) => {
+        if (!(targetIndex in previous)) {
+          return previous;
+        }
+
+        const next = { ...previous };
+        delete next[targetIndex];
+        return next;
+      });
+      setHintRevealTileIndex((previous) =>
+        previous === targetIndex ? null : previous,
+      );
     },
-    [setGameStateWithPersistence],
+    [manualTileSelection, selectedTileIndex, setGameStateWithPersistence],
+  );
+
+  const selectActiveTile = useCallback(
+    (index: number) => {
+      if (!manualTileSelection || gameOver || showResumeDialog) {
+        return;
+      }
+
+      setActiveTileIndex(Math.min(Math.max(index, 0), maxSelectableTileIndex));
+    },
+    [gameOver, manualTileSelection, maxSelectableTileIndex, showResumeDialog],
   );
 
   const revealHint = useCallback(
@@ -502,6 +622,8 @@ export default function useWordle(options: UseWordleOptions = {}) {
     dictionaryError,
     revealHint,
     activeRowHintStatuses,
+    activeTileIndex: selectedTileIndex,
+    selectActiveTile,
     hintRevealPulse,
     hintRevealTileIndex,
   };

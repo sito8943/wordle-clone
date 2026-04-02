@@ -21,6 +21,9 @@ const BoardContent = memo(
     hintRevealTileIndex,
     comboFlash,
     normalDictionaryBonusRowFlags,
+    activeTileIndex,
+    selectActiveTile,
+    manualTileSelection,
     animateTileEntry,
   }: BoardContentProps): JSX.Element => {
     const { t } = useTranslation();
@@ -41,6 +44,8 @@ const BoardContent = memo(
           hintRevealTileIndex={hintRevealTileIndex}
           comboFlash={comboFlash}
           normalDictionaryBonusRowFlags={normalDictionaryBonusRowFlags}
+          activeTileIndex={manualTileSelection ? activeTileIndex : null}
+          onTileSelect={manualTileSelection ? selectActiveTile : undefined}
         />
 
         {gameOver && showLegacyEndOfGameMessage && (
@@ -107,6 +112,9 @@ const BoardSection = (): JSX.Element => {
     hintRevealTileIndex,
     comboFlash,
     normalDictionaryBonusRowFlags,
+    activeTileIndex,
+    selectActiveTile,
+    manualTileSelection,
     showHardModeFinalStretchBar,
     hardModeSecondsLeft,
     hardModeFinalStretchProgressPercent,
@@ -155,6 +163,9 @@ const BoardSection = (): JSX.Element => {
           hintRevealTileIndex={hintRevealTileIndex}
           comboFlash={comboFlash}
           normalDictionaryBonusRowFlags={normalDictionaryBonusRowFlags}
+          activeTileIndex={activeTileIndex}
+          selectActiveTile={selectActiveTile}
+          manualTileSelection={manualTileSelection}
           animateTileEntry={animateTileEntry}
         />
       </>

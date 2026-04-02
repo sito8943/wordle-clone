@@ -7,6 +7,7 @@ export type Player = {
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
   showEndOfGameDialogs: boolean;
+  manualTileSelection: boolean;
 };
 
 export type PlayerDifficulty = "easy" | "normal" | "hard" | "insane";

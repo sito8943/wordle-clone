@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@i18n";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import type { TileStatus } from "@utils/types";
@@ -163,6 +163,39 @@ describe("Board", () => {
     ).toBeTruthy();
     expect(cells[0].querySelector(".tile-active-border-animation")).toBeNull();
     expect(cells[1].querySelector(".tile-active-border-animation")).toBeNull();
+  });
+
+  it("uses a provided active tile index for the current row", () => {
+    render(
+      <Board
+        guesses={[]}
+        current="AB"
+        gameOver={false}
+        activeTileIndex={0}
+      />,
+    );
+
+    const cells = screen.getAllByRole("gridcell");
+    expect(
+      cells[0].querySelector(".tile-active-border-animation"),
+    ).toBeTruthy();
+    expect(cells[1].querySelector(".tile-active-border-animation")).toBeNull();
+    expect(cells[2].querySelector(".tile-active-border-animation")).toBeNull();
+  });
+
+  it("calls onTileSelect when clicking a tile in the active row", () => {
+    const onTileSelect = vi.fn();
+    render(
+      <Board
+        guesses={[]}
+        current="AB"
+        gameOver={false}
+        onTileSelect={onTileSelect}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole("gridcell")[1]);
+    expect(onTileSelect).toHaveBeenCalledWith(1);
   });
 
   it("shows animated indicator only on the current row", () => {

@@ -25,6 +25,7 @@ const createTestPlayerContextValue = (
   updatePlayerKeyboardPreference: vi.fn(),
   updatePlayerLanguage: vi.fn(),
   updatePlayerShowEndOfGameDialogs: vi.fn(),
+  updatePlayerManualTileSelection: vi.fn(),
   commitVictory: vi.fn().mockResolvedValue(undefined),
   commitLoss: vi.fn().mockResolvedValue(undefined),
   ...overrides,
