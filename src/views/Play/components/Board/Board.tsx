@@ -1,6 +1,7 @@
 import { Row } from "./Row";
 import { useTranslation } from "@i18n";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
+import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import type { BoardPropsType } from "./types";
 import useBoardController from "./useBoardController";
 
@@ -53,7 +54,7 @@ export function Board({
   );
 
   return (
-    <div className={boardWrapperClassName}>
+    <div id={PLAY_BOARD_SHARE_CAPTURE_ID} className={boardWrapperClassName}>
       <div className="relative">
         <div
           role="grid"

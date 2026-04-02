@@ -1,7 +1,10 @@
+import html2canvas from "html2canvas";
+import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
   HARD_MODE_FINAL_STRETCH_SECONDS,
   HARD_MODE_TOTAL_SECONDS,
+  VICTORY_BOARD_SHARE_FILE_NAME,
 } from "./constants";
 import type { HardModeTimerSnapshot } from "./types";
 
@@ -91,4 +94,58 @@ export const markEndOfGameDialogAsSeenInSession = (): void => {
     END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
     "seen",
   );
+};
+
+const canvasToPngBlob = (canvas: HTMLCanvasElement): Promise<Blob> =>
+  new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Unable to generate board image blob."));
+        return;
+      }
+
+      resolve(blob);
+    }, "image/png");
+  });
+
+export const isVictoryBoardShareSupported = (): boolean =>
+  typeof navigator !== "undefined" && typeof navigator.share === "function";
+
+export const getVictoryBoardShareCaptureElement = (): HTMLElement | null => {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return document.getElementById(PLAY_BOARD_SHARE_CAPTURE_ID);
+};
+
+export const captureVictoryBoardImageFile = async (
+  boardElement: HTMLElement,
+): Promise<File> => {
+  const devicePixelRatio =
+    typeof window === "undefined" ? 1 : window.devicePixelRatio;
+  const scale = Math.max(1, Math.min(2, devicePixelRatio || 1));
+  const canvas = await html2canvas(boardElement, {
+    backgroundColor: null,
+    logging: false,
+    scale,
+    useCORS: true,
+  });
+  const blob = await canvasToPngBlob(canvas);
+
+  return new File([blob], VICTORY_BOARD_SHARE_FILE_NAME, {
+    type: "image/png",
+  });
+};
+
+export const canShareVictoryBoardFile = (file: File): boolean => {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  if (typeof navigator.canShare !== "function") {
+    return true;
+  }
+
+  return navigator.canShare({ files: [file] });
 };

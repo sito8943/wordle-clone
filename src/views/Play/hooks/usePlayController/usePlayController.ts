@@ -21,7 +21,11 @@ import type {
   EndOfGameScoreSummaryItem,
 } from "./types";
 import {
+  canShareVictoryBoardFile,
+  captureVictoryBoardImageFile,
+  getVictoryBoardShareCaptureElement,
   hasSeenEndOfGameDialogInSession,
+  isVictoryBoardShareSupported,
   markEndOfGameDialogAsSeenInSession,
 } from "./utils";
 import { i18n } from "@i18n";
@@ -96,6 +100,14 @@ export default function usePlayController() {
   const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
   const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] =
     useState(false);
+  const [isSharingVictoryBoard, setIsSharingVictoryBoard] = useState(false);
+  const [victoryBoardShareError, setVictoryBoardShareError] = useState<
+    string | null
+  >(null);
+  const victoryBoardShareSupported = useMemo(
+    () => isVictoryBoardShareSupported(),
+    [],
+  );
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -299,6 +311,8 @@ export default function usePlayController() {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setComboFlash(null);
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
     resetHints();
     resetHardModeTimer();
     refresh();
@@ -308,6 +322,8 @@ export default function usePlayController() {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setComboFlash(null);
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
     resetHints();
     resetHardModeTimer();
     startNewWordleBoard();
@@ -316,6 +332,8 @@ export default function usePlayController() {
   const closeEndOfGameDialog = useCallback(() => {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(true);
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
   }, []);
 
   const refreshBoard = useCallback(() => {
@@ -441,6 +459,8 @@ export default function usePlayController() {
       setShowWordsDialog(false);
       setShowHelpDialog(false);
       setShowDeveloperConsoleDialog(false);
+      setIsSharingVictoryBoard(false);
+      setVictoryBoardShareError(null);
     }
   }, [showResumeDialog]);
 
@@ -458,6 +478,62 @@ export default function usePlayController() {
   const showRefreshAttention = gameOver;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
 
+  const shareVictoryBoard = useCallback(async () => {
+    if (
+      !victoryBoardShareSupported ||
+      isSharingVictoryBoard ||
+      !showVictoryDialog
+    ) {
+      return;
+    }
+
+    const boardElement = getVictoryBoardShareCaptureElement();
+
+    if (!boardElement) {
+      setVictoryBoardShareError(
+        i18n.t("play.victoryDialog.shareErrors.captureUnavailable"),
+      );
+      return;
+    }
+
+    setVictoryBoardShareError(null);
+    setIsSharingVictoryBoard(true);
+
+    try {
+      const boardImageFile = await captureVictoryBoardImageFile(boardElement);
+
+      if (!canShareVictoryBoardFile(boardImageFile)) {
+        setVictoryBoardShareError(
+          i18n.t("play.victoryDialog.shareErrors.unavailable"),
+        );
+        return;
+      }
+
+      await navigator.share({
+        files: [boardImageFile],
+        title: i18n.t("play.victoryDialog.sharePayloadTitle"),
+        text: i18n.t("play.victoryDialog.sharePayloadText", {
+          count: guesses.length,
+        }),
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      setVictoryBoardShareError(
+        i18n.t("play.victoryDialog.shareErrors.captureFailed"),
+      );
+    } finally {
+      setIsSharingVictoryBoard(false);
+    }
+  }, [
+    guesses.length,
+    isSharingVictoryBoard,
+    showVictoryDialog,
+    victoryBoardShareSupported,
+  ]);
+
   useEffect(() => {
     if (!endOfGameDialogVisible) {
       return;
@@ -471,6 +547,15 @@ export default function usePlayController() {
     markEndOfGameDialogAsSeenInSession();
     setShowEndOfGameSettingsHint(true);
   }, [endOfGameDialogVisible]);
+
+  useEffect(() => {
+    if (showVictoryDialog) {
+      return;
+    }
+
+    setIsSharingVictoryBoard(false);
+    setVictoryBoardShareError(null);
+  }, [showVictoryDialog]);
 
   useEffect(() => {
     if (!showRefreshAttention) {
@@ -501,6 +586,10 @@ export default function usePlayController() {
     refreshAttentionScale: 0.14,
     showVictoryDialog,
     showDefeatDialog,
+    victoryBoardShareSupported,
+    isSharingVictoryBoard,
+    victoryBoardShareError,
+    shareVictoryBoard,
     showEndOfGameSettingsHint,
     endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
     victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,

@@ -300,6 +300,15 @@ export const resources = {
           title: "Victory",
           description: "Board cleared. Here is your score breakdown.",
           scoreSummaryTitle: "Score summary",
+          shareAction: "Share board",
+          shareInProgress: "Sharing...",
+          sharePayloadTitle: "Wordle victory",
+          sharePayloadText: "I solved this board in {{count}} tries.",
+          shareErrors: {
+            captureUnavailable: "The board screenshot is not available yet.",
+            unavailable: "This device cannot share image files from the game.",
+            captureFailed: "Could not prepare the board screenshot. Try again.",
+          },
           scoreItems: {
             base: "Base points",
             difficulty: "Difficulty multiplier",
@@ -649,6 +658,18 @@ export const resources = {
           title: "Victoria",
           description: "Partida superada. Aquí tienes el desglose.",
           scoreSummaryTitle: "Resumen de puntuación",
+          shareAction: "Compartir tablero",
+          shareInProgress: "Compartiendo...",
+          sharePayloadTitle: "Victoria en Wordle",
+          sharePayloadText: "He resuelto este tablero en {{count}} intentos.",
+          shareErrors: {
+            captureUnavailable:
+              "La captura del tablero todavía no está disponible.",
+            unavailable:
+              "Este dispositivo no permite compartir imágenes desde el juego.",
+            captureFailed:
+              "No se ha podido preparar la captura del tablero. Inténtalo de nuevo.",
+          },
           scoreItems: {
             base: "Puntos base",
             difficulty: "Multiplicador de dificultad",

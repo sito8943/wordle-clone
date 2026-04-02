@@ -6,6 +6,10 @@ export type VictoryDialogProps = {
   currentStreak: number;
   scoreSummary: EndOfGameScoreSummary;
   showSettingsHint?: boolean;
+  shareEnabled?: boolean;
+  isSharing?: boolean;
+  shareErrorMessage?: string | null;
   onClose: () => void;
   onPlayAgain: () => void;
+  onShare?: () => void;
 };

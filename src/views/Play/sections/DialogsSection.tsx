@@ -40,6 +40,10 @@ const DialogsSection = (): JSX.Element => {
     showDeveloperConsoleDialog,
     showVictoryDialog,
     showDefeatDialog,
+    victoryBoardShareSupported,
+    isSharingVictoryBoard,
+    victoryBoardShareError,
+    shareVictoryBoard,
     showEndOfGameSettingsHint,
     endOfGameAnswer,
     victoryScoreSummary,
@@ -148,8 +152,12 @@ const DialogsSection = (): JSX.Element => {
                 currentStreak={endOfGameCurrentStreak}
                 scoreSummary={victoryScoreSummary}
                 showSettingsHint={showEndOfGameSettingsHint}
+                shareEnabled={victoryBoardShareSupported}
+                isSharing={isSharingVictoryBoard}
+                shareErrorMessage={victoryBoardShareError}
                 onClose={closeEndOfGameDialog}
                 onPlayAgain={startNewBoard}
+                onShare={shareVictoryBoard}
               />
             ) : null
           ) : null}

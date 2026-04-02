@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import { i18n, initI18n } from "@i18n";
 import { setWordDictionary } from "@utils/words";
+import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
+import * as usePlayControllerUtils from "./utils";
 import usePlayController from "./usePlayController";
 import {
   COMBO_FLASH_VISIBILITY_DURATION_MS,
@@ -34,6 +36,8 @@ vi.mock("./useHardModeTimer", () => ({
 
 describe("usePlayController", () => {
   let wordleState: Record<string, unknown>;
+  let originalNavigatorShare: Navigator["share"] | undefined;
+  let originalNavigatorCanShare: Navigator["canShare"] | undefined;
 
   beforeEach(async () => {
     await initI18n();
@@ -45,6 +49,9 @@ describe("usePlayController", () => {
     mockUseHintController.mockClear();
     mockUseHardModeTimer.mockClear();
     window.sessionStorage.clear();
+    document.body.innerHTML = "";
+    originalNavigatorShare = navigator.share;
+    originalNavigatorCanShare = navigator.canShare;
     setWordDictionary(["apple"]);
     wordleState = {
       sessionId: "session-1",
@@ -111,6 +118,17 @@ describe("usePlayController", () => {
   afterEach(() => {
     cleanup();
     window.sessionStorage.clear();
+    document.body.innerHTML = "";
+    Object.defineProperty(navigator, "share", {
+      value: originalNavigatorShare,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(navigator, "canShare", {
+      value: originalNavigatorCanShare,
+      configurable: true,
+      writable: true,
+    });
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -557,5 +575,80 @@ describe("usePlayController", () => {
       }),
     );
     expect(result.current.dictionaryChecksumMessageKind).toBe("success");
+  });
+
+  it("shares the victory board screenshot through the system share api", async () => {
+    const boardElement = document.createElement("div");
+    boardElement.id = PLAY_BOARD_SHARE_CAPTURE_ID;
+    document.body.append(boardElement);
+
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", {
+      value: share,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(navigator, "canShare", {
+      value: vi.fn().mockReturnValue(true),
+      configurable: true,
+      writable: true,
+    });
+
+    vi.spyOn(
+      usePlayControllerUtils,
+      "captureVictoryBoardImageFile",
+    ).mockResolvedValue(new File([new Blob(["board"])], "wordle-board.png"));
+
+    const { result, rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+    rerender();
+
+    await act(async () => {
+      await result.current.shareVictoryBoard();
+    });
+
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(share).toHaveBeenCalledWith(
+      expect.objectContaining({
+        files: expect.any(Array),
+        title: i18n.t("play.victoryDialog.sharePayloadTitle"),
+        text: i18n.t("play.victoryDialog.sharePayloadText", { count: 3 }),
+      }),
+    );
+    expect(result.current.victoryBoardShareError).toBeNull();
+  });
+
+  it("sets a share error when the board element is not available", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", {
+      value: share,
+      configurable: true,
+      writable: true,
+    });
+
+    const { result, rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+    rerender();
+
+    await act(async () => {
+      await result.current.shareVictoryBoard();
+    });
+
+    expect(share).not.toHaveBeenCalled();
+    expect(result.current.victoryBoardShareError).toBe(
+      i18n.t("play.victoryDialog.shareErrors.captureUnavailable"),
+    );
   });
 });

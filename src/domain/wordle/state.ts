@@ -189,15 +189,10 @@ export const setLetterAt = (
   index: number,
   letter: string,
 ): PersistedGameState => {
-  console.log("Setting letter at index:", index, "to", letter);
-  console.log(
-    index < 0 || index > state.current.length || index >= WORD_LENGTH,
-  );
   if (index < 0 || index > state.current.length || index >= WORD_LENGTH) {
     return state;
   }
 
-  console.log(index === state.current.length);
   if (index === state.current.length) {
     return addLetter(state, letter);
   }

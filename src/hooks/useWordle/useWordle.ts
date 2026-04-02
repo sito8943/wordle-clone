@@ -377,9 +377,6 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
   const addCurrentLetter = useCallback(
     (letter: string) => {
-      console.log("Adding letter:", letter);
-      console.log(manualTileSelection);
-
       if (!manualTileSelection) {
         setGameStateWithPersistence((prev) => addLetter(prev, letter));
         return;
@@ -387,7 +384,6 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
       const targetIndex = selectedTileIndex ?? 0;
 
-      console.log(targetIndex);
       setGameStateWithPersistence((prev) =>
         setLetterAt(prev, targetIndex, letter),
       );

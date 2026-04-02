@@ -24,8 +24,12 @@ const VictoryDialog = ({
   currentStreak,
   scoreSummary,
   showSettingsHint = false,
+  shareEnabled = false,
+  isSharing = false,
+  shareErrorMessage = null,
   onClose,
   onPlayAgain,
+  onShare,
 }: VictoryDialogProps) => {
   const { t } = useTranslation();
   const { isClosing, closeWithAction } = useDialogCloseTransition(
@@ -112,7 +116,25 @@ const VictoryDialog = ({
 
         {showSettingsHint ? <SettingsHint /> : null}
 
-        <div className="flex justify-end">
+        {shareErrorMessage ? (
+          <p className="text-sm text-red-600 dark:text-red-400" role="status">
+            {shareErrorMessage}
+          </p>
+        ) : null}
+
+        <div className="flex flex-wrap justify-end gap-3">
+          {shareEnabled && onShare ? (
+            <Button
+              onClick={onShare}
+              variant="outline"
+              color="neutral"
+              disabled={isClosing || isSharing}
+            >
+              {isSharing
+                ? t("play.victoryDialog.shareInProgress")
+                : t("play.victoryDialog.shareAction")}
+            </Button>
+          ) : null}
           <Button
             onClick={() => closeWithAction(onPlayAgain)}
             disabled={isClosing}

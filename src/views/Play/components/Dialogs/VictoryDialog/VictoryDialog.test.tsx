@@ -106,4 +106,30 @@ describe("VictoryDialog", () => {
     );
     expect(settingsLink.getAttribute("href")).toBe("/settings#end-dialogs");
   });
+
+  it("shows a share action when enabled and triggers the callback", () => {
+    const onShare = vi.fn();
+
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 4,
+        }}
+        shareEnabled
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+        onShare={onShare}
+      />,
+    );
+
+    const shareButton = screen.getByRole("button", { name: "Share board" });
+
+    fireEvent.click(shareButton);
+
+    expect(onShare).toHaveBeenCalledTimes(1);
+  });
 });
