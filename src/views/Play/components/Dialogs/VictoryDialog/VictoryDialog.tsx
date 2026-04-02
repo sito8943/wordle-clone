@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak } from "@components";
 import { Dialog, useDialogCloseTransition } from "@components/Dialogs";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
@@ -116,8 +117,18 @@ const VictoryDialog = ({
 
         {showSettingsHint ? <SettingsHint /> : null}
 
+        {isSharing ? (
+          <p className="sr-only" role="status" aria-live="polite">
+            {t("play.victoryDialog.shareInProgress")}
+          </p>
+        ) : null}
+
         {shareErrorMessage ? (
-          <p className="text-sm text-red-600 dark:text-red-400" role="status">
+          <p
+            className="text-sm text-red-600 dark:text-red-400"
+            role="alert"
+            aria-live="assertive"
+          >
             {shareErrorMessage}
           </p>
         ) : null}
@@ -129,6 +140,9 @@ const VictoryDialog = ({
               variant="outline"
               color="neutral"
               disabled={isClosing || isSharing}
+              aria-label={t("play.victoryDialog.shareAction")}
+              aria-busy={isSharing}
+              icon={faShareNodes}
             >
               {isSharing
                 ? t("play.victoryDialog.shareInProgress")

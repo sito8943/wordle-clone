@@ -127,9 +127,41 @@ describe("VictoryDialog", () => {
     );
 
     const shareButton = screen.getByRole("button", { name: "Share board" });
+    const shareIcon = shareButton.querySelector("svg");
+
+    expect(shareButton.getAttribute("aria-label")).toBe("Share board");
+    expect(shareButton.getAttribute("aria-busy")).toBe("false");
+    expect(shareIcon).toBeTruthy();
 
     fireEvent.click(shareButton);
 
     expect(onShare).toHaveBeenCalledTimes(1);
+  });
+
+  it("announces share progress accessibly", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 4,
+        }}
+        shareEnabled
+        isSharing
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+        onShare={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole("status")).toBeTruthy();
+    expect(screen.getAllByText("Sharing...").length).toBeGreaterThan(0);
+    expect(
+      screen
+        .getByRole("button", { name: "Share board" })
+        .getAttribute("disabled"),
+    ).not.toBeNull();
   });
 });

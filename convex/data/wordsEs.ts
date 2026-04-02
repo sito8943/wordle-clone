@@ -1117,7 +1117,6 @@ export const ES_WORDS = [
   "avoca",
   "avoco",
   "avugo",
-  "axial",
   "axila",
   "ayaco",
   "ayate",
