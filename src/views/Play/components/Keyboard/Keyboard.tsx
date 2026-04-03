@@ -7,12 +7,17 @@ import { DELETE_HOLD_DELAY_MS, DELETE_REPEAT_INTERVAL_MS } from "./constants";
 export function Keyboard({
   guesses,
   onKey,
+  language = "en",
   animateEntry = false,
   onEntryAnimationEnd,
   isLoss = false,
 }: KeyboardProps) {
   const { t } = useTranslation();
-  const { rows, keyStyleMap } = useKeyboardController({ guesses, isLoss });
+  const { rows, keyStyleMap } = useKeyboardController({
+    guesses,
+    isLoss,
+    language,
+  });
   const deleteHoldTimeoutRef = useRef<number | null>(null);
   const deleteRepeatIntervalRef = useRef<number | null>(null);
   const deleteHoldTriggeredRef = useRef(false);

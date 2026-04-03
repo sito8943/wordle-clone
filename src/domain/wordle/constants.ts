@@ -1,5 +1,5 @@
 import type { TileStatus } from "@utils/types";
-import type { PlayerDifficulty } from "./player";
+import type { PlayerDifficulty, PlayerLanguage } from "./player";
 
 export const WORD_LENGTH = 5;
 export const MAX_GUESSES = 6;
@@ -25,6 +25,15 @@ export const KEYBOARD_ROWS = [
   ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
   ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
 ] as const;
+
+export const KEYBOARD_ROWS_ES = [
+  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+  ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ñ"],
+  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
+] as const;
+
+export const getKeyboardRows = (language: PlayerLanguage) =>
+  language === "es" ? KEYBOARD_ROWS_ES : KEYBOARD_ROWS;
 
 export const KEY_STATUS_PRIORITY: TileStatus[] = [
   "correct",

@@ -85,7 +85,7 @@ export const isDirectGameKeyboardKey = (key: string): boolean =>
   key === "Enter" ||
   key === "ArrowLeft" ||
   key === "ArrowRight" ||
-  /^[a-zA-Z]$/.test(key);
+  /^[a-zA-ZñÑ]$/.test(key);
 
 export const blurRefreshButtonIfFocused = (): void => {
   const activeElement = document.activeElement;

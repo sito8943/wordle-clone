@@ -15,6 +15,7 @@ describe("Play native keyboard utils", () => {
   it("maps alphabetic keys to uppercase letters", () => {
     expect(toWordleKeyFromNativeKeyboardEvent("a")).toBe("A");
     expect(toWordleKeyFromNativeKeyboardEvent("Z")).toBe("Z");
+    expect(toWordleKeyFromNativeKeyboardEvent("ñ")).toBe("Ñ");
   });
 
   it("ignores unsupported keys", () => {
@@ -24,9 +25,10 @@ describe("Play native keyboard utils", () => {
   });
 
   it("extracts uppercase letters from mixed native input", () => {
-    expect(extractNativeKeyboardLetters("ab1-cD")).toEqual([
+    expect(extractNativeKeyboardLetters("ab1-ñcD")).toEqual([
       "A",
       "B",
+      "Ñ",
       "C",
       "D",
     ]);

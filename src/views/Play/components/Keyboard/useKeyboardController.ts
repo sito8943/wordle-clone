@@ -1,21 +1,25 @@
 import { useMemo } from "react";
-import { KEYBOARD_ROWS, getKeyStatuses } from "@domain/wordle";
+import { getKeyboardRows, getKeyStatuses } from "@domain/wordle";
 import { i18n } from "@i18n";
 import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constants";
 import type { KeyboardProps, KeyboardRowModel } from "./types";
 
-type UseKeyboardControllerParams = Pick<KeyboardProps, "guesses" | "isLoss">;
+type UseKeyboardControllerParams = Pick<
+  KeyboardProps,
+  "guesses" | "isLoss" | "language"
+>;
 
 const useKeyboardController = ({
   guesses,
   isLoss = false,
+  language = "en",
 }: UseKeyboardControllerParams) => {
   const keyStatuses = useMemo(() => getKeyStatuses(guesses), [guesses]);
   const keyStyleMap = isLoss ? KEY_STYLE_ON_LOSS : KEY_STYLE;
 
   const rows = useMemo<KeyboardRowModel[]>(
     () =>
-      KEYBOARD_ROWS.map((row) =>
+      getKeyboardRows(language).map((row) =>
         row.map((key) => ({
           key,
           status: keyStatuses[key] ?? "default",
@@ -29,7 +33,7 @@ const useKeyboardController = ({
                 : i18n.t("play.gameplay.keys.letter", { key }),
         })),
       ),
-    [keyStatuses],
+    [keyStatuses, language],
   );
 
   return {

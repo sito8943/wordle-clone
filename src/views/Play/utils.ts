@@ -1,5 +1,5 @@
-const LETTER_KEY_PATTERN = /[a-z]/i;
-const NON_ALPHA_PATTERN = /[^A-Z]/g;
+const LETTER_KEY_PATTERN = /^[a-zñ]$/i;
+const NON_ALPHA_PATTERN = /[^A-ZÑ]/g;
 
 export const toWordleKeyFromNativeKeyboardEvent = (
   eventKey: string,

@@ -311,9 +311,16 @@ describe("validateGuessInput", () => {
 });
 
 describe("isLetterKey", () => {
-  it("returns true for single uppercase letters", () => {
+  it("returns true for single uppercase letters in english layout", () => {
     expect(isLetterKey("A")).toBe(true);
     expect(isLetterKey("Z")).toBe(true);
+    expect(isLetterKey("Ñ")).toBe(false);
+  });
+
+  it("accepts Ñ only in spanish layout", () => {
+    expect(isLetterKey("Ñ", "es")).toBe(true);
+    expect(isLetterKey("N", "es")).toBe(true);
+    expect(isLetterKey("ñ", "es")).toBe(false);
   });
 
   it("returns false for lowercase letters", () => {

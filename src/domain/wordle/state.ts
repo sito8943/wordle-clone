@@ -6,6 +6,7 @@ import {
   normalizeSeed,
   resolveAnswerFromGameReference,
 } from "./reference";
+import type { PlayerLanguage } from "./player";
 import type {
   GuessResult,
   GuessValidationResult,
@@ -225,4 +226,10 @@ export const removeLetterAt = (
   };
 };
 
-export const isLetterKey = (key: string): boolean => /^[A-Z]$/.test(key);
+export const isLetterKey = (
+  key: string,
+  language: PlayerLanguage = "en",
+): boolean => {
+  const letterPattern = language === "es" ? /^[A-ZÑ]$/ : /^[A-Z]$/;
+  return letterPattern.test(key);
+};

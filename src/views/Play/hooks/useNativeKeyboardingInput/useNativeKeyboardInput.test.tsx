@@ -98,6 +98,9 @@ describe("useNativeKeyboardInput", () => {
       key: "ArrowRight",
     });
     fireEvent.keyDown(screen.getByLabelText("Native keyboard input"), {
+      key: "ñ",
+    });
+    fireEvent.keyDown(screen.getByLabelText("Native keyboard input"), {
       key: "a",
       ctrlKey: true,
     });
@@ -107,7 +110,8 @@ describe("useNativeKeyboardInput", () => {
     expect(onKey).toHaveBeenNthCalledWith(3, "BACKSPACE");
     expect(onKey).toHaveBeenNthCalledWith(4, "ARROWLEFT");
     expect(onKey).toHaveBeenNthCalledWith(5, "ARROWRIGHT");
-    expect(onKey).toHaveBeenCalledTimes(5);
+    expect(onKey).toHaveBeenNthCalledWith(6, "Ñ");
+    expect(onKey).toHaveBeenCalledTimes(6);
   });
 
   it("extracts typed letters from input events", () => {
@@ -115,11 +119,12 @@ describe("useNativeKeyboardInput", () => {
     render(<TestHarness onKey={onKey} />);
     const input = screen.getByLabelText("Native keyboard input");
 
-    fireEvent.change(input, { target: { value: "a1b!" } });
+    fireEvent.change(input, { target: { value: "a1ñb!" } });
     fireEvent.input(input);
 
     expect(onKey).toHaveBeenNthCalledWith(1, "A");
-    expect(onKey).toHaveBeenNthCalledWith(2, "B");
+    expect(onKey).toHaveBeenNthCalledWith(2, "Ñ");
+    expect(onKey).toHaveBeenNthCalledWith(3, "B");
   });
 
   it("ignores input while blocked", () => {

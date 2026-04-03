@@ -495,7 +495,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return;
       }
 
-      if (isLetterKey(key)) {
+      if (isLetterKey(key, language)) {
         addCurrentLetter(key);
       }
     },
@@ -504,6 +504,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       checkInput,
       current,
       gameOver,
+      language,
       moveActiveTile,
       removeCurrentLetter,
       showResumeDialog,

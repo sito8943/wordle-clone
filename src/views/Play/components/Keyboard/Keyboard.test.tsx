@@ -37,6 +37,17 @@ describe("Keyboard", () => {
     expect(screen.getAllByRole("button").length).toBe(28);
   });
 
+  it("renders Ñ in spanish keyboard layout", () => {
+    render(<Keyboard guesses={[]} onKey={vi.fn()} language="es" />);
+
+    expect(
+      screen.getByRole("button", {
+        name: i18n.t("play.gameplay.keys.letter", { key: "Ñ" }),
+      }),
+    ).toBeTruthy();
+    expect(screen.getAllByRole("button").length).toBe(29);
+  });
+
   it("calls onKey with clicked values", () => {
     const onKey = vi.fn();
     render(<Keyboard guesses={[]} onKey={onKey} />);
