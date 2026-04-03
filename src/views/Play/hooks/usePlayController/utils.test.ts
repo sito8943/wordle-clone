@@ -43,41 +43,45 @@ describe("captureVictoryBoardImageFile", () => {
     } as unknown as HTMLCanvasElement;
     const originalCreateElement = document.createElement.bind(document);
 
-    vi.spyOn(document, "createElement").mockImplementation(
-      ((tagName: string, options?: ElementCreationOptions) => {
-        if (tagName.toLowerCase() === "canvas") {
-          return fakeCanvas as unknown as HTMLElement;
-        }
+    vi.spyOn(document, "createElement").mockImplementation(((
+      tagName: string,
+      options?: ElementCreationOptions,
+    ) => {
+      if (tagName.toLowerCase() === "canvas") {
+        return fakeCanvas as unknown as HTMLElement;
+      }
 
-        return originalCreateElement(tagName, options);
-      }) as typeof document.createElement,
+      return originalCreateElement(tagName, options);
+    }) as typeof document.createElement);
+
+    const file = await captureVictoryBoardImageFile(
+      document.createElement("div"),
+      {
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "CRANE",
+            statuses: [
+              "absent",
+              "absent",
+              "present",
+              "absent",
+              "absent",
+            ] satisfies GuessResult["statuses"],
+          },
+          {
+            word: "APPLE",
+            statuses: [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+            ] satisfies GuessResult["statuses"],
+          },
+        ],
+      },
     );
-
-    const file = await captureVictoryBoardImageFile(document.createElement("div"), {
-      answer: "APPLE",
-      guesses: [
-        {
-          word: "CRANE",
-          statuses: [
-            "absent",
-            "absent",
-            "present",
-            "absent",
-            "absent",
-          ] satisfies GuessResult["statuses"],
-        },
-        {
-          word: "APPLE",
-          statuses: [
-            "correct",
-            "correct",
-            "correct",
-            "correct",
-            "correct",
-          ] satisfies GuessResult["statuses"],
-        },
-      ],
-    });
 
     expect(file.name).toBe("wordle-board.png");
     expect(file.type).toBe("image/png");
