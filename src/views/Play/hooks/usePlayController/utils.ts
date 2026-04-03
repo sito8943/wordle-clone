@@ -1,4 +1,5 @@
 import html2canvas from "html2canvas";
+import { MAX_GUESSES, WORD_LENGTH } from "@domain/wordle";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
@@ -6,7 +7,10 @@ import {
   HARD_MODE_TOTAL_SECONDS,
   VICTORY_BOARD_SHARE_FILE_NAME,
 } from "./constants";
-import type { HardModeTimerSnapshot } from "./types";
+import type {
+  HardModeTimerSnapshot,
+  VictoryBoardShareCaptureSnapshot,
+} from "./types";
 
 let hardModeTimerSnapshot: HardModeTimerSnapshot | null = null;
 
@@ -108,6 +112,187 @@ const canvasToPngBlob = (canvas: HTMLCanvasElement): Promise<Blob> =>
     }, "image/png");
   });
 
+const VICTORY_BOARD_SHARE_TILE_SIZE_PX = 56;
+const VICTORY_BOARD_SHARE_TILE_GAP_PX = 8;
+const VICTORY_BOARD_SHARE_PADDING_PX = 16;
+const VICTORY_BOARD_SHARE_TILE_BORDER_WIDTH_PX = 2;
+const VICTORY_BOARD_SHARE_TILE_RADIUS_PX = 10;
+
+const VICTORY_BOARD_SHARE_TILE_COLORS = {
+  correct: {
+    fill: "#22c55e",
+    border: "#16a34a",
+    text: "#f8fafc",
+  },
+  present: {
+    fill: "#eab308",
+    border: "#ca8a04",
+    text: "#172554",
+  },
+  absent: {
+    fill: "#737373",
+    border: "#525252",
+    text: "#f8fafc",
+  },
+  empty: {
+    fill: "#f5f5f5",
+    border: "#a3a3a3",
+    text: "#171717",
+  },
+} as const;
+
+const createVictoryBoardImageFile = (blob: Blob): File =>
+  new File([blob], VICTORY_BOARD_SHARE_FILE_NAME, {
+    type: "image/png",
+  });
+
+const getVictoryBoardSnapshotTileStatus = (
+  snapshot: VictoryBoardShareCaptureSnapshot,
+  rowIndex: number,
+  columnIndex: number,
+): keyof typeof VICTORY_BOARD_SHARE_TILE_COLORS => {
+  const guess = snapshot.guesses[rowIndex];
+
+  if (!guess) {
+    return "empty";
+  }
+
+  const status = guess.statuses[columnIndex];
+
+  if (status === "correct" || status === "present" || status === "absent") {
+    return status;
+  }
+
+  return "empty";
+};
+
+const getVictoryBoardSnapshotTileLetter = (
+  snapshot: VictoryBoardShareCaptureSnapshot,
+  rowIndex: number,
+  columnIndex: number,
+): string => {
+  const guess = snapshot.guesses[rowIndex];
+
+  if (!guess) {
+    return "";
+  }
+
+  const letter = guess.word[columnIndex];
+  return typeof letter === "string" ? letter.toUpperCase() : "";
+};
+
+const drawRoundedRect = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+): void => {
+  context.beginPath();
+
+  if (typeof context.roundRect === "function") {
+    context.roundRect(x, y, width, height, radius);
+  } else {
+    context.rect(x, y, width, height);
+  }
+
+  context.closePath();
+};
+
+const renderVictoryBoardFallbackCanvas = (
+  snapshot: VictoryBoardShareCaptureSnapshot,
+): HTMLCanvasElement => {
+  if (typeof document === "undefined") {
+    throw new Error("Document is not available.");
+  }
+
+  const canvas = document.createElement("canvas");
+  const boardWidth =
+    WORD_LENGTH * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
+    (WORD_LENGTH - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
+    VICTORY_BOARD_SHARE_PADDING_PX * 2;
+  const boardHeight =
+    MAX_GUESSES * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
+    (MAX_GUESSES - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
+    VICTORY_BOARD_SHARE_PADDING_PX * 2;
+
+  canvas.width = boardWidth;
+  canvas.height = boardHeight;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Unable to get board image drawing context.");
+  }
+
+  context.clearRect(0, 0, boardWidth, boardHeight);
+  context.lineWidth = VICTORY_BOARD_SHARE_TILE_BORDER_WIDTH_PX;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = '700 28px "Roboto Slab Variable", "Roboto", sans-serif';
+
+  for (let rowIndex = 0; rowIndex < MAX_GUESSES; rowIndex += 1) {
+    for (let columnIndex = 0; columnIndex < WORD_LENGTH; columnIndex += 1) {
+      const x =
+        VICTORY_BOARD_SHARE_PADDING_PX +
+        columnIndex *
+          (VICTORY_BOARD_SHARE_TILE_SIZE_PX + VICTORY_BOARD_SHARE_TILE_GAP_PX);
+      const y =
+        VICTORY_BOARD_SHARE_PADDING_PX +
+        rowIndex *
+          (VICTORY_BOARD_SHARE_TILE_SIZE_PX + VICTORY_BOARD_SHARE_TILE_GAP_PX);
+      const status = getVictoryBoardSnapshotTileStatus(
+        snapshot,
+        rowIndex,
+        columnIndex,
+      );
+      const colors = VICTORY_BOARD_SHARE_TILE_COLORS[status];
+
+      drawRoundedRect(
+        context,
+        x,
+        y,
+        VICTORY_BOARD_SHARE_TILE_SIZE_PX,
+        VICTORY_BOARD_SHARE_TILE_SIZE_PX,
+        VICTORY_BOARD_SHARE_TILE_RADIUS_PX,
+      );
+      context.fillStyle = colors.fill;
+      context.fill();
+      context.strokeStyle = colors.border;
+      context.stroke();
+
+      const letter = getVictoryBoardSnapshotTileLetter(
+        snapshot,
+        rowIndex,
+        columnIndex,
+      );
+
+      if (!letter) {
+        continue;
+      }
+
+      context.fillStyle = colors.text;
+      context.fillText(
+        letter,
+        x + VICTORY_BOARD_SHARE_TILE_SIZE_PX / 2,
+        y + VICTORY_BOARD_SHARE_TILE_SIZE_PX / 2 + 1,
+      );
+    }
+  }
+
+  return canvas;
+};
+
+const captureVictoryBoardImageFileFromSnapshot = async (
+  snapshot: VictoryBoardShareCaptureSnapshot,
+): Promise<File> => {
+  const canvas = renderVictoryBoardFallbackCanvas(snapshot);
+  const blob = await canvasToPngBlob(canvas);
+
+  return createVictoryBoardImageFile(blob);
+};
+
 export const isVictoryBoardShareSupported = (): boolean =>
   typeof navigator !== "undefined" && typeof navigator.share === "function";
 
@@ -121,21 +306,25 @@ export const getVictoryBoardShareCaptureElement = (): HTMLElement | null => {
 
 export const captureVictoryBoardImageFile = async (
   boardElement: HTMLElement,
+  snapshot: VictoryBoardShareCaptureSnapshot,
 ): Promise<File> => {
   const devicePixelRatio =
     typeof window === "undefined" ? 1 : window.devicePixelRatio;
   const scale = Math.max(1, Math.min(2, devicePixelRatio || 1));
-  const canvas = await html2canvas(boardElement, {
-    backgroundColor: null,
-    logging: false,
-    scale,
-    useCORS: true,
-  });
-  const blob = await canvasToPngBlob(canvas);
 
-  return new File([blob], VICTORY_BOARD_SHARE_FILE_NAME, {
-    type: "image/png",
-  });
+  try {
+    const canvas = await html2canvas(boardElement, {
+      backgroundColor: null,
+      logging: false,
+      scale,
+      useCORS: true,
+    });
+    const blob = await canvasToPngBlob(canvas);
+
+    return createVictoryBoardImageFile(blob);
+  } catch {
+    return captureVictoryBoardImageFileFromSnapshot(snapshot);
+  }
 };
 
 export const canShareVictoryBoardFile = (file: File): boolean => {

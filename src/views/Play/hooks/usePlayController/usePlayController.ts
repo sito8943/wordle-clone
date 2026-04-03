@@ -500,7 +500,10 @@ export default function usePlayController() {
     setIsSharingVictoryBoard(true);
 
     try {
-      const boardImageFile = await captureVictoryBoardImageFile(boardElement);
+      const boardImageFile = await captureVictoryBoardImageFile(boardElement, {
+        answer,
+        guesses,
+      });
 
       if (!canShareVictoryBoardFile(boardImageFile)) {
         setVictoryBoardShareError(
@@ -528,7 +531,8 @@ export default function usePlayController() {
       setIsSharingVictoryBoard(false);
     }
   }, [
-    guesses.length,
+    answer,
+    guesses,
     isSharingVictoryBoard,
     showVictoryDialog,
     victoryBoardShareSupported,

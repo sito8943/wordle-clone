@@ -1,4 +1,4 @@
-import type { GuessCombo } from "@domain/wordle";
+import type { GuessCombo, GuessResult } from "@domain/wordle";
 
 export type ComboFlash = GuessCombo & {
   pulse: number;
@@ -56,4 +56,9 @@ export type UseHardModeTimerResult = {
   hardModeFinalStretchProgressPercent: number;
   boardShakePulse: number;
   resetHardModeTimer: () => void;
+};
+
+export type VictoryBoardShareCaptureSnapshot = {
+  answer: string;
+  guesses: GuessResult[];
 };
