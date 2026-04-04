@@ -9,6 +9,7 @@ import {
 } from "@domain/wordle";
 import { useApi, usePlayer } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
+import { useSound } from "@providers/Sound";
 
 import { PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS } from "./constants";
 import { hasActivePersistedGame } from "./utils";
@@ -31,6 +32,7 @@ export default function useProfileController() {
   const { startAnimationsEnabled, toggleAnimationsDisabled } =
     useAnimationsPreference();
   const { themePreference, setThemePreference } = useThemePreference();
+  const { soundEnabled, setSoundEnabled } = useSound();
 
   const [editing, setEditing] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
@@ -153,6 +155,17 @@ export default function useProfileController() {
     [player.manualTileSelection, updatePlayerManualTileSelection],
   );
 
+  const changeSoundEnabled = useCallback(
+    (enabled: boolean) => {
+      if (enabled === soundEnabled) {
+        return;
+      }
+
+      setSoundEnabled(enabled);
+    },
+    [setSoundEnabled, soundEnabled],
+  );
+
   const openLanguageDialog = useCallback(() => {
     setPendingLanguage(player.language);
     setIsLanguageDialogOpen(true);
@@ -236,6 +249,8 @@ export default function useProfileController() {
     saveLanguage,
     showEndOfGameDialogs: player.showEndOfGameDialogs,
     changeShowEndOfGameDialogs,
+    soundEnabled,
+    changeSoundEnabled,
     manualTileSelection: player.manualTileSelection,
     changeManualTileSelection,
     changeDifficulty,

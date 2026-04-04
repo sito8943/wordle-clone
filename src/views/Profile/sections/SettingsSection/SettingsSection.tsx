@@ -1,16 +1,19 @@
 import { Button } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
 import { useTranslation } from "@i18n";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import { DifficultySection } from "../DifficultySection";
 import {
   PROFILE_END_OF_GAME_DIALOGS_INPUT_ID,
   PROFILE_MANUAL_TILE_SELECTION_INPUT_ID,
+  PROFILE_SOUND_ENABLED_INPUT_ID,
   PROFILE_THEME_MODE_INPUT_ID,
 } from "@views/Profile/constants";
 import { useProfileView } from "@views/Profile/providers";
 
 const SettingsSection = () => {
   const { t } = useTranslation();
+  const { soundEnabled: soundFeatureEnabled } = useFeatureFlags();
   const {
     controller: {
       startAnimationsEnabled,
@@ -23,6 +26,8 @@ const SettingsSection = () => {
       changeKeyboardPreference,
       showEndOfGameDialogs,
       changeShowEndOfGameDialogs,
+      soundEnabled,
+      changeSoundEnabled,
       manualTileSelection,
       changeManualTileSelection,
       difficulty,
@@ -91,6 +96,30 @@ const SettingsSection = () => {
           </div>
         </div>
       </div>
+      {soundFeatureEnabled ? (
+        <div id="sound-enabled" className="mt-4 max-w-xl">
+          <div className="flex items-start gap-3">
+            <input
+              id={PROFILE_SOUND_ENABLED_INPUT_ID}
+              type="checkbox"
+              checked={soundEnabled}
+              onChange={(event) => changeSoundEnabled(event.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
+            />
+            <div>
+              <label
+                htmlFor={PROFILE_SOUND_ENABLED_INPUT_ID}
+                className="profile-field-label"
+              >
+                {t("profile.labels.sound")}
+              </label>
+              <p className="text-xs text-neutral-600 dark:text-neutral-300">
+                {t("profile.soundEnabledDescription")}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div id="manual-tile-selection" className="mt-4 max-w-xl">
         <div className="flex items-start gap-3">
           <input

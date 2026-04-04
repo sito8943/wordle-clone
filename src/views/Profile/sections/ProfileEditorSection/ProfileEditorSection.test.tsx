@@ -52,6 +52,8 @@ const buildMockProfileView = (
       saveLanguage: vi.fn(),
       showEndOfGameDialogs: true,
       changeShowEndOfGameDialogs: vi.fn(),
+      soundEnabled: true,
+      changeSoundEnabled: vi.fn(),
       manualTileSelection: false,
       changeManualTileSelection: vi.fn(),
       changeDifficulty: vi.fn(),

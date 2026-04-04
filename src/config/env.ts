@@ -34,6 +34,10 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_DEV_CONSOLE_ENABLED,
     defaultDevConsoleEnabled,
   ),
+  soundEnabled: readBoolean(
+    import.meta.env.VITE_SOUND_ENABLED ?? rawEnv.SOUND_ENABLED,
+    true,
+  ),
   hintsEnabled: readBoolean(
     import.meta.env.VITE_HINTS_ENABLED ?? rawEnv.HINTS_ENABLED,
     true,

@@ -8,6 +8,7 @@ export type RuntimeEnv = {
   paypalDonationButtonEnabled: boolean;
   shareButtonEnabled: boolean;
   devConsoleEnabled: boolean;
+  soundEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
   scoreLimit: number;

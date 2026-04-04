@@ -13,6 +13,7 @@ const FeatureFlagsProvider = ({ children }: ProviderProps) => {
       env.paypalDonationButtonEnabled,
       env.shareButtonEnabled,
       env.devConsoleEnabled,
+      env.soundEnabled,
       env.hintsEnabled,
       env.helpButtonEnabled,
     ],

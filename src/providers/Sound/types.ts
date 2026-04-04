@@ -15,6 +15,8 @@ export type PlaySoundOptions = {
 };
 
 export type SoundContextType = {
+  soundEnabled: boolean;
+  setSoundEnabled: (enabled: boolean) => void;
   playSound: (event: SoundEvent, options?: PlaySoundOptions) => void;
 };
 

@@ -169,6 +169,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp) for offline remote synchronization.
 - `wordle:dictionary:en`: cached dictionary words.
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
+- `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.
 - additional feature keys for theme/animations/scoreboard caches.
 
 ## Data Flow (Play Gameplay)

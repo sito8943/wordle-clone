@@ -97,10 +97,12 @@ export const resources = {
           keyboardMode: "Keyboard mode",
           difficulty: "Difficulty",
           endOfGameDialogs: "End-of-game dialogs",
+          sound: "Sound effects",
           manualTileSelection: "Manual tile selection",
         },
         endOfGameDialogsDescription:
           "Show dialogs when you win or lose a board.",
+        soundEnabledDescription: "Play game sounds during matches.",
         manualTileSelectionDescription:
           "Click a tile before typing. The cursor will not advance automatically.",
         codeHelp:
@@ -458,10 +460,13 @@ export const resources = {
           keyboardMode: "Modo de teclado",
           difficulty: "Dificultad",
           endOfGameDialogs: "Diálogos de fin de partida",
+          sound: "Efectos de sonido",
           manualTileSelection: "Selección manual de casillas",
         },
         endOfGameDialogsDescription:
           "Muestra diálogos cuando ganas o pierdes un tablero.",
+        soundEnabledDescription:
+          "Reproduce sonidos del juego durante las partidas.",
         manualTileSelectionDescription:
           "Haz clic en una casilla antes de escribir. El cursor no avanzará automáticamente.",
         codeHelp:

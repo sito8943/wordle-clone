@@ -7,6 +7,7 @@ export const resolveFeatureFlags = (): FeatureFlags => ({
   paypalDonationButtonEnabled: env.paypalDonationButtonEnabled,
   shareButtonEnabled: env.shareButtonEnabled,
   devConsoleEnabled: env.devConsoleEnabled,
+  soundEnabled: env.soundEnabled,
   hintsEnabled: env.hintsEnabled,
   helpButtonEnabled: env.helpButtonEnabled,
 });

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useLocalStorage } from "@hooks";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import { SoundContext } from "./SoundContext";
 import type { ProviderProps } from "../types";
 import type {
@@ -11,11 +13,17 @@ import type {
 const MIN_GAIN = 0.0001;
 const DEFAULT_ATTACK_MS = 4;
 const DEFAULT_RELEASE_MS = 40;
+const SOUND_ENABLED_STORAGE_KEY = "wordle:sound-enabled";
 
 const toWindowWithWebkitAudio = (value: Window) =>
   value as Window & { webkitAudioContext?: typeof AudioContext };
 
 const SoundProvider = ({ children }: ProviderProps) => {
+  const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>(
+    SOUND_ENABLED_STORAGE_KEY,
+    true,
+  );
+  const { soundEnabled: soundFeatureEnabled } = useFeatureFlags();
   const audioContextRef = useRef<AudioContext | null>(null);
   const hasUserInteractedRef = useRef(false);
 
@@ -133,6 +141,10 @@ const SoundProvider = ({ children }: ProviderProps) => {
 
   const playSound = useCallback(
     (event: SoundEvent, options: PlaySoundOptions = {}) => {
+      if (!soundFeatureEnabled || !soundEnabled) {
+        return;
+      }
+
       const baseDelayMs = options.delayMs ?? 0;
 
       if (event === "letter_put") {
@@ -278,14 +290,16 @@ const SoundProvider = ({ children }: ProviderProps) => {
         baseDelayMs,
       );
     },
-    [playToneSequence],
+    [playToneSequence, soundEnabled, soundFeatureEnabled],
   );
 
   const contextValue = useMemo<SoundContextType>(
     () => ({
+      soundEnabled,
+      setSoundEnabled,
       playSound,
     }),
-    [playSound],
+    [playSound, setSoundEnabled, soundEnabled],
   );
 
   return (

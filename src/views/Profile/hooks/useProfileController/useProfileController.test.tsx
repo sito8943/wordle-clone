@@ -8,6 +8,7 @@ const mockUseApi = vi.fn();
 const mockUsePlayer = vi.fn();
 const mockUseAnimationsPreference = vi.fn();
 const mockUseThemePreference = vi.fn();
+const mockUseSound = vi.fn();
 const mockReadPersistedGameState = vi.fn();
 const mockClearPersistedGameState = vi.fn();
 
@@ -19,6 +20,10 @@ vi.mock("@providers", () => ({
 vi.mock("@hooks", () => ({
   useAnimationsPreference: () => mockUseAnimationsPreference(),
   useThemePreference: () => mockUseThemePreference(),
+}));
+
+vi.mock("@providers/Sound", () => ({
+  useSound: () => mockUseSound(),
 }));
 
 vi.mock("@domain/wordle", async () => {
@@ -69,6 +74,10 @@ describe("useProfileController", () => {
     mockUseThemePreference.mockReturnValue({
       themePreference: "system",
       setThemePreference: vi.fn(),
+    });
+    mockUseSound.mockReturnValue({
+      soundEnabled: true,
+      setSoundEnabled: vi.fn(),
     });
     mockReadPersistedGameState.mockReturnValue(null);
     mockClearPersistedGameState.mockReset();
@@ -235,5 +244,21 @@ describe("useProfileController", () => {
     });
 
     expect(updatePlayerManualTileSelection).toHaveBeenCalledWith(true);
+  });
+
+  it("updates the sound preference", () => {
+    const setSoundEnabled = vi.fn();
+    mockUseSound.mockReturnValue({
+      soundEnabled: true,
+      setSoundEnabled,
+    });
+
+    const { result } = renderHook(() => useProfileController());
+
+    act(() => {
+      result.current.changeSoundEnabled(false);
+    });
+
+    expect(setSoundEnabled).toHaveBeenCalledWith(false);
   });
 });

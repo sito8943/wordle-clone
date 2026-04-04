@@ -4,6 +4,7 @@ export type FeatureFlags = {
   paypalDonationButtonEnabled: boolean;
   shareButtonEnabled: boolean;
   devConsoleEnabled: boolean;
+  soundEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
 };
