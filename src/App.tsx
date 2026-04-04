@@ -111,7 +111,10 @@ const AppUpdateBanner = (): JSX.Element | null => {
       typeof serviceWorker.removeEventListener === "function";
 
     if (canListenControllerChange) {
-      serviceWorker.addEventListener("controllerchange", handleControllerChange);
+      serviceWorker.addEventListener(
+        "controllerchange",
+        handleControllerChange,
+      );
     }
 
     void serviceWorker.getRegistration().then((registration) => {
