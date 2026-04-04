@@ -156,6 +156,59 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
   });
 
+  it("shows an update banner and triggers skip waiting when a new app version is ready", async () => {
+    const postMessage = vi.fn();
+    const registration = {
+      waiting: {
+        postMessage,
+      },
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      update: vi.fn().mockResolvedValue(undefined),
+    } as unknown as ServiceWorkerRegistration;
+    const serviceWorkerMock = {
+      controller: {} as ServiceWorker,
+      getRegistration: vi.fn().mockResolvedValue(registration),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as ServiceWorkerContainer;
+    const previousServiceWorker = navigator.serviceWorker;
+
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      writable: true,
+      value: serviceWorkerMock,
+    });
+
+    try {
+      localStorage.setItem(
+        "player",
+        JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
+      );
+
+      renderApp();
+
+      expect(
+        await screen.findByText(
+          "A new version is available. Reload to update the app.",
+        ),
+      ).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Reload" }));
+
+      await waitFor(() => {
+        expect(postMessage).toHaveBeenCalledWith({ type: "SKIP_WAITING" });
+      });
+    } finally {
+      cleanup();
+      Object.defineProperty(navigator, "serviceWorker", {
+        configurable: true,
+        writable: true,
+        value: previousServiceWorker,
+      });
+    }
+  });
+
   it("renders the home page at / with play, settings and scoreboard links", async () => {
     localStorage.setItem(
       "player",

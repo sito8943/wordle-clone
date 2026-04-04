@@ -3,6 +3,10 @@ export const resources = {
     translation: {
       app: {
         title: "Wordle",
+        updateAvailableMessage:
+          "A new version is available. Reload to update the app.",
+        updateDismissAction: "Later",
+        updateReloadAction: "Reload",
       },
       common: {
         close: "Close",
@@ -360,6 +364,10 @@ export const resources = {
     translation: {
       app: {
         title: "Wordle",
+        updateAvailableMessage:
+          "Hay una nueva versión disponible. Recarga para actualizar la app.",
+        updateDismissAction: "Luego",
+        updateReloadAction: "Recargar",
       },
       common: {
         close: "Cerrar",

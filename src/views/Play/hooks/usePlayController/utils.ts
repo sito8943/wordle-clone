@@ -301,6 +301,12 @@ export const getVictoryBoardShareCaptureElement = (): HTMLElement | null => {
     return null;
   }
 
+  const playBoardSection = document.getElementById("board");
+
+  if (playBoardSection) {
+    return playBoardSection;
+  }
+
   return document.getElementById(PLAY_BOARD_SHARE_CAPTURE_ID);
 };
 
@@ -310,7 +316,7 @@ export const captureVictoryBoardImageFile = async (
 ): Promise<File> => {
   const devicePixelRatio =
     typeof window === "undefined" ? 1 : window.devicePixelRatio;
-  const scale = Math.max(1, Math.min(2, devicePixelRatio || 1));
+  const scale = Math.max(2, Math.min(3, devicePixelRatio || 1));
 
   try {
     const canvas = await html2canvas(boardElement, {

@@ -1,7 +1,11 @@
 import html2canvas from "html2canvas";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { GuessResult } from "@domain/wordle";
-import { captureVictoryBoardImageFile } from "./utils";
+import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
+import {
+  captureVictoryBoardImageFile,
+  getVictoryBoardShareCaptureElement,
+} from "./utils";
 
 vi.mock("html2canvas", () => ({
   default: vi.fn(),
@@ -10,6 +14,7 @@ vi.mock("html2canvas", () => ({
 describe("captureVictoryBoardImageFile", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    document.body.innerHTML = "";
   });
 
   it("falls back to drawing the board from guess data when html2canvas fails", async () => {
@@ -86,6 +91,12 @@ describe("captureVictoryBoardImageFile", () => {
     expect(file.name).toBe("wordle-board.png");
     expect(file.type).toBe("image/png");
     expect(vi.mocked(html2canvas)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(html2canvas)).toHaveBeenCalledWith(
+      expect.any(HTMLDivElement),
+      expect.objectContaining({
+        scale: 2,
+      }),
+    );
     expect(fillText).toHaveBeenCalledWith(
       "C",
       expect.any(Number),
@@ -96,5 +107,29 @@ describe("captureVictoryBoardImageFile", () => {
       expect.any(Number),
       expect.any(Number),
     );
+  });
+});
+
+describe("getVictoryBoardShareCaptureElement", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("prefers the play section with id board", () => {
+    const boardSection = document.createElement("section");
+    boardSection.id = "board";
+    const boardGrid = document.createElement("div");
+    boardGrid.id = PLAY_BOARD_SHARE_CAPTURE_ID;
+    document.body.append(boardSection, boardGrid);
+
+    expect(getVictoryBoardShareCaptureElement()).toBe(boardSection);
+  });
+
+  it("falls back to the board grid capture id when section board is missing", () => {
+    const boardGrid = document.createElement("div");
+    boardGrid.id = PLAY_BOARD_SHARE_CAPTURE_ID;
+    document.body.append(boardGrid);
+
+    expect(getVictoryBoardShareCaptureElement()).toBe(boardGrid);
   });
 });
