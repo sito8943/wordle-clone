@@ -98,13 +98,12 @@ const DialogsSection = (): JSX.Element => {
         showVictoryDialog,
         showDefeatDialog,
       ]}
-      fallback={({ reset }) => (
+      fallback={() => (
         <div className="px-3 pb-2">
           <ErrorFallback
             title={t("play.sections.dialogsError.title")}
             description={t("play.sections.dialogsError.description")}
             actionLabel={t("play.sections.dialogsError.action")}
-            onAction={reset}
           />
         </div>
       )}

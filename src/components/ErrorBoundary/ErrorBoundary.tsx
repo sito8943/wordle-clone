@@ -7,11 +7,15 @@ import type {
 } from "./types";
 import { hasResetKeysChanged } from "./utils";
 
+const reloadPage = () => {
+  window.location.reload();
+};
+
 export const ErrorFallback = ({
   title = i18n.t("errors.generic.title"),
   description = i18n.t("errors.generic.description"),
   actionLabel = i18n.t("errors.generic.action"),
-  onAction,
+  onAction = reloadPage,
 }: ErrorFallbackProps) => (
   <section
     role="alert"
@@ -79,7 +83,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         return fallback;
       }
 
-      return <ErrorFallback onAction={this.reset} />;
+      return <ErrorFallback />;
     }
 
     return children;

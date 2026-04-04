@@ -21,13 +21,12 @@ void initI18n().then(() => {
     <StrictMode>
       <ErrorBoundary
         name="app-root"
-        fallback={({ reset }) => (
+        fallback={() => (
           <div className="mx-auto flex min-h-screen w-full max-w-xl items-center justify-center px-4">
             <ErrorFallback
               title={i18n.t("errors.appRoot.title")}
               description={i18n.t("errors.appRoot.description")}
               actionLabel={i18n.t("errors.appRoot.action")}
-              onAction={reset}
             />
           </div>
         )}

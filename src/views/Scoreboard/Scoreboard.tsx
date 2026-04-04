@@ -63,12 +63,11 @@ const Scoreboard = (): JSX.Element => {
       <ErrorBoundary
         name="scoreboard-table"
         resetKeys={[scores.length, loading, source, currentClientRank]}
-        fallback={({ reset }) => (
+        fallback={() => (
           <ErrorFallback
             title={t("errors.scoreboard.title")}
             description={t("errors.scoreboard.description")}
             actionLabel={t("errors.scoreboard.action")}
-            onAction={reset}
           />
         )}
       >

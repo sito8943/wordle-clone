@@ -34,13 +34,12 @@ const KeyboardSection = (): JSX.Element => {
     <ErrorBoundary
       name="play-keyboard"
       resetKeys={[guesses.length, current, gameOver, won]}
-      fallback={({ reset }) => (
+      fallback={() => (
         <div className="px-2 pb-2">
           <ErrorFallback
             title={t("play.sections.keyboardError.title")}
             description={t("play.sections.keyboardError.description")}
             actionLabel={t("play.sections.keyboardError.action")}
-            onAction={reset}
           />
         </div>
       )}

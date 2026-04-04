@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ErrorBoundary } from ".";
 
@@ -77,5 +77,22 @@ describe("ErrorBoundary", () => {
     );
 
     expect(screen.getByText("Failed: boom")).toBeTruthy();
+  });
+
+  it("reloads the page when the fallback action is clicked", () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const reloadSpy = vi
+      .spyOn(window.location, "reload")
+      .mockImplementation(() => undefined);
+
+    render(
+      <ErrorBoundary>
+        <Thrower shouldThrow />
+      </ErrorBoundary>,
+    );
+
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(reloadSpy).toHaveBeenCalled();
   });
 });

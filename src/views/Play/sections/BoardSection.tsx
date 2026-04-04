@@ -131,12 +131,11 @@ const BoardSection = (): JSX.Element => {
         startAnimationSeed,
         boardShakePulse,
       ]}
-      fallback={({ reset }) => (
+      fallback={() => (
         <ErrorFallback
           title={t("play.sections.boardError.title")}
           description={t("play.sections.boardError.description")}
           actionLabel={t("play.sections.boardError.action")}
-          onAction={reset}
         />
       )}
     >

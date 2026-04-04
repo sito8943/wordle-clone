@@ -142,13 +142,12 @@ const View = () => {
         <ErrorBoundary
           name="route-outlet"
           resetKeys={[pathname]}
-          fallback={({ reset }) => (
+          fallback={() => (
             <main className="page-centered py-10">
               <ErrorFallback
                 title={i18n.t("errors.routeOutlet.title")}
                 description={i18n.t("errors.routeOutlet.description")}
                 actionLabel={i18n.t("errors.routeOutlet.action")}
-                onAction={reset}
               />
             </main>
           )}

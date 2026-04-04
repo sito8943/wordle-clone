@@ -36,22 +36,22 @@ export const resources = {
         generic: {
           title: "Something went wrong.",
           description: "Try again in a moment.",
-          action: "Try again",
+          action: "Reload page",
         },
         appRoot: {
           title: "Wordle failed to load.",
           description: "Try again. If the issue continues, reload the page.",
-          action: "Retry app",
+          action: "Reload page",
         },
         routeOutlet: {
           title: "This page could not be rendered.",
           description: "Try again or navigate to a different section.",
-          action: "Retry page",
+          action: "Reload page",
         },
         scoreboard: {
           title: "Scoreboard table failed to render.",
           description: "Retry to load player rankings.",
-          action: "Retry scoreboard",
+          action: "Reload page",
         },
       },
       notFound: {
@@ -185,17 +185,17 @@ export const resources = {
           boardError: {
             title: "The board crashed.",
             description: "Retry to restore the current match view.",
-            action: "Retry board",
+            action: "Reload page",
           },
           keyboardError: {
             title: "The keyboard is unavailable.",
             description: "Retry to re-enable key input.",
-            action: "Retry keyboard",
+            action: "Reload page",
           },
           dialogsError: {
             title: "A dialog failed to render.",
             description: "Retry to open this panel again.",
-            action: "Retry panel",
+            action: "Reload page",
           },
           insaneCountdownAriaLabel: "Insane mode countdown",
           winMessage: "You got it in {{count}}!",
@@ -396,23 +396,23 @@ export const resources = {
         generic: {
           title: "Algo ha ido mal.",
           description: "Vuelve a intentarlo en un momento.",
-          action: "Reintentar",
+          action: "Recargar página",
         },
         appRoot: {
           title: "No se ha podido cargar Wordle.",
           description:
             "Vuelve a intentarlo. Si el problema sigue, recarga la página.",
-          action: "Reintentar app",
+          action: "Recargar página",
         },
         routeOutlet: {
           title: "No se ha podido renderizar esta página.",
           description: "Vuelve a intentarlo o navega a otra sección.",
-          action: "Reintentar página",
+          action: "Recargar página",
         },
         scoreboard: {
           title: "No se ha podido renderizar la tabla.",
           description: "Reintenta cargar la clasificación.",
-          action: "Reintentar clasificación",
+          action: "Recargar página",
         },
       },
       notFound: {
@@ -546,17 +546,17 @@ export const resources = {
           boardError: {
             title: "El tablero ha fallado.",
             description: "Reintenta restaurar la vista de la partida actual.",
-            action: "Reintentar tablero",
+            action: "Recargar página",
           },
           keyboardError: {
             title: "El teclado no está disponible.",
             description: "Reintenta reactivar la entrada de teclas.",
-            action: "Reintentar teclado",
+            action: "Recargar página",
           },
           dialogsError: {
             title: "Un diálogo no se ha podido renderizar.",
             description: "Reintenta abrir este panel.",
-            action: "Reintentar panel",
+            action: "Recargar página",
           },
           insaneCountdownAriaLabel: "Cuenta atrás del modo insano",
           winMessage: "Lo has acertado en {{count}}!",
