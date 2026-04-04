@@ -1892,6 +1892,35 @@ describe("App", () => {
     expect(screen.queryByText("APPLE")).toBeNull();
   });
 
+  it("reopens the victory dialog from the end-of-game message after closing it", async () => {
+    renderApp();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(
+        await screen.findByRole("button", { name: `Letter ${letter}` }),
+      );
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    const victoryDialog = await screen.findByRole("dialog", {
+      name: "Victory",
+    });
+    expect(victoryDialog).toBeTruthy();
+
+    fireEvent.click(
+      within(victoryDialog).getByRole("button", { name: "Close" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Victory" })).toBeNull();
+    });
+    expect(screen.getByText("You got it in 1!")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Results" }));
+
+    expect(await screen.findByRole("dialog", { name: "Victory" })).toBeTruthy();
+    expect(screen.queryByText("You got it in 1!")).toBeNull();
+  });
+
   it("asks confirmation before refreshing an active game", async () => {
     renderApp();
 

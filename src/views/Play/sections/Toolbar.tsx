@@ -6,6 +6,7 @@ import {
   faLightbulb,
   faList,
   faRotateRight,
+  faSquarePollHorizontal,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak, Alert } from "@components";
 import { useTranslation } from "@i18n";
@@ -73,6 +74,8 @@ const Toolbar = (): JSX.Element => {
     hintButtonDisabled,
     hintsRemaining,
     openHelpDialog,
+    canReopenEndOfGameDialog,
+    reopenEndOfGameDialog,
     openDeveloperConsoleDialog,
     showRefreshAttention,
     refreshAttentionPulse,
@@ -130,6 +133,19 @@ const Toolbar = (): JSX.Element => {
           >
             {t("play.toolbar.helpButton")}
           </Button>
+          {canReopenEndOfGameDialog ? (
+            <Button
+              onClick={reopenEndOfGameDialog}
+              aria-label={t("play.toolbar.resultsAriaLabel")}
+              variant="ghost"
+              icon={faSquarePollHorizontal}
+              iconClassName="text-lg"
+              hideLabelOnMobile
+              className="mobile-compact-button"
+            >
+              {t("play.toolbar.resultsButton")}
+            </Button>
+          ) : null}
           {developerConsoleEnabled && (
             <Button
               onClick={openDeveloperConsoleDialog}

@@ -76,6 +76,7 @@ export default function usePlayController() {
     revealHint,
   } = wordle;
   const hardModeEnabled = player.difficulty === "insane";
+  const showEndOfGameDialogs = player.showEndOfGameDialogs;
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
@@ -95,6 +96,8 @@ export default function usePlayController() {
   const [endOfGameSnapshot, setEndOfGameSnapshot] =
     useState<EndOfGameSnapshot | null>(null);
   const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
+    useState(false);
+  const [endOfGameDialogDismissed, setEndOfGameDialogDismissed] =
     useState(false);
   const [comboFlash, setComboFlash] = useState<ComboFlash | null>(null);
   const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
@@ -161,6 +164,7 @@ export default function usePlayController() {
 
     if (!gameOver) {
       roundSettled.current = false;
+      setEndOfGameDialogDismissed(false);
       return;
     }
 
@@ -168,8 +172,10 @@ export default function usePlayController() {
       return;
     }
 
+    setShowLegacyEndOfGameFeedback(false);
+    setEndOfGameDialogDismissed(false);
+
     if (won) {
-      setShowLegacyEndOfGameFeedback(false);
       const basePoints = getPointsForWin(guesses.length);
       const baseDifficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
@@ -226,7 +232,6 @@ export default function usePlayController() {
 
       void commitVictory(totalPoints);
     } else {
-      setShowLegacyEndOfGameFeedback(false);
       setEndOfGameSnapshot({
         answer,
         currentStreak: player.streak,
@@ -310,6 +315,7 @@ export default function usePlayController() {
   const refreshBoardNow = useCallback(() => {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
+    setEndOfGameDialogDismissed(false);
     setComboFlash(null);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
@@ -321,6 +327,7 @@ export default function usePlayController() {
   const startNewBoard = useCallback(() => {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
+    setEndOfGameDialogDismissed(false);
     setComboFlash(null);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
@@ -330,11 +337,20 @@ export default function usePlayController() {
   }, [resetHardModeTimer, resetHints, startNewWordleBoard]);
 
   const closeEndOfGameDialog = useCallback(() => {
-    setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(true);
+    setEndOfGameDialogDismissed(true);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
   }, []);
+
+  const reopenEndOfGameDialog = useCallback(() => {
+    if (!showEndOfGameDialogs || !gameOver || endOfGameSnapshot === null) {
+      return;
+    }
+
+    setShowLegacyEndOfGameFeedback(false);
+    setEndOfGameDialogDismissed(false);
+  }, [endOfGameSnapshot, gameOver, showEndOfGameDialogs]);
 
   const refreshBoard = useCallback(() => {
     if (hasActiveGame) {
@@ -454,6 +470,7 @@ export default function usePlayController() {
     if (showResumeDialog) {
       setEndOfGameSnapshot(null);
       setShowLegacyEndOfGameFeedback(false);
+      setEndOfGameDialogDismissed(false);
       setComboFlash(null);
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
@@ -470,13 +487,25 @@ export default function usePlayController() {
     }
   }, [wordListEnabledForDifficulty]);
 
-  const showEndOfGameDialogs = player.showEndOfGameDialogs;
   const showVictoryDialog =
-    showEndOfGameDialogs && gameOver && won && endOfGameSnapshot !== null;
+    showEndOfGameDialogs &&
+    gameOver &&
+    won &&
+    endOfGameSnapshot !== null &&
+    !endOfGameDialogDismissed;
   const showDefeatDialog =
-    showEndOfGameDialogs && gameOver && !won && endOfGameSnapshot !== null;
+    showEndOfGameDialogs &&
+    gameOver &&
+    !won &&
+    endOfGameSnapshot !== null &&
+    !endOfGameDialogDismissed;
   const showRefreshAttention = gameOver;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
+  const canReopenEndOfGameDialog =
+    showEndOfGameDialogs &&
+    gameOver &&
+    endOfGameSnapshot !== null &&
+    endOfGameDialogDismissed;
 
   const shareVictoryBoard = useCallback(async () => {
     if (
@@ -585,6 +614,7 @@ export default function usePlayController() {
     currentWinStreak: player.streak,
     showLegacyEndOfGameMessage:
       !showEndOfGameDialogs || showLegacyEndOfGameFeedback,
+    canReopenEndOfGameDialog,
     showRefreshAttention,
     refreshAttentionPulse,
     refreshAttentionScale: 0.14,
@@ -600,6 +630,7 @@ export default function usePlayController() {
     endOfGameCurrentStreak: endOfGameSnapshot?.currentStreak ?? player.streak,
     endOfGameBestStreak: endOfGameSnapshot?.bestStreak ?? player.streak,
     closeEndOfGameDialog,
+    reopenEndOfGameDialog,
     wordListEnabledForDifficulty,
     showHardModeTimer,
     showHardModeFinalStretchBar,

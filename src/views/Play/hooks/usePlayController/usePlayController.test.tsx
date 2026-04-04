@@ -332,7 +332,7 @@ describe("usePlayController", () => {
     expect(result.current.showVictoryDialog).toBe(true);
   });
 
-  it("restores the legacy end-of-game feedback after closing the dialog manually", () => {
+  it("restores legacy feedback and allows reopening the dismissed end-of-game dialog", () => {
     const { rerender, result } = renderHook(() => usePlayController());
 
     wordleState = {
@@ -346,6 +346,7 @@ describe("usePlayController", () => {
 
     expect(result.current.showVictoryDialog).toBe(true);
     expect(result.current.showLegacyEndOfGameMessage).toBe(false);
+    expect(result.current.canReopenEndOfGameDialog).toBe(false);
     expect(result.current.showRefreshAttention).toBe(true);
 
     act(() => {
@@ -354,7 +355,46 @@ describe("usePlayController", () => {
 
     expect(result.current.showVictoryDialog).toBe(false);
     expect(result.current.showLegacyEndOfGameMessage).toBe(true);
+    expect(result.current.canReopenEndOfGameDialog).toBe(true);
     expect(result.current.showRefreshAttention).toBe(true);
+
+    act(() => {
+      result.current.reopenEndOfGameDialog();
+    });
+
+    expect(result.current.showVictoryDialog).toBe(true);
+    expect(result.current.showLegacyEndOfGameMessage).toBe(false);
+    expect(result.current.canReopenEndOfGameDialog).toBe(false);
+  });
+
+  it("reopens the defeat dialog after it is dismissed", () => {
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      guesses: ["SLATE", "CRANE", "MANGO", "TRUCK", "LEMON", "CANDY"],
+      won: false,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showDefeatDialog).toBe(true);
+
+    act(() => {
+      result.current.closeEndOfGameDialog();
+    });
+
+    expect(result.current.showDefeatDialog).toBe(false);
+    expect(result.current.canReopenEndOfGameDialog).toBe(true);
+
+    act(() => {
+      result.current.reopenEndOfGameDialog();
+    });
+
+    expect(result.current.showDefeatDialog).toBe(true);
+    expect(result.current.canReopenEndOfGameDialog).toBe(false);
   });
 
   it("shows the end-of-game settings hint only once per tab session", () => {
