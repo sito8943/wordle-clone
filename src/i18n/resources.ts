@@ -335,6 +335,7 @@ export const resources = {
         developerConsole: {
           title: "Developer console",
           description: "Update current player values for local development.",
+          currentAnswerLabel: "Current answer",
           nameLabel: "Player name",
           difficultyLabel: "Difficulty",
           keyboardModeLabel: "Keyboard mode",
@@ -697,6 +698,7 @@ export const resources = {
           title: "Consola de desarrollo",
           description:
             "Actualiza los valores del jugador actual para desarrollo local.",
+          currentAnswerLabel: "Palabra actual",
           nameLabel: "Nombre del jugador",
           difficultyLabel: "Dificultad",
           keyboardModeLabel: "Modo de teclado",

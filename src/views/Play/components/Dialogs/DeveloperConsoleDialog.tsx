@@ -25,6 +25,7 @@ const DeveloperConsoleDialog = ({
   visible,
   onClose,
   developerConsoleEnabled,
+  answer,
   player,
   showResumeDialog,
   submitDeveloperPlayer,
@@ -94,6 +95,15 @@ const DeveloperConsoleDialog = ({
       panelAnimationClassName={panelAnimationClassName}
     >
       <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/35">
+          <p className="text-xs font-semibold text-amber-900 dark:text-amber-300">
+            {t("play.developerConsole.currentAnswerLabel")}
+          </p>
+          <p className="mt-1 font-mono text-lg font-black tracking-[0.18em] text-amber-950 dark:text-amber-100">
+            {answer}
+          </p>
+        </div>
+
         <label
           htmlFor={DEVELOPER_CONSOLE_NAME_INPUT_ID}
           className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"

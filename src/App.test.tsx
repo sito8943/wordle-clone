@@ -523,6 +523,8 @@ describe("App", () => {
       expect(
         await screen.findByRole("dialog", { name: "Developer console" }),
       ).toBeTruthy();
+      expect(screen.getByText("Current answer")).toBeTruthy();
+      expect(screen.getByText("APPLE")).toBeTruthy();
 
       fireEvent.change(screen.getByLabelText("Player name"), {
         target: { value: "DevUser" },

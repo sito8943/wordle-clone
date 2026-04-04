@@ -40,6 +40,7 @@ const DialogsSection = (): JSX.Element => {
     showDeveloperConsoleDialog,
     showVictoryDialog,
     showDefeatDialog,
+    answer,
     victoryBoardShareSupported,
     isSharingVictoryBoard,
     victoryBoardShareError,
@@ -177,6 +178,7 @@ const DialogsSection = (): JSX.Element => {
               visible
               onClose={closeDeveloperConsoleDialog}
               developerConsoleEnabled={developerConsoleEnabled}
+              answer={answer}
               player={player}
               showResumeDialog={showResumeDialog}
               submitDeveloperPlayer={submitDeveloperPlayer}

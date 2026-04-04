@@ -7,6 +7,7 @@ export type DeveloperConsoleDialogProps = {
   visible: boolean;
   onClose: () => void;
   developerConsoleEnabled: boolean;
+  answer: string;
   player: Player;
   showResumeDialog: boolean;
   submitDeveloperPlayer: PlayControllerState["submitDeveloperPlayer"];
