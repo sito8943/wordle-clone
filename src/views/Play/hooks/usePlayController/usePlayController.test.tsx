@@ -4,6 +4,10 @@ import { getTotalPointsForWin } from "@domain/wordle";
 import { i18n, initI18n } from "@i18n";
 import { setWordDictionary } from "@utils/words";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
+import {
+  TILE_STATUS_SOUND_INITIAL_DELAY_MS,
+  TILE_STATUS_SOUND_STEP_DELAY_MS,
+} from "@providers/Sound/constants";
 import * as usePlayControllerUtils from "./utils";
 import usePlayController from "./usePlayController";
 import {
@@ -16,6 +20,7 @@ const mockUsePlayer = vi.fn();
 const mockUseWordle = vi.fn();
 const mockUseHintController = vi.fn();
 const mockUseHardModeTimer = vi.fn();
+const mockUseSound = vi.fn();
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -28,6 +33,10 @@ vi.mock("@hooks", () => ({
 
 vi.mock("../useHintController", () => ({
   useHintController: (...args: unknown[]) => mockUseHintController(...args),
+}));
+
+vi.mock("@providers/Sound", () => ({
+  useSound: () => mockUseSound(),
 }));
 
 vi.mock("./useHardModeTimer", () => ({
@@ -48,6 +57,7 @@ describe("usePlayController", () => {
     mockUseWordle.mockClear();
     mockUseHintController.mockClear();
     mockUseHardModeTimer.mockClear();
+    mockUseSound.mockClear();
     window.sessionStorage.clear();
     document.body.innerHTML = "";
     originalNavigatorShare = navigator.share;
@@ -112,6 +122,9 @@ describe("usePlayController", () => {
       hardModeFinalStretchProgressPercent: 100,
       boardShakePulse: 0,
       resetHardModeTimer: vi.fn(),
+    });
+    mockUseSound.mockReturnValue({
+      playSound: vi.fn(),
     });
   });
 
@@ -330,6 +343,78 @@ describe("usePlayController", () => {
       getTotalPointsForWin(3, 9, 2, 5),
     );
     expect(result.current.showVictoryDialog).toBe(true);
+  });
+
+  it("plays line and tile-status sounds when a new guess is added", () => {
+    const playSound = vi.fn();
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+
+    const { rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: [
+        {
+          word: "CRANE",
+          statuses: ["correct", "present", "absent", "absent", "absent"],
+        },
+      ],
+      gameOver: false,
+      won: false,
+    };
+
+    rerender();
+
+    expect(playSound).toHaveBeenCalledWith("line_change");
+    expect(playSound).toHaveBeenCalledWith("tile_correct", {
+      delayMs: TILE_STATUS_SOUND_INITIAL_DELAY_MS,
+    });
+    expect(playSound).toHaveBeenCalledWith("tile_present", {
+      delayMs:
+        TILE_STATUS_SOUND_INITIAL_DELAY_MS + TILE_STATUS_SOUND_STEP_DELAY_MS,
+    });
+    expect(playSound).toHaveBeenCalledWith("tile_absent", {
+      delayMs:
+        TILE_STATUS_SOUND_INITIAL_DELAY_MS + 2 * TILE_STATUS_SOUND_STEP_DELAY_MS,
+    });
+  });
+
+  it("plays win and loss sounds only when the game transitions to game over", () => {
+    const playSound = vi.fn();
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+
+    const { rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      won: true,
+      gameOver: true,
+    };
+    rerender();
+    rerender();
+
+    expect(playSound).toHaveBeenCalledWith("round_win");
+    expect(playSound).toHaveBeenCalledTimes(1);
+
+    wordleState = {
+      ...wordleState,
+      won: false,
+      gameOver: false,
+    };
+    rerender();
+
+    wordleState = {
+      ...wordleState,
+      won: false,
+      gameOver: true,
+    };
+    rerender();
+
+    expect(playSound).toHaveBeenCalledWith("round_loss");
   });
 
   it("restores legacy feedback and allows reopening the dismissed end-of-game dialog", () => {

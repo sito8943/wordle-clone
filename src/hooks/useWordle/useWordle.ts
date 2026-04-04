@@ -27,6 +27,7 @@ import {
   loadWordDictionaryFromCache,
   setWordDictionary,
 } from "@utils/words";
+import { useSound } from "@providers/Sound";
 import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
   GAME_STATE_PERSIST_DEBOUNCE_MS,
@@ -88,6 +89,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
   const { data: dictionaryData, isLoading: dictionaryLoading } =
     useDictionaryQuery(language, cachedWords);
+  const { playSound } = useSound();
 
   const dictionaryWords = useMemo(
     () =>
@@ -348,6 +350,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
         return previous;
       });
+      playSound("letter_delete");
       return;
     }
 
@@ -367,10 +370,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
     if (hintRevealTileIndex === removedIndex) {
       setHintRevealTileIndex(null);
     }
+    playSound("letter_delete");
   }, [
     current.length,
     hintRevealTileIndex,
     manualTileSelection,
+    playSound,
     selectedTileIndex,
     setGameStateWithPersistence,
   ]);
@@ -378,11 +383,19 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const addCurrentLetter = useCallback(
     (letter: string) => {
       if (!manualTileSelection) {
+        if (current.length >= WORD_LENGTH) {
+          return;
+        }
+
         setGameStateWithPersistence((prev) => addLetter(prev, letter));
+        playSound("letter_put");
         return;
       }
 
       const targetIndex = selectedTileIndex ?? 0;
+      if (targetIndex < 0 || targetIndex > current.length) {
+        return;
+      }
 
       setGameStateWithPersistence((prev) =>
         setLetterAt(prev, targetIndex, letter),
@@ -399,8 +412,15 @@ export default function useWordle(options: UseWordleOptions = {}) {
       setHintRevealTileIndex((previous) =>
         previous === targetIndex ? null : previous,
       );
+      playSound("letter_put");
     },
-    [manualTileSelection, selectedTileIndex, setGameStateWithPersistence],
+    [
+      current.length,
+      manualTileSelection,
+      playSound,
+      selectedTileIndex,
+      setGameStateWithPersistence,
+    ],
   );
 
   const selectActiveTile = useCallback(

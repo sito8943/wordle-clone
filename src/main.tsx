@@ -5,7 +5,12 @@ import "./global.css";
 import { i18n, initI18n } from "@i18n";
 import App from "./App.tsx";
 import { ErrorBoundary, ErrorFallback } from "@components";
-import { ApiProvider, FeatureFlagsProvider, PlayerProvider } from "@providers";
+import {
+  ApiProvider,
+  FeatureFlagsProvider,
+  PlayerProvider,
+  SoundProvider,
+} from "@providers";
 import { queryClient } from "./queryClient";
 
 const root = createRoot(document.getElementById("root")!);
@@ -32,13 +37,15 @@ void initI18n().then(() => {
         )}
       >
         <QueryClientProvider client={queryClient}>
-          <FeatureFlagsProvider>
-            <ApiProvider>
-              <PlayerProvider>
-                <App />
-              </PlayerProvider>
-            </ApiProvider>
-          </FeatureFlagsProvider>
+          <SoundProvider>
+            <FeatureFlagsProvider>
+              <ApiProvider>
+                <PlayerProvider>
+                  <App />
+                </PlayerProvider>
+              </ApiProvider>
+            </FeatureFlagsProvider>
+          </SoundProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </StrictMode>,

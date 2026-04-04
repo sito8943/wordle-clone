@@ -12,12 +12,21 @@ import {
 } from "../../test/utils";
 
 const dictionaryStorageKey = `${WORDS_CACHE_KEY_PREFIX}:${WORDS_DEFAULT_LANGUAGE}`;
+const mockUseSound = vi.fn();
+
+vi.mock("@providers/Sound", () => ({
+  useSound: () => mockUseSound(),
+}));
 
 describe("useWordle dictionary query integration", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
     void i18n.changeLanguage("en");
+    mockUseSound.mockReset();
+    mockUseSound.mockReturnValue({
+      playSound: vi.fn(),
+    });
   });
 
   afterEach(() => {
@@ -310,5 +319,33 @@ describe("useWordle dictionary query integration", () => {
       result.current.handleKey("ARROWRIGHT");
     });
     expect(result.current.activeTileIndex).toBe(3);
+  });
+
+  it("plays keyboard sounds when adding and deleting letters", () => {
+    const playSound = vi.fn();
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+    act(() => {
+      result.current.handleKey("BACKSPACE");
+    });
+
+    expect(playSound).toHaveBeenCalledWith("letter_put");
+    expect(playSound).toHaveBeenCalledWith("letter_delete");
   });
 });

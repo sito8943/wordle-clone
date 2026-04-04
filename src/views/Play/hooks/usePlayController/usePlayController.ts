@@ -12,6 +12,7 @@ import {
 } from "@domain/wordle";
 import { useApi, usePlayer } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import { useSound } from "@providers/Sound";
 import { useHardModeTimer } from "./useHardModeTimer";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { useWordle } from "@hooks";
@@ -31,6 +32,28 @@ import {
 } from "./utils";
 import { i18n } from "@i18n";
 import { COMBO_FLASH_VISIBILITY_DURATION_MS } from "./constants";
+import {
+  TILE_STATUS_SOUND_INITIAL_DELAY_MS,
+  TILE_STATUS_SOUND_STEP_DELAY_MS,
+} from "@providers/Sound/constants";
+
+const getTileStatusSoundEvent = (
+  status: unknown,
+): "tile_correct" | "tile_present" | "tile_absent" | null => {
+  if (status === "correct") {
+    return "tile_correct";
+  }
+
+  if (status === "present") {
+    return "tile_present";
+  }
+
+  if (status === "absent") {
+    return "tile_absent";
+  }
+
+  return null;
+};
 
 const getGuessWords = (guesses: unknown[]): string[] =>
   guesses.reduce<string[]>((words, guess) => {
@@ -56,6 +79,7 @@ export default function usePlayController() {
   const { scoreClient, wordDictionaryClient } = useApi();
   const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
   const { hintsEnabled } = useFeatureFlags();
+  const { playSound } = useSound();
   const wordle = useWordle({
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
@@ -82,6 +106,9 @@ export default function usePlayController() {
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
+  const didMountRoundResultSoundRef = useRef(false);
+  const previousGameOverForSoundRef = useRef(gameOver);
+  const previousGuessesLengthForSoundRef = useRef(guesses.length);
   const previousGuessesLengthRef = useRef(guesses.length);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
   const [showWordsDialog, setShowWordsDialog] = useState(false);
@@ -282,6 +309,54 @@ export default function usePlayController() {
 
     useHintControllerAction();
   }, [hintsEnabled, useHintControllerAction]);
+
+  useEffect(() => {
+    const previousGuessesLength = previousGuessesLengthForSoundRef.current;
+    previousGuessesLengthForSoundRef.current = guesses.length;
+
+    if (guesses.length <= previousGuessesLength) {
+      return;
+    }
+
+    playSound("line_change");
+
+    const latestGuess = guesses[guesses.length - 1];
+    if (!latestGuess || typeof latestGuess !== "object") {
+      return;
+    }
+
+    const statuses = (latestGuess as { statuses?: unknown }).statuses;
+    if (!Array.isArray(statuses)) {
+      return;
+    }
+
+    statuses.forEach((status, index) => {
+      const soundEvent = getTileStatusSoundEvent(status);
+      if (!soundEvent) {
+        return;
+      }
+
+      playSound(soundEvent, {
+        delayMs:
+          TILE_STATUS_SOUND_INITIAL_DELAY_MS +
+          index * TILE_STATUS_SOUND_STEP_DELAY_MS,
+      });
+    });
+  }, [guesses, playSound]);
+
+  useEffect(() => {
+    if (!didMountRoundResultSoundRef.current) {
+      didMountRoundResultSoundRef.current = true;
+      previousGameOverForSoundRef.current = gameOver;
+      return;
+    }
+
+    if (!previousGameOverForSoundRef.current && gameOver) {
+      playSound(won ? "round_win" : "round_loss");
+    }
+
+    previousGameOverForSoundRef.current = gameOver;
+  }, [gameOver, playSound, won]);
 
   useEffect(() => {
     const previousGuessesLength = previousGuessesLengthRef.current;

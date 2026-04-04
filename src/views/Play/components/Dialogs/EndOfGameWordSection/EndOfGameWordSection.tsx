@@ -23,7 +23,7 @@ const EndOfGameWordSection = ({
     <section className={sectionClassName}>
       <p className="text-xs font-semibold uppercase tracking-[0.24em]">
         {t("play.endOfGame.wordLabel")}
-      </p>
+      </p>;/
       <div className="mt-2 flex gap-2">
         <p className="text-3xl font-black tracking-[0.18em]">{answer}</p>
         <a
