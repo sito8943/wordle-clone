@@ -77,6 +77,7 @@ describe("usePlayController", () => {
       boardVersion: 1,
       startNewBoard: vi.fn(),
       revealHint: vi.fn().mockReturnValue(true),
+      invalidGuessShakePulse: 0,
     };
 
     mockUseApi.mockReturnValue({
@@ -415,6 +416,69 @@ describe("usePlayController", () => {
     rerender();
 
     expect(playSound).toHaveBeenCalledWith("round_loss");
+  });
+
+  it("plays hint sound when a hint is consumed", () => {
+    const playSound = vi.fn();
+    const useHint = vi.fn().mockReturnValue(true);
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+    mockUseHintController.mockReturnValue({
+      hintsRemaining: 1,
+      hintsEnabledForDifficulty: true,
+      hintButtonDisabled: false,
+      useHint,
+      resetHints: vi.fn(),
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.useHint();
+    });
+
+    expect(useHint).toHaveBeenCalledTimes(1);
+    expect(playSound).toHaveBeenCalledWith("hint_use");
+  });
+
+  it("does not play hint sound when hint usage is rejected", () => {
+    const playSound = vi.fn();
+    const useHint = vi.fn().mockReturnValue(false);
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+    mockUseHintController.mockReturnValue({
+      hintsRemaining: 1,
+      hintsEnabledForDifficulty: true,
+      hintButtonDisabled: false,
+      useHint,
+      resetHints: vi.fn(),
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.useHint();
+    });
+
+    expect(useHint).toHaveBeenCalledTimes(1);
+    expect(playSound).not.toHaveBeenCalledWith("hint_use");
+  });
+
+  it("combines hard mode shake pulse with invalid submit shake pulse", () => {
+    mockUseHardModeTimer.mockReturnValue({
+      ...mockUseHardModeTimer(),
+      boardShakePulse: 2,
+    });
+    wordleState = {
+      ...wordleState,
+      invalidGuessShakePulse: 3,
+    };
+
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.boardShakePulse).toBe(5);
   });
 
   it("restores legacy feedback and allows reopening the dismissed end-of-game dialog", () => {

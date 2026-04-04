@@ -75,17 +75,17 @@ export const useHintController = ({
 
   const useHint = useCallback(() => {
     if (hintButtonDisabled) {
-      return;
+      return false;
     }
 
     const hintStatus = getHintStatusByDifficulty(difficulty);
     if (!hintStatus) {
-      return;
+      return false;
     }
 
     const revealed = revealHint(hintStatus);
     if (!revealed) {
-      return;
+      return false;
     }
 
     setHintsUsed((previous) => {
@@ -98,6 +98,7 @@ export const useHintController = ({
 
       return next;
     });
+    return true;
   }, [answer, difficulty, gameId, hintButtonDisabled, revealHint]);
 
   return {

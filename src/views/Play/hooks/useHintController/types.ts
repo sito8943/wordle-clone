@@ -22,6 +22,6 @@ export type UseHintControllerResult = {
   hintsRemaining: number;
   hintsEnabledForDifficulty: boolean;
   hintButtonDisabled: boolean;
-  useHint: () => void;
+  useHint: () => boolean;
   resetHints: () => void;
 };

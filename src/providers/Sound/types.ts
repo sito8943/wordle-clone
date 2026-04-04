@@ -1,6 +1,8 @@
 export type SoundEvent =
   | "letter_put"
   | "letter_delete"
+  | "guess_invalid"
+  | "hint_use"
   | "line_change"
   | "tile_present"
   | "tile_correct"

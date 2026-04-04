@@ -100,6 +100,7 @@ export default function usePlayController() {
     boardVersion,
     startNewBoard: startNewWordleBoard,
     revealHint,
+    invalidGuessShakePulse = 0,
   } = wordle;
   const hardModeEnabled = player.difficulty === "insane";
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
@@ -166,7 +167,7 @@ export default function usePlayController() {
     hardModeTickPulse,
     hardModeClockBoostScale,
     hardModeFinalStretchProgressPercent,
-    boardShakePulse,
+    boardShakePulse: hardModeBoardShakePulse,
     resetHardModeTimer,
   } = useHardModeTimer({
     sessionId,
@@ -179,6 +180,7 @@ export default function usePlayController() {
     currentLength: current.length,
     forceLoss,
   });
+  const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
   useEffect(() => {
     if (!hydrated.current) {
       hydrated.current = true;
@@ -307,8 +309,11 @@ export default function usePlayController() {
       return;
     }
 
-    useHintControllerAction();
-  }, [hintsEnabled, useHintControllerAction]);
+    const hintUsed = useHintControllerAction();
+    if (hintUsed) {
+      playSound("hint_use");
+    }
+  }, [hintsEnabled, playSound, useHintControllerAction]);
 
   useEffect(() => {
     const previousGuessesLength = previousGuessesLengthForSoundRef.current;

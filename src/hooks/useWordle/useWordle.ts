@@ -145,6 +145,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const [hintRevealTileIndex, setHintRevealTileIndex] = useState<number | null>(
     null,
   );
+  const [invalidGuessShakePulse, setInvalidGuessShakePulse] = useState(0);
   const persistenceTimeoutRef = useRef<number | null>(null);
   const latestGameStateRef = useRef(initialGameState);
   const previousLanguageRef = useRef(language);
@@ -284,6 +285,11 @@ export default function useWordle(options: UseWordleOptions = {}) {
     setHintRevealTileIndex(null);
   }, []);
 
+  const triggerInvalidGuessFeedback = useCallback(() => {
+    playSound("guess_invalid");
+    setInvalidGuessShakePulse((previous) => previous + 1);
+  }, [playSound]);
+
   const checkInput = useCallback(
     (input: string) => {
       const validation = validateGuessInput(input, answer, {
@@ -293,15 +299,18 @@ export default function useWordle(options: UseWordleOptions = {}) {
       if (!validation.ok) {
         if (validation.message === "Not enough letters") {
           showMessage(i18n.t("play.gameplay.messages.notEnoughLetters"));
+          triggerInvalidGuessFeedback();
           return;
         }
 
         if (validation.message === "Not in word list") {
           showMessage(i18n.t("play.gameplay.messages.notInWordList"));
+          triggerInvalidGuessFeedback();
           return;
         }
 
         showMessage(validation.message);
+        triggerInvalidGuessFeedback();
         return;
       }
 
@@ -317,6 +326,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       resetActiveHints,
       setGameStateWithPersistence,
       showMessage,
+      triggerInvalidGuessFeedback,
     ],
   );
 
@@ -561,6 +571,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     setShowResumeDialog(false);
     setMessage("");
     resetActiveHints();
+    setInvalidGuessShakePulse(0);
     triggerStartAnimation();
   }, [
     currentSessionId,
@@ -667,5 +678,6 @@ export default function useWordle(options: UseWordleOptions = {}) {
     selectActiveTile,
     hintRevealPulse,
     hintRevealTileIndex,
+    invalidGuessShakePulse,
   };
 }

@@ -52,10 +52,12 @@ describe("useHintController", () => {
       }),
     );
 
+    let hintUsed = false;
     act(() => {
-      result.current.useHint();
+      hintUsed = result.current.useHint();
     });
 
+    expect(hintUsed).toBe(true);
     expect(revealHint).toHaveBeenCalledWith("correct");
     expect(result.current.hintsRemaining).toBe(1);
     expect(
@@ -64,6 +66,30 @@ describe("useHintController", () => {
       gameId: "game-1",
       hintsUsed: 1,
     });
+  });
+
+  it("returns false when the hint cannot be used", () => {
+    const revealHint = vi.fn().mockReturnValue(true);
+    const { result } = renderHook(() =>
+      useHintController({
+        answer: "APPLE",
+        gameId: "game-1",
+        difficulty: "easy",
+        hasInProgressGameAtMount: false,
+        showResumeDialog: true,
+        gameOver: false,
+        currentLength: 0,
+        revealHint,
+      }),
+    );
+
+    let hintUsed = true;
+    act(() => {
+      hintUsed = result.current.useHint();
+    });
+
+    expect(hintUsed).toBe(false);
+    expect(revealHint).not.toHaveBeenCalled();
   });
 
   it("syncs hint state after a storage event from another tab", () => {

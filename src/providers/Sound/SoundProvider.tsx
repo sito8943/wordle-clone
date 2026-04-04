@@ -168,6 +168,40 @@ const SoundProvider = ({ children }: ProviderProps) => {
         return;
       }
 
+      if (event === "guess_invalid") {
+        playToneSequence(
+          [
+            { frequency: 220, durationMs: 52, gain: 0.03, waveform: "square" },
+            {
+              frequency: 170,
+              durationMs: 74,
+              gain: 0.03,
+              waveform: "square",
+              delayMs: 45,
+            },
+          ],
+          baseDelayMs,
+        );
+        return;
+      }
+
+      if (event === "hint_use") {
+        playToneSequence(
+          [
+            { frequency: 600, durationMs: 52, gain: 0.03, waveform: "triangle" },
+            {
+              frequency: 840,
+              durationMs: 58,
+              gain: 0.03,
+              waveform: "triangle",
+              delayMs: 65,
+            },
+          ],
+          baseDelayMs,
+        );
+        return;
+      }
+
       if (event === "tile_present") {
         playToneSequence(
           [{ frequency: 520, durationMs: 46, gain: 0.03, waveform: "square" }],

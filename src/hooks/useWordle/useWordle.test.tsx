@@ -348,4 +348,41 @@ describe("useWordle dictionary query integration", () => {
     expect(playSound).toHaveBeenCalledWith("letter_put");
     expect(playSound).toHaveBeenCalledWith("letter_delete");
   });
+
+  it("plays invalid submit sound and increases board shake pulse on invalid enter", async () => {
+    const playSound = vi.fn();
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+
+    const loadWords = vi.fn().mockResolvedValue(["APPLE", "CRANE"]);
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.dictionaryLoading).toBe(false);
+    });
+
+    act(() => {
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+    });
+    act(() => {
+      result.current.handleKey("ENTER");
+    });
+
+    expect(playSound).toHaveBeenCalledWith("guess_invalid");
+    expect(result.current.invalidGuessShakePulse).toBe(1);
+    expect(result.current.message).toBe(i18n.t("play.gameplay.messages.notInWordList"));
+  });
 });
