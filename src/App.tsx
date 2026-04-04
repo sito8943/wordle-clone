@@ -11,11 +11,12 @@ const AppUpdateBanner = (): JSX.Element | null => {
   const [updateReady, setUpdateReady] = useState(false);
 
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      typeof navigator === "undefined" ||
-      !("serviceWorker" in navigator)
-    ) {
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      return;
+    }
+
+    const serviceWorker = navigator.serviceWorker;
+    if (!serviceWorker || typeof serviceWorker.getRegistration !== "function") {
       return;
     }
 
@@ -45,10 +46,15 @@ const AppUpdateBanner = (): JSX.Element | null => {
         }
       };
 
-      worker.addEventListener("statechange", handleStateChange);
-      cleanupInstallingWorker = () => {
-        worker.removeEventListener("statechange", handleStateChange);
-      };
+      if (
+        typeof worker.addEventListener === "function" &&
+        typeof worker.removeEventListener === "function"
+      ) {
+        worker.addEventListener("statechange", handleStateChange);
+        cleanupInstallingWorker = () => {
+          worker.removeEventListener("statechange", handleStateChange);
+        };
+      }
     };
 
     const handleControllerChange = () => {
@@ -69,13 +75,23 @@ const AppUpdateBanner = (): JSX.Element | null => {
         watchInstallingWorker(registration.installing);
       };
 
-      registration.addEventListener("updatefound", handleUpdateFound);
-      updateIntervalId = window.setInterval(() => {
-        void registration.update();
-      }, UPDATE_CHECK_INTERVAL_MS);
+      if (
+        typeof registration.addEventListener === "function" &&
+        typeof registration.removeEventListener === "function"
+      ) {
+        registration.addEventListener("updatefound", handleUpdateFound);
+      }
+
+      if (typeof registration.update === "function") {
+        updateIntervalId = window.setInterval(() => {
+          void registration.update();
+        }, UPDATE_CHECK_INTERVAL_MS);
+      }
 
       return () => {
-        registration.removeEventListener("updatefound", handleUpdateFound);
+        if (typeof registration.removeEventListener === "function") {
+          registration.removeEventListener("updatefound", handleUpdateFound);
+        }
 
         if (cleanupInstallingWorker) {
           cleanupInstallingWorker();
@@ -90,12 +106,15 @@ const AppUpdateBanner = (): JSX.Element | null => {
 
     let cleanupRegistration: (() => void) | null = null;
 
-    navigator.serviceWorker.addEventListener(
-      "controllerchange",
-      handleControllerChange,
-    );
+    const canListenControllerChange =
+      typeof serviceWorker.addEventListener === "function" &&
+      typeof serviceWorker.removeEventListener === "function";
 
-    void navigator.serviceWorker.getRegistration().then((registration) => {
+    if (canListenControllerChange) {
+      serviceWorker.addEventListener("controllerchange", handleControllerChange);
+    }
+
+    void serviceWorker.getRegistration().then((registration) => {
       if (!mounted || !registration) {
         return;
       }
@@ -105,10 +124,12 @@ const AppUpdateBanner = (): JSX.Element | null => {
 
     return () => {
       mounted = false;
-      navigator.serviceWorker.removeEventListener(
-        "controllerchange",
-        handleControllerChange,
-      );
+      if (canListenControllerChange) {
+        serviceWorker.removeEventListener(
+          "controllerchange",
+          handleControllerChange,
+        );
+      }
 
       if (cleanupRegistration) {
         cleanupRegistration();
@@ -117,12 +138,18 @@ const AppUpdateBanner = (): JSX.Element | null => {
   }, []);
 
   const reloadWithUpdate = useCallback(async () => {
-    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    if (typeof navigator === "undefined") {
       window.location.reload();
       return;
     }
 
-    const registration = await navigator.serviceWorker.getRegistration();
+    const serviceWorker = navigator.serviceWorker;
+    if (!serviceWorker || typeof serviceWorker.getRegistration !== "function") {
+      window.location.reload();
+      return;
+    }
+
+    const registration = await serviceWorker.getRegistration();
 
     if (registration?.waiting) {
       registration.waiting.postMessage({ type: "SKIP_WAITING" });

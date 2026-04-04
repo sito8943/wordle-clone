@@ -353,6 +353,7 @@ describe("usePlayController", () => {
     });
 
     const { rerender } = renderHook(() => usePlayController());
+    playSound.mockClear();
 
     wordleState = {
       ...wordleState,
@@ -378,8 +379,46 @@ describe("usePlayController", () => {
     });
     expect(playSound).toHaveBeenCalledWith("tile_absent", {
       delayMs:
-        TILE_STATUS_SOUND_INITIAL_DELAY_MS + 2 * TILE_STATUS_SOUND_STEP_DELAY_MS,
+        TILE_STATUS_SOUND_INITIAL_DELAY_MS +
+        2 * TILE_STATUS_SOUND_STEP_DELAY_MS,
     });
+  });
+
+  it("plays round-start sound on mount and when a new board version is loaded", () => {
+    const playSound = vi.fn();
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+
+    const { rerender } = renderHook(() => usePlayController());
+
+    expect(playSound).toHaveBeenCalledWith("round_start");
+
+    wordleState = {
+      ...wordleState,
+      boardVersion: 2,
+    };
+    rerender();
+
+    expect(playSound).toHaveBeenCalledWith("round_start");
+    expect(
+      playSound.mock.calls.filter(([event]) => event === "round_start").length,
+    ).toBe(2);
+  });
+
+  it("does not play round-start sound while resume dialog is visible", () => {
+    const playSound = vi.fn();
+    mockUseSound.mockReturnValue({
+      playSound,
+    });
+    wordleState = {
+      ...wordleState,
+      showResumeDialog: true,
+    };
+
+    renderHook(() => usePlayController());
+
+    expect(playSound).not.toHaveBeenCalledWith("round_start");
   });
 
   it("plays win and loss sounds only when the game transitions to game over", () => {
@@ -399,7 +438,9 @@ describe("usePlayController", () => {
     rerender();
 
     expect(playSound).toHaveBeenCalledWith("round_win");
-    expect(playSound).toHaveBeenCalledTimes(1);
+    expect(
+      playSound.mock.calls.filter(([event]) => event === "round_win").length,
+    ).toBe(1);
 
     wordleState = {
       ...wordleState,
@@ -416,6 +457,9 @@ describe("usePlayController", () => {
     rerender();
 
     expect(playSound).toHaveBeenCalledWith("round_loss");
+    expect(
+      playSound.mock.calls.filter(([event]) => event === "round_loss").length,
+    ).toBe(1);
   });
 
   it("plays hint sound when a hint is consumed", () => {

@@ -12,7 +12,10 @@ const PlayContent = (): JSX.Element => {
     <>
       <DialogsSection />
       <main id="play" className="flex flex-1 flex-col">
-        <section id='board' className="flex flex-1 flex-col items-center justify-start gap-2 max-sm:gap-2 py-2">
+        <section
+          id="board"
+          className="flex flex-1 flex-col items-center justify-start gap-2 max-sm:gap-2 py-2"
+        >
           <Toolbar />
           <BoardSection />
         </section>

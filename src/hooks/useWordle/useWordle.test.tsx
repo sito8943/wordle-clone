@@ -383,6 +383,8 @@ describe("useWordle dictionary query integration", () => {
 
     expect(playSound).toHaveBeenCalledWith("guess_invalid");
     expect(result.current.invalidGuessShakePulse).toBe(1);
-    expect(result.current.message).toBe(i18n.t("play.gameplay.messages.notInWordList"));
+    expect(result.current.message).toBe(
+      i18n.t("play.gameplay.messages.notInWordList"),
+    );
   });
 });

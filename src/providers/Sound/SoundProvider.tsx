@@ -149,7 +149,14 @@ const SoundProvider = ({ children }: ProviderProps) => {
 
       if (event === "letter_put") {
         playToneSequence(
-          [{ frequency: 720, durationMs: 28, gain: 0.03, waveform: "triangle" }],
+          [
+            {
+              frequency: 720,
+              durationMs: 28,
+              gain: 0.03,
+              waveform: "triangle",
+            },
+          ],
           baseDelayMs,
         );
         return;
@@ -166,13 +173,47 @@ const SoundProvider = ({ children }: ProviderProps) => {
       if (event === "line_change") {
         playToneSequence(
           [
-            { frequency: 480, durationMs: 32, gain: 0.03, waveform: "triangle" },
+            {
+              frequency: 480,
+              durationMs: 32,
+              gain: 0.03,
+              waveform: "triangle",
+            },
             {
               frequency: 620,
               durationMs: 34,
               gain: 0.028,
               waveform: "triangle",
               delayMs: 42,
+            },
+          ],
+          baseDelayMs,
+        );
+        return;
+      }
+
+      if (event === "round_start") {
+        playToneSequence(
+          [
+            {
+              frequency: 440,
+              durationMs: 72,
+              gain: 0.028,
+              waveform: "triangle",
+            },
+            {
+              frequency: 554,
+              durationMs: 72,
+              gain: 0.028,
+              waveform: "triangle",
+              delayMs: 85,
+            },
+            {
+              frequency: 659,
+              durationMs: 90,
+              gain: 0.03,
+              waveform: "triangle",
+              delayMs: 170,
             },
           ],
           baseDelayMs,
@@ -200,7 +241,12 @@ const SoundProvider = ({ children }: ProviderProps) => {
       if (event === "hint_use") {
         playToneSequence(
           [
-            { frequency: 600, durationMs: 52, gain: 0.03, waveform: "triangle" },
+            {
+              frequency: 600,
+              durationMs: 52,
+              gain: 0.03,
+              waveform: "triangle",
+            },
             {
               frequency: 840,
               durationMs: 58,
@@ -241,7 +287,12 @@ const SoundProvider = ({ children }: ProviderProps) => {
       if (event === "round_win") {
         playToneSequence(
           [
-            { frequency: 523, durationMs: 90, gain: 0.028, waveform: "triangle" },
+            {
+              frequency: 523,
+              durationMs: 90,
+              gain: 0.028,
+              waveform: "triangle",
+            },
             {
               frequency: 659,
               durationMs: 90,
@@ -303,7 +354,9 @@ const SoundProvider = ({ children }: ProviderProps) => {
   );
 
   return (
-    <SoundContext.Provider value={contextValue}>{children}</SoundContext.Provider>
+    <SoundContext.Provider value={contextValue}>
+      {children}
+    </SoundContext.Provider>
   );
 };
 

@@ -107,6 +107,8 @@ export default function usePlayController() {
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
+  const didMountRoundStartSoundRef = useRef(false);
+  const previousBoardVersionForSoundRef = useRef(boardVersion);
   const didMountRoundResultSoundRef = useRef(false);
   const previousGameOverForSoundRef = useRef(gameOver);
   const previousGuessesLengthForSoundRef = useRef(guesses.length);
@@ -291,7 +293,7 @@ export default function usePlayController() {
     hintsRemaining,
     hintsEnabledForDifficulty: hintsEnabledByDifficulty,
     hintButtonDisabled,
-    useHint: useHintControllerAction,
+    useHint: consumeHintControllerAction,
     resetHints,
   } = useHintController({
     answer,
@@ -309,11 +311,31 @@ export default function usePlayController() {
       return;
     }
 
-    const hintUsed = useHintControllerAction();
+    const hintUsed = consumeHintControllerAction();
     if (hintUsed) {
       playSound("hint_use");
     }
-  }, [hintsEnabled, playSound, useHintControllerAction]);
+  }, [consumeHintControllerAction, hintsEnabled, playSound]);
+
+  useEffect(() => {
+    if (!didMountRoundStartSoundRef.current) {
+      didMountRoundStartSoundRef.current = true;
+      previousBoardVersionForSoundRef.current = boardVersion;
+
+      if (!showResumeDialog) {
+        playSound("round_start");
+      }
+      return;
+    }
+
+    const boardVersionChanged =
+      boardVersion !== previousBoardVersionForSoundRef.current;
+    previousBoardVersionForSoundRef.current = boardVersion;
+
+    if (!showResumeDialog && boardVersionChanged) {
+      playSound("round_start");
+    }
+  }, [boardVersion, playSound, showResumeDialog]);
 
   useEffect(() => {
     const previousGuessesLength = previousGuessesLengthForSoundRef.current;
