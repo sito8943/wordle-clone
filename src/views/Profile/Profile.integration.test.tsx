@@ -2,17 +2,19 @@ import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ScoreClient } from "@api/score";
 import { env } from "@config";
-import { ApiProvider, PlayerProvider } from "@providers";
+import { ApiProvider, FeatureFlagsProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "../../test/utils";
 import Profile from "./Profile";
 
 const renderProfile = () =>
   renderWithQueryClient(
-    <ApiProvider>
-      <PlayerProvider>
-        <Profile />
-      </PlayerProvider>
-    </ApiProvider>,
+    <FeatureFlagsProvider>
+      <ApiProvider>
+        <PlayerProvider>
+          <Profile />
+        </PlayerProvider>
+      </ApiProvider>
+    </FeatureFlagsProvider>,
   );
 
 describe("Profile integration", () => {

@@ -8,6 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@i18n";
 import { Alert } from "@components";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import {
   HOME_DONATED_HASH,
   HOME_ENTRY_ANIMATION_SESSION_KEY,
@@ -42,6 +43,7 @@ const markEntryAnimationAsSeenInSession = (): void => {
 const Home = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { paypalDonationButtonEnabled } = useFeatureFlags();
   const [shouldAnimateEntry] = useState(
     () => !hasSeenEntryAnimationInSession(),
   );
@@ -105,17 +107,19 @@ const Home = () => {
               </Link>
             </li>
           ))}
-          <li>
-            <a
-              href={env.paypalDonationButtonUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-300 bg-white/80 px-5 py-4 text-lg font-semibold text-neutral-800 transition-colors hover:border-primary hover:text-primary dark:border-neutral-700 dark:bg-neutral-800/60 dark:text-neutral-100 dark:hover:border-primary dark:hover:text-primary"
-            >
-              <FontAwesomeIcon icon={faPaypal} aria-hidden="true" />
-              <span>{t("home.donate")}</span>
-            </a>
-          </li>
+          {paypalDonationButtonEnabled ? (
+            <li>
+              <a
+                href={env.paypalDonationButtonUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-300 bg-white/80 px-5 py-4 text-lg font-semibold text-neutral-800 transition-colors hover:border-primary hover:text-primary dark:border-neutral-700 dark:bg-neutral-800/60 dark:text-neutral-100 dark:hover:border-primary dark:hover:text-primary"
+              >
+                <FontAwesomeIcon icon={faPaypal} aria-hidden="true" />
+                <span>{t("home.donate")}</span>
+              </a>
+            </li>
+          ) : null}
         </ul>
       </nav>
     </main>

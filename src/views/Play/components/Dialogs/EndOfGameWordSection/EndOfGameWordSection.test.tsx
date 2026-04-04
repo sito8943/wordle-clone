@@ -4,9 +4,11 @@ import { env } from "@config/env";
 import EndOfGameWordSection from "./EndOfGameWordSection";
 
 const defaultWordReportPhoneNumber = env.wordReportPhoneNumber;
+const defaultWordReportButtonEnabled = env.wordReportButtonEnabled;
 
 afterEach(() => {
   env.wordReportPhoneNumber = defaultWordReportPhoneNumber;
+  env.wordReportButtonEnabled = defaultWordReportButtonEnabled;
   cleanup();
 });
 
@@ -44,5 +46,18 @@ describe("EndOfGameWordSection", () => {
 
     expect(reportLink.getAttribute("href")).toBeNull();
     expect(reportLink.getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("hides the invalid word report button when feature flag is disabled", () => {
+    env.wordReportButtonEnabled = false;
+
+    render(
+      <EndOfGameWordSection
+        answer="APPLE"
+        sectionClassName="rounded-2xl bg-rose-50"
+      />,
+    );
+
+    expect(screen.queryByTitle("I think this word is not valid")).toBeNull();
   });
 });

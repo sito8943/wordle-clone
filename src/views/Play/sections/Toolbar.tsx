@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak, Alert } from "@components";
 import { useTranslation } from "@i18n";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import { usePlayView } from "@views/Play/providers";
 import type { NativeKeyboardClockStyle, ToolbarTimerProps } from "./types";
 
@@ -62,6 +63,7 @@ const HardModeTimerIndicator = memo(
 
 const Toolbar = (): JSX.Element => {
   const { t } = useTranslation();
+  const { hintsEnabled, helpButtonEnabled } = useFeatureFlags();
   const { controller, wordListButtonEnabled, developerConsoleEnabled } =
     usePlayView();
   const {
@@ -107,7 +109,7 @@ const Toolbar = (): JSX.Element => {
               {t("play.toolbar.wordListButton")}
             </Button>
           )}
-          {hintsEnabledForDifficulty && (
+          {hintsEnabled && hintsEnabledForDifficulty && (
             <Button
               onClick={useHint}
               aria-label={t("play.toolbar.hintAriaLabel")}
@@ -122,17 +124,19 @@ const Toolbar = (): JSX.Element => {
               {t("play.toolbar.hintButton", { count: hintsRemaining })}
             </Button>
           )}
-          <Button
-            onClick={openHelpDialog}
-            aria-label={t("play.toolbar.helpAriaLabel")}
-            variant="ghost"
-            icon={faCircleQuestion}
-            iconClassName="text-lg"
-            className="mobile-compact-button"
-            hideLabelOnMobile
-          >
-            {t("play.toolbar.helpButton")}
-          </Button>
+          {helpButtonEnabled && (
+            <Button
+              onClick={openHelpDialog}
+              aria-label={t("play.toolbar.helpAriaLabel")}
+              variant="ghost"
+              icon={faCircleQuestion}
+              iconClassName="text-lg"
+              className="mobile-compact-button"
+              hideLabelOnMobile
+            >
+              {t("play.toolbar.helpButton")}
+            </Button>
+          )}
           {canReopenEndOfGameDialog ? (
             <Button
               onClick={reopenEndOfGameDialog}

@@ -11,6 +11,7 @@ import {
   type Player,
 } from "@domain/wordle";
 import { useApi, usePlayer } from "@providers";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useHardModeTimer } from "./useHardModeTimer";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { useWordle } from "@hooks";
@@ -54,6 +55,7 @@ const getGuessWords = (guesses: unknown[]): string[] =>
 export default function usePlayController() {
   const { scoreClient, wordDictionaryClient } = useApi();
   const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
+  const { hintsEnabled } = useFeatureFlags();
   const wordle = useWordle({
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
@@ -258,9 +260,9 @@ export default function usePlayController() {
 
   const {
     hintsRemaining,
-    hintsEnabledForDifficulty,
+    hintsEnabledForDifficulty: hintsEnabledByDifficulty,
     hintButtonDisabled,
-    useHint,
+    useHint: useHintControllerAction,
     resetHints,
   } = useHintController({
     answer,
@@ -272,6 +274,14 @@ export default function usePlayController() {
     currentLength: current.length,
     revealHint,
   });
+  const hintsEnabledForDifficulty = hintsEnabled && hintsEnabledByDifficulty;
+  const useHint = useCallback(() => {
+    if (!hintsEnabled) {
+      return;
+    }
+
+    useHintControllerAction();
+  }, [hintsEnabled, useHintControllerAction]);
 
   useEffect(() => {
     const previousGuessesLength = previousGuessesLengthRef.current;

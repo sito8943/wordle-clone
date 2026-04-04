@@ -8,6 +8,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaypal, faGithub } from "@fortawesome/free-brands-svg-icons";
 import { env } from "@config/env";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 
 type FooterProps = {
   alwaysVisible?: boolean;
@@ -15,6 +16,7 @@ type FooterProps = {
 
 const Footer = ({ alwaysVisible = false }: FooterProps) => {
   const { t } = useTranslation();
+  const { paypalDonationButtonEnabled } = useFeatureFlags();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -68,14 +70,16 @@ const Footer = ({ alwaysVisible = false }: FooterProps) => {
           >
             <FontAwesomeIcon icon={faGithub} />
           </a>
-          <a
-            href={env.paypalDonationButtonUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full flex items-center bg-paypal px-1.5 p-1 text-white transition-colors hover:bg-paypal/55"
-          >
-            <FontAwesomeIcon icon={faPaypal} />
-          </a>
+          {paypalDonationButtonEnabled ? (
+            <a
+              href={env.paypalDonationButtonUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full flex items-center bg-paypal px-1.5 p-1 text-white transition-colors hover:bg-paypal/55"
+            >
+              <FontAwesomeIcon icon={faPaypal} />
+            </a>
+          ) : null}
         </div>
       </div>
     </footer>

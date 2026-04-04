@@ -1,6 +1,7 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { env } from "@config";
 import Home from "./Home";
 import { HOME_ENTRY_ANIMATION_SESSION_KEY } from "./constants";
 
@@ -23,6 +24,7 @@ vi.mock("@i18n", () => ({
 }));
 
 afterEach(() => {
+  env.paypalDonationButtonEnabled = true;
   cleanup();
   sessionStorage.clear();
   vi.restoreAllMocks();
@@ -77,5 +79,13 @@ describe("Home entry animation", () => {
     expect(heading.className).toContain("scale-100");
     expect(nav.className).toContain("opacity-100");
     expect(nav.className).toContain("scale-100");
+  });
+
+  it("hides the donate button when paypal feature flag is disabled", () => {
+    env.paypalDonationButtonEnabled = false;
+
+    renderHome();
+
+    expect(screen.queryByRole("link", { name: "Donate" })).toBeNull();
   });
 });

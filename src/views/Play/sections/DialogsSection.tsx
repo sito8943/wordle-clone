@@ -2,6 +2,7 @@ import { lazy, memo, Suspense, type JSX } from "react";
 import { useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import { usePlayView } from "@views/Play/providers";
 
 const SessionResumeDialog = lazy(
@@ -29,6 +30,7 @@ const DefeatDialog = lazy(
 
 const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
+  const { shareButtonEnabled, helpButtonEnabled } = useFeatureFlags();
   const { controller, player, wordListButtonEnabled, developerConsoleEnabled } =
     usePlayView();
   const {
@@ -77,7 +79,10 @@ const DialogsSection = (): JSX.Element => {
     wordListButtonEnabled &&
     showWordsDialog;
   const helpDialogVisible =
-    !showResumeDialog && !endOfGameDialogVisible && showHelpDialog;
+    helpButtonEnabled &&
+    !showResumeDialog &&
+    !endOfGameDialogVisible &&
+    showHelpDialog;
   const developerConsoleDialogVisible =
     !showResumeDialog && !endOfGameDialogVisible && showDeveloperConsoleDialog;
 
@@ -152,7 +157,7 @@ const DialogsSection = (): JSX.Element => {
                 currentStreak={endOfGameCurrentStreak}
                 scoreSummary={victoryScoreSummary}
                 showSettingsHint={showEndOfGameSettingsHint}
-                shareEnabled={victoryBoardShareSupported}
+                shareEnabled={shareButtonEnabled && victoryBoardShareSupported}
                 isSharing={isSharingVictoryBoard}
                 shareErrorMessage={victoryBoardShareError}
                 onClose={closeEndOfGameDialog}

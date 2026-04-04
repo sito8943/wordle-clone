@@ -1,8 +1,4 @@
-export type RuntimeEnv = {
-  mode: string;
-  baseUrl: string;
-  convexUrl?: string;
-  wordReportPhoneNumber?: string;
+export type FeatureFlags = {
   wordListButtonEnabled: boolean;
   wordReportButtonEnabled: boolean;
   paypalDonationButtonEnabled: boolean;
@@ -10,7 +6,6 @@ export type RuntimeEnv = {
   devConsoleEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
-  scoreLimit: number;
-  wordleGameStorageKey: string;
-  paypalDonationButtonUrl?: string;
 };
+
+export type FeatureFlagsContextType = FeatureFlags;

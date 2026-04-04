@@ -2,6 +2,7 @@ import { useTranslation } from "@i18n";
 import { faInfoCircle, faThumbsDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { env } from "@config/env";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import type { EndOfGameWordSectionProps } from "./types";
 
 const EndOfGameWordSection = ({
@@ -9,6 +10,7 @@ const EndOfGameWordSection = ({
   sectionClassName,
 }: EndOfGameWordSectionProps) => {
   const { t } = useTranslation();
+  const { wordReportButtonEnabled } = useFeatureFlags();
   const reportText = t("play.endOfGame.invalidWordReport");
   const reportPhone = env.wordReportPhoneNumber?.replace(/\D/g, "");
   const reportHref = reportPhone
@@ -32,16 +34,18 @@ const EndOfGameWordSection = ({
         >
           <FontAwesomeIcon icon={faInfoCircle} aria-hidden="true" />
         </a>
-        <a
-          href={reportHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`text-primary text-xl ${!reportHref ? "pointer-events-none opacity-40" : ""}`}
-          aria-disabled={!reportHref}
-          title={reportText}
-        >
-          <FontAwesomeIcon icon={faThumbsDown} aria-hidden="true" />
-        </a>
+        {wordReportButtonEnabled ? (
+          <a
+            href={reportHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`text-primary text-xl ${!reportHref ? "pointer-events-none opacity-40" : ""}`}
+            aria-disabled={!reportHref}
+            title={reportText}
+          >
+            <FontAwesomeIcon icon={faThumbsDown} aria-hidden="true" />
+          </a>
+        ) : null}
       </div>
     </section>
   );

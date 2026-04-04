@@ -18,7 +18,7 @@ import {
   WORDLE_START_ANIMATION_SESSION_KEY,
 } from "@domain/wordle";
 import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
-import { ApiProvider, PlayerProvider } from "@providers";
+import { ApiProvider, FeatureFlagsProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Play/hooks/useHintController";
 import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Play/hooks/usePlayController/constants";
@@ -35,11 +35,13 @@ vi.mock("./utils/words", async () => {
 
 const renderApp = () =>
   renderWithQueryClient(
-    <ApiProvider>
-      <PlayerProvider>
-        <App />
-      </PlayerProvider>
-    </ApiProvider>,
+    <FeatureFlagsProvider>
+      <ApiProvider>
+        <PlayerProvider>
+          <App />
+        </PlayerProvider>
+      </ApiProvider>
+    </FeatureFlagsProvider>,
   );
 
 const waitForPlayReady = async () => {
