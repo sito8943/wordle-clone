@@ -30,6 +30,7 @@ const buildMockProfileView = (
       keyboardPreference: "onscreen",
       showEndOfGameDialogs: true,
       manualTileSelection: false,
+      hackingBan: null,
     },
     difficulty: "normal",
     pendingDifficulty: "hard",

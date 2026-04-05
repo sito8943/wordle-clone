@@ -1,6 +1,8 @@
 import type {
   Player,
   PlayerDifficulty,
+  PlayerHackingBan,
+  PlayerHackingBanReason,
   PlayerKeyboardPreference,
   PlayerLanguage,
 } from "@domain/wordle";
@@ -33,6 +35,67 @@ const normalizeCounter = (value: unknown): number => {
   }
 
   return Math.max(0, Math.floor(value));
+};
+
+const normalizeTimestamp = (value: unknown): number | null => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return Math.floor(value);
+};
+
+const isPlayerHackingBanReason = (
+  value: unknown,
+): value is PlayerHackingBanReason => value === "score-submission-too-fast";
+
+const normalizePlayerHackingBan = (value: unknown): PlayerHackingBan | null => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const maybeBan = value as Partial<PlayerHackingBan>;
+  const bannedAt = normalizeTimestamp(maybeBan.bannedAt);
+
+  if (
+    !isPlayerHackingBanReason(maybeBan.reason) ||
+    bannedAt === null ||
+    typeof maybeBan.thresholdMs !== "number" ||
+    !Number.isFinite(maybeBan.thresholdMs) ||
+    maybeBan.thresholdMs <= 0 ||
+    typeof maybeBan.detectedRoundDurationMs !== "number" ||
+    !Number.isFinite(maybeBan.detectedRoundDurationMs) ||
+    maybeBan.detectedRoundDurationMs < 0
+  ) {
+    return null;
+  }
+
+  return {
+    reason: maybeBan.reason,
+    bannedAt,
+    thresholdMs: Math.floor(maybeBan.thresholdMs),
+    detectedRoundDurationMs: Math.floor(maybeBan.detectedRoundDurationMs),
+  };
+};
+
+const areHackingBansEqual = (
+  left: PlayerHackingBan | null,
+  right: PlayerHackingBan | null,
+): boolean => {
+  if (left === right) {
+    return true;
+  }
+
+  if (!left || !right) {
+    return false;
+  }
+
+  return (
+    left.reason === right.reason &&
+    left.bannedAt === right.bannedAt &&
+    left.thresholdMs === right.thresholdMs &&
+    left.detectedRoundDurationMs === right.detectedRoundDurationMs
+  );
 };
 
 const isPlayerDifficulty = (value: unknown): value is PlayerDifficulty =>
@@ -138,6 +201,7 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     manualTileSelection: normalizeManualTileSelection(
       value.manualTileSelection,
     ),
+    hackingBan: normalizePlayerHackingBan(value.hackingBan),
   };
 };
 
@@ -163,7 +227,9 @@ export const arePlayersEqual = (
     normalizedLeft.keyboardPreference === normalizedRight.keyboardPreference &&
     normalizedLeft.showEndOfGameDialogs ===
       normalizedRight.showEndOfGameDialogs &&
-    normalizedLeft.manualTileSelection === normalizedRight.manualTileSelection
+    normalizedLeft.manualTileSelection ===
+      normalizedRight.manualTileSelection &&
+    areHackingBansEqual(normalizedLeft.hackingBan, normalizedRight.hackingBan)
   );
 };
 
@@ -181,6 +247,7 @@ export const isStoredPlayerNormalized = (
     value?.difficulty === normalized.difficulty &&
     value?.keyboardPreference === normalized.keyboardPreference &&
     value?.showEndOfGameDialogs === normalized.showEndOfGameDialogs &&
-    value?.manualTileSelection === normalized.manualTileSelection
+    value?.manualTileSelection === normalized.manualTileSelection &&
+    areHackingBansEqual(value?.hackingBan ?? null, normalized.hackingBan)
   );
 };

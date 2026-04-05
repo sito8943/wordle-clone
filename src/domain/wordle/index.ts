@@ -3,6 +3,7 @@ export * from "./combo";
 export * from "./constants";
 export * from "./keyboard";
 export * from "./scoring";
+export * from "./security";
 export * from "./session";
 export * from "./state";
 export * from "./storage";

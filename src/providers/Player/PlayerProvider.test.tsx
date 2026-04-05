@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { queryKeys } from "@hooks";
+import { MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS } from "@domain/wordle";
 import { ApiContext } from "@providers/Api/ApiContext";
 import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
@@ -99,6 +100,7 @@ describe("PlayerProvider", () => {
     expect(result.current.player.difficulty).toBe(DEFAULT_PLAYER.difficulty);
     expect(result.current.player.showEndOfGameDialogs).toBe(true);
     expect(result.current.player.manualTileSelection).toBe(false);
+    expect(result.current.player.hackingBan).toBeNull();
   });
 
   it("uses the device language on first initialization", () => {
@@ -221,6 +223,34 @@ describe("PlayerProvider", () => {
     });
 
     expect(result.current.player.score).toBe(0);
+    expect(queueRoundEvent).not.toHaveBeenCalled();
+  });
+
+  it("commitVictory bans the player when score submission is too fast", async () => {
+    const queueRoundEvent = vi.fn();
+    const wonAt = 10_000;
+    const detectedRoundDurationMs =
+      MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS - 500;
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ queueRoundEvent }),
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(
+        25,
+        wonAt,
+        wonAt - detectedRoundDurationMs,
+      );
+    });
+
+    expect(result.current.player.score).toBe(0);
+    expect(result.current.player.streak).toBe(0);
+    expect(result.current.player.hackingBan).toEqual({
+      reason: "score-submission-too-fast",
+      bannedAt: wonAt,
+      thresholdMs: MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+      detectedRoundDurationMs,
+    });
     expect(queueRoundEvent).not.toHaveBeenCalled();
   });
 

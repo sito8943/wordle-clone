@@ -374,6 +374,7 @@ describe("normalizePersistedGameState", () => {
       sessionId: "stored-session",
       gameId: reference.gameId,
       seed: reference.seed,
+      startedAt: 1_700_000_000_000,
       answer: "STONE",
       guesses: [
         {

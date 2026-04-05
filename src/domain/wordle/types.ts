@@ -16,6 +16,7 @@ export type PersistedGameRef = {
   sessionId: string;
   gameId: string;
   seed: number;
+  startedAt: number;
   guesses: GuessResult[];
   current: string;
   gameOver: boolean;

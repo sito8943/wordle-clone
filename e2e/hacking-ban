@@ -1,0 +1,86 @@
+import { expect, test } from "@playwright/test";
+
+const MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS = 4_000;
+
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+
+    const sessionId = "e2e-session-id";
+    sessionStorage.setItem("wordle:session-id", sessionId);
+
+    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "E2E Player",
+        code: "",
+        score: 0,
+        streak: 0,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+        manualTileSelection: false,
+        hackingBan: null,
+      }),
+    );
+
+    localStorage.setItem(
+      "wordle:game",
+      JSON.stringify({
+        sessionId,
+        gameId: "e2e-game-id",
+        seed: 1,
+        startedAt: Date.now(),
+        guesses: [],
+        current: "APPL",
+        gameOver: false,
+      }),
+    );
+  });
+});
+
+test("bans the player when a winning score is committed too fast", async ({
+  page,
+}) => {
+  await page.goto("/play");
+  await page.locator("#play").waitFor();
+  await page.locator("#play").click();
+
+  await page.keyboard.type("E");
+  await page.keyboard.press("Enter");
+
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const rawPlayer = localStorage.getItem("player");
+        if (!rawPlayer) {
+          return null;
+        }
+
+        const parsed = JSON.parse(rawPlayer) as {
+          hackingBan?: { reason?: string } | null;
+        };
+        return parsed.hackingBan?.reason ?? null;
+      }),
+    )
+    .toBe("score-submission-too-fast");
+
+  const player = await page.evaluate(() => {
+    const rawPlayer = localStorage.getItem("player");
+    return rawPlayer ? JSON.parse(rawPlayer) : null;
+  });
+
+  expect(player).not.toBeNull();
+  expect(player?.score).toBe(0);
+  expect(player?.streak).toBe(0);
+  expect(player?.hackingBan?.thresholdMs).toBe(
+    MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  );
+  expect(player?.hackingBan?.detectedRoundDurationMs).toBeGreaterThanOrEqual(0);
+  expect(player?.hackingBan?.detectedRoundDurationMs).toBeLessThan(
+    MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  );
+});

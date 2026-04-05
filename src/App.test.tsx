@@ -100,6 +100,7 @@ const preloadAppRoutes = async () => {
 describe("App", () => {
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
     cleanup();
   });
 
@@ -116,6 +117,12 @@ describe("App", () => {
     mockSystemTheme("light");
     window.history.pushState({}, "", "/play");
     window.dispatchEvent(new PopStateEvent("popstate"));
+    let mockedNow = 10_000;
+    vi.spyOn(Date, "now").mockImplementation(() => {
+      const current = mockedNow;
+      mockedNow += 5_000;
+      return current;
+    });
     vi.spyOn(ScoreClient.prototype, "upsertPlayerProfile").mockImplementation(
       async (input) => ({
         id: "remote-player",
@@ -2041,9 +2048,7 @@ describe("App", () => {
     ).toBeTruthy();
 
     await waitFor(() => {
-      expect(
-        document.querySelector(".scoreboard-current-player-row"),
-      ).toBeTruthy();
+      expect(document.querySelector(".scoreboard-current-player-row")).toBeTruthy();
     });
   });
 

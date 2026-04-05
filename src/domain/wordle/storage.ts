@@ -6,6 +6,7 @@ const toPersistedGameRef = (state: PersistedGameState): PersistedGameRef => ({
   sessionId: state.sessionId,
   gameId: state.gameId,
   seed: state.seed,
+  startedAt: state.startedAt,
   guesses: state.guesses,
   current: state.current,
   gameOver: state.gameOver,

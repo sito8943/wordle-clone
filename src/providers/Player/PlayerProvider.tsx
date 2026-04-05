@@ -13,13 +13,24 @@ import {
   normalizePlayerName,
   resolveInitialPlayer,
 } from "./utils";
-import type {
-  Player,
-  PlayerDifficulty,
-  PlayerKeyboardPreference,
-  PlayerLanguage,
-  RoundSyncEvent,
+import {
+  MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  getRoundDurationMs,
+  isScoreCommitDurationSuspicious,
+  type Player,
+  type PlayerDifficulty,
+  type PlayerKeyboardPreference,
+  type PlayerLanguage,
+  type RoundSyncEvent,
 } from "@domain/wordle";
+
+const toSafeTimestamp = (value: number | undefined): number | null => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return Math.floor(value);
+};
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
@@ -75,6 +86,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           keyboardPreference,
           showEndOfGameDialogs: normalizedPrevious.showEndOfGameDialogs,
           manualTileSelection: normalizedPrevious.manualTileSelection,
+          hackingBan: normalizedPrevious.hackingBan,
         };
 
         previousPreferencesRef.current = {
@@ -114,6 +126,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const syncQueuedRoundEvents = useCallback(
     async (currentPlayer: Player) => {
+      if (currentPlayer.hackingBan !== null) {
+        return null;
+      }
+
       const syncedProfile = await scoreClient.syncRoundEvents({
         nick: currentPlayer.name,
         language: currentPlayer.language,
@@ -196,7 +212,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 
   const commitVictory = useCallback(
-    async (points: number, wonAt = Date.now()) => {
+    async (points: number, wonAt = Date.now(), roundStartedAt?: number) => {
       const safePoints =
         Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
 
@@ -204,7 +220,40 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         return;
       }
 
+      const now = Date.now();
+      const safeWonAt = toSafeTimestamp(wonAt) ?? now;
+      const safeRoundStartedAt = toSafeTimestamp(roundStartedAt);
       const current = normalizePlayer(storedPlayer);
+
+      if (current.hackingBan !== null) {
+        return;
+      }
+
+      if (safeRoundStartedAt !== null) {
+        const roundDurationMs = getRoundDurationMs(
+          safeRoundStartedAt,
+          safeWonAt,
+        );
+
+        if (
+          roundDurationMs !== null &&
+          isScoreCommitDurationSuspicious(roundDurationMs)
+        ) {
+          setStoredPlayer(
+            normalizePlayer({
+              ...current,
+              hackingBan: {
+                reason: "score-submission-too-fast",
+                bannedAt: safeWonAt,
+                thresholdMs: MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+                detectedRoundDurationMs: roundDurationMs,
+              },
+            }),
+          );
+          return;
+        }
+      }
+
       const nextPlayer = normalizePlayer({
         ...current,
         score: current.score + safePoints,
@@ -217,7 +266,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         language: nextPlayer.language,
         score: nextPlayer.score,
         streak: nextPlayer.streak,
-        createdAt: wonAt,
+        createdAt: safeWonAt,
         overwriteExisting: true,
       });
 
@@ -225,10 +274,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         id:
           typeof crypto !== "undefined" && "randomUUID" in crypto
             ? crypto.randomUUID()
-            : `${wonAt}-${Math.random().toString(36).slice(2)}`,
+            : `${safeWonAt}-${Math.random().toString(36).slice(2)}`,
         kind: "win",
         pointsDelta: safePoints,
-        happenedAt: wonAt,
+        happenedAt: safeWonAt,
         version: 2,
       };
 
@@ -245,6 +294,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const commitLoss = useCallback(async () => {
     const current = normalizePlayer(storedPlayer);
+
+    if (current.hackingBan !== null) {
+      return;
+    }
 
     if (current.streak === 0) {
       return;

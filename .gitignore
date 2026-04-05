@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 convex/_generated/
+playwright-report/
+test-results/
 
 # Editor directories and files
 .vscode/*

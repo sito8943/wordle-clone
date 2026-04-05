@@ -66,6 +66,7 @@ describe("usePlayController", () => {
     wordleState = {
       sessionId: "session-1",
       gameId: "game-1",
+      roundStartedAt: 1_000,
       answer: "APPLE",
       won: false,
       guesses: [],
@@ -177,7 +178,11 @@ describe("usePlayController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledTimes(1);
-    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(3, 2, 2));
+    expect(commitVictory).toHaveBeenCalledWith(
+      getTotalPointsForWin(3, 2, 2),
+      undefined,
+      1_000,
+    );
   });
 
   it("allows unknown words in normal difficulty", () => {
@@ -251,7 +256,11 @@ describe("usePlayController", () => {
 
     rerender();
 
-    expect(commitVictory).toHaveBeenCalledWith(getTotalPointsForWin(4, 3.2, 2));
+    expect(commitVictory).toHaveBeenCalledWith(
+      getTotalPointsForWin(4, 3.2, 2),
+      undefined,
+      1_000,
+    );
   });
 
   it("adds dictionary-row bonus into the difficulty multiplier on normal wins", () => {
@@ -339,6 +348,8 @@ describe("usePlayController", () => {
 
     expect(commitVictory).toHaveBeenCalledWith(
       getTotalPointsForWin(3, 9, 2, 5),
+      undefined,
+      1_000,
     );
     expect(result.current.victoryScoreSummary?.total).toBe(
       getTotalPointsForWin(3, 9, 2, 5),

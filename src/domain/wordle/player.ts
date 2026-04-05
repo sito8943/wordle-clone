@@ -1,3 +1,12 @@
+export type PlayerHackingBanReason = "score-submission-too-fast";
+
+export type PlayerHackingBan = {
+  reason: PlayerHackingBanReason;
+  bannedAt: number;
+  thresholdMs: number;
+  detectedRoundDurationMs: number;
+};
+
 export type Player = {
   name: string;
   code: string;
@@ -8,6 +17,7 @@ export type Player = {
   keyboardPreference: PlayerKeyboardPreference;
   showEndOfGameDialogs: boolean;
   manualTileSelection: boolean;
+  hackingBan: PlayerHackingBan | null;
 };
 
 export type PlayerDifficulty = "easy" | "normal" | "hard" | "insane";

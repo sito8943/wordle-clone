@@ -20,4 +20,5 @@ export const DEFAULT_PLAYER: Player = {
   keyboardPreference: DEFAULT_PLAYER_KEYBOARD_PREFERENCE,
   showEndOfGameDialogs: true,
   manualTileSelection: false,
+  hackingBan: null,
 };

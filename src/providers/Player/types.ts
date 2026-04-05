@@ -18,6 +18,10 @@ export type PlayerContextType = {
   updatePlayerLanguage: (language: PlayerLanguage) => void;
   updatePlayerShowEndOfGameDialogs: (showDialogs: boolean) => void;
   updatePlayerManualTileSelection: (enabled: boolean) => void;
-  commitVictory: (points: number, wonAt?: number) => Promise<void>;
+  commitVictory: (
+    points: number,
+    wonAt?: number,
+    roundStartedAt?: number,
+  ) => Promise<void>;
   commitLoss: () => Promise<void>;
 };

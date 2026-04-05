@@ -89,6 +89,7 @@ export default function usePlayController() {
   const {
     sessionId,
     gameId,
+    roundStartedAt,
     answer,
     won,
     guesses,
@@ -263,7 +264,7 @@ export default function usePlayController() {
         },
       });
 
-      void commitVictory(totalPoints);
+      void commitVictory(totalPoints, undefined, roundStartedAt);
     } else {
       setEndOfGameSnapshot({
         answer,
@@ -286,6 +287,7 @@ export default function usePlayController() {
     hardModeSecondsLeft,
     player.difficulty,
     player.streak,
+    roundStartedAt,
     won,
   ]);
 

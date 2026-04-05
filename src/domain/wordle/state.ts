@@ -25,16 +25,26 @@ export const createInitialGameState = (
   answer: string,
 ): PersistedGameState => {
   const reference = createGameReferenceForAnswer(answer);
+  const now = Date.now();
 
   return {
     sessionId,
     gameId: reference.gameId,
     seed: reference.seed,
+    startedAt: now,
     answer,
     guesses: [],
     current: "",
     gameOver: false,
   };
+};
+
+const normalizeRoundStartedAt = (value: unknown): number => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return Date.now();
+  }
+
+  return Math.floor(value);
 };
 
 const isGuessResult = (value: unknown): value is GuessResult => {
@@ -85,6 +95,7 @@ export const normalizePersistedGameState = (
           typeof maybe.sessionId === "string" ? maybe.sessionId : sessionId,
         gameId: maybe.gameId,
         seed: normalizeSeed(maybe.seed),
+        startedAt: normalizeRoundStartedAt(maybe.startedAt),
         answer: answer ?? initialAnswer,
         guesses: maybe.guesses,
         current: maybe.current,
@@ -113,6 +124,7 @@ export const normalizePersistedGameState = (
           typeof maybe.sessionId === "string" ? maybe.sessionId : sessionId,
         gameId: reference.gameId,
         seed: reference.seed,
+        startedAt: normalizeRoundStartedAt(maybe.startedAt),
         answer: maybe.answer,
         guesses: maybe.guesses,
         current: maybe.current,

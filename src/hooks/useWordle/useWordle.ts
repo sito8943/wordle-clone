@@ -150,7 +150,8 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const latestGameStateRef = useRef(initialGameState);
   const previousLanguageRef = useRef(language);
 
-  const { sessionId, gameId, answer, guesses, current, gameOver } = gameState;
+  const { sessionId, gameId, answer, startedAt, guesses, current, gameOver } =
+    gameState;
   const maxSelectableTileIndex = WORD_LENGTH - 1;
   const selectedTileIndex = manualTileSelection
     ? Math.min(Math.max(activeTileIndex, 0), maxSelectableTileIndex)
@@ -653,6 +654,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   return {
     sessionId,
     gameId,
+    roundStartedAt: startedAt,
     answer,
     guesses,
     current,
