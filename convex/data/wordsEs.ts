@@ -384,10 +384,6 @@ export const ES_WORDS = [
   "alpes",
   "altar",
   "altas",
-  "altea",
-  "altee",
-  "alteo",
-  "altor",
   "altos",
   "aluas",
   "aluce",
@@ -1115,4 +1111,7 @@ export const ES_WORDS = [
   "oxido",
   "viejo",
   "vieja",
+  "leida",
+  "calle",
+  "aleta",
 ];
