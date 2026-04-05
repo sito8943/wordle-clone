@@ -2048,7 +2048,9 @@ describe("App", () => {
     ).toBeTruthy();
 
     await waitFor(() => {
-      expect(document.querySelector(".scoreboard-current-player-row")).toBeTruthy();
+      expect(
+        document.querySelector(".scoreboard-current-player-row"),
+      ).toBeTruthy();
     });
   });
 
