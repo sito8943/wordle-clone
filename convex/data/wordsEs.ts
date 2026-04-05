@@ -1034,4 +1034,8 @@ export const ES_WORDS = [
   "leida",
   "calle",
   "aleta",
+  "termo",
+  "comba",
+  "corta",
+
 ];
