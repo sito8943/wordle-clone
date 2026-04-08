@@ -78,7 +78,9 @@ const DialogsSection = (): JSX.Element => {
   const resumeDialogVisible = showResumeDialog;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
   const dictionaryChecksumDialogVisible =
-    !showResumeDialog && !endOfGameDialogVisible && showDictionaryChecksumDialog;
+    !showResumeDialog &&
+    !endOfGameDialogVisible &&
+    showDictionaryChecksumDialog;
   const refreshDialogVisible =
     !showResumeDialog &&
     !endOfGameDialogVisible &&

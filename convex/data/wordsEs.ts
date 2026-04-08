@@ -902,5 +902,5 @@ export const ES_WORDS = [
   "terco",
   "lerdo",
   "costo",
-  "rifar"
+  "rifar",
 ];
