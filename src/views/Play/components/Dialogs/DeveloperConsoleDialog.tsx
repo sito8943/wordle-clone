@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -45,6 +46,7 @@ const DeveloperConsoleDialog = ({
   const [keyboardPreference, setKeyboardPreference] = useState(
     player.keyboardPreference,
   );
+  const initializedForCurrentOpenRef = useRef(false);
   const { isClosing, closeWithAction } = useDialogCloseTransition(
     DIALOG_CLOSE_DURATION_MS,
   );
@@ -53,9 +55,15 @@ const DeveloperConsoleDialog = ({
 
   useEffect(() => {
     if (!canRenderDialog) {
+      initializedForCurrentOpenRef.current = false;
       return;
     }
 
+    if (initializedForCurrentOpenRef.current) {
+      return;
+    }
+
+    initializedForCurrentOpenRef.current = true;
     setName(player.name);
     setScore(player.score.toString());
     setStreak(player.streak.toString());
