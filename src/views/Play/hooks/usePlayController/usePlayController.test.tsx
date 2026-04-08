@@ -75,6 +75,8 @@ describe("usePlayController", () => {
       refresh: vi.fn(),
       forceLoss: vi.fn(),
       showResumeDialog: false,
+      showDictionaryChecksumDialog: false,
+      acknowledgeDictionaryChecksumChange: vi.fn(),
       boardVersion: 1,
       startNewBoard: vi.fn(),
       revealHint: vi.fn().mockReturnValue(true),
@@ -756,6 +758,45 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showRefreshDialog).toBe(false);
+    expect(resetHints).toHaveBeenCalledTimes(1);
+    expect(resetHardModeTimer).toHaveBeenCalledTimes(1);
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a checksum dialog and restarts the board after accepting it", () => {
+    const resetHints = vi.fn();
+    const resetHardModeTimer = vi.fn();
+    const refresh = vi.fn();
+    const acknowledgeDictionaryChecksumChange = vi.fn();
+    wordleState = {
+      ...wordleState,
+      current: "AP",
+      refresh,
+      showDictionaryChecksumDialog: true,
+      acknowledgeDictionaryChecksumChange,
+    };
+    mockUseHintController.mockReturnValue({
+      ...mockUseHintController(),
+      hintsRemaining: 1,
+      hintsEnabledForDifficulty: true,
+      hintButtonDisabled: false,
+      useHint: vi.fn(),
+      resetHints,
+    });
+    mockUseHardModeTimer.mockReturnValue({
+      ...mockUseHardModeTimer(),
+      resetHardModeTimer,
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.showDictionaryChecksumDialog).toBe(true);
+
+    act(() => {
+      result.current.confirmDictionaryChecksumRefresh();
+    });
+
+    expect(acknowledgeDictionaryChecksumChange).toHaveBeenCalledTimes(1);
     expect(resetHints).toHaveBeenCalledTimes(1);
     expect(resetHardModeTimer).toHaveBeenCalledTimes(1);
     expect(refresh).toHaveBeenCalledTimes(1);

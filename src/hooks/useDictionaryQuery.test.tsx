@@ -198,6 +198,38 @@ describe("useDictionaryQuery", () => {
 
       expect(clearCache).toHaveBeenCalledWith(WORDS_DEFAULT_LANGUAGE);
     });
+
+    it("calls onChecksumMismatch only when a stored checksum changes", async () => {
+      const onChecksumMismatch = vi.fn();
+      const loadWords = vi.fn().mockResolvedValue(["apple"]);
+      const queryClient = createTestQueryClient();
+      const wrapper = createHookWrapper(
+        queryClient,
+        createTestApiContextValue({
+          wordDictionaryClient: createMockWordDictionaryClient(loadWords, {
+            clearCache: vi.fn(),
+            getStoredChecksum: vi.fn().mockReturnValue(CHECKSUM_A),
+            fetchRemoteChecksum: vi
+              .fn()
+              .mockResolvedValue({ checksum: CHECKSUM_B, updatedAt: 200 }),
+          }),
+        }),
+      );
+
+      renderHook(
+        () =>
+          useDictionaryQuery(WORDS_DEFAULT_LANGUAGE, ["apple"], {
+            onChecksumMismatch,
+          }),
+        {
+          wrapper,
+        },
+      );
+
+      await waitFor(() => {
+        expect(onChecksumMismatch).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 
   it("uses initial cached words as initial data without refetching words immediately", async () => {

@@ -250,6 +250,12 @@ export const resources = {
           refreshAriaLabel: "Refresh",
           loadingWordList: "Loading word list...",
         },
+        dictionaryChecksumDialog: {
+          title: "Dictionary updated",
+          description:
+            "The word list changed. Your current board progress will be lost, but your streak will be kept. Press accept to restart with the new dictionary and checksum.",
+          accept: "Accept and restart",
+        },
         refreshDialog: {
           title: "Refresh current game?",
           description:
@@ -613,6 +619,12 @@ export const resources = {
           insaneTimerValue: "{{seconds}}s",
           refreshAriaLabel: "Actualizar",
           loadingWordList: "Cargando lista de palabras...",
+        },
+        dictionaryChecksumDialog: {
+          title: "Diccionario actualizado",
+          description:
+            "La lista de palabras cambió. Se perderá el progreso de tu tablero actual, pero tu racha se mantendrá. Pulsa aceptar para reiniciar con el nuevo diccionario y checksum.",
+          accept: "Aceptar y reiniciar",
         },
         refreshDialog: {
           title: "¿Actualizar partida actual?",

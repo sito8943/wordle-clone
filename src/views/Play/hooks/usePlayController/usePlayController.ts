@@ -98,6 +98,8 @@ export default function usePlayController() {
     refresh,
     forceLoss,
     showResumeDialog,
+    showDictionaryChecksumDialog,
+    acknowledgeDictionaryChecksumChange,
     boardVersion,
     startNewBoard: startNewWordleBoard,
     revealHint,
@@ -435,8 +437,14 @@ export default function usePlayController() {
     setVictoryBoardShareError(null);
     resetHints();
     resetHardModeTimer();
+    acknowledgeDictionaryChecksumChange();
     refresh();
-  }, [refresh, resetHardModeTimer, resetHints]);
+  }, [
+    acknowledgeDictionaryChecksumChange,
+    refresh,
+    resetHardModeTimer,
+    resetHints,
+  ]);
 
   const startNewBoard = useCallback(() => {
     setEndOfGameSnapshot(null);
@@ -483,6 +491,9 @@ export default function usePlayController() {
   const cancelRefreshBoard = useCallback(() => {
     setShowRefreshDialog(false);
   }, []);
+  const confirmDictionaryChecksumRefresh = useCallback(() => {
+    refreshBoardNow();
+  }, [refreshBoardNow]);
 
   const openWordsDialog = useCallback(() => {
     if (!wordListEnabledForDifficulty) {
@@ -594,6 +605,17 @@ export default function usePlayController() {
       setVictoryBoardShareError(null);
     }
   }, [showResumeDialog]);
+
+  useEffect(() => {
+    if (!showDictionaryChecksumDialog) {
+      return;
+    }
+
+    setShowRefreshDialog(false);
+    setShowWordsDialog(false);
+    setShowHelpDialog(false);
+    setShowDeveloperConsoleDialog(false);
+  }, [showDictionaryChecksumDialog]);
 
   useEffect(() => {
     if (!wordListEnabledForDifficulty) {
@@ -777,6 +799,7 @@ export default function usePlayController() {
     isRefreshingDictionaryChecksum,
     dictionaryChecksumMessage,
     dictionaryChecksumMessageKind,
+    confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,
     cancelRefreshBoard,
   };

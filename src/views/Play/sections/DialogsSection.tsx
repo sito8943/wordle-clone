@@ -8,6 +8,10 @@ import { usePlayView } from "@views/Play/providers";
 const SessionResumeDialog = lazy(
   () => import("../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
 );
+const DictionaryChecksumDialog = lazy(
+  () =>
+    import("../components/Dialogs/DictionaryChecksumDialog/DictionaryChecksumDialog"),
+);
 const RefreshConfirmationDialog = lazy(
   () =>
     import("../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog"),
@@ -36,6 +40,7 @@ const DialogsSection = (): JSX.Element => {
   const {
     message,
     showResumeDialog,
+    showDictionaryChecksumDialog,
     showRefreshDialog,
     showWordsDialog,
     showHelpDialog,
@@ -56,6 +61,7 @@ const DialogsSection = (): JSX.Element => {
     startNewBoard,
     closeEndOfGameDialog,
     cancelRefreshBoard,
+    confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,
     dictionaryWords,
     currentLanguage,
@@ -71,20 +77,30 @@ const DialogsSection = (): JSX.Element => {
   const navigate = useNavigate();
   const resumeDialogVisible = showResumeDialog;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
+  const dictionaryChecksumDialogVisible =
+    !showResumeDialog && !endOfGameDialogVisible && showDictionaryChecksumDialog;
   const refreshDialogVisible =
-    !showResumeDialog && !endOfGameDialogVisible && showRefreshDialog;
+    !showResumeDialog &&
+    !endOfGameDialogVisible &&
+    !dictionaryChecksumDialogVisible &&
+    showRefreshDialog;
   const wordListDialogVisible =
     !showResumeDialog &&
     !endOfGameDialogVisible &&
+    !dictionaryChecksumDialogVisible &&
     wordListButtonEnabled &&
     showWordsDialog;
   const helpDialogVisible =
     helpButtonEnabled &&
     !showResumeDialog &&
     !endOfGameDialogVisible &&
+    !dictionaryChecksumDialogVisible &&
     showHelpDialog;
   const developerConsoleDialogVisible =
-    !showResumeDialog && !endOfGameDialogVisible && showDeveloperConsoleDialog;
+    !showResumeDialog &&
+    !endOfGameDialogVisible &&
+    !dictionaryChecksumDialogVisible &&
+    showDeveloperConsoleDialog;
 
   const changeDifficulty = () => {
     closeEndOfGameDialog();
@@ -96,6 +112,7 @@ const DialogsSection = (): JSX.Element => {
       name="play-overlays"
       resetKeys={[
         showResumeDialog,
+        showDictionaryChecksumDialog,
         showRefreshDialog,
         showWordsDialog,
         showHelpDialog,
@@ -129,6 +146,12 @@ const DialogsSection = (): JSX.Element => {
               visible
               onClose={continuePreviousBoard}
               onStartNew={startNewBoard}
+            />
+          ) : null}
+          {dictionaryChecksumDialogVisible ? (
+            <DictionaryChecksumDialog
+              visible
+              onAccept={confirmDictionaryChecksumRefresh}
             />
           ) : null}
           {refreshDialogVisible ? (

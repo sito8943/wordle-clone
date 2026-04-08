@@ -1,6 +1,10 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { WORDS_CACHE_KEY_PREFIX, WORDS_DEFAULT_LANGUAGE } from "@api/words";
+import {
+  WORDS_CACHE_KEY_PREFIX,
+  WORDS_CHECKSUM_KEY_PREFIX,
+  WORDS_DEFAULT_LANGUAGE,
+} from "@api/words";
 import { env } from "@config";
 import { i18n } from "@i18n";
 import useWordle from "./useWordle";
@@ -386,5 +390,56 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.message).toBe(
       i18n.t("play.gameplay.messages.notInWordList"),
     );
+  });
+
+  it("opens a checksum dialog when dictionary checksum changes during an active game", async () => {
+    const checksumStorageKey = `${WORDS_CHECKSUM_KEY_PREFIX}:${WORDS_DEFAULT_LANGUAGE}`;
+    localStorage.setItem(dictionaryStorageKey, JSON.stringify(["apple"]));
+    localStorage.setItem(checksumStorageKey, JSON.stringify(100));
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-1",
+        gameId: "game-1",
+        seed: 1,
+        startedAt: 1_000,
+        guesses: [],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+
+    const loadWords = vi.fn().mockResolvedValue(["berry", "crane"]);
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords, {
+          getStoredChecksum: vi.fn().mockReturnValue(100),
+          fetchRemoteChecksum: vi
+            .fn()
+            .mockResolvedValue({ checksum: 200, updatedAt: 2_000 }),
+          clearCache: vi.fn(),
+        }),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.showDictionaryChecksumDialog).toBe(true);
+    });
+
+    act(() => {
+      result.current.handleKey("B");
+    });
+
+    expect(result.current.current).toBe("AP");
+
+    act(() => {
+      result.current.acknowledgeDictionaryChecksumChange();
+    });
+
+    expect(result.current.showDictionaryChecksumDialog).toBe(false);
   });
 });

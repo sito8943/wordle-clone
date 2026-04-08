@@ -6,6 +6,11 @@ import { queryKeys } from "./queryKeys";
 const useDictionaryQuery = (
   language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   initialWords: string[] = [],
+  {
+    onChecksumMismatch,
+  }: {
+    onChecksumMismatch?: () => void;
+  } = {},
 ) => {
   const { wordDictionaryClient } = useApi();
   const queryClient = useQueryClient();
@@ -21,6 +26,10 @@ const useDictionaryQuery = (
 
       const stored = wordDictionaryClient.getStoredChecksum(language);
       if (stored !== remote.checksum) {
+        if (stored !== null) {
+          onChecksumMismatch?.();
+        }
+
         wordDictionaryClient.clearCache(language);
         await queryClient.invalidateQueries({
           queryKey: queryKeys.dictionaryByLanguage(language),

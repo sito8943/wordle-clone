@@ -87,24 +87,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     () => loadWordDictionaryFromCache(language),
     [language],
   );
-  const { data: dictionaryData, isLoading: dictionaryLoading } =
-    useDictionaryQuery(language, cachedWords);
   const { playSound } = useSound();
-
-  const dictionaryWords = useMemo(
-    () =>
-      dictionaryData && dictionaryData.length > 0
-        ? dictionaryData
-        : cachedWords,
-    [cachedWords, dictionaryData],
-  );
-  const dictionaryError = useMemo(
-    () =>
-      !dictionaryLoading && dictionaryWords.length === 0
-        ? i18n.t("play.toolbar.wordListUnavailable")
-        : null,
-    [dictionaryLoading, dictionaryWords.length],
-  );
   const currentSessionId = useMemo(getOrCreateSessionId, []);
   const initialAnswer = useMemo(getRandomWord, []);
   const initialGameState = useMemo(
@@ -146,9 +129,39 @@ export default function useWordle(options: UseWordleOptions = {}) {
     null,
   );
   const [invalidGuessShakePulse, setInvalidGuessShakePulse] = useState(0);
+  const [showDictionaryChecksumDialog, setShowDictionaryChecksumDialog] =
+    useState(false);
   const persistenceTimeoutRef = useRef<number | null>(null);
   const latestGameStateRef = useRef(initialGameState);
   const previousLanguageRef = useRef(language);
+
+  const handleDictionaryChecksumMismatch = useCallback(() => {
+    const latestState = latestGameStateRef.current;
+    const activeGame = !latestState.gameOver && hasInProgressGame(latestState);
+    if (!activeGame) {
+      return;
+    }
+
+    setShowDictionaryChecksumDialog(true);
+  }, []);
+  const { data: dictionaryData, isLoading: dictionaryLoading } =
+    useDictionaryQuery(language, cachedWords, {
+      onChecksumMismatch: handleDictionaryChecksumMismatch,
+    });
+  const dictionaryWords = useMemo(
+    () =>
+      dictionaryData && dictionaryData.length > 0
+        ? dictionaryData
+        : cachedWords,
+    [cachedWords, dictionaryData],
+  );
+  const dictionaryError = useMemo(
+    () =>
+      !dictionaryLoading && dictionaryWords.length === 0
+        ? i18n.t("play.toolbar.wordListUnavailable")
+        : null,
+    [dictionaryLoading, dictionaryWords.length],
+  );
 
   const { sessionId, gameId, answer, startedAt, guesses, current, gameOver } =
     gameState;
@@ -436,18 +449,34 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
   const selectActiveTile = useCallback(
     (index: number) => {
-      if (!manualTileSelection || gameOver || showResumeDialog) {
+      if (
+        !manualTileSelection ||
+        gameOver ||
+        showResumeDialog ||
+        showDictionaryChecksumDialog
+      ) {
         return;
       }
 
       setActiveTileIndex(Math.min(Math.max(index, 0), maxSelectableTileIndex));
     },
-    [gameOver, manualTileSelection, maxSelectableTileIndex, showResumeDialog],
+    [
+      gameOver,
+      manualTileSelection,
+      maxSelectableTileIndex,
+      showDictionaryChecksumDialog,
+      showResumeDialog,
+    ],
   );
 
   const moveActiveTile = useCallback(
     (direction: -1 | 1) => {
-      if (!manualTileSelection || gameOver || showResumeDialog) {
+      if (
+        !manualTileSelection ||
+        gameOver ||
+        showResumeDialog ||
+        showDictionaryChecksumDialog
+      ) {
         return;
       }
 
@@ -455,12 +484,18 @@ export default function useWordle(options: UseWordleOptions = {}) {
         Math.min(Math.max(previous + direction, 0), maxSelectableTileIndex),
       );
     },
-    [gameOver, manualTileSelection, maxSelectableTileIndex, showResumeDialog],
+    [
+      gameOver,
+      manualTileSelection,
+      maxSelectableTileIndex,
+      showDictionaryChecksumDialog,
+      showResumeDialog,
+    ],
   );
 
   const revealHint = useCallback(
     (hintStatus: HintTileStatus): boolean => {
-      if (gameOver || showResumeDialog) {
+      if (gameOver || showResumeDialog || showDictionaryChecksumDialog) {
         return false;
       }
 
@@ -496,13 +531,14 @@ export default function useWordle(options: UseWordleOptions = {}) {
       gameOver,
       setGameStateWithPersistence,
       showMessage,
+      showDictionaryChecksumDialog,
       showResumeDialog,
     ],
   );
 
   const handleKey = useCallback(
     (key: string) => {
-      if (gameOver || showResumeDialog) {
+      if (gameOver || showResumeDialog || showDictionaryChecksumDialog) {
         return;
       }
 
@@ -538,6 +574,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       language,
       moveActiveTile,
       removeCurrentLetter,
+      showDictionaryChecksumDialog,
       showResumeDialog,
     ],
   );
@@ -562,6 +599,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
     markStartAnimationAsSeen();
     setStartAnimationSeed((prev) => prev + 1);
   }, [animationsDisabled]);
+  const acknowledgeDictionaryChecksumChange = useCallback(() => {
+    setShowDictionaryChecksumDialog(false);
+  }, []);
 
   const resetBoard = useCallback(() => {
     setGameStateWithPersistence(
@@ -570,6 +610,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     );
     setBoardVersion((previous) => previous + 1);
     setShowResumeDialog(false);
+    setShowDictionaryChecksumDialog(false);
     setMessage("");
     resetActiveHints();
     setInvalidGuessShakePulse(0);
@@ -669,6 +710,8 @@ export default function useWordle(options: UseWordleOptions = {}) {
     boardVersion,
     forceLoss,
     showResumeDialog,
+    showDictionaryChecksumDialog,
+    acknowledgeDictionaryChecksumChange,
     continuePreviousBoard,
     startNewBoard,
     dictionaryWords,
