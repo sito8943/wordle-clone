@@ -417,7 +417,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       }
 
       const targetIndex = selectedTileIndex ?? 0;
-      if (targetIndex < 0 || targetIndex > current.length) {
+      if (targetIndex < 0 || targetIndex >= WORD_LENGTH) {
         return;
       }
 

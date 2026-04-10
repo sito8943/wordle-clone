@@ -190,11 +190,15 @@ describe("setLetterAt", () => {
     expect(next.current).toBe("CRAN");
   });
 
+  it("allows setting a letter beyond current length with gap padding", () => {
+    const next = setLetterAt(makeState({ current: "CRA" }), 4, "Z");
+    expect(next.current).toBe("CRA Z");
+  });
+
   it("ignores out-of-range indexes", () => {
     const state = makeState({ current: "CRA" });
     expect(setLetterAt(state, -1, "Z").current).toBe("CRA");
     expect(setLetterAt(state, 5, "Z").current).toBe("CRA");
-    expect(setLetterAt(state, 4, "Z").current).toBe("CRA");
   });
 });
 

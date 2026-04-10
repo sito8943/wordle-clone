@@ -19,10 +19,10 @@ export const buildBoardRows = (
       return {
         letters: Array.from(
           { length: BOARD_COLUMNS },
-          (_, cellIndex) => current[cellIndex] ?? "",
+          (_, cellIndex) => current[cellIndex]?.trim() || "",
         ),
         statuses: Array.from({ length: BOARD_COLUMNS }, (_, cellIndex) =>
-          current[cellIndex] ? "tbd" : "empty",
+          current[cellIndex]?.trim() ? "tbd" : "empty",
         ),
       };
     }

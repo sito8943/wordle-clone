@@ -158,7 +158,7 @@ export const validateGuessInput = (
   answer: string,
   options: { allowUnknownWords?: boolean } = {},
 ): GuessValidationResult => {
-  if (input.length < WORD_LENGTH) {
+  if (input.length < WORD_LENGTH || input.includes(" ")) {
     return { ok: false, message: "Not enough letters" };
   }
 
@@ -202,18 +202,15 @@ export const setLetterAt = (
   index: number,
   letter: string,
 ): PersistedGameState => {
-  if (index < 0 || index > state.current.length || index >= WORD_LENGTH) {
+  if (index < 0 || index >= WORD_LENGTH) {
     return state;
   }
 
-  if (index === state.current.length) {
-    return addLetter(state, letter);
-  }
-
+  const padded = state.current.padEnd(index + 1, " ");
   return {
     ...state,
     current:
-      state.current.slice(0, index) + letter + state.current.slice(index + 1),
+      padded.slice(0, index) + letter + padded.slice(index + 1),
   };
 };
 
