@@ -8,6 +8,7 @@ const defaultDevConsoleEnabled =
   runtimeMode === "development" || runtimeMode === "develpment";
 
 const env: RuntimeEnv = {
+  appVersion: readString(import.meta.env.VITE_APP_VERSION, "0.0.0"),
   mode: runtimeMode,
   baseUrl: readString(import.meta.env.BASE_URL, "/"),
   convexUrl: readOptionalString(import.meta.env.VITE_CONVEX_URL),

@@ -1,4 +1,5 @@
 export type RuntimeEnv = {
+  appVersion: string;
   mode: string;
   baseUrl: string;
   convexUrl?: string;
