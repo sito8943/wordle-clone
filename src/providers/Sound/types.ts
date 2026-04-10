@@ -18,6 +18,10 @@ export type PlaySoundOptions = {
 export type SoundContextType = {
   soundEnabled: boolean;
   setSoundEnabled: (enabled: boolean) => void;
+  volume: number;
+  setVolume: (volume: number) => void;
+  muted: boolean;
+  setMuted: (muted: boolean) => void;
   playSound: (event: SoundEvent, options?: PlaySoundOptions) => void;
 };
 

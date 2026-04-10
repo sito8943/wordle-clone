@@ -6,6 +6,7 @@ import { WordListDialog } from "./WordListDialog";
 import { VictoryDialog } from "./VictoryDialog";
 import { DefeatDialog } from "./DefeatDialog";
 import DeveloperConsoleDialog from "./DeveloperConsoleDialog";
+import { VolumeDialog } from "./VolumeDialog";
 export {
   DictionaryChecksumDialog,
   DefeatDialog,
@@ -13,6 +14,7 @@ export {
   RefreshConfirmationDialog,
   SessionResumeDialog,
   VictoryDialog,
+  VolumeDialog,
   WordListDialog,
   DeveloperConsoleDialog,
 };

@@ -14,6 +14,8 @@ const MIN_GAIN = 0.0001;
 const DEFAULT_ATTACK_MS = 4;
 const DEFAULT_RELEASE_MS = 40;
 const SOUND_ENABLED_STORAGE_KEY = "wordle:sound-enabled";
+const SOUND_VOLUME_STORAGE_KEY = "wordle:sound-volume";
+const SOUND_MUTED_STORAGE_KEY = "wordle:sound-muted";
 
 const toWindowWithWebkitAudio = (value: Window) =>
   value as Window & { webkitAudioContext?: typeof AudioContext };
@@ -22,6 +24,14 @@ const SoundProvider = ({ children }: ProviderProps) => {
   const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>(
     SOUND_ENABLED_STORAGE_KEY,
     true,
+  );
+  const [volume, setVolume] = useLocalStorage<number>(
+    SOUND_VOLUME_STORAGE_KEY,
+    100,
+  );
+  const [muted, setMuted] = useLocalStorage<boolean>(
+    SOUND_MUTED_STORAGE_KEY,
+    false,
   );
   const { soundEnabled: soundFeatureEnabled } = useFeatureFlags();
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -111,11 +121,13 @@ const SoundProvider = ({ children }: ProviderProps) => {
       const noteEndTime = attackEndTime + tone.durationMs / 1000;
       const releaseEndTime = noteEndTime + releaseMs / 1000;
 
+      const scaledGain = tone.gain * (volume / 100);
+
       oscillatorNode.type = tone.waveform;
       oscillatorNode.frequency.setValueAtTime(tone.frequency, startTime);
 
       gainNode.gain.setValueAtTime(MIN_GAIN, startTime);
-      gainNode.gain.linearRampToValueAtTime(tone.gain, attackEndTime);
+      gainNode.gain.linearRampToValueAtTime(scaledGain, attackEndTime);
       gainNode.gain.exponentialRampToValueAtTime(MIN_GAIN, releaseEndTime);
 
       oscillatorNode.connect(gainNode);
@@ -124,7 +136,7 @@ const SoundProvider = ({ children }: ProviderProps) => {
       oscillatorNode.start(startTime);
       oscillatorNode.stop(releaseEndTime);
     },
-    [getAudioContext],
+    [getAudioContext, volume],
   );
 
   const playToneSequence = useCallback(
@@ -141,7 +153,7 @@ const SoundProvider = ({ children }: ProviderProps) => {
 
   const playSound = useCallback(
     (event: SoundEvent, options: PlaySoundOptions = {}) => {
-      if (!soundFeatureEnabled || !soundEnabled) {
+      if (!soundFeatureEnabled || !soundEnabled || muted) {
         return;
       }
 
@@ -341,16 +353,20 @@ const SoundProvider = ({ children }: ProviderProps) => {
         baseDelayMs,
       );
     },
-    [playToneSequence, soundEnabled, soundFeatureEnabled],
+    [muted, playToneSequence, soundEnabled, soundFeatureEnabled],
   );
 
   const contextValue = useMemo<SoundContextType>(
     () => ({
       soundEnabled,
       setSoundEnabled,
+      volume,
+      setVolume,
+      muted,
+      setMuted,
       playSound,
     }),
-    [playSound, setSoundEnabled, soundEnabled],
+    [muted, playSound, setMuted, setSoundEnabled, setVolume, soundEnabled, volume],
   );
 
   return (

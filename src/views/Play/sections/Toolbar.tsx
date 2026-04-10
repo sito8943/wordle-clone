@@ -1,4 +1,4 @@
-import { memo, type JSX } from "react";
+import { memo, useState, type JSX } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleQuestion,
@@ -7,12 +7,25 @@ import {
   faList,
   faRotateRight,
   faSquarePollHorizontal,
+  faVolumeHigh,
+  faVolumeLow,
+  faVolumeOff,
+  faVolumeXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak, Alert } from "@components";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import { useSound } from "@providers/Sound";
 import { usePlayView } from "@views/Play/providers";
+import VolumeDialog from "@views/Play/components/Dialogs/VolumeDialog/VolumeDialog";
 import type { NativeKeyboardClockStyle, ToolbarTimerProps } from "./types";
+
+const getToolbarVolumeIcon = (volume: number, muted: boolean) => {
+  if (muted) return faVolumeXmark;
+  if (volume === 0) return faVolumeOff;
+  if (volume < 50) return faVolumeLow;
+  return faVolumeHigh;
+};
 
 const HardModeTimerIndicator = memo(
   ({
@@ -63,7 +76,13 @@ const HardModeTimerIndicator = memo(
 
 const Toolbar = (): JSX.Element => {
   const { t } = useTranslation();
-  const { hintsEnabled, helpButtonEnabled } = useFeatureFlags();
+  const {
+    hintsEnabled,
+    helpButtonEnabled,
+    soundEnabled: soundFeatureEnabled,
+  } = useFeatureFlags();
+  const { volume, muted } = useSound();
+  const [showVolumeDialog, setShowVolumeDialog] = useState(false);
   const { controller, wordListButtonEnabled, developerConsoleEnabled } =
     usePlayView();
   const {
@@ -162,6 +181,19 @@ const Toolbar = (): JSX.Element => {
               {t("play.toolbar.developerConsoleButton")}
             </Button>
           )}
+          {soundFeatureEnabled && (
+            <Button
+              onClick={() => setShowVolumeDialog(true)}
+              aria-label={t("play.toolbar.volumeAriaLabel")}
+              variant="ghost"
+              icon={getToolbarVolumeIcon(volume, muted)}
+              iconClassName="text-lg"
+              className="mobile-compact-button"
+              hideLabelOnMobile
+            >
+              {t("play.toolbar.volumeAriaLabel")}
+            </Button>
+          )}
           <HardModeTimerIndicator
             showHardModeTimer={showHardModeTimer}
             hardModeSecondsLeft={hardModeSecondsLeft}
@@ -209,6 +241,10 @@ const Toolbar = (): JSX.Element => {
 
       {!dictionaryLoading && dictionaryError && (
         <Alert message={dictionaryError} color="danger" />
+      )}
+
+      {showVolumeDialog && (
+        <VolumeDialog visible onClose={() => setShowVolumeDialog(false)} />
       )}
     </>
   );

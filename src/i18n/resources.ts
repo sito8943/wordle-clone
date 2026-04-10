@@ -249,6 +249,13 @@ export const resources = {
           insaneTimerValue: "{{seconds}}s",
           refreshAriaLabel: "Refresh",
           loadingWordList: "Loading word list...",
+          volumeAriaLabel: "Volume",
+        },
+        volumeDialog: {
+          title: "Volume",
+          muteAriaLabel: "Mute",
+          unmuteAriaLabel: "Unmute",
+          volumeSliderAriaLabel: "Volume level",
         },
         dictionaryChecksumDialog: {
           title: "Dictionary updated",
@@ -619,6 +626,13 @@ export const resources = {
           insaneTimerValue: "{{seconds}}s",
           refreshAriaLabel: "Actualizar",
           loadingWordList: "Cargando lista de palabras...",
+          volumeAriaLabel: "Volumen",
+        },
+        volumeDialog: {
+          title: "Volumen",
+          muteAriaLabel: "Silenciar",
+          unmuteAriaLabel: "Activar sonido",
+          volumeSliderAriaLabel: "Nivel de volumen",
         },
         dictionaryChecksumDialog: {
           title: "Diccionario actualizado",
