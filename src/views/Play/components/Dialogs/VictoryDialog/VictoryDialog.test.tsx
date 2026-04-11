@@ -107,6 +107,27 @@ describe("VictoryDialog", () => {
     expect(settingsLink.getAttribute("href")).toBe("/settings#end-dialogs");
   });
 
+  it("shows challenge bonus details when challenge points are awarded", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 10,
+        }}
+        challengeBonusPoints={20}
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Daily challenges bonus")).toBeTruthy();
+    expect(screen.getByText("Total with challenges")).toBeTruthy();
+    expect(screen.getByText("+30")).toBeTruthy();
+  });
+
   it("shows a share action when enabled and triggers the callback", () => {
     const onShare = vi.fn();
 

@@ -245,6 +245,9 @@ export default function usePlayController() {
         dailyCompletedRounds: dailyTracker.completedRounds,
         dailyLanguagesWon: dailyTracker.wonLanguages,
       };
+      let completedInRound = 0;
+      let awardedPointsInRound = 0;
+      const completedChallengeNames: string[] = [];
 
       for (const challenge of [
         todayChallenges.simple,
@@ -268,14 +271,43 @@ export default function usePlayController() {
         }
 
         completedChallengeIds.add(challenge.id);
-        setChallengeCompletionMessage(
-          i18n.t("challenges.challengeCompleted", {
-            name: i18n.t(`challenges.names.${challenge.conditionKey}`),
-            points: completion.pointsAwarded,
-          }),
+        completedInRound += 1;
+        awardedPointsInRound += completion.pointsAwarded;
+        completedChallengeNames.push(
+          i18n.t(`challenges.names.${challenge.conditionKey}`),
         );
-        notifyDailyChallengesProgressUpdated();
       }
+
+      if (completedInRound === 0 || awardedPointsInRound <= 0) {
+        return;
+      }
+
+      if (won) {
+        setEndOfGameSnapshot((currentSnapshot) => {
+          if (!currentSnapshot) {
+            return currentSnapshot;
+          }
+
+          return {
+            ...currentSnapshot,
+            challengeBonusPoints:
+              currentSnapshot.challengeBonusPoints + awardedPointsInRound,
+          };
+        });
+      }
+
+      setChallengeCompletionMessage(
+        completedInRound === 1
+          ? i18n.t("challenges.challengeCompleted", {
+              name: completedChallengeNames[0] ?? "",
+              points: awardedPointsInRound,
+            })
+          : i18n.t("challenges.challengeCompletedMultiple", {
+              count: completedInRound,
+              points: awardedPointsInRound,
+            }),
+      );
+      notifyDailyChallengesProgressUpdated();
     } catch {
       // Silently fail — round flow must continue even if challenges fail.
     }
@@ -367,6 +399,7 @@ export default function usePlayController() {
         answer,
         currentStreak: player.streak + 1,
         bestStreak: player.streak,
+        challengeBonusPoints: 0,
         scoreSummary: {
           items: scoreSummaryItems,
           total: totalPoints,
@@ -379,6 +412,7 @@ export default function usePlayController() {
         answer,
         currentStreak: player.streak,
         bestStreak: player.streak,
+        challengeBonusPoints: 0,
         scoreSummary: null,
       });
       void commitLoss();
@@ -889,6 +923,7 @@ export default function usePlayController() {
     showEndOfGameSettingsHint,
     endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
     victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,
+    endOfGameChallengeBonusPoints: endOfGameSnapshot?.challengeBonusPoints ?? 0,
     endOfGameCurrentStreak: endOfGameSnapshot?.currentStreak ?? player.streak,
     endOfGameBestStreak: endOfGameSnapshot?.bestStreak ?? player.streak,
     closeEndOfGameDialog,

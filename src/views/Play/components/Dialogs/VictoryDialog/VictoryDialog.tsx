@@ -24,6 +24,7 @@ const VictoryDialog = ({
   answer,
   currentStreak,
   scoreSummary,
+  challengeBonusPoints = 0,
   showSettingsHint = false,
   shareEnabled = false,
   isSharing = false,
@@ -105,6 +106,18 @@ const VictoryDialog = ({
                 <span>+{scoreSummary.total}</span>
               </div>
             </div>
+            {challengeBonusPoints > 0 ? (
+              <div className="border-t border-neutral-200 pt-3 text-neutral-950 dark:border-neutral-700 dark:text-neutral-50">
+                <div className="flex items-center justify-between font-semibold">
+                  <span>{t("play.victoryDialog.challengeBonus")}</span>
+                  <span>+{challengeBonusPoints}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between font-semibold">
+                  <span>{t("play.victoryDialog.totalWithChallenges")}</span>
+                  <span>+{scoreSummary.total + challengeBonusPoints}</span>
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
 

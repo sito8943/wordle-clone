@@ -5,6 +5,7 @@ export type VictoryDialogProps = {
   answer: string;
   currentStreak: number;
   scoreSummary: EndOfGameScoreSummary;
+  challengeBonusPoints?: number;
   showSettingsHint?: boolean;
   shareEnabled?: boolean;
   isSharing?: boolean;

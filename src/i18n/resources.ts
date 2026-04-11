@@ -320,6 +320,8 @@ export const resources = {
           title: "Victory",
           description: "Board cleared. Here is your score breakdown.",
           scoreSummaryTitle: "Score summary",
+          challengeBonus: "Daily challenges bonus",
+          totalWithChallenges: "Total with challenges",
           shareAction: "Share board",
           shareInProgress: "Sharing...",
           sharePayloadTitle: "Wordle victory",
@@ -381,6 +383,8 @@ export const resources = {
         points: "+{{points}} pts",
         noChallengesToday: "No challenges available today.",
         challengeCompleted: "Challenge completed: {{name}} (+{{points}} pts)",
+        challengeCompletedMultiple:
+          "{{count}} challenges completed (+{{points}} pts)",
         buttonAriaLabel: "Daily challenges",
         buttonLabel: "Challenges",
         names: {
@@ -741,6 +745,8 @@ export const resources = {
           title: "Victoria",
           description: "Partida superada. Aquí tienes el desglose.",
           scoreSummaryTitle: "Resumen de puntuación",
+          challengeBonus: "Bonus de retos diarios",
+          totalWithChallenges: "Total con retos",
           shareAction: "Compartir tablero",
           shareInProgress: "Compartiendo...",
           sharePayloadTitle: "Victoria en Wordle",
@@ -807,6 +813,8 @@ export const resources = {
         points: "+{{points}} pts",
         noChallengesToday: "No hay retos disponibles hoy.",
         challengeCompleted: "Reto completado: {{name}} (+{{points}} pts)",
+        challengeCompletedMultiple:
+          "{{count}} retos completados (+{{points}} pts)",
         buttonAriaLabel: "Retos diarios",
         buttonLabel: "Retos",
         names: {

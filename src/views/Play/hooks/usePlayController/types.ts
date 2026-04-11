@@ -31,6 +31,7 @@ export type EndOfGameSnapshot = {
   answer: string;
   currentStreak: number;
   bestStreak: number;
+  challengeBonusPoints: number;
   scoreSummary: EndOfGameScoreSummary | null;
 };
 

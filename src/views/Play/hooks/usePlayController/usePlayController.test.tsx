@@ -263,8 +263,9 @@ describe("usePlayController", () => {
     expect(completeChallenge).toHaveBeenNthCalledWith(1, "simple-1", date);
     expect(completeChallenge).toHaveBeenNthCalledWith(2, "complex-1", date);
     expect(result.current.challengeCompletionMessage).toBe(
-      "Challenge completed: Genius (+15 pts)",
+      "2 challenges completed (+20 pts)",
     );
+    expect(result.current.endOfGameChallengeBonusPoints).toBe(20);
   });
 
   it("allows unknown words in normal difficulty", () => {

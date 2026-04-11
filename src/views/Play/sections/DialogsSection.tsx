@@ -33,9 +33,7 @@ const DefeatDialog = lazy(
 );
 const DailyChallengesDialog = lazy(
   () =>
-    import(
-      "../components/Dialogs/DailyChallengesDialog/DailyChallengesDialog"
-    ),
+    import("../components/Dialogs/DailyChallengesDialog/DailyChallengesDialog"),
 );
 
 const DialogsSection = (): JSX.Element => {
@@ -67,6 +65,7 @@ const DialogsSection = (): JSX.Element => {
     showEndOfGameSettingsHint,
     endOfGameAnswer,
     victoryScoreSummary,
+    endOfGameChallengeBonusPoints,
     endOfGameCurrentStreak,
     endOfGameBestStreak,
     continuePreviousBoard,
@@ -201,6 +200,7 @@ const DialogsSection = (): JSX.Element => {
                 answer={endOfGameAnswer}
                 currentStreak={endOfGameCurrentStreak}
                 scoreSummary={victoryScoreSummary}
+                challengeBonusPoints={endOfGameChallengeBonusPoints}
                 showSettingsHint={showEndOfGameSettingsHint}
                 shareEnabled={shareButtonEnabled && victoryBoardShareSupported}
                 isSharing={isSharingVictoryBoard}
