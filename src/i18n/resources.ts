@@ -297,9 +297,8 @@ export const resources = {
             streakBonus:
               "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
             easy: "Easy: x1 difficulty multiplier.",
-            normal: "Normal: x2 difficulty multiplier.",
-            normalDictionaryBonus:
-              "Normal: each incorrect dictionary-word row adds +{{bonus}} to the difficulty multiplier (○ marker).",
+            normal:
+              "Normal: x2 difficulty multiplier. Each incorrect dictionary-word row adds +{{bonus}} to the difficulty multiplier (○ marker).",
             hard: "Hard: x5 difficulty multiplier.",
             insane:
               "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
@@ -404,16 +403,14 @@ export const resources = {
           unique_letters:
             "Use at least 3 different letters in your first guess",
           three_guesses: "Use at least 3 guesses in a round",
-          vowels_first:
-            "Your first guess must contain at least 2 vowels",
+          vowels_first: "Your first guess must contain at least 2 vowels",
           persistent: "Complete 2 rounds in the same day",
           speedster: "Win a round in less than 60 seconds",
           genius: "Guess the word in 2 attempts or fewer",
           unstoppable_streak: "Reach a win streak of 3",
           perfectionist: "Guess the word on the first try",
           extreme_difficulty: "Win a round on Hard or Insane difficulty",
-          polyglot:
-            "Win a round in both English and Spanish in the same day",
+          polyglot: "Win a round in both English and Spanish in the same day",
         },
       },
     },
@@ -721,9 +718,8 @@ export const resources = {
             streakBonus:
               "La racha escala tu puntuación con x(1 + 0.3 x sqrt(racha)).",
             easy: "Fácil: multiplicador de dificultad x1.",
-            normal: "Normal: multiplicador de dificultad x2.",
-            normalDictionaryBonus:
-              "Normal: cada fila incorrecta con palabra del diccionario suma +{{bonus}} al multiplicador de dificultad (marca ○).",
+            normal:
+              "Normal: multiplicador de dificultad x2. Cada fila incorrecta con palabra del diccionario suma +{{bonus}} al multiplicador de dificultad (marca ○).",
             hard: "Difícil: multiplicador de dificultad x5.",
             insane:
               "Insano: multiplicador de dificultad x9 y +1 punto extra por cada 2 segundos restantes.",
@@ -833,17 +829,14 @@ export const resources = {
           unique_letters:
             "Usa al menos 3 letras diferentes en tu primer intento",
           three_guesses: "Usa al menos 3 intentos en una ronda",
-          vowels_first:
-            "Tu primer intento debe contener al menos 2 vocales",
+          vowels_first: "Tu primer intento debe contener al menos 2 vocales",
           persistent: "Completa 2 rondas en el mismo día",
           speedster: "Gana una ronda en menos de 60 segundos",
           genius: "Adivina la palabra en 2 intentos o menos",
           unstoppable_streak: "Alcanza una racha de 3 victorias",
           perfectionist: "Adivina la palabra en el primer intento",
-          extreme_difficulty:
-            "Gana una ronda en dificultad Difícil o Insano",
-          polyglot:
-            "Gana una ronda en inglés y español en el mismo día",
+          extreme_difficulty: "Gana una ronda en dificultad Difícil o Insano",
+          polyglot: "Gana una ronda en inglés y español en el mismo día",
         },
       },
     },

@@ -7,12 +7,6 @@ import { Link } from "react-router";
 
 const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
   const { t } = useTranslation();
-  const normalDictionaryBonusTooltip = t(
-    "play.gameplay.normalDictionaryBonusTooltip",
-    {
-      bonus: NORMAL_DICTIONARY_ROW_BONUS,
-    },
-  );
 
   return (
     <Dialog
@@ -47,17 +41,8 @@ const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
             <li>{t("play.helpDialog.scoring.basePoints")}</li>
             <li>{t("play.helpDialog.scoring.streakBonus")}</li>
             <li>{t("play.helpDialog.scoring.easy")}</li>
-            <li>{t("play.helpDialog.scoring.normal")}</li>
             <li>
-              <span
-                role="img"
-                aria-label={normalDictionaryBonusTooltip}
-                title={normalDictionaryBonusTooltip}
-                className="mr-1.5 inline-flex align-middle"
-              >
-                <span className="block h-2.5 w-2.5 rounded-full border border-neutral-400 bg-transparent dark:border-neutral-500" />
-              </span>
-              {t("play.helpDialog.scoring.normalDictionaryBonus", {
+              {t("play.helpDialog.scoring.normal", {
                 bonus: NORMAL_DICTIONARY_ROW_BONUS,
               })}
             </li>
