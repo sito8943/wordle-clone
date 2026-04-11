@@ -85,7 +85,10 @@ const Home = () => {
       >
         {t("app.title").toUpperCase()}
         {env.appVersion && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span
+            className="text-xs text-gray-500 dark:text-gray-400"
+            aria-hidden="true"
+          >
             {env.appVersion}
           </span>
         )}
