@@ -6,18 +6,19 @@ Implementar un sistema de retos diarios donde el jugador puede completar desafí
 
 ---
 
-## 1. Backend (Convex)
+## 1. Backend (Convex) — COMPLETADO
 
 ### 1.1 Nueva tabla: `challenges`
 
-En `convex/schema.ts`, agregar:
+En `convex/schema.ts`:
 
 ```ts
 challenges: defineTable({
-  name: v.string(),           // Nombre del reto (ej: "Velocista")
-  description: v.string(),    // Descripción (ej: "Gana una ronda en menos de 60 segundos")
+  name: v.string(),
+  description: v.string(),
   type: v.union(v.literal("simple"), v.literal("complex")),
-  used: v.boolean(),          // true = ya fue asignado como reto diario
+  conditionKey: v.string(),
+  used: v.boolean(),
 })
   .index("by_type", ["type"])
   .index("by_type_and_used", ["type", "used"]),
@@ -25,41 +26,30 @@ challenges: defineTable({
 
 ### 1.2 Nueva tabla: `dailyChallenges`
 
-Tabla que almacena los retos activos del día:
-
 ```ts
 dailyChallenges: defineTable({
-  date: v.string(),                // Fecha ISO "2026-04-11"
+  date: v.string(),
   simpleChallengeId: v.id("challenges"),
   complexChallengeId: v.id("challenges"),
-})
-  .index("by_date", ["date"]),
+}).index("by_date", ["date"]),
 ```
 
 ### 1.3 Nueva tabla: `playerChallengeProgress`
 
-Progreso de cada jugador en los retos:
-
 ```ts
 playerChallengeProgress: defineTable({
-  profileId: v.id("scores"),           // Referencia al jugador
-  challengeId: v.id("challenges"),     // Reto en cuestión
-  date: v.string(),                    // Fecha del reto
+  profileId: v.id("scores"),
+  challengeId: v.id("challenges"),
+  date: v.string(),
   completed: v.boolean(),
-  completedAt: v.optional(v.number()), // Timestamp
+  completedAt: v.optional(v.number()),
   pointsAwarded: v.number(),
 })
   .index("by_profile_and_date", ["profileId", "date"])
   .index("by_profile_and_challenge", ["profileId", "challengeId"]),
 ```
 
-### 1.4 Nuevo archivo: `convex/challenges.ts`
-
-**Queries:**
-
-- `getTodayChallenges(date)`: Obtener los 2 retos del día. Si no existen aún, retornar `null`.
-- `getPlayerChallengeProgress(profileId, date)`: Progreso del jugador en los retos del día.
-- `listAllChallenges`: Lista todos los retos (admin/debug).
+### 1.4 Funciones: `convex/challenges.ts`
 
 > **Flujo de obtención de retos (global, idempotente):**
 >
@@ -71,228 +61,233 @@ playerChallengeProgress: defineTable({
 > 3. `generateDailyChallenges` es **idempotente**: si dos jugadores entran al mismo tiempo, el primero crea los retos y el segundo detecta que ya existen y los retorna sin duplicar.
 > 4. Todos los jugadores posteriores ese día reciben los mismos 2 retos ya generados.
 
+**Queries:**
+
+- `getTodayChallenges(date)` — Obtener los 2 retos del día. Si no existen aún, retorna `null`.
+- `getPlayerChallengeProgress(clientId, date)` — Progreso del jugador (resuelve profile internamente via `clientId`).
+- `listAllChallenges` — Lista todos los retos (admin/debug).
+
 **Mutations:**
 
-- `generateDailyChallenges(date)`: 
-  1. Verificar si ya existen retos para esa fecha → si sí, retornar los existentes.
-  2. Buscar 1 reto `simple` con `used: false` al azar.
-  3. Buscar 1 reto `complex` con `used: false` al azar.
-  4. Si no hay suficientes de algún tipo → reiniciar **todos** los retos (`used = false`) y volver a buscar.
-  5. Marcar ambos como `used: true`.
-  6. Insertar en `dailyChallenges`.
-  
-- `completeChallenge(profileId, challengeId, date)`:
-  1. Validar que el reto pertenece al día actual.
-  2. Validar que no esté ya completado.
-  3. Calcular puntos según tipo (`SIMPLE_CHALLENGE_POINTS` o `COMPLEX_CHALLENGE_POINTS`).
-  4. Insertar en `playerChallengeProgress`.
-  5. Actualizar el `score` del jugador en `scores`.
+- `generateDailyChallenges(date)` — Genera retos del día (idempotente). Resetea todos si se agotaron.
+- `completeChallenge(clientId, challengeId, date)` — Valida, registra progreso, suma puntos al jugador.
+- `seedChallenges` — Pobla la tabla con retos iniciales (valida paridad simple/complex).
 
-- `seedChallenges`: Mutación para poblar la tabla con los retos iniciales (similar a `seedLanguageWords`).
+> **Nota:** Las funciones usan `clientId` (string) en vez de `profileId` (Convex ID). El backend resuelve el perfil internamente via el índice `by_client_id` de la tabla `scores`. Esto evita que el frontend necesite conocer el Convex document ID.
 
-### 1.5 Datos semilla de retos
+### 1.5 Datos semilla: `convex/data/challenges.ts`
 
-Crear archivo `convex/data/challenges.ts` con los retos predefinidos. Cantidad par (mínimo 6 de cada tipo = 12 total):
+12 retos (6 simples + 6 complejos):
 
-**Retos Sencillos (simple):**
-| Nombre | Descripción | Condición |
+**Retos Sencillos (simple) — 5 pts cada uno:**
+| Nombre | conditionKey | Condición |
 |--------|-------------|-----------|
-| Primer intento | Haz al menos 1 intento en una ronda | >= 1 guess |
-| Jugador constante | Completa una ronda (ganar o perder) | gameOver = true |
-| Explorador | Usa al menos 3 letras diferentes en tu primer intento | >= 3 letras únicas en guess 1 |
-| Tres intentos | Usa al menos 3 intentos en una ronda | >= 3 guesses |
-| Vocales primero | Tu primer intento debe contener al menos 2 vocales | >= 2 vocales en guess 1 |
-| Persistente | Completa 2 rondas en el mismo día | 2 rondas completadas |
+| First Guess | `first_guess` | >= 1 guess |
+| Steady Player | `complete_round` | gameOver = true |
+| Explorer | `unique_letters` | >= 3 letras únicas en guess 1 |
+| Three Tries | `three_guesses` | >= 3 guesses |
+| Vowels First | `vowels_first` | >= 2 vocales en guess 1 |
+| Persistent | `persistent` | 2 rondas completadas en el día |
 
-**Retos Complejos (complex):**
-| Nombre | Descripción | Condición |
+**Retos Complejos (complex) — 15 pts cada uno:**
+| Nombre | conditionKey | Condición |
 |--------|-------------|-----------|
-| Velocista | Gana una ronda en menos de 60 segundos | win + tiempo < 60s |
-| Genio | Adivina la palabra en 2 intentos o menos | win + guesses <= 2 |
-| Racha imparable | Alcanza una racha de 3 victorias | streak >= 3 |
-| Perfeccionista | Gana en el primer intento | win + guesses == 1 |
-| Dificultad extrema | Gana una ronda en dificultad "hard" o superior | win + difficulty >= hard |
-| Políglota | Gana una ronda en cada idioma (EN y ES) en el mismo día | win en ambos idiomas |
+| Speedster | `speedster` | win + tiempo < 60s |
+| Genius | `genius` | win + guesses <= 2 |
+| Unstoppable Streak | `unstoppable_streak` | streak >= 3 |
+| Perfectionist | `perfectionist` | win + guesses == 1 |
+| Extreme Difficulty | `extreme_difficulty` | win + difficulty >= hard |
+| Polyglot | `polyglot` | win en EN y ES en el mismo día |
 
 ---
 
-## 2. Constantes de Puntuación
+## 2. Dominio — COMPLETADO
 
-En `src/domain/wordle/constants.ts`:
+### 2.1 `src/domain/challenges/constants.ts`
 
 ```ts
-export const SIMPLE_CHALLENGE_POINTS = 5;
-export const COMPLEX_CHALLENGE_POINTS = 15;
+SIMPLE_CHALLENGE_POINTS = 5
+COMPLEX_CHALLENGE_POINTS = 15
 ```
 
-También crear un archivo `src/domain/challenges/` con:
-- `constants.ts` — Puntuaciones y tipos
-- `types.ts` — Tipos TypeScript para retos
-- `validation.ts` — Lógica para evaluar si un reto fue completado dado el estado de la ronda
+### 2.2 `src/domain/challenges/types.ts`
+
+- `ChallengeType` — `"simple" | "complex"`
+- `ChallengeConditionKey` — Union de las 12 claves de condición
+- `Challenge`, `DailyChallenges`, `ChallengeProgress`
+- `ChallengeConditionContext` — Datos de la ronda para evaluar condiciones
+
+### 2.3 `src/domain/challenges/validation.ts`
+
+12 funciones evaluadoras mapeadas por `conditionKey`:
+- Simples: `first_guess`, `complete_round`, `unique_letters`, `three_guesses`, `vowels_first`, `persistent`
+- Complejos: `speedster`, `genius`, `unstoppable_streak`, `perfectionist`, `extreme_difficulty`, `polyglot`
+
+Exporta: `evaluateCondition(key, context) → boolean`
 
 ---
 
-## 3. Dominio: Evaluación de Retos
+## 3. API Client — COMPLETADO
 
-### 3.1 `src/domain/challenges/types.ts`
+### 3.1 `src/api/challenges/ChallengeClient.ts`
 
-```ts
-type ChallengeType = "simple" | "complex";
+Usa `ConvexGateway` y lee `clientId` de `localStorage` (`wordle:scoreboard:client-id`):
 
-type Challenge = {
-  id: string;
-  name: string;
-  description: string;
-  type: ChallengeType;
-};
+- `getTodayChallenges(date)` → `RemoteDailyChallenges | null`
+- `generateDailyChallenges(date)` → `RemoteDailyChallenges`
+- `getPlayerChallengeProgress(date)` → `RemoteChallengeProgress[]`
+- `completeChallenge(challengeId, date)` → `CompleteChallengeResult`
+- `seedChallenges()` → seed result
 
-type DailyChallenges = {
-  date: string;
-  simple: Challenge;
-  complex: Challenge;
-};
+### 3.2 `src/api/challenges/types.ts`
 
-type ChallengeProgress = {
-  challengeId: string;
-  completed: boolean;
-  completedAt?: number;
-  pointsAwarded: number;
-};
-```
+- `RemoteChallenge`, `RemoteDailyChallenges`, `RemoteChallengeProgress`, `CompleteChallengeResult`
 
-### 3.2 `src/domain/challenges/validation.ts`
+### 3.3 `src/api/challenges/constants.ts`
 
-Cada reto tiene un `conditionKey` (string) que mapea a una función evaluadora:
+Referencias a las funciones Convex (`challenges:getTodayChallenges`, etc.).
 
-```ts
-type ChallengeConditionContext = {
-  guesses: GuessResult[];
-  gameOver: boolean;
-  won: boolean;
-  answer: string;
-  difficulty: PlayerDifficulty;
-  streak: number;
-  roundDurationMs: number;
-  language: PlayerLanguage;
-  dailyCompletedRounds: number;
-  dailyLanguagesWon: Set<string>;
-};
+### 3.4 Integración en ApiProvider
 
-// Mapeo conditionKey → función evaluadora
-const conditionEvaluators: Record<string, (ctx: ChallengeConditionContext) => boolean>;
-```
+- `src/providers/Api/ApiProvider.tsx` — Instancia `ChallengeClient` junto a `ScoreClient` y `WordDictionaryClient`
+- `src/providers/Api/types.ts` — `challengeClient` agregado a `ApiContextType`
+- `src/test/utils.tsx` — Mock de `ChallengeClient` para tests
 
 ---
 
-## 4. API Layer
+## 4. Feature Flag — COMPLETADO
 
-### 4.1 `src/api/challenges/ChallengeClient.ts`
-
-Nuevo cliente que usa `ConvexGateway`:
-
-- `getTodayChallenges()` → `DailyChallenges | null`
-- `generateDailyChallenges(date)` → `DailyChallenges`
-- `getPlayerProgress(profileId, date)` → `ChallengeProgress[]`
-- `completeChallenge(profileId, challengeId, date)` → `{ pointsAwarded: number }`
-
-### 4.2 `src/api/challenges/types.ts`
-
-Tipos para request/response del API.
+- `src/config/env.ts` — `dailyChallengesEnabled` (lee `VITE_DAILY_CHALLENGES_ENABLED`, default `true`)
+- `src/config/types.ts` — `dailyChallengesEnabled: boolean` en `RuntimeEnv`
+- `src/providers/FeatureFlags/types.ts` — Agregado a `FeatureFlags`
+- `src/providers/FeatureFlags/utils.ts` — Mapeado desde env
 
 ---
 
-## 5. Hooks
+## 5. i18n — COMPLETADO
 
-### 5.1 `src/hooks/useDailyChallenges.ts`
+En `src/i18n/resources.ts`, claves EN y ES bajo `challenges.*`:
 
-Hook global que:
-1. Obtiene los retos del día (query a Convex).
-2. Si no existen, llama a `generateDailyChallenges`.
-3. Retorna `{ challenges, progress, isLoading }`.
-
-### 5.2 Integración en `usePlayController`
-
-Después de `commitVictory` o `commitLoss`, evaluar si algún reto del día fue completado:
-1. Construir `ChallengeConditionContext` con datos de la ronda.
-2. Evaluar cada reto no completado.
-3. Si se completó, llamar a `completeChallenge`.
+- `title`, `simple`, `complex`, `completed`, `pending`, `points`
+- `noChallengesToday`, `challengeCompleted`
+- `buttonAriaLabel`, `buttonLabel`
+- `names.[conditionKey]` — Nombre traducido de cada reto
+- `descriptions.[conditionKey]` — Descripción traducida de cada reto
 
 ---
 
-## 6. UI
+## 6. Hook — COMPLETADO
 
-### 6.1 Componente `DailyChallengesCard`
+### `src/hooks/useDailyChallenges.ts`
 
-En `src/views/Play/components/DailyChallenges/`:
-
-- Tarjeta que muestra los 2 retos del día.
-- Cada reto muestra: icono de tipo, nombre, descripción, puntos, estado (pendiente/completado).
-- Animación cuando se completa un reto.
-
-### 6.2 Ubicación en la vista
-
-Agregar en `src/views/Play/sections/` como una sección debajo del toolbar o como un botón que abre un dialog.
-
-**Opción recomendada:** Botón en el toolbar que abre un `DailyChallengesDialog` (sigue el patrón existente de dialogs lazy-loaded en `DialogsSection`).
-
-### 6.3 Notificación de reto completado
-
-Al completar un reto, mostrar un `Alert` toast con el nombre del reto y los puntos ganados.
+- Fetch de retos al montar (seed → get → generate si null)
+- Session storage (`wordle:daily-challenges-dialog-seen`) para auto-show una vez por sesión
+- Auto-show solo si al menos un reto está incompleto
+- Countdown hasta fin del día UTC (actualización cada 60s)
+- Retorna: `challenges`, `progress`, `loading`, `showDialog`, `millisUntilEndOfDay`, `openDialog`, `closeDialog`, `refreshProgress`
 
 ---
 
-## 7. i18n
+## 7. UI — COMPLETADO
 
-En `src/i18n/resources.ts`, agregar claves para ambos idiomas:
+### 7.1 `DailyChallengesDialog`
 
-```
-challenges.title
-challenges.simple
-challenges.complex
-challenges.completed
-challenges.points
-challenges.daily_title
-challenges.no_challenges
-challenges.[nombre_de_cada_reto]
-challenges.[descripcion_de_cada_reto]
-```
+En `src/views/Play/components/Dialogs/DailyChallengesDialog/`:
 
----
+- `DailyChallengesDialog.tsx` — Dialog con 2 `ChallengeRow` (simple + complex)
+- Cada fila muestra: checkbox (verde si completado), nombre (tachado si completado), badge de tipo (azul/morado), puntos, descripción
+- Countdown al final: `HHh MMm` hasta fin del día UTC
+- `types.ts`, `constants.ts`, `index.ts`
 
-## 8. Feature Flag
+### 7.2 Toolbar
 
-En `src/config/env.ts`, agregar:
+En `src/views/Play/sections/Toolbar.tsx`:
 
-```ts
-VITE_FEATURE_DAILY_CHALLENGES: boolean
-```
+- Botón con icono `faTrophy` antes del botón de Help
+- Feature-flagged: solo aparece si `dailyChallengesEnabled && challenges !== null`
+- Label: `challenges.buttonLabel` ("Challenges" / "Retos")
 
-Para poder activar/desactivar el feature.
+### 7.3 DialogsSection
 
----
+En `src/views/Play/sections/DialogsSection.tsx`:
 
-## 9. Orden de Implementación
+- Lazy-loaded: `const DailyChallengesDialog = lazy(...)`
+- Visibilidad condicionada (no se muestra si hay resume/end-of-game/checksum dialogs activos)
+- Renderizado antes del developer console dialog
 
-| Paso | Tarea | Archivos |
-|------|-------|----------|
-| 1 | Definir constantes y tipos del dominio | `src/domain/challenges/*` |
-| 2 | Schema Convex + datos semilla | `convex/schema.ts`, `convex/data/challenges.ts` |
-| 3 | Funciones Convex (queries + mutations) | `convex/challenges.ts` |
-| 4 | API client | `src/api/challenges/*` |
-| 5 | Lógica de validación de retos | `src/domain/challenges/validation.ts` |
-| 6 | Hook `useDailyChallenges` | `src/hooks/useDailyChallenges.ts` |
-| 7 | Feature flag | `src/config/env.ts` |
-| 8 | i18n keys | `src/i18n/resources.ts` |
-| 9 | UI: Dialog + Card + integración toolbar | `src/views/Play/components/DailyChallenges/*` |
-| 10 | Integración en `usePlayController` | `src/views/Play/hooks/usePlayController/` |
-| 11 | Tests | `*.test.ts` junto a cada archivo |
+### 7.4 PlayViewProvider
+
+En `src/views/Play/providers/`:
+
+- `PlayViewProvider.tsx` — Usa `useDailyChallenges(dailyChallengesEnabled)` y expone `dailyChallenges` + `dailyChallengesEnabled`
+- `types.ts` — `DailyChallengesState` type + campos agregados a `PlayViewContextValue`
 
 ---
 
-## 10. Validaciones Importantes
+## 8. Validaciones
 
-- **Paridad:** La semilla debe tener cantidad par de retos (N simples + N complejos, donde N >= 1). Validar en `seedChallenges`.
-- **Reset atómico:** Cuando se agotan retos de un tipo, reiniciar **todos** (ambos tipos) en una sola transacción.
-- **Idempotencia:** `generateDailyChallenges` debe ser idempotente — si ya existen para la fecha, retornar los existentes.
-- **Timezone:** Usar UTC para la fecha del día para consistencia global.
-- **Anti-trampas:** La evaluación de condiciones debe ocurrir también en el backend (no confiar solo en el cliente).
+- **Paridad:** `seedChallenges` valida que haya igual cantidad de simples y complejos.
+- **Reset atómico:** Cuando se agotan retos de un tipo, se reinician **todos**.
+- **Idempotencia:** `generateDailyChallenges` retorna existentes si ya hay para la fecha.
+- **Timezone:** Fecha del día en UTC (`toISOString().slice(0, 10)`).
+- **Session storage:** El dialog auto-show solo ocurre una vez por sesión del navegador.
+
+---
+
+## 9. Tests
+
+- TypeScript compila sin errores (`tsc --noEmit`)
+- 55 archivos de test, 523 tests pasando sin regresiones
+- Mock de `ChallengeClient` agregado a `src/test/utils.tsx`
+
+---
+
+## 10. Pendiente
+
+| Tarea | Descripción |
+|-------|-------------|
+| Integración en `usePlayController` | Evaluar retos automáticamente al terminar ronda (`commitVictory`/`commitLoss`) y llamar `completeChallenge` |
+| Toast de reto completado | Mostrar `Alert` con nombre y puntos al completar un reto |
+| Tests de `validation.ts` | Unit tests para las 12 funciones evaluadoras |
+| Tests de `DailyChallengesDialog` | Component tests |
+| Tests de `useDailyChallenges` | Hook tests |
+
+---
+
+## Archivos creados/modificados
+
+### Nuevos (14 archivos)
+| Archivo | Descripción |
+|---------|-------------|
+| `convex/data/challenges.ts` | Datos semilla de 12 retos |
+| `convex/challenges.ts` | Queries y mutations de Convex |
+| `src/domain/challenges/types.ts` | Tipos del dominio |
+| `src/domain/challenges/constants.ts` | Constantes de puntuación |
+| `src/domain/challenges/validation.ts` | 12 evaluadores de condiciones |
+| `src/domain/challenges/index.ts` | Re-exports |
+| `src/api/challenges/ChallengeClient.ts` | API client |
+| `src/api/challenges/types.ts` | Tipos del API |
+| `src/api/challenges/constants.ts` | Referencias Convex |
+| `src/api/challenges/index.ts` | Re-exports |
+| `src/hooks/useDailyChallenges.ts` | Hook de retos diarios |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/DailyChallengesDialog.tsx` | Componente dialog |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/types.ts` | Props del dialog |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/constants.ts` | Title ID |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/index.ts` | Re-exports |
+
+### Modificados (9 archivos)
+| Archivo | Cambio |
+|---------|--------|
+| `convex/schema.ts` | 3 tablas nuevas |
+| `src/config/env.ts` | `dailyChallengesEnabled` |
+| `src/config/types.ts` | `dailyChallengesEnabled` en `RuntimeEnv` |
+| `src/providers/FeatureFlags/types.ts` | `dailyChallengesEnabled` en `FeatureFlags` |
+| `src/providers/FeatureFlags/utils.ts` | Mapeo de flag |
+| `src/providers/Api/ApiProvider.tsx` | Instancia `ChallengeClient` |
+| `src/providers/Api/types.ts` | `challengeClient` en `ApiContextType` |
+| `src/i18n/resources.ts` | Claves EN/ES de challenges |
+| `src/views/Play/providers/types.ts` | `DailyChallengesState` + campos |
+| `src/views/Play/providers/PlayViewProvider.tsx` | Hook + expose |
+| `src/views/Play/sections/Toolbar.tsx` | Botón de trofeo |
+| `src/views/Play/sections/DialogsSection.tsx` | Lazy-load + render |
+| `src/test/utils.tsx` | Mock de `ChallengeClient` |
