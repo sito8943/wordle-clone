@@ -106,8 +106,8 @@ playerChallengeProgress: defineTable({
 ### 2.1 `src/domain/challenges/constants.ts`
 
 ```ts
-SIMPLE_CHALLENGE_POINTS = 5
-COMPLEX_CHALLENGE_POINTS = 15
+SIMPLE_CHALLENGE_POINTS = 5;
+COMPLEX_CHALLENGE_POINTS = 15;
 ```
 
 ### 2.2 `src/domain/challenges/types.ts`
@@ -120,6 +120,7 @@ COMPLEX_CHALLENGE_POINTS = 15
 ### 2.3 `src/domain/challenges/validation.ts`
 
 12 funciones evaluadoras mapeadas por `conditionKey`:
+
 - Simples: `first_guess`, `complete_round`, `unique_letters`, `three_guesses`, `vowels_first`, `persistent`
 - Complejos: `speedster`, `genius`, `unstoppable_streak`, `perfectionist`, `extreme_difficulty`, `polyglot`
 
@@ -244,50 +245,52 @@ En `src/views/Play/providers/`:
 
 ## 10. Pendiente
 
-| Tarea | Descripción |
-|-------|-------------|
+| Tarea                              | Descripción                                                                                                 |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Integración en `usePlayController` | Evaluar retos automáticamente al terminar ronda (`commitVictory`/`commitLoss`) y llamar `completeChallenge` |
-| Toast de reto completado | Mostrar `Alert` con nombre y puntos al completar un reto |
-| Tests de `validation.ts` | Unit tests para las 12 funciones evaluadoras |
-| Tests de `DailyChallengesDialog` | Component tests |
-| Tests de `useDailyChallenges` | Hook tests |
+| Toast de reto completado           | Mostrar `Alert` con nombre y puntos al completar un reto                                                    |
+| Tests de `validation.ts`           | Unit tests para las 12 funciones evaluadoras                                                                |
+| Tests de `DailyChallengesDialog`   | Component tests                                                                                             |
+| Tests de `useDailyChallenges`      | Hook tests                                                                                                  |
 
 ---
 
 ## Archivos creados/modificados
 
 ### Nuevos (14 archivos)
-| Archivo | Descripción |
-|---------|-------------|
-| `convex/data/challenges.ts` | Datos semilla de 12 retos |
-| `convex/challenges.ts` | Queries y mutations de Convex |
-| `src/domain/challenges/types.ts` | Tipos del dominio |
-| `src/domain/challenges/constants.ts` | Constantes de puntuación |
-| `src/domain/challenges/validation.ts` | 12 evaluadores de condiciones |
-| `src/domain/challenges/index.ts` | Re-exports |
-| `src/api/challenges/ChallengeClient.ts` | API client |
-| `src/api/challenges/types.ts` | Tipos del API |
-| `src/api/challenges/constants.ts` | Referencias Convex |
-| `src/api/challenges/index.ts` | Re-exports |
-| `src/hooks/useDailyChallenges.ts` | Hook de retos diarios |
-| `src/views/Play/components/Dialogs/DailyChallengesDialog/DailyChallengesDialog.tsx` | Componente dialog |
-| `src/views/Play/components/Dialogs/DailyChallengesDialog/types.ts` | Props del dialog |
-| `src/views/Play/components/Dialogs/DailyChallengesDialog/constants.ts` | Title ID |
-| `src/views/Play/components/Dialogs/DailyChallengesDialog/index.ts` | Re-exports |
+
+| Archivo                                                                             | Descripción                   |
+| ----------------------------------------------------------------------------------- | ----------------------------- |
+| `convex/data/challenges.ts`                                                         | Datos semilla de 12 retos     |
+| `convex/challenges.ts`                                                              | Queries y mutations de Convex |
+| `src/domain/challenges/types.ts`                                                    | Tipos del dominio             |
+| `src/domain/challenges/constants.ts`                                                | Constantes de puntuación      |
+| `src/domain/challenges/validation.ts`                                               | 12 evaluadores de condiciones |
+| `src/domain/challenges/index.ts`                                                    | Re-exports                    |
+| `src/api/challenges/ChallengeClient.ts`                                             | API client                    |
+| `src/api/challenges/types.ts`                                                       | Tipos del API                 |
+| `src/api/challenges/constants.ts`                                                   | Referencias Convex            |
+| `src/api/challenges/index.ts`                                                       | Re-exports                    |
+| `src/hooks/useDailyChallenges.ts`                                                   | Hook de retos diarios         |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/DailyChallengesDialog.tsx` | Componente dialog             |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/types.ts`                  | Props del dialog              |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/constants.ts`              | Title ID                      |
+| `src/views/Play/components/Dialogs/DailyChallengesDialog/index.ts`                  | Re-exports                    |
 
 ### Modificados (9 archivos)
-| Archivo | Cambio |
-|---------|--------|
-| `convex/schema.ts` | 3 tablas nuevas |
-| `src/config/env.ts` | `dailyChallengesEnabled` |
-| `src/config/types.ts` | `dailyChallengesEnabled` en `RuntimeEnv` |
-| `src/providers/FeatureFlags/types.ts` | `dailyChallengesEnabled` en `FeatureFlags` |
-| `src/providers/FeatureFlags/utils.ts` | Mapeo de flag |
-| `src/providers/Api/ApiProvider.tsx` | Instancia `ChallengeClient` |
-| `src/providers/Api/types.ts` | `challengeClient` en `ApiContextType` |
-| `src/i18n/resources.ts` | Claves EN/ES de challenges |
-| `src/views/Play/providers/types.ts` | `DailyChallengesState` + campos |
-| `src/views/Play/providers/PlayViewProvider.tsx` | Hook + expose |
-| `src/views/Play/sections/Toolbar.tsx` | Botón de trofeo |
-| `src/views/Play/sections/DialogsSection.tsx` | Lazy-load + render |
-| `src/test/utils.tsx` | Mock de `ChallengeClient` |
+
+| Archivo                                         | Cambio                                     |
+| ----------------------------------------------- | ------------------------------------------ |
+| `convex/schema.ts`                              | 3 tablas nuevas                            |
+| `src/config/env.ts`                             | `dailyChallengesEnabled`                   |
+| `src/config/types.ts`                           | `dailyChallengesEnabled` en `RuntimeEnv`   |
+| `src/providers/FeatureFlags/types.ts`           | `dailyChallengesEnabled` en `FeatureFlags` |
+| `src/providers/FeatureFlags/utils.ts`           | Mapeo de flag                              |
+| `src/providers/Api/ApiProvider.tsx`             | Instancia `ChallengeClient`                |
+| `src/providers/Api/types.ts`                    | `challengeClient` en `ApiContextType`      |
+| `src/i18n/resources.ts`                         | Claves EN/ES de challenges                 |
+| `src/views/Play/providers/types.ts`             | `DailyChallengesState` + campos            |
+| `src/views/Play/providers/PlayViewProvider.tsx` | Hook + expose                              |
+| `src/views/Play/sections/Toolbar.tsx`           | Botón de trofeo                            |
+| `src/views/Play/sections/DialogsSection.tsx`    | Lazy-load + render                         |
+| `src/test/utils.tsx`                            | Mock de `ChallengeClient`                  |

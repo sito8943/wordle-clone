@@ -1,4 +1,7 @@
-import type { RemoteChallengeProgress, RemoteDailyChallenges } from "@api/challenges";
+import type {
+  RemoteChallengeProgress,
+  RemoteDailyChallenges,
+} from "@api/challenges";
 
 export type DailyChallengesDialogProps = {
   visible: boolean;

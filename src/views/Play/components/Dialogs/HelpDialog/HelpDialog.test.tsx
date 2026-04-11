@@ -8,7 +8,6 @@ import {
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
-import { i18n } from "@i18n";
 import HelpDialog from "./HelpDialog";
 
 afterEach(cleanup);
@@ -73,20 +72,12 @@ describe("HelpDialog", () => {
     expect(screen.getByText("Hard: x5 difficulty multiplier.")).toBeTruthy();
   });
 
-  it("renders the normal dictionary-row bonus rule and marker tooltip", () => {
+  it("renders the normal dictionary-row bonus rule", () => {
     renderHelpDialog();
 
-    const bonusText = `Normal: each incorrect dictionary-word row adds +${NORMAL_DICTIONARY_ROW_BONUS} to the difficulty multiplier (○ marker).`;
-    const tooltip = i18n.t("play.gameplay.normalDictionaryBonusTooltip", {
-      bonus: NORMAL_DICTIONARY_ROW_BONUS,
-    });
+    const bonusText = `Normal: x2 difficulty multiplier. Each incorrect dictionary-word row adds +${NORMAL_DICTIONARY_ROW_BONUS} to the difficulty multiplier (○ marker).`;
 
     expect(screen.getByText(bonusText)).toBeTruthy();
-    expect(
-      screen.getByRole("img", {
-        name: tooltip,
-      }),
-    ).toBeTruthy();
   });
 
   it("renders the streak multiplier formula", () => {

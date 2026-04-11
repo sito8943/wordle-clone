@@ -27,10 +27,8 @@ const ChallengeRow = ({
   points: number;
 }) => {
   const { t } = useTranslation();
-  const nameKey =
-    `challenges.names.${challenge.conditionKey}` as const;
-  const descKey =
-    `challenges.descriptions.${challenge.conditionKey}` as const;
+  const nameKey = `challenges.names.${challenge.conditionKey}` as const;
+  const descKey = `challenges.descriptions.${challenge.conditionKey}` as const;
 
   return (
     <div
@@ -70,7 +68,7 @@ const ChallengeRow = ({
           <span
             className={`ml-auto text-xs font-bold ${completed ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
           >
-            +{points} pts
+            {t("challenges.points", { points })}
           </span>
         </div>
         <p
