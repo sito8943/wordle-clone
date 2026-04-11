@@ -502,6 +502,90 @@ h1,
   transform: none !important;
 }
 
+/* Settings entrance animation */
+@keyframes settings-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-entrance {
+  opacity: 0;
+  animation: settings-entrance 0.35s ease-out forwards;
+}
+
+.wordle-animations-disabled .settings-entrance {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+/* Alert enter/exit animations */
+@keyframes alert-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes alert-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.alert-enter {
+  animation: alert-enter 0.25s ease-out forwards;
+}
+
+.alert-exit {
+  animation: alert-exit 0.2s ease-in forwards;
+}
+
+.wordle-animations-disabled .alert-enter,
+.wordle-animations-disabled .alert-exit {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+/* Scoreboard row entrance animation */
+@keyframes scoreboard-row-entrance {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scoreboard-row-entrance {
+  opacity: 0;
+  animation: scoreboard-row-entrance 0.3s ease-out forwards;
+}
+
+.wordle-animations-disabled .scoreboard-row-entrance {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .board-entry-animation,
   .keyboard-entry-animation,
@@ -538,5 +622,14 @@ h1,
 
   .scoreboard-current-player-row > td {
     animation: none;
+  }
+
+  .settings-entrance,
+  .scoreboard-row-entrance,
+  .alert-enter,
+  .alert-exit {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }

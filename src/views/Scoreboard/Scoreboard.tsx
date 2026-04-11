@@ -8,7 +8,10 @@ import {
   ErrorFallback,
   FireStreak,
 } from "@components";
+import { useAnimatedPresence } from "@hooks";
 import { useScoreboardController } from "./hooks";
+
+const ALERT_EXIT_MS = 200;
 
 const Scoreboard = (): JSX.Element => {
   const { t } = useTranslation();
@@ -23,43 +26,70 @@ const Scoreboard = (): JSX.Element => {
     refresh,
   } = useScoreboardController();
 
+  const convexAlert = useAnimatedPresence(!convexEnabled, ALERT_EXIT_MS);
+  const offlineAlert = useAnimatedPresence(
+    convexEnabled && source === "local",
+    ALERT_EXIT_MS,
+  );
+  const errorAlert = useAnimatedPresence(!!error, ALERT_EXIT_MS);
+  const rankAlert = useAnimatedPresence(
+    currentClientOutsideTop && currentClientRank !== null,
+    ALERT_EXIT_MS,
+  );
+
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="page-title">{t("scoreboard.title")}</h2>
-        <Button
-          onClick={() => void refresh()}
-          aria-label={t("scoreboard.refreshAriaLabel")}
-          icon={faRotateRight}
-          variant="ghost"
-          iconClassName="text-lg"
-          className="mobile-compact-button"
-          hideLabelOnMobile
-        >
-          {t("common.refresh")}
-        </Button>
+      <div className="settings-entrance" style={{ animationDelay: "0ms" }}>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="page-title">{t("scoreboard.title")}</h2>
+          <Button
+            onClick={() => void refresh()}
+            aria-label={t("scoreboard.refreshAriaLabel")}
+            icon={faRotateRight}
+            variant="ghost"
+            iconClassName="text-lg"
+            className="mobile-compact-button"
+            hideLabelOnMobile
+          >
+            {t("common.refresh")}
+          </Button>
+        </div>
       </div>
 
-      {!convexEnabled && (
-        <Alert message={t("scoreboard.convexNotConfigured")} color="warning" />
+      {convexAlert.shouldRender && (
+        <div className={convexAlert.isExiting ? "alert-exit" : "alert-enter"}>
+          <Alert
+            message={t("scoreboard.convexNotConfigured")}
+            color="warning"
+          />
+        </div>
       )}
 
-      {convexEnabled && source === "local" && (
-        <Alert message={t("scoreboard.offlineFallback")} color="info" />
+      {offlineAlert.shouldRender && (
+        <div className={offlineAlert.isExiting ? "alert-exit" : "alert-enter"}>
+          <Alert message={t("scoreboard.offlineFallback")} color="info" />
+        </div>
       )}
 
-      {error && <Alert message={error} color="danger" />}
-
-      {currentClientOutsideTop && currentClientRank !== null && (
-        <Alert
-          message={t("scoreboard.currentPosition", {
-            shownRank: scores.length,
-            realRank: currentClientRank,
-          })}
-          color="success"
-        />
+      {errorAlert.shouldRender && (
+        <div className={errorAlert.isExiting ? "alert-exit" : "alert-enter"}>
+          <Alert message={error} color="danger" />
+        </div>
       )}
 
+      {rankAlert.shouldRender && (
+        <div className={rankAlert.isExiting ? "alert-exit" : "alert-enter"}>
+          <Alert
+            message={t("scoreboard.currentPosition", {
+              shownRank: scores.length,
+              realRank: currentClientRank,
+            })}
+            color="success"
+          />
+        </div>
+      )}
+
+      <div className="settings-entrance" style={{ animationDelay: "160ms" }}>
       <ErrorBoundary
         name="scoreboard-table"
         resetKeys={[scores.length, loading, source, currentClientRank]}
@@ -107,14 +137,15 @@ const Scoreboard = (): JSX.Element => {
               )}
 
               {!loading &&
-                scores.map((entry) => (
+                scores.map((entry, index) => (
                   <tr
                     key={`${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`}
-                    className={`border-t border-neutral-200 dark:border-neutral-700 ${
+                    className={`scoreboard-row-entrance border-t border-neutral-200 dark:border-neutral-700 ${
                       entry.isCurrentClient
                         ? "scoreboard-current-player-row"
                         : ""
                     }`}
+                    style={{ animationDelay: `${240 + index * 50}ms` }}
                   >
                     <td className="scoreboard-cell font-semibold text-xs">
                       <div className="flex flex-col">
@@ -139,6 +170,7 @@ const Scoreboard = (): JSX.Element => {
           </table>
         </section>
       </ErrorBoundary>
+      </div>
     </main>
   );
 };

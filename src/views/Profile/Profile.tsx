@@ -14,10 +14,18 @@ const ProfileContent = (): JSX.Element => {
     <main className="page-centered gap-10">
       <DifficultyChangeDialog />
       <LanguageDialog />
-      <ProfileHeader />
-      <ProfileEditorSection />
-      <SettingsSection />
-      <RecoverySection />
+      <div className="settings-entrance" style={{ animationDelay: "0ms" }}>
+        <ProfileHeader />
+      </div>
+      <div className="settings-entrance" style={{ animationDelay: "80ms" }}>
+        <ProfileEditorSection />
+      </div>
+      <div className="settings-entrance" style={{ animationDelay: "160ms" }}>
+        <SettingsSection />
+      </div>
+      <div className="settings-entrance" style={{ animationDelay: "240ms" }}>
+        <RecoverySection />
+      </div>
     </main>
   );
 };
