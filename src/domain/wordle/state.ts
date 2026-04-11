@@ -209,8 +209,7 @@ export const setLetterAt = (
   const padded = state.current.padEnd(index + 1, " ");
   return {
     ...state,
-    current:
-      padded.slice(0, index) + letter + padded.slice(index + 1),
+    current: padded.slice(0, index) + letter + padded.slice(index + 1),
   };
 };
 

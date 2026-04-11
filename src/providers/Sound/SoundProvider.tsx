@@ -366,7 +366,15 @@ const SoundProvider = ({ children }: ProviderProps) => {
       setMuted,
       playSound,
     }),
-    [muted, playSound, setMuted, setSoundEnabled, setVolume, soundEnabled, volume],
+    [
+      muted,
+      playSound,
+      setMuted,
+      setSoundEnabled,
+      setVolume,
+      soundEnabled,
+      volume,
+    ],
   );
 
   return (

@@ -877,5 +877,5 @@ export const ES_WORDS = [
   "opera",
   "venda",
   "plomo",
-  "azote"
+  "azote",
 ];
