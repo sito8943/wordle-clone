@@ -60,4 +60,28 @@ export default defineSchema({
     checksum: v.number(),
     updatedAt: v.number(),
   }).index("by_language", ["language"]),
+  challenges: defineTable({
+    name: v.string(),
+    description: v.string(),
+    type: v.union(v.literal("simple"), v.literal("complex")),
+    conditionKey: v.string(),
+    used: v.boolean(),
+  })
+    .index("by_type", ["type"])
+    .index("by_type_and_used", ["type", "used"]),
+  dailyChallenges: defineTable({
+    date: v.string(),
+    simpleChallengeId: v.id("challenges"),
+    complexChallengeId: v.id("challenges"),
+  }).index("by_date", ["date"]),
+  playerChallengeProgress: defineTable({
+    profileId: v.id("scores"),
+    challengeId: v.id("challenges"),
+    date: v.string(),
+    completed: v.boolean(),
+    completedAt: v.optional(v.number()),
+    pointsAwarded: v.number(),
+  })
+    .index("by_profile_and_date", ["profileId", "date"])
+    .index("by_profile_and_challenge", ["profileId", "challengeId"]),
 });

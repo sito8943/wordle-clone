@@ -1,0 +1,2 @@
+export const SIMPLE_CHALLENGE_POINTS = 5;
+export const COMPLEX_CHALLENGE_POINTS = 15;

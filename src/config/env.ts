@@ -47,6 +47,11 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_HELP_BUTTON_ENABLED ?? rawEnv.HELP_BUTTON_ENABLED,
     true,
   ),
+  dailyChallengesEnabled: readBoolean(
+    import.meta.env.VITE_DAILY_CHALLENGES_ENABLED ??
+      rawEnv.DAILY_CHALLENGES_ENABLED,
+    true,
+  ),
   scoreLimit: SCORE_LIMIT,
   wordleGameStorageKey: WORDLE_GAME_STORAGE_KEY,
   paypalDonationButtonUrl: readOptionalString(
