@@ -364,6 +364,17 @@ export const resources = {
           checksumDescription:
             "Recompute checksum from current Convex words and patch existing words metadata.",
           refreshChecksum: "Refresh remote checksum",
+          challengesDescription:
+            "Developer tools for daily challenges. Refresh loads today's current pair; change rerolls today's pair.",
+          refreshChallenges: "Refresh today's challenges",
+          changeChallenges: "Change today's challenges",
+          challengesRefreshing: "Refreshing challenges...",
+          challengesChanging: "Changing challenges...",
+          challengesRefreshed:
+            "Challenges reset: {{simple}} / {{complex}}. Cleared {{count}} completions (-{{points}} pts).",
+          challengesChanged:
+            "Challenges changed and reset: {{simple}} / {{complex}}. Cleared {{count}} completions (-{{points}} pts).",
+          challengesActionError: "Could not update daily challenges.",
           refreshing: "Refreshing...",
           checksumUpdated: "Remote checksum updated to {{checksum}}.",
           checksumRefreshError: "Could not refresh remote dictionary checksum.",
@@ -793,6 +804,18 @@ export const resources = {
           checksumDescription:
             "Recalcula el checksum a partir de las palabras actuales de Convex y actualiza sus metadatos.",
           refreshChecksum: "Actualizar checksum remoto",
+          challengesDescription:
+            "Herramientas de desarrollo para retos diarios. Refrescar carga el par actual de hoy; cambiar vuelve a sortear el par de hoy.",
+          refreshChallenges: "Refrescar retos de hoy",
+          changeChallenges: "Cambiar retos de hoy",
+          challengesRefreshing: "Refrescando retos...",
+          challengesChanging: "Cambiando retos...",
+          challengesRefreshed:
+            "Retos reiniciados: {{simple}} / {{complex}}. Se limpiaron {{count}} completados (-{{points}} pts).",
+          challengesChanged:
+            "Retos cambiados y reiniciados: {{simple}} / {{complex}}. Se limpiaron {{count}} completados (-{{points}} pts).",
+          challengesActionError:
+            "No se han podido actualizar los retos diarios.",
           refreshing: "Actualizando...",
           checksumUpdated: "Checksum remoto actualizado a {{checksum}}.",
           checksumRefreshError:

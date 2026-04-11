@@ -34,6 +34,12 @@ const DeveloperConsoleDialog = ({
   isRefreshingDictionaryChecksum,
   dictionaryChecksumMessage,
   dictionaryChecksumMessageKind,
+  refreshDailyChallengesForDeveloper,
+  changeDailyChallengesForDeveloper,
+  isRefreshingDailyChallengesForDeveloper,
+  isChangingDailyChallengesForDeveloper,
+  dailyChallengesDeveloperMessage,
+  dailyChallengesDeveloperMessageKind,
 }: DeveloperConsoleDialogProps): JSX.Element => {
   const { t } = useTranslation();
   const canRenderDialog =
@@ -259,6 +265,58 @@ const DeveloperConsoleDialog = ({
               }`}
             >
               {dictionaryChecksumMessage}
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-md border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900">
+          <p className="text-xs text-neutral-700 dark:text-neutral-300">
+            {t("play.developerConsole.challengesDescription")}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={
+                isClosing ||
+                isRefreshingDailyChallengesForDeveloper ||
+                isChangingDailyChallengesForDeveloper
+              }
+              onClick={() => {
+                void refreshDailyChallengesForDeveloper();
+              }}
+            >
+              {isRefreshingDailyChallengesForDeveloper
+                ? t("play.developerConsole.challengesRefreshing")
+                : t("play.developerConsole.refreshChallenges")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              color="danger"
+              disabled={
+                isClosing ||
+                isRefreshingDailyChallengesForDeveloper ||
+                isChangingDailyChallengesForDeveloper
+              }
+              onClick={() => {
+                void changeDailyChallengesForDeveloper();
+              }}
+            >
+              {isChangingDailyChallengesForDeveloper
+                ? t("play.developerConsole.challengesChanging")
+                : t("play.developerConsole.changeChallenges")}
+            </Button>
+          </div>
+          {dailyChallengesDeveloperMessage && (
+            <p
+              className={`mt-2 text-sm ${
+                dailyChallengesDeveloperMessageKind === "error"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-emerald-700 dark:text-emerald-400"
+              }`}
+            >
+              {dailyChallengesDeveloperMessage}
             </p>
           )}
         </div>

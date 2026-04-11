@@ -19,6 +19,18 @@ const getUnusedByType = async (
 const pickRandom = <T>(items: T[]): T =>
   items[Math.floor(Math.random() * items.length)];
 
+const pickRandomPreferDifferent = <T extends { _id: string }>(
+  items: T[],
+  previousId?: string,
+): T => {
+  if (!previousId) {
+    return pickRandom(items);
+  }
+
+  const withoutPrevious = items.filter((item) => item._id !== previousId);
+  return pickRandom(withoutPrevious.length > 0 ? withoutPrevious : items);
+};
+
 const resetAllChallenges = async (ctx: MutationCtx) => {
   const all = await ctx.db.query("challenges").collect();
   for (const challenge of all) {
@@ -116,7 +128,9 @@ export const generateDailyChallenges = mutation({
       const complex = await ctx.db.get(existing.complexChallengeId);
 
       if (!simple || !complex) {
-        throw new Error("Daily challenges reference missing challenge records.");
+        throw new Error(
+          "Daily challenges reference missing challenge records.",
+        );
       }
 
       return {
@@ -149,6 +163,65 @@ export const generateDailyChallenges = mutation({
     await ctx.db.patch(complex._id, { used: true });
 
     // Create daily entry
+    await ctx.db.insert("dailyChallenges", {
+      date: args.date,
+      simpleChallengeId: simple._id,
+      complexChallengeId: complex._id,
+    });
+
+    return {
+      date: args.date,
+      simple: formatChallenge(simple),
+      complex: formatChallenge(complex),
+    };
+  },
+});
+
+export const regenerateDailyChallenges = mutation({
+  args: { date: v.string() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("dailyChallenges")
+      .withIndex("by_date", (q) => q.eq("date", args.date))
+      .unique();
+
+    const previousSimpleId = existing?.simpleChallengeId;
+    const previousComplexId = existing?.complexChallengeId;
+
+    if (existing) {
+      const previousSimple = await ctx.db.get(existing.simpleChallengeId);
+      const previousComplex = await ctx.db.get(existing.complexChallengeId);
+
+      if (previousSimple) {
+        await ctx.db.patch(previousSimple._id, { used: false });
+      }
+
+      if (previousComplex) {
+        await ctx.db.patch(previousComplex._id, { used: false });
+      }
+
+      await ctx.db.delete(existing._id);
+    }
+
+    let unusedSimple = await getUnusedByType(ctx, "simple");
+    let unusedComplex = await getUnusedByType(ctx, "complex");
+
+    if (unusedSimple.length === 0 || unusedComplex.length === 0) {
+      await resetAllChallenges(ctx);
+      unusedSimple = await getUnusedByType(ctx, "simple");
+      unusedComplex = await getUnusedByType(ctx, "complex");
+    }
+
+    if (unusedSimple.length === 0 || unusedComplex.length === 0) {
+      throw new Error("No challenges available. Run seedChallenges first.");
+    }
+
+    const simple = pickRandomPreferDifferent(unusedSimple, previousSimpleId);
+    const complex = pickRandomPreferDifferent(unusedComplex, previousComplexId);
+
+    await ctx.db.patch(simple._id, { used: true });
+    await ctx.db.patch(complex._id, { used: true });
+
     await ctx.db.insert("dailyChallenges", {
       date: args.date,
       simpleChallengeId: simple._id,
@@ -238,6 +311,47 @@ export const completeChallenge = mutation({
     });
 
     return { pointsAwarded, alreadyCompleted: false };
+  },
+});
+
+export const resetPlayerChallengeProgressForDate = mutation({
+  args: {
+    clientId: v.string(),
+    date: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await resolveProfileByClientId(ctx, args.clientId);
+    if (!profile) {
+      throw new Error("Player profile not found.");
+    }
+
+    const entries = await ctx.db
+      .query("playerChallengeProgress")
+      .withIndex("by_profile_and_date", (q) =>
+        q.eq("profileId", profile._id).eq("date", args.date),
+      )
+      .collect();
+
+    const pointsReverted = entries.reduce(
+      (total, entry) => total + (entry.completed ? entry.pointsAwarded : 0),
+      0,
+    );
+
+    for (const entry of entries) {
+      await ctx.db.delete(entry._id);
+    }
+
+    if (pointsReverted > 0) {
+      const currentScore = profile.score ?? 0;
+      await ctx.db.patch(profile._id, {
+        score: Math.max(0, currentScore - pointsReverted),
+      });
+    }
+
+    return {
+      resetCount: entries.length,
+      pointsReverted,
+    };
   },
 });
 

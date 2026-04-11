@@ -41,10 +41,14 @@ const createMockChallengeClient = () =>
     isConfigured: false,
     getTodayChallenges: vi.fn().mockResolvedValue(null),
     generateDailyChallenges: vi.fn().mockResolvedValue(null),
+    regenerateDailyChallenges: vi.fn().mockResolvedValue(null),
     getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
     completeChallenge: vi
       .fn()
       .mockResolvedValue({ pointsAwarded: 0, alreadyCompleted: false }),
+    resetPlayerChallengeProgressForDate: vi
+      .fn()
+      .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
     seedChallenges: vi
       .fn()
       .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),

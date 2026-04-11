@@ -132,3 +132,12 @@ export const recordDailyChallengeRoundCompletion = ({
 
   return next;
 };
+
+export const resetDailyChallengeRoundTracker = (
+  date: string,
+  playerCode: string,
+): DailyChallengeRoundTracker => {
+  const next = getDefaultTracker(date);
+  persistTracker(playerCode, next);
+  return next;
+};

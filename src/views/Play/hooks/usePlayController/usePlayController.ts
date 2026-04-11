@@ -15,6 +15,7 @@ import {
   evaluateCondition,
   notifyDailyChallengesProgressUpdated,
   recordDailyChallengeRoundCompletion,
+  resetDailyChallengeRoundTracker,
   type ChallengeConditionContext,
 } from "@domain/challenges";
 import { useApi, usePlayer } from "@providers";
@@ -139,6 +140,20 @@ export default function usePlayController() {
   >(null);
   const [dictionaryChecksumMessageKind, setDictionaryChecksumMessageKind] =
     useState<"success" | "error" | null>(null);
+  const [
+    isRefreshingDailyChallengesForDeveloper,
+    setIsRefreshingDailyChallengesForDeveloper,
+  ] = useState(false);
+  const [
+    isChangingDailyChallengesForDeveloper,
+    setIsChangingDailyChallengesForDeveloper,
+  ] = useState(false);
+  const [dailyChallengesDeveloperMessage, setDailyChallengesDeveloperMessage] =
+    useState<string | null>(null);
+  const [
+    dailyChallengesDeveloperMessageKind,
+    setDailyChallengesDeveloperMessageKind,
+  ] = useState<"success" | "error" | null>(null);
   const [endOfGameSnapshot, setEndOfGameSnapshot] =
     useState<EndOfGameSnapshot | null>(null);
   const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
@@ -677,6 +692,8 @@ export default function usePlayController() {
   const openDeveloperConsoleDialog = useCallback(() => {
     setDictionaryChecksumMessage(null);
     setDictionaryChecksumMessageKind(null);
+    setDailyChallengesDeveloperMessage(null);
+    setDailyChallengesDeveloperMessageKind(null);
     setShowDeveloperConsoleDialog(true);
   }, []);
 
@@ -714,6 +731,131 @@ export default function usePlayController() {
       setIsRefreshingDictionaryChecksum(false);
     }
   }, [isRefreshingDictionaryChecksum, player.language, wordDictionaryClient]);
+
+  const refreshDailyChallengesForDeveloper = useCallback(async () => {
+    if (
+      isRefreshingDailyChallengesForDeveloper ||
+      isChangingDailyChallengesForDeveloper
+    ) {
+      return;
+    }
+
+    setIsRefreshingDailyChallengesForDeveloper(true);
+    setDailyChallengesDeveloperMessage(null);
+    setDailyChallengesDeveloperMessageKind(null);
+
+    if (!challengeClient.isConfigured) {
+      setDailyChallengesDeveloperMessage(
+        i18n.t("play.developerConsole.challengesActionError"),
+      );
+      setDailyChallengesDeveloperMessageKind("error");
+      setIsRefreshingDailyChallengesForDeveloper(false);
+      return;
+    }
+
+    try {
+      await challengeClient.seedChallenges();
+      const date = getTodayDateUTC();
+      let todayChallenges = await challengeClient.getTodayChallenges(date);
+
+      if (!todayChallenges) {
+        todayChallenges = await challengeClient.generateDailyChallenges(date);
+      }
+      const resetResult =
+        await challengeClient.resetPlayerChallengeProgressForDate(date);
+      resetDailyChallengeRoundTracker(date, player.code);
+
+      setDailyChallengesDeveloperMessage(
+        i18n.t("play.developerConsole.challengesRefreshed", {
+          simple: i18n.t(
+            `challenges.names.${todayChallenges.simple.conditionKey}`,
+          ),
+          complex: i18n.t(
+            `challenges.names.${todayChallenges.complex.conditionKey}`,
+          ),
+          count: resetResult.resetCount,
+          points: resetResult.pointsReverted,
+        }),
+      );
+      setDailyChallengesDeveloperMessageKind("success");
+      notifyDailyChallengesProgressUpdated();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : i18n.t("play.developerConsole.challengesActionError");
+      setDailyChallengesDeveloperMessage(message);
+      setDailyChallengesDeveloperMessageKind("error");
+    } finally {
+      setIsRefreshingDailyChallengesForDeveloper(false);
+    }
+  }, [
+    challengeClient,
+    isChangingDailyChallengesForDeveloper,
+    isRefreshingDailyChallengesForDeveloper,
+    player.code,
+  ]);
+
+  const changeDailyChallengesForDeveloper = useCallback(async () => {
+    if (
+      isChangingDailyChallengesForDeveloper ||
+      isRefreshingDailyChallengesForDeveloper
+    ) {
+      return;
+    }
+
+    setIsChangingDailyChallengesForDeveloper(true);
+    setDailyChallengesDeveloperMessage(null);
+    setDailyChallengesDeveloperMessageKind(null);
+
+    if (!challengeClient.isConfigured) {
+      setDailyChallengesDeveloperMessage(
+        i18n.t("play.developerConsole.challengesActionError"),
+      );
+      setDailyChallengesDeveloperMessageKind("error");
+      setIsChangingDailyChallengesForDeveloper(false);
+      return;
+    }
+
+    try {
+      await challengeClient.seedChallenges();
+      const date = getTodayDateUTC();
+      const todayChallenges =
+        await challengeClient.regenerateDailyChallenges(date);
+      const resetResult =
+        await challengeClient.resetPlayerChallengeProgressForDate(date);
+      resetDailyChallengeRoundTracker(date, player.code);
+
+      setDailyChallengesDeveloperMessage(
+        i18n.t("play.developerConsole.challengesChanged", {
+          simple: i18n.t(
+            `challenges.names.${todayChallenges.simple.conditionKey}`,
+          ),
+          complex: i18n.t(
+            `challenges.names.${todayChallenges.complex.conditionKey}`,
+          ),
+          count: resetResult.resetCount,
+          points: resetResult.pointsReverted,
+        }),
+      );
+      setDailyChallengesDeveloperMessageKind("success");
+      notifyDailyChallengesProgressUpdated();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : i18n.t("play.developerConsole.challengesActionError");
+      setDailyChallengesDeveloperMessage(message);
+      setDailyChallengesDeveloperMessageKind("error");
+    } finally {
+      setIsChangingDailyChallengesForDeveloper(false);
+    }
+  }, [
+    challengeClient,
+    isChangingDailyChallengesForDeveloper,
+    isRefreshingDailyChallengesForDeveloper,
+    player.code,
+  ]);
 
   const submitDeveloperPlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -763,6 +905,8 @@ export default function usePlayController() {
       setIsSharingVictoryBoard(false);
       setVictoryBoardShareError(null);
       setChallengeCompletionMessage(null);
+      setDailyChallengesDeveloperMessage(null);
+      setDailyChallengesDeveloperMessageKind(null);
     }
   }, [showResumeDialog]);
 
@@ -960,6 +1104,12 @@ export default function usePlayController() {
     isRefreshingDictionaryChecksum,
     dictionaryChecksumMessage,
     dictionaryChecksumMessageKind,
+    refreshDailyChallengesForDeveloper,
+    changeDailyChallengesForDeveloper,
+    isRefreshingDailyChallengesForDeveloper,
+    isChangingDailyChallengesForDeveloper,
+    dailyChallengesDeveloperMessage,
+    dailyChallengesDeveloperMessageKind,
     challengeCompletionMessage,
     confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,

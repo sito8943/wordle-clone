@@ -97,8 +97,15 @@ describe("usePlayController", () => {
         isConfigured: false,
         getTodayChallenges: vi.fn(),
         generateDailyChallenges: vi.fn(),
+        regenerateDailyChallenges: vi.fn(),
         getPlayerChallengeProgress: vi.fn(),
         completeChallenge: vi.fn(),
+        resetPlayerChallengeProgressForDate: vi
+          .fn()
+          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+        seedChallenges: vi
+          .fn()
+          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
     });
     mockUsePlayer.mockReturnValue({
@@ -232,8 +239,15 @@ describe("usePlayController", () => {
           },
         }),
         generateDailyChallenges: vi.fn(),
+        regenerateDailyChallenges: vi.fn(),
         getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
         completeChallenge,
+        resetPlayerChallengeProgressForDate: vi
+          .fn()
+          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+        seedChallenges: vi
+          .fn()
+          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
     });
 

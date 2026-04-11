@@ -1,7 +1,4 @@
-import type {
-  ChallengeConditionKey,
-  ChallengeType,
-} from "@domain/challenges";
+import type { ChallengeConditionKey, ChallengeType } from "@domain/challenges";
 
 export type RemoteChallenge = {
   id: string;
@@ -30,4 +27,9 @@ export type RemoteChallengeProgress = {
 export type CompleteChallengeResult = {
   pointsAwarded: number;
   alreadyCompleted: boolean;
+};
+
+export type ResetPlayerChallengeProgressResult = {
+  resetCount: number;
+  pointsReverted: number;
 };

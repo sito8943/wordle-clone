@@ -4,12 +4,15 @@ import {
   GENERATE_DAILY_CHALLENGES_MUTATION,
   GET_PLAYER_CHALLENGE_PROGRESS_QUERY,
   GET_TODAY_CHALLENGES_QUERY,
+  REGENERATE_DAILY_CHALLENGES_MUTATION,
+  RESET_PLAYER_CHALLENGE_PROGRESS_MUTATION,
   SEED_CHALLENGES_MUTATION,
 } from "./constants";
 import type {
   CompleteChallengeResult,
   RemoteChallengeProgress,
   RemoteDailyChallenges,
+  ResetPlayerChallengeProgressResult,
 } from "./types";
 
 const CLIENT_ID_KEY = "wordle:scoreboard:client-id";
@@ -34,11 +37,18 @@ class ChallengeClient {
     );
   }
 
-  async generateDailyChallenges(
+  async generateDailyChallenges(date: string): Promise<RemoteDailyChallenges> {
+    return this.gateway.mutation<RemoteDailyChallenges>(
+      GENERATE_DAILY_CHALLENGES_MUTATION,
+      { date },
+    );
+  }
+
+  async regenerateDailyChallenges(
     date: string,
   ): Promise<RemoteDailyChallenges> {
     return this.gateway.mutation<RemoteDailyChallenges>(
-      GENERATE_DAILY_CHALLENGES_MUTATION,
+      REGENERATE_DAILY_CHALLENGES_MUTATION,
       { date },
     );
   }
@@ -76,6 +86,20 @@ class ChallengeClient {
     alreadySeeded: boolean;
   }> {
     return this.gateway.mutation(SEED_CHALLENGES_MUTATION, {});
+  }
+
+  async resetPlayerChallengeProgressForDate(
+    date: string,
+  ): Promise<ResetPlayerChallengeProgressResult> {
+    const clientId = this.getClientId();
+    if (!clientId) {
+      return { resetCount: 0, pointsReverted: 0 };
+    }
+
+    return this.gateway.mutation<ResetPlayerChallengeProgressResult>(
+      RESET_PLAYER_CHALLENGE_PROGRESS_MUTATION,
+      { clientId, date },
+    );
   }
 
   private getClientId(): string | null {

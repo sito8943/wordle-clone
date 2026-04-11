@@ -84,6 +84,12 @@ const DialogsSection = (): JSX.Element => {
     isRefreshingDictionaryChecksum,
     dictionaryChecksumMessage,
     dictionaryChecksumMessageKind,
+    refreshDailyChallengesForDeveloper,
+    changeDailyChallengesForDeveloper,
+    isRefreshingDailyChallengesForDeveloper,
+    isChangingDailyChallengesForDeveloper,
+    dailyChallengesDeveloperMessage,
+    dailyChallengesDeveloperMessageKind,
   } = controller;
   const navigate = useNavigate();
   const resumeDialogVisible = showResumeDialog;
@@ -244,6 +250,22 @@ const DialogsSection = (): JSX.Element => {
               isRefreshingDictionaryChecksum={isRefreshingDictionaryChecksum}
               dictionaryChecksumMessage={dictionaryChecksumMessage}
               dictionaryChecksumMessageKind={dictionaryChecksumMessageKind}
+              refreshDailyChallengesForDeveloper={
+                refreshDailyChallengesForDeveloper
+              }
+              changeDailyChallengesForDeveloper={
+                changeDailyChallengesForDeveloper
+              }
+              isRefreshingDailyChallengesForDeveloper={
+                isRefreshingDailyChallengesForDeveloper
+              }
+              isChangingDailyChallengesForDeveloper={
+                isChangingDailyChallengesForDeveloper
+              }
+              dailyChallengesDeveloperMessage={dailyChallengesDeveloperMessage}
+              dailyChallengesDeveloperMessageKind={
+                dailyChallengesDeveloperMessageKind
+              }
             />
           ) : null}
         </Suspense>

@@ -18,21 +18,28 @@ const basePlayer: Player = {
   hackingBan: null,
 };
 
+const createBaseProps = (player: Player) => ({
+  onClose: () => undefined,
+  developerConsoleEnabled: true,
+  answer: "APPLE",
+  player,
+  showResumeDialog: false,
+  submitDeveloperPlayer: () => undefined,
+  refreshRemoteDictionaryChecksum: async () => undefined,
+  isRefreshingDictionaryChecksum: false,
+  dictionaryChecksumMessage: null,
+  dictionaryChecksumMessageKind: null as "success" | "error" | null,
+  refreshDailyChallengesForDeveloper: async () => undefined,
+  changeDailyChallengesForDeveloper: async () => undefined,
+  isRefreshingDailyChallengesForDeveloper: false,
+  isChangingDailyChallengesForDeveloper: false,
+  dailyChallengesDeveloperMessage: null,
+  dailyChallengesDeveloperMessageKind: null as "success" | "error" | null,
+});
+
 const renderDialog = (player: Player, visible = true) =>
   render(
-    <DeveloperConsoleDialog
-      visible={visible}
-      onClose={() => undefined}
-      developerConsoleEnabled
-      answer="APPLE"
-      player={player}
-      showResumeDialog={false}
-      submitDeveloperPlayer={() => undefined}
-      refreshRemoteDictionaryChecksum={async () => undefined}
-      isRefreshingDictionaryChecksum={false}
-      dictionaryChecksumMessage={null}
-      dictionaryChecksumMessageKind={null}
-    />,
+    <DeveloperConsoleDialog visible={visible} {...createBaseProps(player)} />,
   );
 
 describe("DeveloperConsoleDialog", () => {
@@ -46,20 +53,11 @@ describe("DeveloperConsoleDialog", () => {
     rerender(
       <DeveloperConsoleDialog
         visible
-        onClose={() => undefined}
-        developerConsoleEnabled
-        answer="APPLE"
-        player={{
+        {...createBaseProps({
           ...basePlayer,
           difficulty: "hard",
           keyboardPreference: "native",
-        }}
-        showResumeDialog={false}
-        submitDeveloperPlayer={() => undefined}
-        refreshRemoteDictionaryChecksum={async () => undefined}
-        isRefreshingDictionaryChecksum={false}
-        dictionaryChecksumMessage={null}
-        dictionaryChecksumMessageKind={null}
+        })}
       />,
     );
 
@@ -78,32 +76,14 @@ describe("DeveloperConsoleDialog", () => {
     rerender(
       <DeveloperConsoleDialog
         visible={false}
-        onClose={() => undefined}
-        developerConsoleEnabled
-        answer="APPLE"
-        player={basePlayer}
-        showResumeDialog={false}
-        submitDeveloperPlayer={() => undefined}
-        refreshRemoteDictionaryChecksum={async () => undefined}
-        isRefreshingDictionaryChecksum={false}
-        dictionaryChecksumMessage={null}
-        dictionaryChecksumMessageKind={null}
+        {...createBaseProps(basePlayer)}
       />,
     );
 
     rerender(
       <DeveloperConsoleDialog
         visible
-        onClose={() => undefined}
-        developerConsoleEnabled
-        answer="APPLE"
-        player={{ ...basePlayer, name: "RemoteUser" }}
-        showResumeDialog={false}
-        submitDeveloperPlayer={() => undefined}
-        refreshRemoteDictionaryChecksum={async () => undefined}
-        isRefreshingDictionaryChecksum={false}
-        dictionaryChecksumMessage={null}
-        dictionaryChecksumMessageKind={null}
+        {...createBaseProps({ ...basePlayer, name: "RemoteUser" })}
       />,
     );
 
@@ -120,16 +100,8 @@ describe("DeveloperConsoleDialog", () => {
       render(
         <DeveloperConsoleDialog
           visible
-          onClose={() => undefined}
-          developerConsoleEnabled
-          answer="APPLE"
-          player={basePlayer}
-          showResumeDialog={false}
+          {...createBaseProps(basePlayer)}
           submitDeveloperPlayer={submitDeveloperPlayer}
-          refreshRemoteDictionaryChecksum={async () => undefined}
-          isRefreshingDictionaryChecksum={false}
-          dictionaryChecksumMessage={null}
-          dictionaryChecksumMessageKind={null}
         />,
       );
 
@@ -162,5 +134,45 @@ describe("DeveloperConsoleDialog", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("triggers refresh daily challenges action", () => {
+    const refreshDailyChallengesForDeveloper = vi
+      .fn()
+      .mockResolvedValue(undefined);
+
+    render(
+      <DeveloperConsoleDialog
+        visible
+        {...createBaseProps(basePlayer)}
+        refreshDailyChallengesForDeveloper={refreshDailyChallengesForDeveloper}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Refresh today's challenges" }),
+    );
+
+    expect(refreshDailyChallengesForDeveloper).toHaveBeenCalledTimes(1);
+  });
+
+  it("triggers change daily challenges action", () => {
+    const changeDailyChallengesForDeveloper = vi
+      .fn()
+      .mockResolvedValue(undefined);
+
+    render(
+      <DeveloperConsoleDialog
+        visible
+        {...createBaseProps(basePlayer)}
+        changeDailyChallengesForDeveloper={changeDailyChallengesForDeveloper}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Change today's challenges" }),
+    );
+
+    expect(changeDailyChallengesForDeveloper).toHaveBeenCalledTimes(1);
   });
 });

@@ -15,4 +15,10 @@ export type DeveloperConsoleDialogProps = {
   isRefreshingDictionaryChecksum: boolean;
   dictionaryChecksumMessage: string | null;
   dictionaryChecksumMessageKind: "success" | "error" | null;
+  refreshDailyChallengesForDeveloper: PlayControllerState["refreshDailyChallengesForDeveloper"];
+  changeDailyChallengesForDeveloper: PlayControllerState["changeDailyChallengesForDeveloper"];
+  isRefreshingDailyChallengesForDeveloper: boolean;
+  isChangingDailyChallengesForDeveloper: boolean;
+  dailyChallengesDeveloperMessage: string | null;
+  dailyChallengesDeveloperMessageKind: "success" | "error" | null;
 };
