@@ -59,6 +59,7 @@ describe("usePlayController", () => {
     mockUseHardModeTimer.mockClear();
     mockUseSound.mockClear();
     window.sessionStorage.clear();
+    window.localStorage.clear();
     document.body.innerHTML = "";
     originalNavigatorShare = navigator.share;
     originalNavigatorCanShare = navigator.canShare;
@@ -91,6 +92,13 @@ describe("usePlayController", () => {
         refreshRemoteChecksum: vi
           .fn()
           .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+      challengeClient: {
+        isConfigured: false,
+        getTodayChallenges: vi.fn(),
+        generateDailyChallenges: vi.fn(),
+        getPlayerChallengeProgress: vi.fn(),
+        completeChallenge: vi.fn(),
       },
     });
     mockUsePlayer.mockReturnValue({
@@ -135,6 +143,7 @@ describe("usePlayController", () => {
   afterEach(() => {
     cleanup();
     window.sessionStorage.clear();
+    window.localStorage.clear();
     document.body.innerHTML = "";
     Object.defineProperty(navigator, "share", {
       value: originalNavigatorShare,
@@ -184,6 +193,77 @@ describe("usePlayController", () => {
       getTotalPointsForWin(3, 2, 2),
       undefined,
       1_000,
+    );
+  });
+
+  it("evaluates and completes eligible daily challenges when round ends", async () => {
+    const date = new Date().toISOString().slice(0, 10);
+    const completeChallenge = vi
+      .fn()
+      .mockResolvedValueOnce({ pointsAwarded: 5, alreadyCompleted: false })
+      .mockResolvedValueOnce({ pointsAwarded: 15, alreadyCompleted: false });
+
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum: vi
+          .fn()
+          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+      challengeClient: {
+        isConfigured: true,
+        getTodayChallenges: vi.fn().mockResolvedValue({
+          date,
+          simple: {
+            id: "simple-1",
+            name: "First Guess",
+            description: "",
+            type: "simple",
+            conditionKey: "first_guess",
+          },
+          complex: {
+            id: "complex-1",
+            name: "Genius",
+            description: "",
+            type: "complex",
+            conditionKey: "genius",
+          },
+        }),
+        generateDailyChallenges: vi.fn(),
+        getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
+        completeChallenge,
+      },
+    });
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: [
+        {
+          word: "APPLE",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+      won: true,
+      gameOver: true,
+      roundStartedAt: Date.now() - 5_000,
+    };
+
+    await act(async () => {
+      rerender();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(completeChallenge).toHaveBeenCalledTimes(2);
+    expect(completeChallenge).toHaveBeenNthCalledWith(1, "simple-1", date);
+    expect(completeChallenge).toHaveBeenNthCalledWith(2, "complex-1", date);
+    expect(result.current.challengeCompletionMessage).toBe(
+      "Challenge completed: Genius (+15 pts)",
     );
   });
 

@@ -168,6 +168,7 @@ This is an evolution of the current layered architecture, not a replacement for 
   - It also stores the selected `language` (`en` or `es`) used by i18n, dictionary loading, and scoreboard segmentation.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp) for offline remote synchronization.
+- `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions (`persistent`, `polyglot`) to store completed rounds count and languages won for the current UTC date.
 - `wordle:dictionary:en`: cached dictionary words.
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.

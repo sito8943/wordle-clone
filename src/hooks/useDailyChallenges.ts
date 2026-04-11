@@ -3,6 +3,7 @@ import type {
   RemoteChallengeProgress,
   RemoteDailyChallenges,
 } from "@api/challenges";
+import { subscribeToDailyChallengesProgressUpdated } from "@domain/challenges";
 import { useApi } from "@providers/Api";
 
 const CHALLENGES_DIALOG_SEEN_KEY = "wordle:daily-challenges-dialog-seen";
@@ -23,9 +24,7 @@ const getMillisUntilEndOfDayUTC = (): number => {
 const hasSeenDialogInSession = (): boolean => {
   if (typeof window === "undefined") return true;
   try {
-    return (
-      window.sessionStorage.getItem(CHALLENGES_DIALOG_SEEN_KEY) === "seen"
-    );
+    return window.sessionStorage.getItem(CHALLENGES_DIALOG_SEEN_KEY) === "seen";
   } catch {
     return true;
   }
@@ -94,8 +93,7 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
 
         // Generate if they don't exist yet (first player of the day)
         if (!todayChallenges) {
-          todayChallenges =
-            await challengeClient.generateDailyChallenges(date);
+          todayChallenges = await challengeClient.generateDailyChallenges(date);
         }
 
         setChallenges(todayChallenges);
@@ -108,9 +106,7 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
         // Auto-show dialog if not seen in this session and at least one is incomplete
         if (!hasSeenDialogInSession() && todayChallenges) {
           const completedIds = new Set(
-            playerProgress
-              .filter((p) => p.completed)
-              .map((p) => p.challengeId),
+            playerProgress.filter((p) => p.completed).map((p) => p.challengeId),
           );
           const hasIncomplete =
             !completedIds.has(todayChallenges.simple.id) ||
@@ -145,6 +141,16 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
       // Silently fail
     }
   }, [challengeClient]);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    return subscribeToDailyChallengesProgressUpdated(() => {
+      void refreshProgress();
+    });
+  }, [enabled, refreshProgress]);
 
   return {
     challenges,

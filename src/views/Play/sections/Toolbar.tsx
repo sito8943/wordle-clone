@@ -109,6 +109,7 @@ const Toolbar = (): JSX.Element => {
     refreshAttentionScale,
     refreshBoard,
     dictionaryError,
+    challengeCompletionMessage,
     showHardModeTimer,
     hardModeSecondsLeft,
     hardModeTickPulse,
@@ -260,6 +261,10 @@ const Toolbar = (): JSX.Element => {
 
       {!dictionaryLoading && dictionaryError && (
         <Alert message={dictionaryError} color="danger" />
+      )}
+
+      {challengeCompletionMessage && (
+        <Alert message={challengeCompletionMessage} color="success" />
       )}
 
       {showVolumeDialog && (

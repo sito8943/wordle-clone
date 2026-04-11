@@ -180,6 +180,7 @@ export const ES_WORDS = [
   "algun",
   "alias",
   "alien",
+  "liado",
   "alijo",
   "alimo",
   "alisa",
@@ -557,6 +558,7 @@ export const ES_WORDS = [
   "burro",
   "cabra",
   "cacao",
+  "garza",
   "cagar",
   "caida",
   "cajas",
@@ -877,4 +879,5 @@ export const ES_WORDS = [
   "obras",
   "hiato",
   "laico",
+  "cetro",
 ];

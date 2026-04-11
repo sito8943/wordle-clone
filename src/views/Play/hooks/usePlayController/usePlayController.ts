@@ -7,15 +7,23 @@ import {
   getNormalDictionaryBonusRowFlags,
   getNormalDictionaryRowsBonusPoints,
   getPointsForWin,
+  getRoundDurationMs,
   getTotalPointsForWin,
   type Player,
 } from "@domain/wordle";
+import {
+  evaluateCondition,
+  notifyDailyChallengesProgressUpdated,
+  recordDailyChallengeRoundCompletion,
+  type ChallengeConditionContext,
+} from "@domain/challenges";
 import { useApi, usePlayer } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useSound } from "@providers/Sound";
 import { useHardModeTimer } from "./useHardModeTimer";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { useWordle } from "@hooks";
+import { getTodayDateUTC } from "@hooks/useDailyChallenges";
 import { useHintController } from "../useHintController";
 import type {
   ComboFlash,
@@ -31,7 +39,10 @@ import {
   markEndOfGameDialogAsSeenInSession,
 } from "./utils";
 import { i18n } from "@i18n";
-import { COMBO_FLASH_VISIBILITY_DURATION_MS } from "./constants";
+import {
+  CHALLENGE_COMPLETION_ALERT_VISIBILITY_DURATION_MS,
+  COMBO_FLASH_VISIBILITY_DURATION_MS,
+} from "./constants";
 import {
   TILE_STATUS_SOUND_INITIAL_DELAY_MS,
   TILE_STATUS_SOUND_STEP_DELAY_MS,
@@ -76,9 +87,9 @@ const getGuessWords = (guesses: unknown[]): string[] =>
   }, []);
 
 export default function usePlayController() {
-  const { scoreClient, wordDictionaryClient } = useApi();
+  const { scoreClient, wordDictionaryClient, challengeClient } = useApi();
   const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
-  const { hintsEnabled } = useFeatureFlags();
+  const { hintsEnabled, dailyChallengesEnabled } = useFeatureFlags();
   const { playSound } = useSound();
   const wordle = useWordle({
     allowUnknownWords:
@@ -135,6 +146,9 @@ export default function usePlayController() {
   const [endOfGameDialogDismissed, setEndOfGameDialogDismissed] =
     useState(false);
   const [comboFlash, setComboFlash] = useState<ComboFlash | null>(null);
+  const [challengeCompletionMessage, setChallengeCompletionMessage] = useState<
+    string | null
+  >(null);
   const [refreshAttentionPulse, setRefreshAttentionPulse] = useState(0);
   const [showEndOfGameSettingsHint, setShowEndOfGameSettingsHint] =
     useState(false);
@@ -186,6 +200,99 @@ export default function usePlayController() {
     forceLoss,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
+  const completeEligibleDailyChallenges = useCallback(async () => {
+    if (
+      !dailyChallengesEnabled ||
+      !challengeClient?.isConfigured ||
+      !gameOver
+    ) {
+      return;
+    }
+
+    const date = getTodayDateUTC();
+    const dailyTracker = recordDailyChallengeRoundCompletion({
+      date,
+      playerCode: player.code,
+      language: player.language,
+      won,
+    });
+
+    try {
+      let todayChallenges = await challengeClient.getTodayChallenges(date);
+
+      if (!todayChallenges) {
+        todayChallenges = await challengeClient.generateDailyChallenges(date);
+      }
+
+      const progress = await challengeClient.getPlayerChallengeProgress(date);
+      const completedChallengeIds = new Set(
+        progress
+          .filter((item) => item.completed)
+          .map((item) => item.challengeId),
+      );
+      const roundDurationMs =
+        getRoundDurationMs(roundStartedAt, Date.now()) ??
+        Number.MAX_SAFE_INTEGER;
+      const context: ChallengeConditionContext = {
+        guesses,
+        gameOver,
+        won,
+        answer,
+        difficulty: player.difficulty,
+        streak: won ? player.streak + 1 : 0,
+        roundDurationMs,
+        language: player.language,
+        dailyCompletedRounds: dailyTracker.completedRounds,
+        dailyLanguagesWon: dailyTracker.wonLanguages,
+      };
+
+      for (const challenge of [
+        todayChallenges.simple,
+        todayChallenges.complex,
+      ]) {
+        if (completedChallengeIds.has(challenge.id)) {
+          continue;
+        }
+
+        if (!evaluateCondition(challenge.conditionKey, context)) {
+          continue;
+        }
+
+        const completion = await challengeClient.completeChallenge(
+          challenge.id,
+          date,
+        );
+
+        if (completion.alreadyCompleted || completion.pointsAwarded <= 0) {
+          continue;
+        }
+
+        completedChallengeIds.add(challenge.id);
+        setChallengeCompletionMessage(
+          i18n.t("challenges.challengeCompleted", {
+            name: i18n.t(`challenges.names.${challenge.conditionKey}`),
+            points: completion.pointsAwarded,
+          }),
+        );
+        notifyDailyChallengesProgressUpdated();
+      }
+    } catch {
+      // Silently fail — round flow must continue even if challenges fail.
+    }
+  }, [
+    answer,
+    challengeClient,
+    dailyChallengesEnabled,
+    gameOver,
+    guesses,
+    player.code,
+    player.difficulty,
+    player.language,
+    player.streak,
+    roundStartedAt,
+    won,
+  ]);
+
   useEffect(() => {
     if (!hydrated.current) {
       hydrated.current = true;
@@ -277,8 +384,10 @@ export default function usePlayController() {
       void commitLoss();
     }
 
+    void completeEligibleDailyChallenges();
     roundSettled.current = true;
   }, [
+    completeEligibleDailyChallenges,
     gameOver,
     guesses,
     guesses.length,
@@ -428,6 +537,20 @@ export default function usePlayController() {
     };
   }, [comboFlash]);
 
+  useEffect(() => {
+    if (!challengeCompletionMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setChallengeCompletionMessage(null);
+    }, CHALLENGE_COMPLETION_ALERT_VISIBILITY_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [challengeCompletionMessage]);
+
   const refreshBoardNow = useCallback(() => {
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
@@ -435,6 +558,7 @@ export default function usePlayController() {
     setComboFlash(null);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
+    setChallengeCompletionMessage(null);
     resetHints();
     resetHardModeTimer();
     acknowledgeDictionaryChecksumChange();
@@ -453,6 +577,7 @@ export default function usePlayController() {
     setComboFlash(null);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
+    setChallengeCompletionMessage(null);
     resetHints();
     resetHardModeTimer();
     startNewWordleBoard();
@@ -603,6 +728,7 @@ export default function usePlayController() {
       setShowDeveloperConsoleDialog(false);
       setIsSharingVictoryBoard(false);
       setVictoryBoardShareError(null);
+      setChallengeCompletionMessage(null);
     }
   }, [showResumeDialog]);
 
@@ -799,6 +925,7 @@ export default function usePlayController() {
     isRefreshingDictionaryChecksum,
     dictionaryChecksumMessage,
     dictionaryChecksumMessageKind,
+    challengeCompletionMessage,
     confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,
     cancelRefreshBoard,

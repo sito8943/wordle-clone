@@ -50,3 +50,9 @@ export type ChallengeConditionContext = {
   dailyCompletedRounds: number;
   dailyLanguagesWon: PlayerLanguage[];
 };
+
+export type DailyChallengeRoundTracker = {
+  date: string;
+  completedRounds: number;
+  wonLanguages: PlayerLanguage[];
+};
