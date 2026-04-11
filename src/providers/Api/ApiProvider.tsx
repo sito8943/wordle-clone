@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { ChallengeClient } from "@api/challenges";
 import { ConvexGateway } from "@api/convex/ConvexGateway";
 import { ScoreClient } from "@api/score";
 import { WordDictionaryClient } from "@api/words";
@@ -15,14 +16,19 @@ const ApiProvider = ({ children }: ProviderProps) => {
     () => new WordDictionaryClient(gateway),
     [gateway],
   );
+  const challengeClient = useMemo(
+    () => new ChallengeClient(gateway),
+    [gateway],
+  );
 
   const contextValue = useMemo(
     () => ({
       scoreClient,
       wordDictionaryClient,
+      challengeClient,
       convexEnabled: gateway.isConfigured,
     }),
-    [scoreClient, wordDictionaryClient, gateway],
+    [scoreClient, wordDictionaryClient, challengeClient, gateway],
   );
 
   return (

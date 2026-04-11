@@ -12,6 +12,8 @@ import type {
   RemoteDailyChallenges,
 } from "./types";
 
+const CLIENT_ID_KEY = "wordle:scoreboard:client-id";
+
 class ChallengeClient {
   private readonly gateway: ConvexGateway;
 
@@ -42,23 +44,29 @@ class ChallengeClient {
   }
 
   async getPlayerChallengeProgress(
-    profileId: string,
     date: string,
   ): Promise<RemoteChallengeProgress[]> {
+    const clientId = this.getClientId();
+    if (!clientId) return [];
+
     return this.gateway.query<RemoteChallengeProgress[]>(
       GET_PLAYER_CHALLENGE_PROGRESS_QUERY,
-      { profileId, date },
+      { clientId, date },
     );
   }
 
   async completeChallenge(
-    profileId: string,
     challengeId: string,
     date: string,
   ): Promise<CompleteChallengeResult> {
+    const clientId = this.getClientId();
+    if (!clientId) {
+      return { pointsAwarded: 0, alreadyCompleted: false };
+    }
+
     return this.gateway.mutation<CompleteChallengeResult>(
       COMPLETE_CHALLENGE_MUTATION,
-      { profileId, challengeId, date },
+      { clientId, challengeId, date },
     );
   }
 
@@ -68,6 +76,15 @@ class ChallengeClient {
     alreadySeeded: boolean;
   }> {
     return this.gateway.mutation(SEED_CHALLENGES_MUTATION, {});
+  }
+
+  private getClientId(): string | null {
+    if (typeof window === "undefined") return null;
+    try {
+      return localStorage.getItem(CLIENT_ID_KEY);
+    } catch {
+      return null;
+    }
   }
 }
 

@@ -36,11 +36,26 @@ const renderWithQueryClient = (
   );
 };
 
+const createMockChallengeClient = () =>
+  ({
+    isConfigured: false,
+    getTodayChallenges: vi.fn().mockResolvedValue(null),
+    generateDailyChallenges: vi.fn().mockResolvedValue(null),
+    getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
+    completeChallenge: vi
+      .fn()
+      .mockResolvedValue({ pointsAwarded: 0, alreadyCompleted: false }),
+    seedChallenges: vi
+      .fn()
+      .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+  }) as unknown as ApiContextType["challengeClient"];
+
 const createTestApiContextValue = (
   overrides: Partial<ApiContextType> = {},
 ): ApiContextType => ({
   scoreClient: createMockScoreClient(async () => DEFAULT_TOP_SCORES_RESULT),
   wordDictionaryClient: createMockWordDictionaryClient(async () => []),
+  challengeClient: createMockChallengeClient(),
   convexEnabled: true,
   ...overrides,
 });
@@ -125,6 +140,7 @@ const createHookWrapper = (
 
 export {
   createHookWrapper,
+  createMockChallengeClient,
   createMockScoreClient,
   createMockWordDictionaryClient,
   createTestApiContextValue,

@@ -1,5 +1,5 @@
 import { mutation, query } from "./_generated/server";
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { CHALLENGE_SEEDS } from "./data/challenges";
 
@@ -26,6 +26,30 @@ const resetAllChallenges = async (ctx: MutationCtx) => {
   }
 };
 
+const resolveProfileByClientId = async (
+  ctx: QueryCtx | MutationCtx,
+  clientId: string,
+) => {
+  return ctx.db
+    .query("scores")
+    .withIndex("by_client_id", (q) => q.eq("clientId", clientId))
+    .first();
+};
+
+const formatChallenge = (doc: {
+  _id: string;
+  name: string;
+  description: string;
+  type: string;
+  conditionKey: string;
+}) => ({
+  id: doc._id,
+  name: doc.name,
+  description: doc.description,
+  type: doc.type,
+  conditionKey: doc.conditionKey,
+});
+
 // --- Queries ---
 
 export const getTodayChallenges = query({
@@ -45,34 +69,25 @@ export const getTodayChallenges = query({
 
     return {
       date: existing.date,
-      simple: {
-        id: simple._id,
-        name: simple.name,
-        description: simple.description,
-        type: simple.type,
-        conditionKey: simple.conditionKey,
-      },
-      complex: {
-        id: complex._id,
-        name: complex.name,
-        description: complex.description,
-        type: complex.type,
-        conditionKey: complex.conditionKey,
-      },
+      simple: formatChallenge(simple),
+      complex: formatChallenge(complex),
     };
   },
 });
 
 export const getPlayerChallengeProgress = query({
   args: {
-    profileId: v.id("scores"),
+    clientId: v.string(),
     date: v.string(),
   },
   handler: async (ctx, args) => {
+    const profile = await resolveProfileByClientId(ctx, args.clientId);
+    if (!profile) return [];
+
     return ctx.db
       .query("playerChallengeProgress")
       .withIndex("by_profile_and_date", (q) =>
-        q.eq("profileId", args.profileId).eq("date", args.date),
+        q.eq("profileId", profile._id).eq("date", args.date),
       )
       .collect();
   },
@@ -106,20 +121,8 @@ export const generateDailyChallenges = mutation({
 
       return {
         date: existing.date,
-        simple: {
-          id: simple._id,
-          name: simple.name,
-          description: simple.description,
-          type: simple.type,
-          conditionKey: simple.conditionKey,
-        },
-        complex: {
-          id: complex._id,
-          name: complex.name,
-          description: complex.description,
-          type: complex.type,
-          conditionKey: complex.conditionKey,
-        },
+        simple: formatChallenge(simple),
+        complex: formatChallenge(complex),
       };
     }
 
@@ -135,9 +138,7 @@ export const generateDailyChallenges = mutation({
     }
 
     if (unusedSimple.length === 0 || unusedComplex.length === 0) {
-      throw new Error(
-        "No challenges available. Run seedChallenges first.",
-      );
+      throw new Error("No challenges available. Run seedChallenges first.");
     }
 
     const simple = pickRandom(unusedSimple);
@@ -156,31 +157,25 @@ export const generateDailyChallenges = mutation({
 
     return {
       date: args.date,
-      simple: {
-        id: simple._id,
-        name: simple.name,
-        description: simple.description,
-        type: simple.type,
-        conditionKey: simple.conditionKey,
-      },
-      complex: {
-        id: complex._id,
-        name: complex.name,
-        description: complex.description,
-        type: complex.type,
-        conditionKey: complex.conditionKey,
-      },
+      simple: formatChallenge(simple),
+      complex: formatChallenge(complex),
     };
   },
 });
 
 export const completeChallenge = mutation({
   args: {
-    profileId: v.id("scores"),
+    clientId: v.string(),
     challengeId: v.id("challenges"),
     date: v.string(),
   },
   handler: async (ctx, args) => {
+    // Resolve player profile from clientId
+    const profile = await resolveProfileByClientId(ctx, args.clientId);
+    if (!profile) {
+      throw new Error("Player profile not found.");
+    }
+
     // Validate the challenge exists and belongs to today
     const dailyChallenges = await ctx.db
       .query("dailyChallenges")
@@ -203,7 +198,7 @@ export const completeChallenge = mutation({
     const existingProgress = await ctx.db
       .query("playerChallengeProgress")
       .withIndex("by_profile_and_challenge", (q) =>
-        q.eq("profileId", args.profileId).eq("challengeId", args.challengeId),
+        q.eq("profileId", profile._id).eq("challengeId", args.challengeId),
       )
       .collect();
 
@@ -228,7 +223,7 @@ export const completeChallenge = mutation({
 
     // Record progress
     await ctx.db.insert("playerChallengeProgress", {
-      profileId: args.profileId,
+      profileId: profile._id,
       challengeId: args.challengeId,
       date: args.date,
       completed: true,
@@ -237,13 +232,10 @@ export const completeChallenge = mutation({
     });
 
     // Update player score
-    const profile = await ctx.db.get(args.profileId);
-    if (profile) {
-      const currentScore = profile.score ?? 0;
-      await ctx.db.patch(args.profileId, {
-        score: currentScore + pointsAwarded,
-      });
-    }
+    const currentScore = profile.score ?? 0;
+    await ctx.db.patch(profile._id, {
+      score: currentScore + pointsAwarded,
+    });
 
     return { pointsAwarded, alreadyCompleted: false };
   },

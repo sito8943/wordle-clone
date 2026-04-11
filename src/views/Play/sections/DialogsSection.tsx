@@ -31,12 +31,24 @@ const VictoryDialog = lazy(
 const DefeatDialog = lazy(
   () => import("../components/Dialogs/DefeatDialog/DefeatDialog"),
 );
+const DailyChallengesDialog = lazy(
+  () =>
+    import(
+      "../components/Dialogs/DailyChallengesDialog/DailyChallengesDialog"
+    ),
+);
 
 const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
   const { shareButtonEnabled, helpButtonEnabled } = useFeatureFlags();
-  const { controller, player, wordListButtonEnabled, developerConsoleEnabled } =
-    usePlayView();
+  const {
+    controller,
+    player,
+    wordListButtonEnabled,
+    developerConsoleEnabled,
+    dailyChallengesEnabled,
+    dailyChallenges,
+  } = usePlayView();
   const {
     message,
     showResumeDialog,
@@ -98,6 +110,13 @@ const DialogsSection = (): JSX.Element => {
     !endOfGameDialogVisible &&
     !dictionaryChecksumDialogVisible &&
     showHelpDialog;
+  const dailyChallengesDialogVisible =
+    dailyChallengesEnabled &&
+    !showResumeDialog &&
+    !endOfGameDialogVisible &&
+    !dictionaryChecksumDialogVisible &&
+    dailyChallenges.showDialog &&
+    dailyChallenges.challenges !== null;
   const developerConsoleDialogVisible =
     !showResumeDialog &&
     !endOfGameDialogVisible &&
@@ -121,6 +140,7 @@ const DialogsSection = (): JSX.Element => {
         showDeveloperConsoleDialog,
         showVictoryDialog,
         showDefeatDialog,
+        dailyChallenges.showDialog,
       ]}
       fallback={() => (
         <div className="px-3 pb-2">
@@ -200,6 +220,15 @@ const DialogsSection = (): JSX.Element => {
               onClose={closeEndOfGameDialog}
               onPlayAgain={startNewBoard}
               onChangeDifficulty={changeDifficulty}
+            />
+          ) : null}
+          {dailyChallengesDialogVisible && dailyChallenges.challenges ? (
+            <DailyChallengesDialog
+              visible
+              challenges={dailyChallenges.challenges}
+              progress={dailyChallenges.progress}
+              millisUntilEndOfDay={dailyChallenges.millisUntilEndOfDay}
+              onClose={dailyChallenges.closeDialog}
             />
           ) : null}
           {developerConsoleDialogVisible ? (

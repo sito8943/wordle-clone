@@ -7,6 +7,7 @@ import {
   faList,
   faRotateRight,
   faSquarePollHorizontal,
+  faTrophy,
   faVolumeHigh,
   faVolumeLow,
   faVolumeOff,
@@ -83,8 +84,13 @@ const Toolbar = (): JSX.Element => {
   } = useFeatureFlags();
   const { volume, muted } = useSound();
   const [showVolumeDialog, setShowVolumeDialog] = useState(false);
-  const { controller, wordListButtonEnabled, developerConsoleEnabled } =
-    usePlayView();
+  const {
+    controller,
+    wordListButtonEnabled,
+    developerConsoleEnabled,
+    dailyChallengesEnabled,
+    dailyChallenges,
+  } = usePlayView();
   const {
     currentWinStreak,
     dictionaryLoading,
@@ -141,6 +147,19 @@ const Toolbar = (): JSX.Element => {
               disabled={hintButtonDisabled}
             >
               {t("play.toolbar.hintButton", { count: hintsRemaining })}
+            </Button>
+          )}
+          {dailyChallengesEnabled && dailyChallenges.challenges && (
+            <Button
+              onClick={dailyChallenges.openDialog}
+              aria-label={t("challenges.buttonAriaLabel")}
+              variant="ghost"
+              icon={faTrophy}
+              iconClassName="text-lg"
+              className="mobile-compact-button"
+              hideLabelOnMobile
+            >
+              {t("challenges.buttonLabel")}
             </Button>
           )}
           {helpButtonEnabled && (
