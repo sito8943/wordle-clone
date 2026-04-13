@@ -8,10 +8,11 @@ export type RemoteChallenge = {
   conditionKey: ChallengeConditionKey;
 };
 
-export type RemoteDailyChallenges = {
+export type RemoteChallenges = {
   date: string;
   simple: RemoteChallenge;
   complex: RemoteChallenge;
+  weekly: RemoteChallenge;
 };
 
 export type RemoteChallengeProgress = {

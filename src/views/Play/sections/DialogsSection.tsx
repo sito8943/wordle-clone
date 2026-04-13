@@ -31,9 +31,8 @@ const VictoryDialog = lazy(
 const DefeatDialog = lazy(
   () => import("../components/Dialogs/DefeatDialog/DefeatDialog"),
 );
-const DailyChallengesDialog = lazy(
-  () =>
-    import("../components/Dialogs/DailyChallengesDialog/DailyChallengesDialog"),
+const ChallengesDialog = lazy(
+  () => import("../components/Dialogs/DailyChallengesDialog/ChallengesDialog"),
 );
 
 const DialogsSection = (): JSX.Element => {
@@ -44,8 +43,8 @@ const DialogsSection = (): JSX.Element => {
     player,
     wordListButtonEnabled,
     developerConsoleEnabled,
-    dailyChallengesEnabled,
-    dailyChallenges,
+    challengesEnabled,
+    challenges,
   } = usePlayView();
   const {
     message,
@@ -115,13 +114,13 @@ const DialogsSection = (): JSX.Element => {
     !endOfGameDialogVisible &&
     !dictionaryChecksumDialogVisible &&
     showHelpDialog;
-  const dailyChallengesDialogVisible =
-    dailyChallengesEnabled &&
+  const challengesDialogVisible =
+    challengesEnabled &&
     !showResumeDialog &&
     !endOfGameDialogVisible &&
     !dictionaryChecksumDialogVisible &&
-    dailyChallenges.showDialog &&
-    dailyChallenges.challenges !== null;
+    challenges.showDialog &&
+    challenges.challenges !== null;
   const developerConsoleDialogVisible =
     !showResumeDialog &&
     !endOfGameDialogVisible &&
@@ -145,7 +144,7 @@ const DialogsSection = (): JSX.Element => {
         showDeveloperConsoleDialog,
         showVictoryDialog,
         showDefeatDialog,
-        dailyChallenges.showDialog,
+        challenges.showDialog,
       ]}
       fallback={() => (
         <div className="px-3 pb-2">
@@ -228,13 +227,14 @@ const DialogsSection = (): JSX.Element => {
               onChangeDifficulty={changeDifficulty}
             />
           ) : null}
-          {dailyChallengesDialogVisible && dailyChallenges.challenges ? (
-            <DailyChallengesDialog
+          {challengesDialogVisible && challenges.challenges ? (
+            <ChallengesDialog
               visible
-              challenges={dailyChallenges.challenges}
-              progress={dailyChallenges.progress}
-              millisUntilEndOfDay={dailyChallenges.millisUntilEndOfDay}
-              onClose={dailyChallenges.closeDialog}
+              challenges={challenges.challenges}
+              progress={challenges.progress}
+              millisUntilEndOfDay={challenges.millisUntilEndOfDay}
+              millisUntilEndOfWeek={challenges.millisUntilEndOfWeek}
+              onClose={challenges.closeDialog}
             />
           ) : null}
           {developerConsoleDialogVisible ? (

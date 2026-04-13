@@ -3,5 +3,5 @@ export type {
   CompleteChallengeResult,
   RemoteChallenge,
   RemoteChallengeProgress,
-  RemoteDailyChallenges,
+  RemoteChallenges,
 } from "./types";

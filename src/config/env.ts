@@ -47,9 +47,8 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_HELP_BUTTON_ENABLED ?? rawEnv.HELP_BUTTON_ENABLED,
     true,
   ),
-  dailyChallengesEnabled: readBoolean(
-    import.meta.env.VITE_DAILY_CHALLENGES_ENABLED ??
-      rawEnv.DAILY_CHALLENGES_ENABLED,
+  challengesEnabled: readBoolean(
+    import.meta.env.VITE_CHALLENGES_ENABLED ?? rawEnv.CHALLENGES_ENABLED,
     true,
   ),
   scoreLimit: SCORE_LIMIT,

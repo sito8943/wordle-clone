@@ -9,6 +9,7 @@ import {
 
 const SIMPLE_CHALLENGE_POINTS = 5;
 const COMPLEX_CHALLENGE_POINTS = 15;
+const WEEKLY_CHALLENGE_POINTS = 25;
 const SEEDED_CONDITION_KEYS_BY_TYPE = {
   simple: new Set(
     CHALLENGE_SEEDS.filter((seed) => seed.type === "simple").map(
@@ -20,16 +21,32 @@ const SEEDED_CONDITION_KEYS_BY_TYPE = {
       (seed) => seed.conditionKey,
     ),
   ),
+  weekly: new Set(
+    CHALLENGE_SEEDS.filter((seed) => seed.type === "weekly").map(
+      (seed) => seed.conditionKey,
+    ),
+  ),
 } as const;
 const CHALLENGE_SEED_BY_CONDITION_KEY = new Map(
   CHALLENGE_SEEDS.map((seed) => [seed.conditionKey, seed] as const),
 );
 const toCanonicalConditionKey = (conditionKey: string): string =>
   LEGACY_CHALLENGE_CONDITION_KEY_ALIASES[conditionKey] ?? conditionKey;
+const isSeededConditionKeyForType = (
+  type: "simple" | "complex" | "weekly",
+  conditionKey: string,
+): boolean => {
+  const canonicalConditionKey = toCanonicalConditionKey(conditionKey);
+  if (!isChallengeConditionKey(canonicalConditionKey)) {
+    return false;
+  }
+
+  return SEEDED_CONDITION_KEYS_BY_TYPE[type].has(canonicalConditionKey);
+};
 
 const getUnusedByType = async (
   ctx: MutationCtx,
-  type: "simple" | "complex",
+  type: "simple" | "complex" | "weekly",
 ) => {
   const seededConditionKeys = SEEDED_CONDITION_KEYS_BY_TYPE[type];
   const challenges = await ctx.db
@@ -42,10 +59,11 @@ const getUnusedByType = async (
       challenge.conditionKey,
     );
 
-    return (
-      isChallengeConditionKey(canonicalConditionKey) &&
-      seededConditionKeys.has(canonicalConditionKey)
-    );
+    if (!isChallengeConditionKey(canonicalConditionKey)) {
+      return false;
+    }
+
+    return seededConditionKeys.has(canonicalConditionKey);
   });
 };
 
@@ -95,6 +113,9 @@ const formatChallenge = (doc: {
   conditionKey: doc.conditionKey,
 });
 
+const toStoredChallengeType = (type: string): "simple" | "complex" =>
+  type as "simple" | "complex";
+
 // --- Queries ---
 
 export const getTodayChallenges = query({
@@ -111,6 +132,12 @@ export const getTodayChallenges = query({
     const complex = await ctx.db.get(existing.complexChallengeId);
 
     if (!simple || !complex) return null;
+    if (
+      !isSeededConditionKeyForType("simple", simple.conditionKey) ||
+      !isSeededConditionKeyForType("complex", complex.conditionKey)
+    ) {
+      return null;
+    }
 
     return {
       date: existing.date,
@@ -141,7 +168,8 @@ export const getPlayerChallengeProgress = query({
 export const listAllChallenges = query({
   args: {},
   handler: async (ctx) => {
-    return ctx.db.query("challenges").collect();
+    const challenges = await ctx.db.query("challenges").collect();
+    return challenges.map((challenge) => formatChallenge(challenge));
   },
 });
 
@@ -159,18 +187,35 @@ export const generateDailyChallenges = mutation({
     if (existing) {
       const simple = await ctx.db.get(existing.simpleChallengeId);
       const complex = await ctx.db.get(existing.complexChallengeId);
+      const weekly = await ctx.db.get(existing.weeklyChallengeId);
 
       if (!simple || !complex) {
-        throw new Error(
-          "Daily challenges reference missing challenge records.",
-        );
-      }
+        if (simple) {
+          await ctx.db.patch(simple._id, { used: false });
+        }
+        if (complex) {
+          await ctx.db.patch(complex._id, { used: false });
+        }
+        await ctx.db.delete(existing._id);
+      } else {
+        const isStaleDailyPair =
+          simple.type !== "simple" ||
+          complex.type !== "complex" ||
+          !isSeededConditionKeyForType("simple", simple.conditionKey) ||
+          !isSeededConditionKeyForType("complex", complex.conditionKey);
 
-      return {
-        date: existing.date,
-        simple: formatChallenge(simple),
-        complex: formatChallenge(complex),
-      };
+        if (isStaleDailyPair) {
+          await ctx.db.patch(simple._id, { used: false });
+          await ctx.db.patch(complex._id, { used: false });
+          await ctx.db.delete(existing._id);
+        } else {
+          return {
+            date: existing.date,
+            simple: formatChallenge(simple),
+            complex: formatChallenge(complex),
+          };
+        }
+      }
     }
 
     // Find unused challenges of each type
@@ -282,22 +327,30 @@ export const completeChallenge = mutation({
       throw new Error("Player profile not found.");
     }
 
-    // Validate the challenge exists and belongs to today
-    const dailyChallenges = await ctx.db
-      .query("dailyChallenges")
-      .withIndex("by_date", (q) => q.eq("date", args.date))
-      .unique();
-
-    if (!dailyChallenges) {
-      throw new Error("No daily challenges found for this date.");
+    const challenge = await ctx.db.get(args.challengeId);
+    if (!challenge) {
+      throw new Error("Challenge not found.");
     }
+    const challengeType = String(challenge.type);
 
-    const isTodayChallenge =
-      dailyChallenges.simpleChallengeId === args.challengeId ||
-      dailyChallenges.complexChallengeId === args.challengeId;
+    if (challengeType !== "weekly") {
+      // Validate daily challenges for non-weekly challenge types.
+      const dailyChallenges = await ctx.db
+        .query("dailyChallenges")
+        .withIndex("by_date", (q) => q.eq("date", args.date))
+        .unique();
 
-    if (!isTodayChallenge) {
-      throw new Error("This challenge does not belong to today's daily set.");
+      if (!dailyChallenges) {
+        throw new Error("No daily challenges found for this date.");
+      }
+
+      const isTodayChallenge =
+        dailyChallenges.simpleChallengeId === args.challengeId ||
+        dailyChallenges.complexChallengeId === args.challengeId;
+
+      if (!isTodayChallenge) {
+        throw new Error("This challenge does not belong to today's daily set.");
+      }
     }
 
     // Check if already completed
@@ -316,16 +369,12 @@ export const completeChallenge = mutation({
       return { pointsAwarded: 0, alreadyCompleted: true };
     }
 
-    // Determine points based on challenge type
-    const challenge = await ctx.db.get(args.challengeId);
-    if (!challenge) {
-      throw new Error("Challenge not found.");
-    }
-
     const pointsAwarded =
-      challenge.type === "simple"
+      challengeType === "simple"
         ? SIMPLE_CHALLENGE_POINTS
-        : COMPLEX_CHALLENGE_POINTS;
+        : challengeType === "complex"
+          ? COMPLEX_CHALLENGE_POINTS
+          : WEEKLY_CHALLENGE_POINTS;
 
     // Record progress
     await ctx.db.insert("playerChallengeProgress", {
@@ -394,6 +443,7 @@ export const seedChallenges = mutation({
     const existing = await ctx.db.query("challenges").collect();
     let inserted = 0;
     let updated = 0;
+    let deleted = 0;
 
     // Validate parity: equal number of simple and complex
     const simpleCount = CHALLENGE_SEEDS.filter(
@@ -409,15 +459,25 @@ export const seedChallenges = mutation({
       );
     }
 
-    const existingByConditionKey = new Map(
-      existing.map((challenge) => [challenge.conditionKey, challenge]),
+    const seededConditionKeys = new Set(
+      CHALLENGE_SEEDS.map((seed) => seed.conditionKey),
     );
+    const existingByConditionKey = new Map<string, (typeof existing)[number]>();
 
-    for (const [legacyConditionKey, canonicalConditionKey] of Object.entries(
-      LEGACY_CHALLENGE_CONDITION_KEY_ALIASES,
-    )) {
-      const legacy = existingByConditionKey.get(legacyConditionKey);
-      if (!legacy || existingByConditionKey.has(canonicalConditionKey)) {
+    for (const challenge of existing) {
+      const canonicalConditionKey = toCanonicalConditionKey(
+        challenge.conditionKey,
+      );
+
+      if (!isChallengeConditionKey(canonicalConditionKey)) {
+        await ctx.db.delete(challenge._id);
+        deleted += 1;
+        continue;
+      }
+
+      if (!seededConditionKeys.has(canonicalConditionKey)) {
+        await ctx.db.delete(challenge._id);
+        deleted += 1;
         continue;
       }
 
@@ -425,22 +485,40 @@ export const seedChallenges = mutation({
         canonicalConditionKey,
       );
       if (!canonicalSeed) {
+        await ctx.db.delete(challenge._id);
+        deleted += 1;
         continue;
       }
 
-      await ctx.db.patch(legacy._id, {
-        conditionKey: canonicalConditionKey,
-        name: canonicalSeed.name,
-        description: canonicalSeed.description,
-        type: canonicalSeed.type,
-      });
-      updated += 1;
-      existingByConditionKey.delete(legacyConditionKey);
-      existingByConditionKey.set(canonicalConditionKey, {
-        ...legacy,
-        ...canonicalSeed,
-        conditionKey: canonicalConditionKey,
-      });
+      if (existingByConditionKey.has(canonicalConditionKey)) {
+        await ctx.db.delete(challenge._id);
+        deleted += 1;
+        continue;
+      }
+
+      const metadataMismatch =
+        challenge.name !== canonicalSeed.name ||
+        challenge.description !== canonicalSeed.description ||
+        challenge.type !== canonicalSeed.type;
+      const keyMismatch = challenge.conditionKey !== canonicalConditionKey;
+
+      if (metadataMismatch || keyMismatch) {
+        await ctx.db.patch(challenge._id, {
+          conditionKey: canonicalConditionKey,
+          name: canonicalSeed.name,
+          description: canonicalSeed.description,
+          type: toStoredChallengeType(canonicalSeed.type),
+        });
+        updated += 1;
+        existingByConditionKey.set(canonicalConditionKey, {
+          ...challenge,
+          ...canonicalSeed,
+          conditionKey: canonicalConditionKey,
+        });
+        continue;
+      }
+
+      existingByConditionKey.set(canonicalConditionKey, challenge);
     }
 
     for (const seed of CHALLENGE_SEEDS) {
@@ -450,7 +528,7 @@ export const seedChallenges = mutation({
         await ctx.db.insert("challenges", {
           name: seed.name,
           description: seed.description,
-          type: seed.type,
+          type: toStoredChallengeType(seed.type),
           conditionKey: seed.conditionKey,
           used: false,
         });
@@ -469,15 +547,15 @@ export const seedChallenges = mutation({
       await ctx.db.patch(current._id, {
         name: seed.name,
         description: seed.description,
-        type: seed.type,
+        type: toStoredChallengeType(seed.type),
       });
       updated += 1;
     }
 
     return {
       inserted,
-      total: existing.length + inserted,
-      alreadySeeded: inserted === 0 && updated === 0,
+      total: CHALLENGE_SEEDS.length,
+      alreadySeeded: inserted === 0 && updated === 0 && deleted === 0,
     };
   },
 });

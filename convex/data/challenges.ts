@@ -1,24 +1,89 @@
 export const CHALLENGE_CONDITION_KEYS = {
-  FIRST_GUESS: "first_guess",
-  COMPLETE_ROUND: "complete_round",
-  UNIQUE_LETTERS: "unique_letters",
-  THREE_GUESSES: "three_guesses",
-  VOWELS_FIRST: "vowels_first",
+  COMEBACK: "comeback",
+  STEADY_PLAYER: "steady_player",
+  RISKY: "risky",
   PERSISTENT: "persistent",
+  NO_REPEAT_N_LETTERS: "no_repeat_n_letters",
+  SAME_N_STARTS: "same_n_starts",
+  SAME_N_ENDS: "same_n_ends",
+  LATE_WIN: "late_win",
+  YELLOW_FOCUS: "yellow_focus",
+  ONLY_ONE_VOWEL: "only_one_vowel",
+  NO_HINTS: "no_hints",
   SPEEDSTER: "speedster",
-  GENIUS: "genius",
-  UNSTOPPABLE_STREAK: "unstoppable_streak",
-  PERFECTIONIST: "perfectionist",
+  RECKLESS: "reckless",
+  PALINDROME_GUESS: "palindrome_guess",
+  NO_REPEAT_LETTERS: "no_repeat_letters",
+  SAME_START: "same_start",
+  ENDS_SAME_LETTER: "ends_same_letter",
+  ALPHABETICAL_ORDER: "alphabetical_order",
+  GREEN_FOCUS: "green_focus",
+  RARE_LETTERS: "rare_letters",
+  NO_MISPLACED: "no_misplaced",
+  SAME_VOWEL_PATTERN: "same_vowel_pattern",
+  NO_GRAY_TILES: "no_gray_tiles",
+  PERFECT_PROGRESSION: "perfect_progression",
+  ALL_YELLOW_RUN: "all_yellow_run",
   EXTREME_DIFFICULTY: "extreme_difficulty",
-  DAILY_DOUBLE: "daily_double",
 } as const;
+
+const SIMPLE_CHALLENGE_CONDITION_KEYS = [
+  CHALLENGE_CONDITION_KEYS.COMEBACK,
+  CHALLENGE_CONDITION_KEYS.STEADY_PLAYER,
+  CHALLENGE_CONDITION_KEYS.RISKY,
+  CHALLENGE_CONDITION_KEYS.PERSISTENT,
+  CHALLENGE_CONDITION_KEYS.NO_REPEAT_N_LETTERS,
+  CHALLENGE_CONDITION_KEYS.SAME_N_STARTS,
+  CHALLENGE_CONDITION_KEYS.SAME_N_ENDS,
+  CHALLENGE_CONDITION_KEYS.LATE_WIN,
+  CHALLENGE_CONDITION_KEYS.YELLOW_FOCUS,
+  CHALLENGE_CONDITION_KEYS.ONLY_ONE_VOWEL,
+  CHALLENGE_CONDITION_KEYS.NO_HINTS,
+] as const;
+
+const COMPLEX_CHALLENGE_CONDITION_KEYS = [
+  CHALLENGE_CONDITION_KEYS.SPEEDSTER,
+  CHALLENGE_CONDITION_KEYS.RECKLESS,
+  CHALLENGE_CONDITION_KEYS.PALINDROME_GUESS,
+  CHALLENGE_CONDITION_KEYS.NO_REPEAT_LETTERS,
+  CHALLENGE_CONDITION_KEYS.SAME_START,
+  CHALLENGE_CONDITION_KEYS.ENDS_SAME_LETTER,
+  CHALLENGE_CONDITION_KEYS.ALPHABETICAL_ORDER,
+  CHALLENGE_CONDITION_KEYS.GREEN_FOCUS,
+  CHALLENGE_CONDITION_KEYS.RARE_LETTERS,
+  CHALLENGE_CONDITION_KEYS.NO_MISPLACED,
+  CHALLENGE_CONDITION_KEYS.SAME_VOWEL_PATTERN,
+] as const;
+
+const WEEKLY_CHALLENGE_CONDITION_KEYS = [
+  CHALLENGE_CONDITION_KEYS.NO_GRAY_TILES,
+  CHALLENGE_CONDITION_KEYS.PERFECT_PROGRESSION,
+  CHALLENGE_CONDITION_KEYS.ALL_YELLOW_RUN,
+  CHALLENGE_CONDITION_KEYS.EXTREME_DIFFICULTY,
+] as const;
+
+const CHALLENGE_DEFAULT_SIMPLE_PERSISTENT_WINS_TARGET = 2;
+const CHALLENGE_DEFAULT_SIMPLE_NO_REPEAT_N_LETTERS = 2;
+const CHALLENGE_DEFAULT_SIMPLE_SAME_N_STARTS = 2;
+const CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS = 2;
+const CHALLENGE_DEFAULT_SIMPLE_LATE_WIN_MAX_DURATION_MS = 180_000;
+const CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT = 3;
+
+const CHALLENGE_DEFAULT_COMPLEX_SPEEDSTER_MAX_DURATION_MS = 60_000;
+const CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MIN_REPEATS = 2;
+const CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MAX_REPEATS = 3;
+const CHALLENGE_DEFAULT_COMPLEX_GREEN_FOCUS_MIN_CORRECT = 3;
+const CHALLENGE_DEFAULT_COMPLEX_RARE_LETTERS = ["Q", "Z", "X", "J"] as const;
+const CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET = 3;
 
 export type ChallengeConditionKey =
   (typeof CHALLENGE_CONDITION_KEYS)[keyof typeof CHALLENGE_CONDITION_KEYS];
 
-const CHALLENGE_CONDITION_KEY_SET: ReadonlySet<string> = new Set(
-  Object.values(CHALLENGE_CONDITION_KEYS),
-);
+const CHALLENGE_CONDITION_KEY_SET: ReadonlySet<string> = new Set([
+  ...SIMPLE_CHALLENGE_CONDITION_KEYS,
+  ...COMPLEX_CHALLENGE_CONDITION_KEYS,
+  ...WEEKLY_CHALLENGE_CONDITION_KEYS,
+]);
 
 export const isChallengeConditionKey = (
   value: string,
@@ -27,80 +92,156 @@ export const isChallengeConditionKey = (
 export const LEGACY_CHALLENGE_CONDITION_KEY_ALIASES: Record<
   string,
   ChallengeConditionKey
-> = {
-  polyglot: CHALLENGE_CONDITION_KEYS.DAILY_DOUBLE,
-};
+> = {};
 
 export type ChallengeSeed = {
   name: string;
   description: string;
-  type: "simple" | "complex";
+  type: "simple" | "complex" | "weekly";
   conditionKey: ChallengeConditionKey;
 };
+
+const SPEEDSTER_MAX_SECONDS = Math.floor(
+  CHALLENGE_DEFAULT_COMPLEX_SPEEDSTER_MAX_DURATION_MS / 1000,
+);
+const LATE_WIN_MAX_SECONDS = Math.floor(
+  CHALLENGE_DEFAULT_SIMPLE_LATE_WIN_MAX_DURATION_MS / 1000,
+);
+const RARE_LETTERS_LABEL = CHALLENGE_DEFAULT_COMPLEX_RARE_LETTERS.join(", ");
 
 const CHALLENGE_SEED_BY_CONDITION_KEY: Record<
   ChallengeConditionKey,
   Omit<ChallengeSeed, "conditionKey">
 > = {
-  [CHALLENGE_CONDITION_KEYS.FIRST_GUESS]: {
-    name: "First Guess",
-    description: "Make at least 1 guess in a round",
+  [CHALLENGE_CONDITION_KEYS.COMEBACK]: {
+    name: "Comeback",
+    description: "Win on the last attempt",
     type: "simple",
   },
-  [CHALLENGE_CONDITION_KEYS.COMPLETE_ROUND]: {
+  [CHALLENGE_CONDITION_KEYS.STEADY_PLAYER]: {
     name: "Steady Player",
-    description: "Complete a round (win or lose)",
+    description: "Win a round",
     type: "simple",
   },
-  [CHALLENGE_CONDITION_KEYS.UNIQUE_LETTERS]: {
-    name: "Explorer",
-    description: "Use at least 3 different letters in your first guess",
-    type: "simple",
-  },
-  [CHALLENGE_CONDITION_KEYS.THREE_GUESSES]: {
-    name: "Three Tries",
-    description: "Use at least 3 guesses in a round",
-    type: "simple",
-  },
-  [CHALLENGE_CONDITION_KEYS.VOWELS_FIRST]: {
-    name: "Vowels First",
-    description: "Your first guess must contain at least 2 vowels",
+  [CHALLENGE_CONDITION_KEYS.RISKY]: {
+    name: "Risky",
+    description: "Repeat a guess row at least once",
     type: "simple",
   },
   [CHALLENGE_CONDITION_KEYS.PERSISTENT]: {
     name: "Persistent",
-    description: "Complete 2 rounds in the same day",
+    description: `Win ${CHALLENGE_DEFAULT_SIMPLE_PERSISTENT_WINS_TARGET} rounds in the same day`,
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.NO_REPEAT_N_LETTERS]: {
+    name: "No Repeat N Letters",
+    description: `Do not repeat letters within your guess rows (N=${CHALLENGE_DEFAULT_SIMPLE_NO_REPEAT_N_LETTERS})`,
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.SAME_N_STARTS]: {
+    name: "Same N Starts",
+    description: `At least ${CHALLENGE_DEFAULT_SIMPLE_SAME_N_STARTS} rows start with the same letter`,
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.SAME_N_ENDS]: {
+    name: "Same N Ends",
+    description: `At least ${CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS} rows end with the same letter`,
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.LATE_WIN]: {
+    name: "Late Win",
+    description: `Win in less than ${LATE_WIN_MAX_SECONDS} seconds`,
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.YELLOW_FOCUS]: {
+    name: "Yellow Focus",
+    description: `Get at least ${CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT} yellow tiles in one row`,
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.ONLY_ONE_VOWEL]: {
+    name: "Only One Vowel",
+    description: "The winning guess has exactly one vowel",
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.NO_HINTS]: {
+    name: "No Hints",
+    description: "Win without using hints",
     type: "simple",
   },
   [CHALLENGE_CONDITION_KEYS.SPEEDSTER]: {
     name: "Speedster",
-    description: "Win a round in less than 60 seconds",
+    description: `Win in less than ${SPEEDSTER_MAX_SECONDS} seconds`,
     type: "complex",
   },
-  [CHALLENGE_CONDITION_KEYS.GENIUS]: {
-    name: "Genius",
-    description: "Guess the word in 2 attempts or fewer",
+  [CHALLENGE_CONDITION_KEYS.RECKLESS]: {
+    name: "Reckless",
+    description: `Repeat a row between ${CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MIN_REPEATS} and ${CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MAX_REPEATS} times`,
     type: "complex",
   },
-  [CHALLENGE_CONDITION_KEYS.UNSTOPPABLE_STREAK]: {
-    name: "Unstoppable Streak",
-    description: "Reach a win streak of 3",
+  [CHALLENGE_CONDITION_KEYS.PALINDROME_GUESS]: {
+    name: "Palindrome Guess",
+    description: "Win with a palindrome guess",
     type: "complex",
   },
-  [CHALLENGE_CONDITION_KEYS.PERFECTIONIST]: {
-    name: "Perfectionist",
-    description: "Guess the word on the first try",
+  [CHALLENGE_CONDITION_KEYS.NO_REPEAT_LETTERS]: {
+    name: "No Repeat Letters",
+    description: "Win without repeated letters in guess rows",
     type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.SAME_START]: {
+    name: "Same Start",
+    description: "All guess rows start with the same letter",
+    type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.ENDS_SAME_LETTER]: {
+    name: "Ends Same Letter",
+    description: "All guess rows end with the same letter",
+    type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.ALPHABETICAL_ORDER]: {
+    name: "Alphabetical Order",
+    description: "Guess rows are in alphabetical order",
+    type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.GREEN_FOCUS]: {
+    name: "Green Focus",
+    description: `Get at least ${CHALLENGE_DEFAULT_COMPLEX_GREEN_FOCUS_MIN_CORRECT} green tiles in one row`,
+    type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.RARE_LETTERS]: {
+    name: "Rare Letters",
+    description: `Use rare letters (${RARE_LETTERS_LABEL}) in the round`,
+    type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.NO_MISPLACED]: {
+    name: "No Misplaced",
+    description: "Finish without yellow tiles",
+    type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.SAME_VOWEL_PATTERN]: {
+    name: "Same Vowel Pattern",
+    description: "All guess rows use a single-vowel pattern",
+    type: "complex",
+  },
+  [CHALLENGE_CONDITION_KEYS.NO_GRAY_TILES]: {
+    name: "No Gray Tiles",
+    description: "Win without incorrect letters",
+    type: "weekly",
+  },
+  [CHALLENGE_CONDITION_KEYS.PERFECT_PROGRESSION]: {
+    name: "Perfect Progression",
+    description: `Win ${CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET} rounds in the week without losing`,
+    type: "weekly",
+  },
+  [CHALLENGE_CONDITION_KEYS.ALL_YELLOW_RUN]: {
+    name: "All Yellow Run",
+    description: "Get a full yellow row in a round",
+    type: "weekly",
   },
   [CHALLENGE_CONDITION_KEYS.EXTREME_DIFFICULTY]: {
     name: "Extreme Difficulty",
-    description: "Win a round on Hard or Insane difficulty",
-    type: "complex",
-  },
-  [CHALLENGE_CONDITION_KEYS.DAILY_DOUBLE]: {
-    name: "Daily Double",
-    description: "Win 2 rounds in the same day",
-    type: "complex",
+    description: "Win in insane mode",
+    type: "weekly",
   },
 };
 

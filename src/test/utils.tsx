@@ -39,6 +39,7 @@ const renderWithQueryClient = (
 const createMockChallengeClient = () =>
   ({
     isConfigured: false,
+    listAllChallenges: vi.fn().mockResolvedValue([]),
     getTodayChallenges: vi.fn().mockResolvedValue(null),
     generateDailyChallenges: vi.fn().mockResolvedValue(null),
     regenerateDailyChallenges: vi.fn().mockResolvedValue(null),

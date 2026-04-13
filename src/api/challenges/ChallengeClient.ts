@@ -4,6 +4,7 @@ import {
   GENERATE_DAILY_CHALLENGES_MUTATION,
   GET_PLAYER_CHALLENGE_PROGRESS_QUERY,
   GET_TODAY_CHALLENGES_QUERY,
+  LIST_ALL_CHALLENGES_QUERY,
   REGENERATE_DAILY_CHALLENGES_MUTATION,
   RESET_PLAYER_CHALLENGE_PROGRESS_MUTATION,
   SEED_CHALLENGES_MUTATION,
@@ -11,7 +12,8 @@ import {
 import type {
   CompleteChallengeResult,
   RemoteChallengeProgress,
-  RemoteDailyChallenges,
+  RemoteChallenges,
+  RemoteChallenge,
   ResetPlayerChallengeProgressResult,
 } from "./types";
 
@@ -28,26 +30,26 @@ class ChallengeClient {
     return this.gateway.isConfigured;
   }
 
-  async getTodayChallenges(
-    date: string,
-  ): Promise<RemoteDailyChallenges | null> {
-    return this.gateway.query<RemoteDailyChallenges | null>(
+  async getTodayChallenges(date: string): Promise<RemoteChallenges | null> {
+    return this.gateway.query<RemoteChallenges | null>(
       GET_TODAY_CHALLENGES_QUERY,
       { date },
     );
   }
 
-  async generateDailyChallenges(date: string): Promise<RemoteDailyChallenges> {
-    return this.gateway.mutation<RemoteDailyChallenges>(
+  async listAllChallenges(): Promise<RemoteChallenge[]> {
+    return this.gateway.query<RemoteChallenge[]>(LIST_ALL_CHALLENGES_QUERY, {});
+  }
+
+  async generateDailyChallenges(date: string): Promise<RemoteChallenges> {
+    return this.gateway.mutation<RemoteChallenges>(
       GENERATE_DAILY_CHALLENGES_MUTATION,
       { date },
     );
   }
 
-  async regenerateDailyChallenges(
-    date: string,
-  ): Promise<RemoteDailyChallenges> {
-    return this.gateway.mutation<RemoteDailyChallenges>(
+  async regenerateDailyChallenges(date: string): Promise<RemoteChallenges> {
+    return this.gateway.mutation<RemoteChallenges>(
       REGENERATE_DAILY_CHALLENGES_MUTATION,
       { date },
     );

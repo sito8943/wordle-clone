@@ -31,7 +31,7 @@ const FireStreak = ({
       ].join(" ")}
     >
       {noLabel && showFlame && <Fire streak={safeStreak} size={iconSize} />}
-      <span>{label}</span>
+      <span aria-hidden="true">{label}</span>
       {!noLabel && showFlame && <Fire streak={safeStreak} size={iconSize} />}
     </span>
   );

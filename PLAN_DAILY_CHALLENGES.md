@@ -158,8 +158,8 @@ Referencias a las funciones Convex (`challenges:getTodayChallenges`, etc.).
 
 ## 4. Feature Flag — COMPLETADO
 
-- `src/config/env.ts` — `dailyChallengesEnabled` (lee `VITE_DAILY_CHALLENGES_ENABLED`, default `true`)
-- `src/config/types.ts` — `dailyChallengesEnabled: boolean` en `RuntimeEnv`
+- `src/config/env.ts` — `challengesEnabled` (lee `VITE_CHALLENGES_ENABLED`, default `true`)
+- `src/config/types.ts` — `challengesEnabled: boolean` en `RuntimeEnv`
 - `src/providers/FeatureFlags/types.ts` — Agregado a `FeatureFlags`
 - `src/providers/FeatureFlags/utils.ts` — Mapeado desde env
 

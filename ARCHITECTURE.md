@@ -169,7 +169,8 @@ This is an evolution of the current layered architecture, not a replacement for 
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - The gameplay dictionary language is fixed to Spanish (`es`) in frontend game flow.
 - `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp) for offline remote synchronization.
-- `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions to store completed rounds count, consecutive wins count, and won-language metadata for the current UTC date.
+- `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions to store completed rounds count, won rounds count, and consecutive wins count for the current UTC date.
+- `wordle:weekly-challenges:round-tracker:<playerCode>`: per-player weekly round tracker used by weekly challenge conditions to store completed rounds count, won rounds count, and lost rounds count for the current UTC week (Monday-start, UTC).
 - `wordle:dictionary:es`: cached dictionary words.
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.

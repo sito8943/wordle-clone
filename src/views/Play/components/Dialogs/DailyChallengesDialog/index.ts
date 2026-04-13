@@ -1,4 +1,4 @@
-import DailyChallengesDialog from "./DailyChallengesDialog";
+import ChallengesDialog from "./ChallengesDialog";
 
-export { DailyChallengesDialog };
-export type { DailyChallengesDialogProps } from "./types";
+export { ChallengesDialog as DailyChallengesDialog };
+export type { ChallengesDialogProps as DailyChallengesDialogProps } from "./types";

@@ -1,7 +1,7 @@
 import { useMemo, type JSX } from "react";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { usePlayer } from "@providers";
-import { useDailyChallenges } from "@hooks/useDailyChallenges";
+import { useChallenges } from "@hooks/useChallenges/useChallenges";
 import { PlayViewContext } from "./PlayViewContext";
 import type { PlayViewProviderProps } from "./types";
 import { usePlayController } from "../hooks";
@@ -9,10 +9,10 @@ import { usePlayController } from "../hooks";
 const PlayViewProvider = ({ children }: PlayViewProviderProps): JSX.Element => {
   const controller = usePlayController();
   const { player } = usePlayer();
-  const { wordListButtonEnabled, devConsoleEnabled, dailyChallengesEnabled } =
+  const { wordListButtonEnabled, devConsoleEnabled, challengesEnabled } =
     useFeatureFlags();
 
-  const dailyChallenges = useDailyChallenges(dailyChallengesEnabled);
+  const challenges = useChallenges(challengesEnabled);
 
   const animateTileEntry =
     controller.startAnimationsEnabled && controller.startAnimationSeed > 0;
@@ -26,16 +26,16 @@ const PlayViewProvider = ({ children }: PlayViewProviderProps): JSX.Element => {
       player,
       wordListButtonEnabled: wordListEnabled,
       developerConsoleEnabled: devConsoleEnabled,
-      dailyChallengesEnabled,
+      challengesEnabled,
       preferNativeKeyboard,
       animateTileEntry,
-      dailyChallenges,
+      challenges,
     }),
     [
       animateTileEntry,
       controller,
-      dailyChallenges,
-      dailyChallengesEnabled,
+      challenges,
+      challengesEnabled,
       devConsoleEnabled,
       player,
       preferNativeKeyboard,

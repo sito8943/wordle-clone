@@ -7,7 +7,7 @@ export type FeatureFlags = {
   soundEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
-  dailyChallengesEnabled: boolean;
+  challengesEnabled: boolean;
 };
 
 export type FeatureFlagsContextType = FeatureFlags;

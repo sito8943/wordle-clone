@@ -1,12 +1,13 @@
 import type {
   RemoteChallengeProgress,
-  RemoteDailyChallenges,
+  RemoteChallenges,
 } from "@api/challenges";
 
-export type DailyChallengesDialogProps = {
+export type ChallengesDialogProps = {
   visible: boolean;
-  challenges: RemoteDailyChallenges;
+  challenges: RemoteChallenges;
   progress: RemoteChallengeProgress[];
   millisUntilEndOfDay: number;
+  millisUntilEndOfWeek: number;
   onClose: () => void;
 };

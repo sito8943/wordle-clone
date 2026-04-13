@@ -1,4 +1,5 @@
 export const GET_TODAY_CHALLENGES_QUERY = "challenges:getTodayChallenges";
+export const LIST_ALL_CHALLENGES_QUERY = "challenges:listAllChallenges";
 export const GENERATE_DAILY_CHALLENGES_MUTATION =
   "challenges:generateDailyChallenges";
 export const REGENERATE_DAILY_CHALLENGES_MUTATION =

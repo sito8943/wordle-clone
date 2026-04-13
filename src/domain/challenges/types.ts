@@ -1,23 +1,11 @@
-import type { PlayerDifficulty, PlayerLanguage } from "../wordle/player";
 import type { GuessResult } from "../wordle/types";
+import type { PlayerDifficulty } from "../wordle/player";
+import { CHALLENGE_CONDITION_KEYS } from "./constants";
 
-export type ChallengeType = "simple" | "complex";
+export type ChallengeType = "simple" | "complex" | "weekly";
 
 export type ChallengeConditionKey =
-  | "first_guess"
-  | "complete_round"
-  | "unique_letters"
-  | "three_guesses"
-  | "vowels_first"
-  | "persistent"
-  | "speedster"
-  | "genius"
-  | "unstoppable_streak"
-  | "perfectionist"
-  | "extreme_difficulty"
-  | "daily_double"
-  // Legacy key kept for compatibility with previously seeded challenge records.
-  | "polyglot";
+  (typeof CHALLENGE_CONDITION_KEYS)[keyof typeof CHALLENGE_CONDITION_KEYS];
 
 export type Challenge = {
   id: string;
@@ -45,18 +33,27 @@ export type ChallengeConditionContext = {
   gameOver: boolean;
   won: boolean;
   answer: string;
-  difficulty: PlayerDifficulty;
-  streak: number;
+  playerDifficulty: PlayerDifficulty;
   roundDurationMs: number;
-  language: PlayerLanguage;
   dailyCompletedRounds: number;
+  dailyWonRounds: number;
   dailyConsecutiveWins: number;
-  dailyLanguagesWon: PlayerLanguage[];
+  weeklyCompletedRounds: number;
+  weeklyWonRounds: number;
+  weeklyLostRounds: number;
+  hintsUsed: number;
 };
 
 export type DailyChallengeRoundTracker = {
   date: string;
   completedRounds: number;
+  wonRounds: number;
   consecutiveWins: number;
-  wonLanguages: PlayerLanguage[];
+};
+
+export type WeeklyChallengeRoundTracker = {
+  weekStart: string;
+  completedRounds: number;
+  wonRounds: number;
+  lostRounds: number;
 };

@@ -12,7 +12,7 @@ export type RuntimeEnv = {
   soundEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
-  dailyChallengesEnabled: boolean;
+  challengesEnabled: boolean;
   scoreLimit: number;
   wordleGameStorageKey: string;
   paypalDonationButtonUrl?: string;

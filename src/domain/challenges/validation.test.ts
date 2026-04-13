@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
+import type { GuessResult } from "@domain/wordle";
+import { WORD_LENGTH } from "@domain/wordle";
+import { CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET } from "./constants";
 import type { ChallengeConditionContext } from "./types";
 import { evaluateCondition } from "./validation";
+
+const row = (word: string, statuses: GuessResult["statuses"]): GuessResult => ({
+  word,
+  statuses,
+});
 
 const createContext = (
   overrides: Partial<ChallengeConditionContext> = {},
@@ -9,97 +17,74 @@ const createContext = (
   gameOver: false,
   won: false,
   answer: "APPLE",
-  difficulty: "normal",
-  streak: 0,
+  playerDifficulty: "normal",
   roundDurationMs: 120_000,
-  language: "es",
   dailyCompletedRounds: 0,
+  dailyWonRounds: 0,
   dailyConsecutiveWins: 0,
-  dailyLanguagesWon: [],
+  weeklyCompletedRounds: 0,
+  weeklyWonRounds: 0,
+  weeklyLostRounds: 0,
+  hintsUsed: 0,
   ...overrides,
 });
 
 describe("challenge condition evaluators", () => {
-  it("evaluates first_guess", () => {
-    expect(evaluateCondition("first_guess", createContext())).toBe(false);
+  it("evaluates comeback", () => {
     expect(
       evaluateCondition(
-        "first_guess",
+        "comeback",
         createContext({
-          guesses: [{ word: "APPLE", statuses: ["correct"] }],
-        }),
-      ),
-    ).toBe(true);
-  });
-
-  it("evaluates complete_round", () => {
-    expect(evaluateCondition("complete_round", createContext())).toBe(false);
-    expect(
-      evaluateCondition("complete_round", createContext({ gameOver: true })),
-    ).toBe(true);
-  });
-
-  it("evaluates unique_letters", () => {
-    expect(evaluateCondition("unique_letters", createContext())).toBe(false);
-    expect(
-      evaluateCondition(
-        "unique_letters",
-        createContext({
-          guesses: [{ word: "AABBB", statuses: ["correct"] }],
-        }),
-      ),
-    ).toBe(false);
-    expect(
-      evaluateCondition(
-        "unique_letters",
-        createContext({
-          guesses: [{ word: "CRANE", statuses: ["correct"] }],
-        }),
-      ),
-    ).toBe(true);
-  });
-
-  it("evaluates three_guesses", () => {
-    expect(
-      evaluateCondition(
-        "three_guesses",
-        createContext({
+          won: true,
           guesses: [
-            { word: "A", statuses: [] },
-            { word: "B", statuses: [] },
+            row("A", []),
+            row("B", []),
+            row("C", []),
+            row("D", []),
+            row("E", []),
           ],
         }),
       ),
     ).toBe(false);
     expect(
       evaluateCondition(
-        "three_guesses",
+        "comeback",
         createContext({
+          won: true,
           guesses: [
-            { word: "A", statuses: [] },
-            { word: "B", statuses: [] },
-            { word: "C", statuses: [] },
+            row("A", []),
+            row("B", []),
+            row("C", []),
+            row("D", []),
+            row("E", []),
+            row("F", []),
           ],
         }),
       ),
     ).toBe(true);
   });
 
-  it("evaluates vowels_first", () => {
-    expect(evaluateCondition("vowels_first", createContext())).toBe(false);
+  it("evaluates steady_player", () => {
+    expect(evaluateCondition("steady_player", createContext())).toBe(false);
+    expect(
+      evaluateCondition("steady_player", createContext({ won: true })),
+    ).toBe(true);
+  });
+
+  it("evaluates risky", () => {
     expect(
       evaluateCondition(
-        "vowels_first",
+        "risky",
         createContext({
-          guesses: [{ word: "CRWTH", statuses: [] }],
+          guesses: [row("CRANE", []), row("SLATE", [])],
         }),
       ),
     ).toBe(false);
     expect(
       evaluateCondition(
-        "vowels_first",
+        "risky",
         createContext({
-          guesses: [{ word: "AUDIO", statuses: [] }],
+          guesses: [row("CRANE", []), row("CRANE", [])],
         }),
       ),
     ).toBe(true);
@@ -110,7 +95,7 @@ describe("challenge condition evaluators", () => {
       evaluateCondition(
         "persistent",
         createContext({
-          dailyCompletedRounds: 1,
+          dailyWonRounds: 1,
         }),
       ),
     ).toBe(false);
@@ -118,7 +103,168 @@ describe("challenge condition evaluators", () => {
       evaluateCondition(
         "persistent",
         createContext({
-          dailyCompletedRounds: 2,
+          dailyWonRounds: 2,
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates no_repeat_n_letters", () => {
+    expect(
+      evaluateCondition(
+        "no_repeat_n_letters",
+        createContext({
+          guesses: [row("CRANE", []), row("SLATE", [])],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "no_repeat_n_letters",
+        createContext({
+          guesses: [row("APPLE", [])],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates same_n_starts", () => {
+    expect(
+      evaluateCondition(
+        "same_n_starts",
+        createContext({
+          guesses: [row("APPLE", []), row("BRICK", [])],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "same_n_starts",
+        createContext({
+          guesses: [row("APPLE", []), row("ALERT", [])],
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates same_n_ends", () => {
+    expect(
+      evaluateCondition(
+        "same_n_ends",
+        createContext({
+          guesses: [row("APPLE", []), row("ALERT", [])],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "same_n_ends",
+        createContext({
+          guesses: [row("APPLE", []), row("CRANE", [])],
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates late_win", () => {
+    expect(
+      evaluateCondition(
+        "late_win",
+        createContext({
+          won: true,
+          roundDurationMs: 181_000,
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "late_win",
+        createContext({
+          won: true,
+          roundDurationMs: 179_000,
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates yellow_focus", () => {
+    expect(
+      evaluateCondition(
+        "yellow_focus",
+        createContext({
+          guesses: [
+            row("AUDIO", ["present", "present", "absent", "absent", "absent"]),
+          ],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "yellow_focus",
+        createContext({
+          guesses: [
+            row("AUDIO", ["present", "present", "present", "absent", "absent"]),
+          ],
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates only_one_vowel", () => {
+    expect(
+      evaluateCondition(
+        "only_one_vowel",
+        createContext({
+          won: true,
+          answer: "CRANE",
+          guesses: [
+            row("CRANE", [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+            ]),
+          ],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "only_one_vowel",
+        createContext({
+          won: true,
+          answer: "TRUCK",
+          guesses: [
+            row("TRUCK", [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+            ]),
+          ],
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates no_hints", () => {
+    expect(
+      evaluateCondition(
+        "no_hints",
+        createContext({
+          won: true,
+          hintsUsed: 1,
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "no_hints",
+        createContext({
+          won: true,
+          hintsUsed: 0,
         }),
       ),
     ).toBe(true);
@@ -128,98 +274,342 @@ describe("challenge condition evaluators", () => {
     expect(
       evaluateCondition(
         "speedster",
-        createContext({ won: true, roundDurationMs: 60_000 }),
+        createContext({
+          won: true,
+          roundDurationMs: 60_000,
+        }),
       ),
     ).toBe(false);
     expect(
       evaluateCondition(
         "speedster",
-        createContext({ won: true, roundDurationMs: 59_999 }),
+        createContext({
+          won: true,
+          roundDurationMs: 59_000,
+        }),
       ),
     ).toBe(true);
   });
 
-  it("evaluates genius", () => {
+  it("evaluates reckless", () => {
     expect(
       evaluateCondition(
-        "genius",
+        "reckless",
+        createContext({
+          guesses: [row("CRANE", []), row("SLATE", [])],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "reckless",
+        createContext({
+          guesses: [row("CRANE", []), row("CRANE", [])],
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates palindrome_guess", () => {
+    expect(
+      evaluateCondition(
+        "palindrome_guess",
         createContext({
           won: true,
+          answer: "APPLE",
           guesses: [
-            { word: "SLATE", statuses: [] },
-            { word: "APPLE", statuses: [] },
-            { word: "BRICK", statuses: [] },
+            row("APPLE", [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+            ]),
           ],
         }),
       ),
     ).toBe(false);
     expect(
       evaluateCondition(
-        "genius",
+        "palindrome_guess",
         createContext({
           won: true,
+          answer: "RADAR",
           guesses: [
-            { word: "SLATE", statuses: [] },
-            { word: "APPLE", statuses: [] },
+            row("RADAR", [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+            ]),
           ],
         }),
       ),
     ).toBe(true);
   });
 
-  it("evaluates unstoppable_streak", () => {
+  it("evaluates no_repeat_letters", () => {
     expect(
       evaluateCondition(
-        "unstoppable_streak",
+        "no_repeat_letters",
         createContext({
           won: true,
-          streak: 70,
-          dailyConsecutiveWins: 2,
-        }),
-      ),
-    ).toBe(false);
-    expect(
-      evaluateCondition(
-        "unstoppable_streak",
-        createContext({
-          won: false,
-          dailyConsecutiveWins: 3,
-        }),
-      ),
-    ).toBe(false);
-    expect(
-      evaluateCondition(
-        "unstoppable_streak",
-        createContext({
-          won: true,
-          dailyConsecutiveWins: 3,
+          guesses: [row("CRANE", []), row("SLATE", [])],
         }),
       ),
     ).toBe(true);
-  });
-
-  it("evaluates perfectionist", () => {
     expect(
       evaluateCondition(
-        "perfectionist",
+        "no_repeat_letters",
         createContext({
           won: true,
+          guesses: [row("APPLE", [])],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates same_start", () => {
+    expect(
+      evaluateCondition(
+        "same_start",
+        createContext({
+          guesses: [row("CRANE", []), row("CROWN", [])],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "same_start",
+        createContext({
+          guesses: [row("CRANE", []), row("BROWN", [])],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates ends_same_letter", () => {
+    expect(
+      evaluateCondition(
+        "ends_same_letter",
+        createContext({
+          guesses: [row("APPLE", []), row("CRANE", [])],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "ends_same_letter",
+        createContext({
+          guesses: [row("APPLE", []), row("ALERT", [])],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates alphabetical_order", () => {
+    expect(
+      evaluateCondition(
+        "alphabetical_order",
+        createContext({
+          guesses: [row("APPLE", []), row("CRANE", []), row("SLATE", [])],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "alphabetical_order",
+        createContext({
+          guesses: [row("SLATE", []), row("CRANE", [])],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates green_focus", () => {
+    expect(
+      evaluateCondition(
+        "green_focus",
+        createContext({
           guesses: [
-            { word: "APPLE", statuses: [] },
-            { word: "CRANE", statuses: [] },
+            row("APPLE", ["correct", "correct", "absent", "absent", "absent"]),
           ],
         }),
       ),
     ).toBe(false);
     expect(
       evaluateCondition(
-        "perfectionist",
+        "green_focus",
         createContext({
-          won: true,
-          guesses: [{ word: "APPLE", statuses: [] }],
+          guesses: [
+            row("APPLE", ["correct", "correct", "correct", "absent", "absent"]),
+          ],
         }),
       ),
     ).toBe(true);
+  });
+
+  it("evaluates rare_letters", () => {
+    expect(
+      evaluateCondition(
+        "rare_letters",
+        createContext({
+          guesses: [row("QAZAZ", []), row("JAZZY", [])],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "rare_letters",
+        createContext({
+          guesses: [row("QZXJQ", [])],
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates no_misplaced", () => {
+    expect(
+      evaluateCondition(
+        "no_misplaced",
+        createContext({
+          guesses: [
+            row("APPLE", ["absent", "present", "absent", "absent", "absent"]),
+          ],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "no_misplaced",
+        createContext({
+          guesses: [
+            row("APPLE", ["absent", "correct", "absent", "absent", "absent"]),
+          ],
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("evaluates same_vowel_pattern", () => {
+    expect(
+      evaluateCondition(
+        "same_vowel_pattern",
+        createContext({
+          guesses: [row("CASAS", []), row("MAMAS", [])],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "same_vowel_pattern",
+        createContext({
+          guesses: [row("AUDIO", [])],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates no_gray_tiles", () => {
+    expect(
+      evaluateCondition(
+        "no_gray_tiles",
+        createContext({
+          won: true,
+          guesses: [
+            row("APPLE", [
+              "correct",
+              "present",
+              "correct",
+              "present",
+              "correct",
+            ]),
+          ],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "no_gray_tiles",
+        createContext({
+          won: true,
+          guesses: [
+            row("APPLE", [
+              "correct",
+              "absent",
+              "correct",
+              "present",
+              "correct",
+            ]),
+          ],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates perfect_progression", () => {
+    expect(
+      evaluateCondition(
+        "perfect_progression",
+        createContext({
+          weeklyWonRounds:
+            CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET - 1,
+          weeklyLostRounds: 0,
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "perfect_progression",
+        createContext({
+          weeklyWonRounds:
+            CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET,
+          weeklyLostRounds: 0,
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "perfect_progression",
+        createContext({
+          weeklyWonRounds: 4,
+          weeklyLostRounds: 1,
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("evaluates all_yellow_run", () => {
+    const allYellowRow = Array.from(
+      { length: WORD_LENGTH },
+      () => "present" as const,
+    );
+
+    expect(
+      evaluateCondition(
+        "all_yellow_run",
+        createContext({
+          guesses: [row("APPLE", allYellowRow)],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      evaluateCondition(
+        "all_yellow_run",
+        createContext({
+          guesses: [
+            row("APPLE", [
+              "present",
+              "present",
+              "present",
+              "present",
+              "absent",
+            ]),
+          ],
+        }),
+      ),
+    ).toBe(false);
   });
 
   it("evaluates extreme_difficulty", () => {
@@ -228,7 +618,7 @@ describe("challenge condition evaluators", () => {
         "extreme_difficulty",
         createContext({
           won: true,
-          difficulty: "normal",
+          playerDifficulty: "hard",
         }),
       ),
     ).toBe(false);
@@ -237,49 +627,7 @@ describe("challenge condition evaluators", () => {
         "extreme_difficulty",
         createContext({
           won: true,
-          difficulty: "hard",
-        }),
-      ),
-    ).toBe(true);
-    expect(
-      evaluateCondition(
-        "extreme_difficulty",
-        createContext({
-          won: true,
-          difficulty: "insane",
-        }),
-      ),
-    ).toBe(true);
-  });
-
-  it("evaluates daily_double", () => {
-    expect(
-      evaluateCondition(
-        "daily_double",
-        createContext({
-          won: true,
-          dailyCompletedRounds: 1,
-        }),
-      ),
-    ).toBe(false);
-    expect(
-      evaluateCondition(
-        "daily_double",
-        createContext({
-          won: true,
-          dailyCompletedRounds: 2,
-        }),
-      ),
-    ).toBe(true);
-  });
-
-  it("keeps polyglot as a legacy alias for daily_double", () => {
-    expect(
-      evaluateCondition(
-        "polyglot",
-        createContext({
-          won: true,
-          dailyCompletedRounds: 2,
+          playerDifficulty: "insane",
         }),
       ),
     ).toBe(true);

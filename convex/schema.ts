@@ -63,7 +63,11 @@ export default defineSchema({
   challenges: defineTable({
     name: v.string(),
     description: v.string(),
-    type: v.union(v.literal("simple"), v.literal("complex")),
+    type: v.union(
+      v.literal("simple"),
+      v.literal("complex"),
+      v.literal("weekly"),
+    ),
     conditionKey: v.string(),
     used: v.boolean(),
   })

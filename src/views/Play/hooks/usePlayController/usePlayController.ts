@@ -13,8 +13,10 @@ import {
 } from "@domain/wordle";
 import {
   evaluateCondition,
+  getWeekStartDateUTC,
   notifyDailyChallengesProgressUpdated,
   recordDailyChallengeRoundCompletion,
+  recordWeeklyChallengeRoundCompletion,
   resetDailyChallengeRoundTracker,
   type ChallengeConditionContext,
 } from "@domain/challenges";
@@ -25,8 +27,9 @@ import { useHardModeTimer } from "./useHardModeTimer";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
-import { getTodayDateUTC } from "@hooks/useDailyChallenges";
+import { getTodayDateUTC } from "@hooks/useChallenges/useChallenges";
 import { useHintController } from "../useHintController";
+import { getHintsUsedForGame } from "../useHintController/utils";
 import type {
   ComboFlash,
   EndOfGameSnapshot,
@@ -91,7 +94,7 @@ const getGuessWords = (guesses: unknown[]): string[] =>
 export default function usePlayController() {
   const { scoreClient, wordDictionaryClient, challengeClient } = useApi();
   const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
-  const { hintsEnabled, dailyChallengesEnabled } = useFeatureFlags();
+  const { hintsEnabled, challengesEnabled } = useFeatureFlags();
   const { playSound } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
   const wordle = useWordle({
@@ -217,20 +220,21 @@ export default function usePlayController() {
     forceLoss,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
-  const completeEligibleDailyChallenges = useCallback(async () => {
-    if (
-      !dailyChallengesEnabled ||
-      !challengeClient?.isConfigured ||
-      !gameOver
-    ) {
+  const completeEligibleChallenges = useCallback(async () => {
+    if (!challengesEnabled || !challengeClient?.isConfigured || !gameOver) {
       return;
     }
 
     const date = getTodayDateUTC();
+    const weekStart = getWeekStartDateUTC(date);
     const dailyTracker = recordDailyChallengeRoundCompletion({
       date,
       playerCode: player.code,
-      language: gameplayLanguage,
+      won,
+    });
+    const weeklyTracker = recordWeeklyChallengeRoundCompletion({
+      weekStart,
+      playerCode: player.code,
       won,
     });
 
@@ -247,6 +251,17 @@ export default function usePlayController() {
           .filter((item) => item.completed)
           .map((item) => item.challengeId),
       );
+      const weeklyProgress =
+        await challengeClient.getPlayerChallengeProgress(weekStart);
+      const completedWeeklyChallengeIds = new Set(
+        weeklyProgress
+          .filter((item) => item.completed)
+          .map((item) => item.challengeId),
+      );
+      const allChallenges = await challengeClient.listAllChallenges();
+      const weeklyChallenges = allChallenges.filter(
+        (challenge) => challenge.type === "weekly",
+      );
       const roundDurationMs =
         getRoundDurationMs(roundStartedAt, Date.now()) ??
         Number.MAX_SAFE_INTEGER;
@@ -255,46 +270,62 @@ export default function usePlayController() {
         gameOver,
         won,
         answer,
-        difficulty: player.difficulty,
-        streak: won ? player.streak + 1 : 0,
+        playerDifficulty: player.difficulty,
         roundDurationMs,
-        language: gameplayLanguage,
         dailyCompletedRounds: dailyTracker.completedRounds,
+        dailyWonRounds: dailyTracker.wonRounds,
         dailyConsecutiveWins: dailyTracker.consecutiveWins,
-        dailyLanguagesWon: dailyTracker.wonLanguages,
+        weeklyCompletedRounds: weeklyTracker.completedRounds,
+        weeklyWonRounds: weeklyTracker.wonRounds,
+        weeklyLostRounds: weeklyTracker.lostRounds,
+        hintsUsed: getHintsUsedForGame(gameId, answer),
       };
       let completedInRound = 0;
       let awardedPointsInRound = 0;
       const completedChallengeNames: string[] = [];
 
-      for (const challenge of [
-        todayChallenges.simple,
-        todayChallenges.complex,
-      ]) {
-        if (completedChallengeIds.has(challenge.id)) {
-          continue;
+      const completeChallengesForPeriod = async (
+        challenges: typeof allChallenges,
+        completedIds: Set<string>,
+        periodKey: string,
+      ) => {
+        for (const challenge of challenges) {
+          if (completedIds.has(challenge.id)) {
+            continue;
+          }
+
+          if (!evaluateCondition(challenge.conditionKey, context)) {
+            continue;
+          }
+
+          const completion = await challengeClient.completeChallenge(
+            challenge.id,
+            periodKey,
+          );
+
+          if (completion.alreadyCompleted || completion.pointsAwarded <= 0) {
+            continue;
+          }
+
+          completedIds.add(challenge.id);
+          completedInRound += 1;
+          awardedPointsInRound += completion.pointsAwarded;
+          completedChallengeNames.push(
+            i18n.t(`challenges.names.${challenge.conditionKey}`),
+          );
         }
+      };
 
-        if (!evaluateCondition(challenge.conditionKey, context)) {
-          continue;
-        }
-
-        const completion = await challengeClient.completeChallenge(
-          challenge.id,
-          date,
-        );
-
-        if (completion.alreadyCompleted || completion.pointsAwarded <= 0) {
-          continue;
-        }
-
-        completedChallengeIds.add(challenge.id);
-        completedInRound += 1;
-        awardedPointsInRound += completion.pointsAwarded;
-        completedChallengeNames.push(
-          i18n.t(`challenges.names.${challenge.conditionKey}`),
-        );
-      }
+      await completeChallengesForPeriod(
+        [todayChallenges.simple, todayChallenges.complex],
+        completedChallengeIds,
+        date,
+      );
+      await completeChallengesForPeriod(
+        weeklyChallenges,
+        completedWeeklyChallengeIds,
+        weekStart,
+      );
 
       if (completedInRound === 0 || awardedPointsInRound <= 0) {
         return;
@@ -332,13 +363,12 @@ export default function usePlayController() {
   }, [
     answer,
     challengeClient,
-    dailyChallengesEnabled,
+    challengesEnabled,
+    gameId,
     gameOver,
     guesses,
     player.code,
     player.difficulty,
-    player.streak,
-    gameplayLanguage,
     roundStartedAt,
     won,
   ]);
@@ -436,10 +466,10 @@ export default function usePlayController() {
       void commitLoss();
     }
 
-    void completeEligibleDailyChallenges();
+    void completeEligibleChallenges();
     roundSettled.current = true;
   }, [
-    completeEligibleDailyChallenges,
+    completeEligibleChallenges,
     gameOver,
     guesses,
     guesses.length,

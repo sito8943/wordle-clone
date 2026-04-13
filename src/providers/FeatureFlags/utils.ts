@@ -13,5 +13,5 @@ export const resolveFeatureFlags = (): FeatureFlags => ({
   soundEnabled: env.soundEnabled,
   hintsEnabled: env.hintsEnabled,
   helpButtonEnabled: env.helpButtonEnabled,
-  dailyChallengesEnabled: env.dailyChallengesEnabled,
+  challengesEnabled: env.challengesEnabled,
 });

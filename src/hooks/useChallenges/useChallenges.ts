@@ -1,65 +1,36 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   RemoteChallengeProgress,
-  RemoteDailyChallenges,
+  RemoteChallenges,
 } from "@api/challenges";
-import { subscribeToDailyChallengesProgressUpdated } from "@domain/challenges";
+import {
+  getWeekStartDateUTC,
+  subscribeToDailyChallengesProgressUpdated,
+} from "@domain/challenges";
 import { useApi } from "@providers/Api";
+import type { UseChallengesResult } from "./types";
+import {
+  getMillisUntilEndOfDayUTC,
+  getMillisUntilEndOfWeekUTC,
+  getTodayDateUTC,
+  hasSeenDialogInSession,
+  markDialogSeenInSession,
+} from "./utils";
 
-const CHALLENGES_DIALOG_SEEN_KEY = "wordle:daily-challenges-dialog-seen";
-
-const getTodayDateUTC = (): string => {
-  const now = new Date();
-  return now.toISOString().slice(0, 10);
-};
-
-const getMillisUntilEndOfDayUTC = (): number => {
-  const now = new Date();
-  const endOfDay = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
-  );
-  return endOfDay.getTime() - now.getTime();
-};
-
-const hasSeenDialogInSession = (): boolean => {
-  if (typeof window === "undefined") return true;
-  try {
-    return window.sessionStorage.getItem(CHALLENGES_DIALOG_SEEN_KEY) === "seen";
-  } catch {
-    return true;
-  }
-};
-
-const markDialogSeenInSession = (): void => {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(CHALLENGES_DIALOG_SEEN_KEY, "seen");
-  } catch {
-    // Ignore storage write errors
-  }
-};
-
-type UseDailyChallengesResult = {
-  challenges: RemoteDailyChallenges | null;
-  progress: RemoteChallengeProgress[];
-  loading: boolean;
-  showDialog: boolean;
-  millisUntilEndOfDay: number;
-  openDialog: () => void;
-  closeDialog: () => void;
-  refreshProgress: () => Promise<void>;
-};
-
-const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
+const useChallenges = (enabled: boolean): UseChallengesResult => {
   const { challengeClient } = useApi();
-  const [challenges, setChallenges] = useState<RemoteDailyChallenges | null>(
-    null,
-  );
+  const [challenges, setChallenges] = useState<RemoteChallenges | null>(null);
   const [progress, setProgress] = useState<RemoteChallengeProgress[]>([]);
+  const [weeklyProgress, setWeeklyProgress] = useState<
+    RemoteChallengeProgress[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [millisUntilEndOfDay, setMillisUntilEndOfDay] = useState(
     getMillisUntilEndOfDayUTC,
+  );
+  const [millisUntilEndOfWeek, setMillisUntilEndOfWeek] = useState(
+    getMillisUntilEndOfWeekUTC,
   );
   const initializedRef = useRef(false);
 
@@ -69,6 +40,7 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
 
     const interval = window.setInterval(() => {
       setMillisUntilEndOfDay(getMillisUntilEndOfDayUTC());
+      setMillisUntilEndOfWeek(getMillisUntilEndOfWeekUTC());
     }, 60_000);
 
     return () => window.clearInterval(interval);
@@ -81,6 +53,7 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
     initializedRef.current = true;
 
     const date = getTodayDateUTC();
+    const weekStart = getWeekStartDateUTC(date);
 
     const init = async () => {
       setLoading(true);
@@ -95,22 +68,39 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
         if (!todayChallenges) {
           todayChallenges = await challengeClient.generateDailyChallenges(date);
         }
-
+        console.log(todayChallenges);
         setChallenges(todayChallenges);
 
-        // Fetch player progress
-        const playerProgress =
-          await challengeClient.getPlayerChallengeProgress(date);
+        // Fetch challenge catalog + player progress
+        const [allChallenges, playerProgress, playerWeeklyProgress] =
+          await Promise.all([
+            challengeClient.listAllChallenges(),
+            challengeClient.getPlayerChallengeProgress(date),
+            challengeClient.getPlayerChallengeProgress(weekStart),
+          ]);
         setProgress(playerProgress);
+        setWeeklyProgress(playerWeeklyProgress);
 
         // Auto-show dialog if not seen in this session and at least one is incomplete
         if (!hasSeenDialogInSession() && todayChallenges) {
-          const completedIds = new Set(
+          const completedDailyIds = new Set(
             playerProgress.filter((p) => p.completed).map((p) => p.challengeId),
           );
-          const hasIncomplete =
-            !completedIds.has(todayChallenges.simple.id) ||
-            !completedIds.has(todayChallenges.complex.id);
+          const completedWeeklyIds = new Set(
+            playerWeeklyProgress
+              .filter((p) => p.completed)
+              .map((p) => p.challengeId),
+          );
+          const hasIncompleteDaily =
+            !completedDailyIds.has(todayChallenges.simple.id) ||
+            !completedDailyIds.has(todayChallenges.complex.id);
+          const weeklyChallengeList = allChallenges.filter(
+            (challenge) => challenge.type === "weekly",
+          );
+          const hasIncompleteWeekly = weeklyChallengeList.some(
+            (challenge) => !completedWeeklyIds.has(challenge.id),
+          );
+          const hasIncomplete = hasIncompleteDaily || hasIncompleteWeekly;
 
           if (hasIncomplete) {
             setShowDialog(true);
@@ -133,10 +123,14 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
   const refreshProgress = useCallback(async () => {
     if (!challengeClient.isConfigured) return;
     const date = getTodayDateUTC();
+    const weekStart = getWeekStartDateUTC(date);
     try {
-      const playerProgress =
-        await challengeClient.getPlayerChallengeProgress(date);
+      const [playerProgress, playerWeeklyProgress] = await Promise.all([
+        challengeClient.getPlayerChallengeProgress(date),
+        challengeClient.getPlayerChallengeProgress(weekStart),
+      ]);
       setProgress(playerProgress);
+      setWeeklyProgress(playerWeeklyProgress);
     } catch {
       // Silently fail
     }
@@ -155,13 +149,15 @@ const useDailyChallenges = (enabled: boolean): UseDailyChallengesResult => {
   return {
     challenges,
     progress,
+    weeklyProgress,
     loading,
     showDialog,
     millisUntilEndOfDay,
+    millisUntilEndOfWeek,
     openDialog,
     closeDialog,
     refreshProgress,
   };
 };
 
-export { useDailyChallenges, getTodayDateUTC };
+export { useChallenges, getTodayDateUTC };

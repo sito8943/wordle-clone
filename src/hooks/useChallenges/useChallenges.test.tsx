@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DAILY_CHALLENGES_PROGRESS_UPDATED_EVENT } from "@domain/challenges";
-import { useDailyChallenges } from "./useDailyChallenges";
+import { useChallenges } from "./useChallenges";
 
 const mockUseApi = vi.fn();
 
@@ -13,21 +13,31 @@ const createTodayChallenges = () => ({
   date: new Date().toISOString().slice(0, 10),
   simple: {
     id: "simple-1",
-    name: "First Guess",
-    description: "Make at least 1 guess in a round",
+    name: "Steady Player",
+    description: "Win a round",
     type: "simple" as const,
-    conditionKey: "first_guess" as const,
+    conditionKey: "steady_player" as const,
   },
   complex: {
     id: "complex-1",
-    name: "Genius",
-    description: "Guess the word in 2 attempts or fewer",
+    name: "Speedster",
+    description: "Win in less than 60 seconds",
     type: "complex" as const,
-    conditionKey: "genius" as const,
+    conditionKey: "speedster" as const,
   },
 });
 
-describe("useDailyChallenges", () => {
+const weeklyChallenges = [
+  {
+    id: "weekly-1",
+    name: "No Gray Tiles",
+    description: "Win without incorrect letters",
+    type: "weekly" as const,
+    conditionKey: "no_gray_tiles" as const,
+  },
+];
+
+describe("useChallenges", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
     mockUseApi.mockReset();
@@ -44,15 +54,17 @@ describe("useDailyChallenges", () => {
       seedChallenges: vi.fn(),
       getTodayChallenges: vi.fn(),
       generateDailyChallenges: vi.fn(),
+      listAllChallenges: vi.fn(),
       getPlayerChallengeProgress: vi.fn(),
     };
     mockUseApi.mockReturnValue({ challengeClient });
 
-    const { result } = renderHook(() => useDailyChallenges(false));
+    const { result } = renderHook(() => useChallenges(false));
 
     expect(challengeClient.seedChallenges).not.toHaveBeenCalled();
     expect(result.current.challenges).toBeNull();
     expect(result.current.progress).toEqual([]);
+    expect(result.current.weeklyProgress).toEqual([]);
     expect(result.current.showDialog).toBe(false);
   });
 
@@ -65,11 +77,12 @@ describe("useDailyChallenges", () => {
         .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
       generateDailyChallenges: vi.fn(),
+      listAllChallenges: vi.fn().mockResolvedValue(weeklyChallenges),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
     };
     mockUseApi.mockReturnValue({ challengeClient });
 
-    const { result } = renderHook(() => useDailyChallenges(true));
+    const { result } = renderHook(() => useChallenges(true));
 
     await waitFor(() => {
       expect(challengeClient.seedChallenges).toHaveBeenCalledTimes(1);
@@ -82,6 +95,7 @@ describe("useDailyChallenges", () => {
     expect(challengeClient.getTodayChallenges).toHaveBeenCalledWith(
       todayChallenges.date,
     );
+    expect(challengeClient.listAllChallenges).toHaveBeenCalledTimes(1);
     expect(challengeClient.generateDailyChallenges).not.toHaveBeenCalled();
     expect(result.current.showDialog).toBe(true);
     expect(
@@ -98,6 +112,7 @@ describe("useDailyChallenges", () => {
         .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(null),
       generateDailyChallenges: vi.fn().mockResolvedValue(todayChallenges),
+      listAllChallenges: vi.fn().mockResolvedValue(weeklyChallenges),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([
         {
           _id: "progress-1",
@@ -119,7 +134,7 @@ describe("useDailyChallenges", () => {
     };
     mockUseApi.mockReturnValue({ challengeClient });
 
-    renderHook(() => useDailyChallenges(true));
+    renderHook(() => useChallenges(true));
 
     await waitFor(() => {
       expect(challengeClient.generateDailyChallenges).toHaveBeenCalledWith(
@@ -137,8 +152,10 @@ describe("useDailyChallenges", () => {
         .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
       generateDailyChallenges: vi.fn(),
+      listAllChallenges: vi.fn().mockResolvedValue(weeklyChallenges),
       getPlayerChallengeProgress: vi
         .fn()
+        .mockResolvedValueOnce([])
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([
           {
@@ -149,15 +166,16 @@ describe("useDailyChallenges", () => {
             completed: true,
             pointsAwarded: 5,
           },
-        ]),
+        ])
+        .mockResolvedValueOnce([]),
     };
     mockUseApi.mockReturnValue({ challengeClient });
 
-    const { result } = renderHook(() => useDailyChallenges(true));
+    const { result } = renderHook(() => useChallenges(true));
 
     await waitFor(() => {
       expect(challengeClient.getPlayerChallengeProgress).toHaveBeenCalledTimes(
-        1,
+        2,
       );
     });
 
@@ -167,7 +185,7 @@ describe("useDailyChallenges", () => {
 
     await waitFor(() => {
       expect(challengeClient.getPlayerChallengeProgress).toHaveBeenCalledTimes(
-        2,
+        4,
       );
       expect(result.current.progress).toHaveLength(1);
       expect(result.current.progress[0].challengeId).toBe(
