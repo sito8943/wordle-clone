@@ -51,6 +51,11 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_CHALLENGES_ENABLED ?? rawEnv.CHALLENGES_ENABLED,
     true,
   ),
+  playOfflineStateEnabled: readBoolean(
+    import.meta.env.VITE_PLAY_OFFLINE_STATE_ENABLED ??
+      rawEnv.PLAY_OFFLINE_STATE_ENABLED,
+    false,
+  ),
   scoreLimit: SCORE_LIMIT,
   wordleGameStorageKey: WORDLE_GAME_STORAGE_KEY,
   paypalDonationButtonUrl: readOptionalString(

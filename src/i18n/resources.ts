@@ -210,6 +210,14 @@ export const resources = {
         },
       },
       play: {
+        offlineState: {
+          badge: "Offline mode",
+          title: "Game temporarily offline",
+          description:
+            "The game is currently offline. We are working to bring it back soon.",
+          contactAction: "Stay in touch on WhatsApp",
+          settingsAction: "Open settings",
+        },
         sections: {
           boardError: {
             title: "The board crashed.",
@@ -678,6 +686,14 @@ export const resources = {
         },
       },
       play: {
+        offlineState: {
+          badge: "Modo offline",
+          title: "Juego temporalmente offline",
+          description:
+            "El juego está offline en este momento. Estamos trabajando para traerlo de vuelta pronto.",
+          contactAction: "Mantente al contacto por WhatsApp",
+          settingsAction: "Ir a ajustes",
+        },
         sections: {
           boardError: {
             title: "El tablero ha fallado.",

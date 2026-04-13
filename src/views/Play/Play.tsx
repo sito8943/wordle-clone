@@ -1,32 +1,14 @@
 import type { JSX } from "react";
-import {
-  Toolbar,
-  DialogsSection,
-  BoardSection,
-  KeyboardSection,
-} from "./sections";
+import { env } from "@config";
 import { PlayViewProvider } from "./providers";
-
-const PlayContent = (): JSX.Element => {
-  return (
-    <>
-      <DialogsSection />
-      <main id="play" className="flex flex-1 flex-col">
-        <section
-          id="board"
-          className="flex flex-1 flex-col items-center justify-start gap-2 max-sm:gap-2 py-2"
-        >
-          <Toolbar />
-          <BoardSection />
-        </section>
-
-        <KeyboardSection />
-      </main>
-    </>
-  );
-};
+import { PlayOfflineState } from "./sections/Offline";
+import { PlayContent } from "./sections/PlayContent";
 
 const Play = (): JSX.Element => {
+  if (env.playOfflineStateEnabled) {
+    return <PlayOfflineState />;
+  }
+
   return (
     <PlayViewProvider>
       <PlayContent />

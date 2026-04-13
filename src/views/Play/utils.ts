@@ -31,3 +31,14 @@ export const extractNativeKeyboardLetters = (value: string): string[] => {
   const letters = value.toUpperCase().replace(NON_ALPHA_PATTERN, "");
   return letters.length > 0 ? letters.split("") : [];
 };
+
+export const buildWhatsAppContactHref = (
+  phoneNumber?: string,
+): string | null => {
+  if (!phoneNumber) {
+    return null;
+  }
+
+  const normalized = phoneNumber.replace(/\D/g, "");
+  return normalized.length > 0 ? `https://wa.me/${normalized}` : null;
+};
