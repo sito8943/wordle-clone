@@ -187,7 +187,6 @@ export const generateDailyChallenges = mutation({
     if (existing) {
       const simple = await ctx.db.get(existing.simpleChallengeId);
       const complex = await ctx.db.get(existing.complexChallengeId);
-      const weekly = await ctx.db.get(existing.weeklyChallengeId);
 
       if (!simple || !complex) {
         if (simple) {
