@@ -26,7 +26,7 @@ import type { RemoteChallenge } from "@api/challenges";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
-import { getTodayDateUTC } from "@hooks/useChallenges/useChallenges";
+import { getTodayDateUTC } from "@hooks/useChallenges";
 import { useHintController } from "../useHintController";
 import { getHintsUsedForGame } from "../useHintController/utils";
 import type {

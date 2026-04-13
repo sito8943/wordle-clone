@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { buildWhatsAppContactHref } from "../utils";
 import { env } from "@config";
+import { ROUTES } from "@config/routes";
 
 export const PlayOfflineState = (): JSX.Element => {
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ export const PlayOfflineState = (): JSX.Element => {
           </a>
         ) : null}
         <Link
-          to="/settings"
+          to={ROUTES.SETTINGS}
           className="inline-flex items-center justify-center rounded-xl border border-neutral-300 bg-white/90 px-5 py-3 text-sm font-semibold text-neutral-900 transition-colors hover:border-primary hover:text-primary dark:border-neutral-600 dark:bg-neutral-800/70 dark:text-neutral-100 dark:hover:border-primary dark:hover:text-primary"
         >
           {t("play.offlineState.settingsAction")}

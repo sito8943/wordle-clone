@@ -1,23 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { buildBoardRows } from "@domain/wordle";
 import { BOARD_SHAKE_DURATION_MS } from "./constants";
-import type { BoardPropsType, BoardRowViewModel } from "./types";
-
-type UseBoardControllerParams = Pick<
-  BoardPropsType,
-  | "guesses"
-  | "current"
-  | "gameOver"
-  | "animateTileEntry"
-  | "isLoss"
-  | "shakePulse"
-  | "hintRevealPulse"
-  | "activeRowHintStatuses"
-  | "hintRevealTileIndex"
-  | "normalDictionaryBonusRowFlags"
-  | "activeTileIndex"
-  | "onTileSelect"
->;
+import type { BoardRowViewModel, UseBoardControllerParams } from "./types";
 
 const useBoardController = ({
   guesses,

@@ -1,7 +1,7 @@
 import { useMemo, type JSX } from "react";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { usePlayer } from "@providers";
-import { useChallenges } from "@hooks/useChallenges/useChallenges";
+import { useChallenges } from "@hooks/useChallenges";
 import { PlayViewContext } from "./PlayViewContext";
 import type { PlayViewProviderProps } from "./types";
 import { usePlayController } from "../hooks";

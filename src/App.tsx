@@ -3,8 +3,7 @@ import { RouterProvider } from "react-router";
 import { Button, SplashScreen } from "@components";
 import { useTranslation } from "@i18n";
 import routes from "./routes";
-
-const UPDATE_CHECK_INTERVAL_MS = 60_000;
+import { UPDATE_CHECK_INTERVAL_MS } from "./constants";
 
 const AppUpdateBanner = (): JSX.Element | null => {
   const { t } = useTranslation();

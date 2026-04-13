@@ -11,6 +11,7 @@ import NavLink from "./NavLink";
 import { getScoreboardToneClassName } from "./utils";
 import useNavbarController from "./useNavbarController";
 import { Link } from "react-router";
+import { ROUTES } from "@config/routes";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -35,10 +36,10 @@ const Navbar = () => {
   );
   const links = useMemo(
     () => [
-      { to: "/play", label: t("nav.play"), icon: faPlayCircle },
-      { to: "/settings", label: t("nav.profile"), icon: faGear },
+      { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
+      { to: ROUTES.SETTINGS, label: t("nav.profile"), icon: faGear },
       {
-        to: "/scoreboard",
+        to: ROUTES.SCOREBOARD,
         label: t("nav.scoreboard"),
         extraLabel: positionLabel,
         ariaLabel: t("nav.scoreboard"),
@@ -51,7 +52,7 @@ const Navbar = () => {
 
   return (
     <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 sm:px-4 flex">
-      <Link to="/">
+      <Link to={ROUTES.HOME}>
         <h1 className="pointer-events-none text-center text-3xl max-sm:text-xl font-black tracking-[0.28em] text-black dark:text-neutral-100">
           {t("app.title").toUpperCase()}
         </h1>

@@ -9,13 +9,14 @@ import type {
   SoundEvent,
   ToneDefinition,
 } from "./types";
-
-const MIN_GAIN = 0.0001;
-const DEFAULT_ATTACK_MS = 4;
-const DEFAULT_RELEASE_MS = 40;
-const SOUND_ENABLED_STORAGE_KEY = "wordle:sound-enabled";
-const SOUND_VOLUME_STORAGE_KEY = "wordle:sound-volume";
-const SOUND_MUTED_STORAGE_KEY = "wordle:sound-muted";
+import {
+  MIN_GAIN,
+  DEFAULT_ATTACK_MS,
+  DEFAULT_RELEASE_MS,
+  SOUND_ENABLED_STORAGE_KEY,
+  SOUND_VOLUME_STORAGE_KEY,
+  SOUND_MUTED_STORAGE_KEY,
+} from "./constants";
 
 const toWindowWithWebkitAudio = (value: Window) =>
   value as Window & { webkitAudioContext?: typeof AudioContext };

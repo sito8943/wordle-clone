@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import VictoryDialog from "./VictoryDialog";
+import { ROUTES } from "@config/routes";
 
 afterEach(cleanup);
 
@@ -104,7 +105,9 @@ describe("VictoryDialog", () => {
     expect(settingsLink.closest("p")?.textContent).toContain(
       "You can disable these dialogs in",
     );
-    expect(settingsLink.getAttribute("href")).toBe("/settings#end-dialogs");
+    expect(settingsLink.getAttribute("href")).toBe(
+      `${ROUTES.SETTINGS}#end-dialogs`,
+    );
   });
 
   it("shows challenge bonus details when challenge points are awarded", () => {

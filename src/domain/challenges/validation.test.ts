@@ -505,5 +505,4 @@ describe("challenge condition evaluators", () => {
       ),
     ).toBe(false);
   });
-
 });

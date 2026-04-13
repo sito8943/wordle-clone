@@ -4,6 +4,7 @@ import { useTranslation } from "@i18n";
 import { HELP_DIALOG_TITLE_ID } from "./constants";
 import type { HelpDialogProps } from "./types";
 import { Link } from "react-router";
+import { ROUTES } from "@config/routes";
 
 const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
   const { t } = useTranslation();
@@ -53,7 +54,7 @@ const HelpDialog = ({ visible, onClose }: HelpDialogProps) => {
           <p className="mt-3 text-xs text-neutral-600 dark:text-neutral-300">
             {t("play.helpDialog.changeDifficultyPrefix")}{" "}
             <Link
-              to="/settings#difficulty"
+              to={`${ROUTES.SETTINGS}#difficulty`}
               className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
             >
               {t("play.helpDialog.changeDifficultyLink")}

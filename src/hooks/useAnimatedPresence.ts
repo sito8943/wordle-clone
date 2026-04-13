@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-
-type AnimatedPresenceResult = {
-  shouldRender: boolean;
-  isExiting: boolean;
-};
+import type { AnimatedPresenceResult } from "./types";
 
 const useAnimatedPresence = (
   visible: boolean,

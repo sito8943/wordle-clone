@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
 import { env } from "@config";
+import { ROUTES } from "@config/routes";
 
 const View = lazy(() => import("@layouts/View"));
 const Home = lazy(() => import("@views/Home"));
@@ -12,14 +13,14 @@ const NotFound = lazy(() => import("@views/NotFound"));
 const routes = createBrowserRouter(
   [
     {
-      path: "/",
+      path: ROUTES.HOME,
       element: <View />,
       children: [
         { index: true, element: <Home /> },
-        { path: "/play", element: <Play /> },
-        { path: "/scoreboard", element: <Scoreboard /> },
-        { path: "/settings", element: <Profile /> },
-        { path: "/profile", element: <Profile /> },
+        { path: ROUTES.PLAY, element: <Play /> },
+        { path: ROUTES.SCOREBOARD, element: <Scoreboard /> },
+        { path: ROUTES.SETTINGS, element: <Profile /> },
+        { path: ROUTES.PROFILE, element: <Profile /> },
         {
           path: "/*",
           element: <NotFound />,

@@ -9,6 +9,7 @@ import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import HelpDialog from "./HelpDialog";
+import { ROUTES } from "@config/routes";
 
 afterEach(cleanup);
 
@@ -95,7 +96,9 @@ describe("HelpDialog", () => {
     const difficultyLink = screen.getByRole("link", {
       name: "difficulty settings",
     });
-    expect(difficultyLink.getAttribute("href")).toBe("/settings#difficulty");
+    expect(difficultyLink.getAttribute("href")).toBe(
+      `${ROUTES.SETTINGS}#difficulty`,
+    );
   });
 
   it("renders the Close button", () => {

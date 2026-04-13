@@ -12,6 +12,7 @@ import { ScoreClient, type TopScoresResult } from "@api/score";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE, WordDictionaryClient } from "@api/words";
 import { env } from "@config";
+import { ROUTES } from "@config/routes";
 import {
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
@@ -118,7 +119,7 @@ describe("App", () => {
     document.documentElement.classList.remove("wordle-animations-disabled");
     document.documentElement.style.colorScheme = "";
     mockSystemTheme("light");
-    window.history.pushState({}, "", "/play");
+    window.history.pushState({}, "", ROUTES.PLAY);
     window.dispatchEvent(new PopStateEvent("popstate"));
     let mockedNow = 10_000;
     vi.spyOn(Date, "now").mockImplementation(() => {
@@ -250,7 +251,7 @@ describe("App", () => {
       "player",
       JSON.stringify({ name: "TestUser", score: 0, streak: 0 }),
     );
-    window.history.pushState({}, "", "/play");
+    window.history.pushState({}, "", ROUTES.PLAY);
     window.dispatchEvent(new PopStateEvent("popstate"));
 
     renderApp();
@@ -453,7 +454,7 @@ describe("App", () => {
       value: scrollIntoViewSpy,
     });
 
-    window.history.pushState({}, "", "/settings#difficulty");
+    window.history.pushState({}, "", `${ROUTES.SETTINGS}#difficulty`);
     window.dispatchEvent(new PopStateEvent("popstate"));
 
     try {
@@ -1600,7 +1601,7 @@ describe("App", () => {
       within(victoryDialog)
         .getByRole("link", { name: "Settings" })
         .getAttribute("href"),
-    ).toBe("/settings#end-dialogs");
+    ).toBe(`${ROUTES.SETTINGS}#end-dialogs`);
     expect(
       sessionStorage.getItem(END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY),
     ).toBe("seen");

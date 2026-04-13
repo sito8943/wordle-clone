@@ -20,3 +20,8 @@ export type KeyboardKeyModel = {
 };
 
 export type KeyboardRowModel = KeyboardKeyModel[];
+
+export type UseKeyboardControllerParams = Pick<
+  KeyboardProps,
+  "guesses" | "isLoss" | "language"
+>;

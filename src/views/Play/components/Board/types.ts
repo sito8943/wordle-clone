@@ -56,3 +56,19 @@ export type TileViewModel = {
   isHintReveal: boolean;
   hintRevealPulse: number;
 };
+
+export type UseBoardControllerParams = Pick<
+  BoardPropsType,
+  | "guesses"
+  | "current"
+  | "gameOver"
+  | "animateTileEntry"
+  | "isLoss"
+  | "shakePulse"
+  | "hintRevealPulse"
+  | "activeRowHintStatuses"
+  | "hintRevealTileIndex"
+  | "normalDictionaryBonusRowFlags"
+  | "activeTileIndex"
+  | "onTileSelect"
+>;

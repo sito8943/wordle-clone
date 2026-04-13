@@ -14,6 +14,7 @@ import {
   HOME_ENTRY_ANIMATION_SESSION_KEY,
 } from "./constants";
 import { env } from "@config/env";
+import { ROUTES } from "@config/routes";
 import { faPaypal } from "@fortawesome/free-brands-svg-icons";
 
 const hasSeenEntryAnimationInSession = (): boolean => {
@@ -69,9 +70,9 @@ const Home = () => {
 
   const links = useMemo(
     () => [
-      { to: "/play", label: t("nav.play"), icon: faPlayCircle },
-      { to: "/settings", label: t("profile.settingsTitle"), icon: faGear },
-      { to: "/scoreboard", label: t("nav.scoreboard"), icon: faTrophy },
+      { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
+      { to: ROUTES.SETTINGS, label: t("profile.settingsTitle"), icon: faGear },
+      { to: ROUTES.SCOREBOARD, label: t("nav.scoreboard"), icon: faTrophy },
     ],
     [t],
   );
