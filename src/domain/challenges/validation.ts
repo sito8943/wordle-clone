@@ -34,13 +34,16 @@ const conditionEvaluators: Record<
 
   genius: (ctx) => ctx.won && ctx.guesses.length <= 2,
 
-  unstoppable_streak: (ctx) => ctx.streak >= 3,
+  unstoppable_streak: (ctx) => ctx.won && ctx.dailyConsecutiveWins >= 3,
 
   perfectionist: (ctx) => ctx.won && ctx.guesses.length === 1,
 
   extreme_difficulty: (ctx) =>
     ctx.won && (ctx.difficulty === "hard" || ctx.difficulty === "insane"),
 
+  daily_double: (ctx) => ctx.won && ctx.dailyCompletedRounds >= 2,
+
+  // Legacy alias for older seeded records.
   polyglot: (ctx) => ctx.won && ctx.dailyCompletedRounds >= 2,
 };
 

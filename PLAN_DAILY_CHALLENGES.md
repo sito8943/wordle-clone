@@ -94,10 +94,10 @@ playerChallengeProgress: defineTable({
 |--------|-------------|-----------|
 | Speedster | `speedster` | win + tiempo < 60s |
 | Genius | `genius` | win + guesses <= 2 |
-| Unstoppable Streak | `unstoppable_streak` | streak >= 3 |
+| Unstoppable Streak | `unstoppable_streak` | 3 victorias consecutivas en el día |
 | Perfectionist | `perfectionist` | win + guesses == 1 |
 | Extreme Difficulty | `extreme_difficulty` | win + difficulty >= hard |
-| Polyglot | `polyglot` | win en EN y ES en el mismo día |
+| Daily Double | `daily_double` | ganar 2 rondas en el mismo día |
 
 ---
 
@@ -113,16 +113,16 @@ COMPLEX_CHALLENGE_POINTS = 15;
 ### 2.2 `src/domain/challenges/types.ts`
 
 - `ChallengeType` — `"simple" | "complex"`
-- `ChallengeConditionKey` — Union de las 12 claves de condición
+- `ChallengeConditionKey` — Union de las 12 claves activas de condición (+ alias legacy `polyglot`)
 - `Challenge`, `DailyChallenges`, `ChallengeProgress`
 - `ChallengeConditionContext` — Datos de la ronda para evaluar condiciones
 
 ### 2.3 `src/domain/challenges/validation.ts`
 
-12 funciones evaluadoras mapeadas por `conditionKey`:
+12 funciones evaluadoras activas mapeadas por `conditionKey` (+ alias legacy):
 
 - Simples: `first_guess`, `complete_round`, `unique_letters`, `three_guesses`, `vowels_first`, `persistent`
-- Complejos: `speedster`, `genius`, `unstoppable_streak`, `perfectionist`, `extreme_difficulty`, `polyglot`
+- Complejos: `speedster`, `genius`, `unstoppable_streak`, `perfectionist`, `extreme_difficulty`, `daily_double`
 
 Exporta: `evaluateCondition(key, context) → boolean`
 

@@ -15,6 +15,8 @@ export type ChallengeConditionKey =
   | "unstoppable_streak"
   | "perfectionist"
   | "extreme_difficulty"
+  | "daily_double"
+  // Legacy key kept for compatibility with previously seeded challenge records.
   | "polyglot";
 
 export type Challenge = {
@@ -48,11 +50,13 @@ export type ChallengeConditionContext = {
   roundDurationMs: number;
   language: PlayerLanguage;
   dailyCompletedRounds: number;
+  dailyConsecutiveWins: number;
   dailyLanguagesWon: PlayerLanguage[];
 };
 
 export type DailyChallengeRoundTracker = {
   date: string;
   completedRounds: number;
+  consecutiveWins: number;
   wonLanguages: PlayerLanguage[];
 };

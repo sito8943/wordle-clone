@@ -414,6 +414,7 @@ export const resources = {
           unstoppable_streak: "Unstoppable Streak",
           perfectionist: "Perfectionist",
           extreme_difficulty: "Extreme Difficulty",
+          daily_double: "Daily Double",
           polyglot: "Daily Double",
         },
         descriptions: {
@@ -429,6 +430,7 @@ export const resources = {
           unstoppable_streak: "Reach a win streak of 3",
           perfectionist: "Guess the word on the first try",
           extreme_difficulty: "Win a round on Hard or Insane difficulty",
+          daily_double: "Win 2 rounds in the same day",
           polyglot: "Win 2 rounds in the same day",
         },
       },
@@ -860,6 +862,7 @@ export const resources = {
           unstoppable_streak: "Racha imparable",
           perfectionist: "Perfeccionista",
           extreme_difficulty: "Dificultad extrema",
+          daily_double: "Doble diario",
           polyglot: "Doble diario",
         },
         descriptions: {
@@ -875,6 +878,7 @@ export const resources = {
           unstoppable_streak: "Alcanza una racha de 3 victorias",
           perfectionist: "Adivina la palabra en el primer intento",
           extreme_difficulty: "Gana una ronda en dificultad Difícil o Insano",
+          daily_double: "Gana 2 rondas en el mismo día",
           polyglot: "Gana 2 rondas en el mismo día",
         },
       },

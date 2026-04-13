@@ -14,6 +14,7 @@ const createContext = (
   roundDurationMs: 120_000,
   language: "es",
   dailyCompletedRounds: 0,
+  dailyConsecutiveWins: 0,
   dailyLanguagesWon: [],
   ...overrides,
 });
@@ -171,7 +172,9 @@ describe("challenge condition evaluators", () => {
       evaluateCondition(
         "unstoppable_streak",
         createContext({
-          streak: 2,
+          won: true,
+          streak: 70,
+          dailyConsecutiveWins: 2,
         }),
       ),
     ).toBe(false);
@@ -179,7 +182,17 @@ describe("challenge condition evaluators", () => {
       evaluateCondition(
         "unstoppable_streak",
         createContext({
-          streak: 3,
+          won: false,
+          dailyConsecutiveWins: 3,
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "unstoppable_streak",
+        createContext({
+          won: true,
+          dailyConsecutiveWins: 3,
         }),
       ),
     ).toBe(true);
@@ -239,16 +252,28 @@ describe("challenge condition evaluators", () => {
     ).toBe(true);
   });
 
-  it("evaluates polyglot", () => {
+  it("evaluates daily_double", () => {
     expect(
       evaluateCondition(
-        "polyglot",
+        "daily_double",
         createContext({
           won: true,
           dailyCompletedRounds: 1,
         }),
       ),
     ).toBe(false);
+    expect(
+      evaluateCondition(
+        "daily_double",
+        createContext({
+          won: true,
+          dailyCompletedRounds: 2,
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps polyglot as a legacy alias for daily_double", () => {
     expect(
       evaluateCondition(
         "polyglot",

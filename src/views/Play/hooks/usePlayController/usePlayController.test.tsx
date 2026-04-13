@@ -283,6 +283,89 @@ describe("usePlayController", () => {
     expect(result.current.endOfGameChallengeBonusPoints).toBe(20);
   });
 
+  it("does not complete unstoppable streak challenge from historical streak alone", async () => {
+    const date = new Date().toISOString().slice(0, 10);
+    const completeChallenge = vi.fn();
+
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 70,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+    });
+
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum: vi
+          .fn()
+          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+      challengeClient: {
+        isConfigured: true,
+        getTodayChallenges: vi.fn().mockResolvedValue({
+          date,
+          simple: {
+            id: "simple-1",
+            name: "Unstoppable",
+            description: "",
+            type: "simple",
+            conditionKey: "unstoppable_streak",
+          },
+          complex: {
+            id: "complex-1",
+            name: "Unstoppable+",
+            description: "",
+            type: "complex",
+            conditionKey: "unstoppable_streak",
+          },
+        }),
+        generateDailyChallenges: vi.fn(),
+        regenerateDailyChallenges: vi.fn(),
+        getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
+        completeChallenge,
+        resetPlayerChallengeProgressForDate: vi
+          .fn()
+          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+        seedChallenges: vi
+          .fn()
+          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+    });
+
+    const { rerender } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      guesses: [
+        {
+          word: "APPLE",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+      won: true,
+      gameOver: true,
+      roundStartedAt: Date.now() - 5_000,
+    };
+
+    await act(async () => {
+      rerender();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(completeChallenge).not.toHaveBeenCalled();
+  });
+
   it("allows unknown words in normal difficulty", () => {
     renderHook(() => usePlayController());
 

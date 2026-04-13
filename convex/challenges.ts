@@ -1,19 +1,52 @@
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
-import { CHALLENGE_SEEDS } from "./data/challenges";
+import {
+  CHALLENGE_SEEDS,
+  LEGACY_CHALLENGE_CONDITION_KEY_ALIASES,
+  isChallengeConditionKey,
+} from "./data/challenges";
 
 const SIMPLE_CHALLENGE_POINTS = 5;
 const COMPLEX_CHALLENGE_POINTS = 15;
+const SEEDED_CONDITION_KEYS_BY_TYPE = {
+  simple: new Set(
+    CHALLENGE_SEEDS.filter((seed) => seed.type === "simple").map(
+      (seed) => seed.conditionKey,
+    ),
+  ),
+  complex: new Set(
+    CHALLENGE_SEEDS.filter((seed) => seed.type === "complex").map(
+      (seed) => seed.conditionKey,
+    ),
+  ),
+} as const;
+const CHALLENGE_SEED_BY_CONDITION_KEY = new Map(
+  CHALLENGE_SEEDS.map((seed) => [seed.conditionKey, seed] as const),
+);
+const toCanonicalConditionKey = (conditionKey: string): string =>
+  LEGACY_CHALLENGE_CONDITION_KEY_ALIASES[conditionKey] ?? conditionKey;
 
 const getUnusedByType = async (
   ctx: MutationCtx,
   type: "simple" | "complex",
 ) => {
-  return ctx.db
+  const seededConditionKeys = SEEDED_CONDITION_KEYS_BY_TYPE[type];
+  const challenges = await ctx.db
     .query("challenges")
     .withIndex("by_type_and_used", (q) => q.eq("type", type).eq("used", false))
     .collect();
+
+  return challenges.filter((challenge) => {
+    const canonicalConditionKey = toCanonicalConditionKey(
+      challenge.conditionKey,
+    );
+
+    return (
+      isChallengeConditionKey(canonicalConditionKey) &&
+      seededConditionKeys.has(canonicalConditionKey)
+    );
+  });
 };
 
 const pickRandom = <T>(items: T[]): T =>
@@ -359,10 +392,8 @@ export const seedChallenges = mutation({
   args: {},
   handler: async (ctx) => {
     const existing = await ctx.db.query("challenges").collect();
-
-    if (existing.length > 0) {
-      return { inserted: 0, total: existing.length, alreadySeeded: true };
-    }
+    let inserted = 0;
+    let updated = 0;
 
     // Validate parity: equal number of simple and complex
     const simpleCount = CHALLENGE_SEEDS.filter(
@@ -378,20 +409,75 @@ export const seedChallenges = mutation({
       );
     }
 
-    for (const seed of CHALLENGE_SEEDS) {
-      await ctx.db.insert("challenges", {
-        name: seed.name,
-        description: seed.description,
-        type: seed.type,
-        conditionKey: seed.conditionKey,
-        used: false,
+    const existingByConditionKey = new Map(
+      existing.map((challenge) => [challenge.conditionKey, challenge]),
+    );
+
+    for (const [legacyConditionKey, canonicalConditionKey] of Object.entries(
+      LEGACY_CHALLENGE_CONDITION_KEY_ALIASES,
+    )) {
+      const legacy = existingByConditionKey.get(legacyConditionKey);
+      if (!legacy || existingByConditionKey.has(canonicalConditionKey)) {
+        continue;
+      }
+
+      const canonicalSeed = CHALLENGE_SEED_BY_CONDITION_KEY.get(
+        canonicalConditionKey,
+      );
+      if (!canonicalSeed) {
+        continue;
+      }
+
+      await ctx.db.patch(legacy._id, {
+        conditionKey: canonicalConditionKey,
+        name: canonicalSeed.name,
+        description: canonicalSeed.description,
+        type: canonicalSeed.type,
+      });
+      updated += 1;
+      existingByConditionKey.delete(legacyConditionKey);
+      existingByConditionKey.set(canonicalConditionKey, {
+        ...legacy,
+        ...canonicalSeed,
+        conditionKey: canonicalConditionKey,
       });
     }
 
+    for (const seed of CHALLENGE_SEEDS) {
+      const current = existingByConditionKey.get(seed.conditionKey);
+
+      if (!current) {
+        await ctx.db.insert("challenges", {
+          name: seed.name,
+          description: seed.description,
+          type: seed.type,
+          conditionKey: seed.conditionKey,
+          used: false,
+        });
+        inserted += 1;
+        continue;
+      }
+
+      if (
+        current.name === seed.name &&
+        current.description === seed.description &&
+        current.type === seed.type
+      ) {
+        continue;
+      }
+
+      await ctx.db.patch(current._id, {
+        name: seed.name,
+        description: seed.description,
+        type: seed.type,
+      });
+      updated += 1;
+    }
+
     return {
-      inserted: CHALLENGE_SEEDS.length,
-      total: CHALLENGE_SEEDS.length,
-      alreadySeeded: false,
+      inserted,
+      total: existing.length + inserted,
+      alreadySeeded: inserted === 0 && updated === 0,
     };
   },
 });

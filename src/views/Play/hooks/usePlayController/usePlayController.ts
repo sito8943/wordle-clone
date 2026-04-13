@@ -260,6 +260,7 @@ export default function usePlayController() {
         roundDurationMs,
         language: gameplayLanguage,
         dailyCompletedRounds: dailyTracker.completedRounds,
+        dailyConsecutiveWins: dailyTracker.consecutiveWins,
         dailyLanguagesWon: dailyTracker.wonLanguages,
       };
       let completedInRound = 0;

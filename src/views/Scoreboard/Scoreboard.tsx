@@ -39,7 +39,10 @@ const Scoreboard = (): JSX.Element => {
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
-      <div className="settings-entrance" style={{ animationDelay: "0ms" }}>
+      <div
+        className="settings-entrance my-0!"
+        style={{ animationDelay: "0ms" }}
+      >
         <div className="flex items-center justify-between gap-4">
           <h2 className="page-title">{t("scoreboard.title")}</h2>
           <Button
@@ -89,7 +92,10 @@ const Scoreboard = (): JSX.Element => {
         </div>
       )}
 
-      <div className="settings-entrance" style={{ animationDelay: "160ms" }}>
+      <div
+        className="settings-entrance my-0!"
+        style={{ animationDelay: "160ms" }}
+      >
         <ErrorBoundary
           name="scoreboard-table"
           resetKeys={[scores.length, loading, source, currentClientRank]}

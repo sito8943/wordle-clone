@@ -33,6 +33,7 @@ const sanitizeWonLanguages = (value: unknown): PlayerLanguage[] => {
 const getDefaultTracker = (date: string): DailyChallengeRoundTracker => ({
   date,
   completedRounds: 0,
+  consecutiveWins: 0,
   wonLanguages: [],
 });
 
@@ -48,6 +49,7 @@ const parseTracker = (
     const parsed = JSON.parse(raw) as {
       date?: unknown;
       completedRounds?: unknown;
+      consecutiveWins?: unknown;
       wonLanguages?: unknown;
     };
     const parsedDate = typeof parsed.date === "string" ? parsed.date : date;
@@ -62,10 +64,17 @@ const parseTracker = (
       parsed.completedRounds > 0
         ? Math.floor(parsed.completedRounds)
         : 0;
+    const consecutiveWins =
+      typeof parsed.consecutiveWins === "number" &&
+      Number.isFinite(parsed.consecutiveWins) &&
+      parsed.consecutiveWins > 0
+        ? Math.floor(parsed.consecutiveWins)
+        : 0;
 
     return {
       date,
       completedRounds,
+      consecutiveWins,
       wonLanguages: sanitizeWonLanguages(parsed.wonLanguages),
     };
   } catch {
@@ -125,6 +134,7 @@ export const recordDailyChallengeRoundCompletion = ({
   const next: DailyChallengeRoundTracker = {
     date,
     completedRounds: current.completedRounds + 1,
+    consecutiveWins: won ? current.consecutiveWins + 1 : 0,
     wonLanguages: nextWonLanguages,
   };
 
