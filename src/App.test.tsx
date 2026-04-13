@@ -66,6 +66,7 @@ const waitForInitialPlayerDialog = async () => {
 
 const defaultEnvMode = env.mode;
 const defaultEnvConvexUrl = env.convexUrl;
+const defaultEnvWordListButtonEnabled = env.wordListButtonEnabled;
 
 const mockSystemTheme = (mode: "light" | "dark") => {
   const prefersDark = mode === "dark";
@@ -101,6 +102,7 @@ describe("App", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    env.wordListButtonEnabled = defaultEnvWordListButtonEnabled;
     cleanup();
   });
 
@@ -108,6 +110,7 @@ describe("App", () => {
     await preloadAppRoutes();
     env.mode = defaultEnvMode;
     env.convexUrl = defaultEnvConvexUrl;
+    env.wordListButtonEnabled = true;
     localStorage.clear();
     sessionStorage.clear();
     sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");

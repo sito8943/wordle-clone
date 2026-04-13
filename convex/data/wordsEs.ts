@@ -831,5 +831,5 @@ export const ES_WORDS = [
   "hiato",
   "laico",
   "cetro",
-  "cobre"
+  "cobre",
 ];

@@ -1,8 +1,20 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import DifficultySection from "./DifficultySection";
 
+const featureFlagsMock = vi.hoisted(() => ({
+  wordListButtonEnabled: true,
+}));
+
+vi.mock("@providers/FeatureFlags", () => ({
+  useFeatureFlags: () => featureFlagsMock,
+}));
+
 describe("DifficultySection", () => {
+  beforeEach(() => {
+    featureFlagsMock.wordListButtonEnabled = true;
+  });
+
   afterEach(() => {
     cleanup();
   });
@@ -41,5 +53,29 @@ describe("DifficultySection", () => {
 
     expect(onChangeKeyboardPreference).toHaveBeenCalledWith("native");
     expect(onChangeDifficulty).toHaveBeenCalledWith("hard");
+  });
+
+  it("shows alternative easy and normal rules when word list is disabled", () => {
+    featureFlagsMock.wordListButtonEnabled = false;
+
+    render(
+      <DifficultySection
+        keyboardPreference="onscreen"
+        onChangeKeyboardPreference={vi.fn()}
+        difficulty="normal"
+        onChangeDifficulty={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText("Easy shows the word list.")).toBeNull();
+    expect(screen.queryByText("Normal hides the word list.")).toBeNull();
+    expect(
+      screen.getByText(
+        "Easy gives more hints and accepts non-dictionary words.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Normal gives a hint and accepts non-dictionary words."),
+    ).toBeTruthy();
   });
 });

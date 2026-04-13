@@ -82,7 +82,12 @@ const EditableProfileCard = (props: EditableProfileCardPropsTypes) => {
         <Button type="submit" className="self-start" disabled={isSubmitting}>
           {isSubmitting ? t("profile.savingAction") : t("profile.saveAction")}
         </Button>
-        <Button variant="outline" onClick={props.toggleEditing} type="button" disabled={isSubmitting}>
+        <Button
+          variant="outline"
+          onClick={props.toggleEditing}
+          type="button"
+          disabled={isSubmitting}
+        >
           {t("profile.cancelAction")}
         </Button>
       </div>
