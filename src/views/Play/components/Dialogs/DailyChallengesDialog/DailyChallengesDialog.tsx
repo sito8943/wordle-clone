@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faClock } from "@fortawesome/free-solid-svg-icons";
+import { faClock } from "@fortawesome/free-solid-svg-icons";
 import { Dialog } from "@components";
 import {
   SIMPLE_CHALLENGE_POINTS,
@@ -38,15 +38,6 @@ const ChallengeRow = ({
           : "border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50"
       }`}
     >
-      <div
-        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-          completed
-            ? "bg-green-500 text-white"
-            : "border-2 border-neutral-300 dark:border-neutral-600"
-        }`}
-      >
-        {completed && <FontAwesomeIcon icon={faCheck} className="text-xs" />}
-      </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span
