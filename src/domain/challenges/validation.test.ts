@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { GuessResult } from "@domain/wordle";
-import { WORD_LENGTH } from "@domain/wordle";
-import { CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET } from "./constants";
 import type { ChallengeConditionContext } from "./types";
 import { evaluateCondition } from "./validation";
 
@@ -22,9 +20,6 @@ const createContext = (
   dailyCompletedRounds: 0,
   dailyWonRounds: 0,
   dailyConsecutiveWins: 0,
-  weeklyCompletedRounds: 0,
-  weeklyWonRounds: 0,
-  weeklyLostRounds: 0,
   hintsUsed: 0,
   ...overrides,
 });
@@ -511,125 +506,4 @@ describe("challenge condition evaluators", () => {
     ).toBe(false);
   });
 
-  it("evaluates no_gray_tiles", () => {
-    expect(
-      evaluateCondition(
-        "no_gray_tiles",
-        createContext({
-          won: true,
-          guesses: [
-            row("APPLE", [
-              "correct",
-              "present",
-              "correct",
-              "present",
-              "correct",
-            ]),
-          ],
-        }),
-      ),
-    ).toBe(true);
-    expect(
-      evaluateCondition(
-        "no_gray_tiles",
-        createContext({
-          won: true,
-          guesses: [
-            row("APPLE", [
-              "correct",
-              "absent",
-              "correct",
-              "present",
-              "correct",
-            ]),
-          ],
-        }),
-      ),
-    ).toBe(false);
-  });
-
-  it("evaluates perfect_progression", () => {
-    expect(
-      evaluateCondition(
-        "perfect_progression",
-        createContext({
-          weeklyWonRounds:
-            CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET - 1,
-          weeklyLostRounds: 0,
-        }),
-      ),
-    ).toBe(false);
-    expect(
-      evaluateCondition(
-        "perfect_progression",
-        createContext({
-          weeklyWonRounds:
-            CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET,
-          weeklyLostRounds: 0,
-        }),
-      ),
-    ).toBe(true);
-    expect(
-      evaluateCondition(
-        "perfect_progression",
-        createContext({
-          weeklyWonRounds: 4,
-          weeklyLostRounds: 1,
-        }),
-      ),
-    ).toBe(false);
-  });
-
-  it("evaluates all_yellow_run", () => {
-    const allYellowRow = Array.from(
-      { length: WORD_LENGTH },
-      () => "present" as const,
-    );
-
-    expect(
-      evaluateCondition(
-        "all_yellow_run",
-        createContext({
-          guesses: [row("APPLE", allYellowRow)],
-        }),
-      ),
-    ).toBe(true);
-    expect(
-      evaluateCondition(
-        "all_yellow_run",
-        createContext({
-          guesses: [
-            row("APPLE", [
-              "present",
-              "present",
-              "present",
-              "present",
-              "absent",
-            ]),
-          ],
-        }),
-      ),
-    ).toBe(false);
-  });
-
-  it("evaluates extreme_difficulty", () => {
-    expect(
-      evaluateCondition(
-        "extreme_difficulty",
-        createContext({
-          won: true,
-          playerDifficulty: "hard",
-        }),
-      ),
-    ).toBe(false);
-    expect(
-      evaluateCondition(
-        "extreme_difficulty",
-        createContext({
-          won: true,
-          playerDifficulty: "insane",
-        }),
-      ),
-    ).toBe(true);
-  });
 });

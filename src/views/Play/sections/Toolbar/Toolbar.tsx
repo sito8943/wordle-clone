@@ -102,8 +102,7 @@ const Toolbar = (): JSX.Element => {
               );
               const allChallengesCompleted =
                 completedIds.has(challenges.challenges.simple.id) &&
-                completedIds.has(challenges.challenges.complex.id) &&
-                completedIds.has(challenges.challenges.weekly.id);
+                completedIds.has(challenges.challenges.complex.id);
 
               return (
                 <Button

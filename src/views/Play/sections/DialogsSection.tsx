@@ -233,7 +233,6 @@ const DialogsSection = (): JSX.Element => {
               challenges={challenges.challenges}
               progress={challenges.progress}
               millisUntilEndOfDay={challenges.millisUntilEndOfDay}
-              millisUntilEndOfWeek={challenges.millisUntilEndOfWeek}
               onClose={challenges.closeDialog}
             />
           ) : null}

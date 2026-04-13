@@ -16,15 +16,11 @@ export const ChallengeRow = ({
   const typeLabel =
     challenge.type === "simple"
       ? t("challenges.simple")
-      : challenge.type === "complex"
-        ? t("challenges.complex")
-        : t("challenges.weekly");
+      : t("challenges.complex");
   const typeClassName =
     challenge.type === "simple"
       ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-      : challenge.type === "complex"
-        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
-        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300";
+      : "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300";
 
   return (
     <div

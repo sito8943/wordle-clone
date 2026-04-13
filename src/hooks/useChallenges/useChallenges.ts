@@ -3,15 +3,11 @@ import type {
   RemoteChallengeProgress,
   RemoteChallenges,
 } from "@api/challenges";
-import {
-  getWeekStartDateUTC,
-  subscribeToDailyChallengesProgressUpdated,
-} from "@domain/challenges";
+import { subscribeToDailyChallengesProgressUpdated } from "@domain/challenges";
 import { useApi } from "@providers/Api";
 import type { UseChallengesResult } from "./types";
 import {
   getMillisUntilEndOfDayUTC,
-  getMillisUntilEndOfWeekUTC,
   getTodayDateUTC,
   hasSeenDialogInSession,
   markDialogSeenInSession,
@@ -21,16 +17,10 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
   const { challengeClient } = useApi();
   const [challenges, setChallenges] = useState<RemoteChallenges | null>(null);
   const [progress, setProgress] = useState<RemoteChallengeProgress[]>([]);
-  const [weeklyProgress, setWeeklyProgress] = useState<
-    RemoteChallengeProgress[]
-  >([]);
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [millisUntilEndOfDay, setMillisUntilEndOfDay] = useState(
     getMillisUntilEndOfDayUTC,
-  );
-  const [millisUntilEndOfWeek, setMillisUntilEndOfWeek] = useState(
-    getMillisUntilEndOfWeekUTC,
   );
   const initializedRef = useRef(false);
 
@@ -40,7 +30,6 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
 
     const interval = window.setInterval(() => {
       setMillisUntilEndOfDay(getMillisUntilEndOfDayUTC());
-      setMillisUntilEndOfWeek(getMillisUntilEndOfWeekUTC());
     }, 60_000);
 
     return () => window.clearInterval(interval);
@@ -53,7 +42,6 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
     initializedRef.current = true;
 
     const date = getTodayDateUTC();
-    const weekStart = getWeekStartDateUTC(date);
 
     const init = async () => {
       setLoading(true);
@@ -70,36 +58,19 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
         }
         setChallenges(todayChallenges);
 
-        // Fetch challenge catalog + player progress
-        const [allChallenges, playerProgress, playerWeeklyProgress] =
-          await Promise.all([
-            challengeClient.listAllChallenges(),
-            challengeClient.getPlayerChallengeProgress(date),
-            challengeClient.getPlayerChallengeProgress(weekStart),
-          ]);
+        // Fetch player progress
+        const playerProgress =
+          await challengeClient.getPlayerChallengeProgress(date);
         setProgress(playerProgress);
-        setWeeklyProgress(playerWeeklyProgress);
 
         // Auto-show dialog if not seen in this session and at least one is incomplete
         if (!hasSeenDialogInSession() && todayChallenges) {
           const completedDailyIds = new Set(
             playerProgress.filter((p) => p.completed).map((p) => p.challengeId),
           );
-          const completedWeeklyIds = new Set(
-            playerWeeklyProgress
-              .filter((p) => p.completed)
-              .map((p) => p.challengeId),
-          );
-          const hasIncompleteDaily =
+          const hasIncomplete =
             !completedDailyIds.has(todayChallenges.simple.id) ||
             !completedDailyIds.has(todayChallenges.complex.id);
-          const weeklyChallengeList = allChallenges.filter(
-            (challenge) => challenge.type === "weekly",
-          );
-          const hasIncompleteWeekly = weeklyChallengeList.some(
-            (challenge) => !completedWeeklyIds.has(challenge.id),
-          );
-          const hasIncomplete = hasIncompleteDaily || hasIncompleteWeekly;
 
           if (hasIncomplete) {
             setShowDialog(true);
@@ -122,14 +93,10 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
   const refreshProgress = useCallback(async () => {
     if (!challengeClient.isConfigured) return;
     const date = getTodayDateUTC();
-    const weekStart = getWeekStartDateUTC(date);
     try {
-      const [playerProgress, playerWeeklyProgress] = await Promise.all([
-        challengeClient.getPlayerChallengeProgress(date),
-        challengeClient.getPlayerChallengeProgress(weekStart),
-      ]);
+      const playerProgress =
+        await challengeClient.getPlayerChallengeProgress(date);
       setProgress(playerProgress);
-      setWeeklyProgress(playerWeeklyProgress);
     } catch {
       // Silently fail
     }
@@ -148,11 +115,9 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
   return {
     challenges,
     progress,
-    weeklyProgress,
     loading,
     showDialog,
     millisUntilEndOfDay,
-    millisUntilEndOfWeek,
     openDialog,
     closeDialog,
     refreshProgress,

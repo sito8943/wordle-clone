@@ -10,7 +10,6 @@ import {
   CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS,
   CHALLENGE_DEFAULT_SIMPLE_SAME_N_STARTS,
   CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT,
-  CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET,
 } from "@domain/challenges/constants";
 
 const SPEEDSTER_MAX_SECONDS = Math.floor(
@@ -424,14 +423,11 @@ export const resources = {
         title: "Challenges",
         simple: "Simple",
         complex: "Complex",
-        weekly: "Weekly",
         dailySectionTitle: "Daily",
-        weeklySectionTitle: "Weekly",
         completed: "Completed",
         pending: "Pending",
         points: "+{{points}} pts",
         dailyResetsIn: "Daily reset in {{countdown}}",
-        weeklyResetsIn: "Weekly reset in {{countdown}}",
         noChallengesToday: "No challenges available today.",
         challengeCompleted: "Challenge completed: {{name}} (+{{points}} pts)",
         challengeCompletedMultiple:
@@ -490,7 +486,7 @@ export const resources = {
           no_misplaced: "No yellow tiles (only green or gray)",
           same_vowel_pattern: "All words use a single-vowel pattern",
           no_gray_tiles: "Win without incorrect letters",
-          perfect_progression: `Win ${CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET} rounds this week without losing`,
+          perfect_progression: "Win 3 rounds this week without losing",
           all_yellow_run: "Get a full yellow row in one guess",
           extreme_difficulty: "Win in insane mode",
         },
@@ -910,14 +906,11 @@ export const resources = {
         title: "Retos",
         simple: "Sencillo",
         complex: "Complejo",
-        weekly: "Semanal",
         dailySectionTitle: "Diarios",
-        weeklySectionTitle: "Semanales",
         completed: "Completado",
         pending: "Pendiente",
         points: "+{{points}} pts",
         dailyResetsIn: "Reinicio diario en {{countdown}}",
-        weeklyResetsIn: "Reinicio semanal en {{countdown}}",
         noChallengesToday: "No hay retos disponibles hoy.",
         challengeCompleted: "Reto completado: {{name}} (+{{points}} pts)",
         challengeCompletedMultiple:
@@ -977,7 +970,7 @@ export const resources = {
           same_vowel_pattern:
             "Todas las palabras usan un patrón de vocal única",
           no_gray_tiles: "Gana sin letras incorrectas",
-          perfect_progression: `Gana ${CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET} rondas esta semana sin perder`,
+          perfect_progression: "Gana 3 rondas esta semana sin perder",
           all_yellow_run: "Consigue una fila completa amarilla en un intento",
           extreme_difficulty: "Gana en modo insano",
         },

@@ -4,7 +4,6 @@ import { Dialog } from "@components";
 import {
   SIMPLE_CHALLENGE_POINTS,
   COMPLEX_CHALLENGE_POINTS,
-  WEEKLY_CHALLENGE_POINTS,
 } from "@domain/challenges";
 import { useTranslation } from "@i18n";
 import { DAILY_CHALLENGES_DIALOG_TITLE_ID } from "./constants";
@@ -17,7 +16,6 @@ const ChallengesDialog = ({
   challenges,
   progress,
   millisUntilEndOfDay,
-  millisUntilEndOfWeek,
   onClose,
 }: ChallengesDialogProps) => {
   const { t } = useTranslation();
@@ -28,7 +26,6 @@ const ChallengesDialog = ({
 
   const simpleCompleted = completed.has(challenges.simple.id);
   const complexCompleted = completed.has(challenges.complex.id);
-  const weeklyCompleted = completed.has(challenges.weekly.id);
 
   return (
     <Dialog
@@ -54,30 +51,11 @@ const ChallengesDialog = ({
         />
       </div>
 
-      <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-        {t("challenges.weeklySectionTitle")}
-      </h3>
-      <div className="mt-2 space-y-3">
-        <ChallengeRow
-          challenge={challenges.weekly}
-          completed={weeklyCompleted}
-          points={WEEKLY_CHALLENGE_POINTS}
-        />
-      </div>
-
       <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
         <FontAwesomeIcon icon={faClock} />
         <span>
           {t("challenges.dailyResetsIn", {
             countdown: formatCountdown(millisUntilEndOfDay),
-          })}
-        </span>
-      </div>
-      <div className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-        <FontAwesomeIcon icon={faClock} />
-        <span>
-          {t("challenges.weeklyResetsIn", {
-            countdown: formatCountdown(millisUntilEndOfWeek),
           })}
         </span>
       </div>

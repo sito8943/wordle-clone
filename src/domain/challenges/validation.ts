@@ -1,4 +1,4 @@
-import { MAX_GUESSES, WORD_LENGTH } from "@domain/wordle";
+import { MAX_GUESSES } from "@domain/wordle";
 import type { TileStatus } from "@utils/types";
 import {
   CHALLENGE_CONDITION_KEYS,
@@ -13,7 +13,6 @@ import {
   CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS,
   CHALLENGE_DEFAULT_SIMPLE_SAME_N_STARTS,
   CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT,
-  CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET,
 } from "./constants";
 import type { ChallengeConditionContext, ChallengeConditionKey } from "./types";
 
@@ -291,27 +290,6 @@ const conditionEvaluators: Record<
       words.length > 0 && words.every((word) => hasSingleVowelPattern(word))
     );
   },
-
-  // Weekly challenges
-  [CHALLENGE_CONDITION_KEYS.NO_GRAY_TILES]: (ctx) =>
-    ctx.won &&
-    ctx.guesses.length > 0 &&
-    ctx.guesses.every(
-      (guess) => getStatusCount(guess.statuses, "absent") === 0,
-    ),
-
-  [CHALLENGE_CONDITION_KEYS.PERFECT_PROGRESSION]: (ctx) =>
-    ctx.weeklyWonRounds >=
-      CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET &&
-    ctx.weeklyLostRounds === 0,
-
-  [CHALLENGE_CONDITION_KEYS.ALL_YELLOW_RUN]: (ctx) =>
-    ctx.guesses.some(
-      (guess) => getStatusCount(guess.statuses, "present") === WORD_LENGTH,
-    ),
-
-  [CHALLENGE_CONDITION_KEYS.EXTREME_DIFFICULTY]: (ctx) =>
-    ctx.won && ctx.playerDifficulty === "insane",
 };
 
 export const evaluateCondition = (

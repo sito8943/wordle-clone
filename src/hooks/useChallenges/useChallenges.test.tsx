@@ -27,16 +27,6 @@ const createTodayChallenges = () => ({
   },
 });
 
-const weeklyChallenges = [
-  {
-    id: "weekly-1",
-    name: "No Gray Tiles",
-    description: "Win without incorrect letters",
-    type: "weekly" as const,
-    conditionKey: "no_gray_tiles" as const,
-  },
-];
-
 describe("useChallenges", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
@@ -54,7 +44,6 @@ describe("useChallenges", () => {
       seedChallenges: vi.fn(),
       getTodayChallenges: vi.fn(),
       generateDailyChallenges: vi.fn(),
-      listAllChallenges: vi.fn(),
       getPlayerChallengeProgress: vi.fn(),
     };
     mockUseApi.mockReturnValue({ challengeClient });
@@ -64,7 +53,6 @@ describe("useChallenges", () => {
     expect(challengeClient.seedChallenges).not.toHaveBeenCalled();
     expect(result.current.challenges).toBeNull();
     expect(result.current.progress).toEqual([]);
-    expect(result.current.weeklyProgress).toEqual([]);
     expect(result.current.showDialog).toBe(false);
   });
 
@@ -77,7 +65,6 @@ describe("useChallenges", () => {
         .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
       generateDailyChallenges: vi.fn(),
-      listAllChallenges: vi.fn().mockResolvedValue(weeklyChallenges),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
     };
     mockUseApi.mockReturnValue({ challengeClient });
@@ -95,7 +82,6 @@ describe("useChallenges", () => {
     expect(challengeClient.getTodayChallenges).toHaveBeenCalledWith(
       todayChallenges.date,
     );
-    expect(challengeClient.listAllChallenges).toHaveBeenCalledTimes(1);
     expect(challengeClient.generateDailyChallenges).not.toHaveBeenCalled();
     expect(result.current.showDialog).toBe(true);
     expect(
@@ -112,7 +98,6 @@ describe("useChallenges", () => {
         .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(null),
       generateDailyChallenges: vi.fn().mockResolvedValue(todayChallenges),
-      listAllChallenges: vi.fn().mockResolvedValue(weeklyChallenges),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([
         {
           _id: "progress-1",
@@ -152,10 +137,8 @@ describe("useChallenges", () => {
         .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
       generateDailyChallenges: vi.fn(),
-      listAllChallenges: vi.fn().mockResolvedValue(weeklyChallenges),
       getPlayerChallengeProgress: vi
         .fn()
-        .mockResolvedValueOnce([])
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([
           {
@@ -166,8 +149,7 @@ describe("useChallenges", () => {
             completed: true,
             pointsAwarded: 5,
           },
-        ])
-        .mockResolvedValueOnce([]),
+        ]),
     };
     mockUseApi.mockReturnValue({ challengeClient });
 
@@ -175,7 +157,7 @@ describe("useChallenges", () => {
 
     await waitFor(() => {
       expect(challengeClient.getPlayerChallengeProgress).toHaveBeenCalledTimes(
-        2,
+        1,
       );
     });
 
@@ -185,7 +167,7 @@ describe("useChallenges", () => {
 
     await waitFor(() => {
       expect(challengeClient.getPlayerChallengeProgress).toHaveBeenCalledTimes(
-        4,
+        2,
       );
       expect(result.current.progress).toHaveLength(1);
       expect(result.current.progress[0].challengeId).toBe(

@@ -1,7 +1,6 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
-import { getWeekStartDateUTC } from "@domain/challenges";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { i18n, initI18n } from "@i18n";
 import { setWordDictionary } from "@utils/words";
@@ -368,94 +367,6 @@ describe("usePlayController", () => {
     });
 
     expect(completeChallenge).not.toHaveBeenCalled();
-  });
-
-  it("completes eligible weekly challenges using week-start progress", async () => {
-    const date = new Date().toISOString().slice(0, 10);
-    const weekStart = getWeekStartDateUTC(date);
-    const completeChallenge = vi
-      .fn()
-      .mockResolvedValue({ pointsAwarded: 25, alreadyCompleted: false });
-
-    mockUseApi.mockReturnValue({
-      scoreClient: {
-        recordScore: vi.fn().mockResolvedValue(undefined),
-      },
-      wordDictionaryClient: {
-        refreshRemoteChecksum: vi
-          .fn()
-          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
-      },
-      challengeClient: {
-        isConfigured: true,
-        listAllChallenges: vi.fn().mockResolvedValue([
-          {
-            id: "weekly-1",
-            name: "All Yellow Run",
-            description: "",
-            type: "weekly",
-            conditionKey: "all_yellow_run",
-          },
-        ]),
-        getTodayChallenges: vi.fn().mockResolvedValue({
-          date,
-          simple: {
-            id: "simple-1",
-            name: "Steady Player",
-            description: "",
-            type: "simple",
-            conditionKey: "steady_player",
-          },
-          complex: {
-            id: "complex-1",
-            name: "Speedster",
-            description: "",
-            type: "complex",
-            conditionKey: "speedster",
-          },
-        }),
-        generateDailyChallenges: vi.fn(),
-        regenerateDailyChallenges: vi.fn(),
-        getPlayerChallengeProgress: vi
-          .fn()
-          .mockResolvedValueOnce([])
-          .mockResolvedValueOnce([]),
-        completeChallenge,
-        resetPlayerChallengeProgressForDate: vi
-          .fn()
-          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
-        seedChallenges: vi
-          .fn()
-          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
-      },
-    });
-
-    const { rerender, result } = renderHook(() => usePlayController());
-
-    wordleState = {
-      ...wordleState,
-      guesses: [
-        {
-          word: "APPLE",
-          statuses: ["present", "present", "present", "present", "present"],
-        },
-      ],
-      won: false,
-      gameOver: true,
-      roundStartedAt: Date.now() - 5_000,
-    };
-
-    await act(async () => {
-      rerender();
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-
-    expect(completeChallenge).toHaveBeenCalledTimes(1);
-    expect(completeChallenge).toHaveBeenCalledWith("weekly-1", weekStart);
-    expect(result.current.challengeCompletionMessage).toBe(
-      "Challenge completed: All Yellow Run (+25 pts)",
-    );
   });
 
   it("allows unknown words in normal difficulty", () => {

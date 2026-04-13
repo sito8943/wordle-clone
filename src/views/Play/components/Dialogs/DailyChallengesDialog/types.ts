@@ -8,6 +8,5 @@ export type ChallengesDialogProps = {
   challenges: RemoteChallenges;
   progress: RemoteChallengeProgress[];
   millisUntilEndOfDay: number;
-  millisUntilEndOfWeek: number;
   onClose: () => void;
 };

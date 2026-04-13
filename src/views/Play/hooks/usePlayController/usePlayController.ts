@@ -13,10 +13,8 @@ import {
 } from "@domain/wordle";
 import {
   evaluateCondition,
-  getWeekStartDateUTC,
   notifyDailyChallengesProgressUpdated,
   recordDailyChallengeRoundCompletion,
-  recordWeeklyChallengeRoundCompletion,
   resetDailyChallengeRoundTracker,
   type ChallengeConditionContext,
 } from "@domain/challenges";
@@ -24,6 +22,7 @@ import { useApi, usePlayer } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useSound } from "@providers/Sound";
 import { useHardModeTimer } from "./useHardModeTimer";
+import type { RemoteChallenge } from "@api/challenges";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
@@ -226,14 +225,8 @@ export default function usePlayController() {
     }
 
     const date = getTodayDateUTC();
-    const weekStart = getWeekStartDateUTC(date);
     const dailyTracker = recordDailyChallengeRoundCompletion({
       date,
-      playerCode: player.code,
-      won,
-    });
-    const weeklyTracker = recordWeeklyChallengeRoundCompletion({
-      weekStart,
       playerCode: player.code,
       won,
     });
@@ -251,17 +244,6 @@ export default function usePlayController() {
           .filter((item) => item.completed)
           .map((item) => item.challengeId),
       );
-      const weeklyProgress =
-        await challengeClient.getPlayerChallengeProgress(weekStart);
-      const completedWeeklyChallengeIds = new Set(
-        weeklyProgress
-          .filter((item) => item.completed)
-          .map((item) => item.challengeId),
-      );
-      const allChallenges = await challengeClient.listAllChallenges();
-      const weeklyChallenges = allChallenges.filter(
-        (challenge) => challenge.type === "weekly",
-      );
       const roundDurationMs =
         getRoundDurationMs(roundStartedAt, Date.now()) ??
         Number.MAX_SAFE_INTEGER;
@@ -275,9 +257,6 @@ export default function usePlayController() {
         dailyCompletedRounds: dailyTracker.completedRounds,
         dailyWonRounds: dailyTracker.wonRounds,
         dailyConsecutiveWins: dailyTracker.consecutiveWins,
-        weeklyCompletedRounds: weeklyTracker.completedRounds,
-        weeklyWonRounds: weeklyTracker.wonRounds,
-        weeklyLostRounds: weeklyTracker.lostRounds,
         hintsUsed: getHintsUsedForGame(gameId, answer),
       };
       let completedInRound = 0;
@@ -285,7 +264,7 @@ export default function usePlayController() {
       const completedChallengeNames: string[] = [];
 
       const completeChallengesForPeriod = async (
-        challenges: typeof allChallenges,
+        challenges: Array<RemoteChallenge>,
         completedIds: Set<string>,
         periodKey: string,
       ) => {
@@ -320,11 +299,6 @@ export default function usePlayController() {
         [todayChallenges.simple, todayChallenges.complex],
         completedChallengeIds,
         date,
-      );
-      await completeChallengesForPeriod(
-        weeklyChallenges,
-        completedWeeklyChallengeIds,
-        weekStart,
       );
 
       if (completedInRound === 0 || awardedPointsInRound <= 0) {

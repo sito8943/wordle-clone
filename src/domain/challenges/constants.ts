@@ -1,10 +1,7 @@
 export const SIMPLE_CHALLENGE_POINTS = 5;
 export const COMPLEX_CHALLENGE_POINTS = 15;
-export const WEEKLY_CHALLENGE_POINTS = 25;
 export const DAILY_CHALLENGE_ROUND_TRACKER_STORAGE_KEY_PREFIX =
   "wordle:daily-challenges:round-tracker";
-export const WEEKLY_CHALLENGE_ROUND_TRACKER_STORAGE_KEY_PREFIX =
-  "wordle:weekly-challenges:round-tracker";
 export const DAILY_CHALLENGES_PROGRESS_UPDATED_EVENT =
   "wordle:daily-challenges:progress-updated";
 
@@ -31,10 +28,6 @@ export const CHALLENGE_CONDITION_KEYS = {
   RARE_LETTERS: "rare_letters",
   NO_MISPLACED: "no_misplaced",
   SAME_VOWEL_PATTERN: "same_vowel_pattern",
-  NO_GRAY_TILES: "no_gray_tiles",
-  PERFECT_PROGRESSION: "perfect_progression",
-  ALL_YELLOW_RUN: "all_yellow_run",
-  EXTREME_DIFFICULTY: "extreme_difficulty",
 } as const;
 
 export const SIMPLE_CHALLENGE_CONDITION_KEYS = [
@@ -65,13 +58,6 @@ export const COMPLEX_CHALLENGE_CONDITION_KEYS = [
   CHALLENGE_CONDITION_KEYS.SAME_VOWEL_PATTERN,
 ] as const;
 
-export const WEEKLY_CHALLENGE_CONDITION_KEYS = [
-  CHALLENGE_CONDITION_KEYS.NO_GRAY_TILES,
-  CHALLENGE_CONDITION_KEYS.PERFECT_PROGRESSION,
-  CHALLENGE_CONDITION_KEYS.ALL_YELLOW_RUN,
-  CHALLENGE_CONDITION_KEYS.EXTREME_DIFFICULTY,
-] as const;
-
 export const CHALLENGE_DEFAULT_SIMPLE_PERSISTENT_WINS_TARGET = 2;
 export const CHALLENGE_DEFAULT_SIMPLE_NO_REPEAT_N_LETTERS = 2;
 export const CHALLENGE_DEFAULT_SIMPLE_SAME_N_STARTS = 2;
@@ -89,5 +75,3 @@ export const CHALLENGE_DEFAULT_COMPLEX_RARE_LETTERS = [
   "X",
   "J",
 ] as const;
-
-export const CHALLENGE_DEFAULT_WEEKLY_PERFECT_PROGRESSION_WINS_TARGET = 3;

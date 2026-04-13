@@ -38,9 +38,6 @@ export type ChallengeConditionContext = {
   dailyCompletedRounds: number;
   dailyWonRounds: number;
   dailyConsecutiveWins: number;
-  weeklyCompletedRounds: number;
-  weeklyWonRounds: number;
-  weeklyLostRounds: number;
   hintsUsed: number;
 };
 
@@ -49,11 +46,4 @@ export type DailyChallengeRoundTracker = {
   completedRounds: number;
   wonRounds: number;
   consecutiveWins: number;
-};
-
-export type WeeklyChallengeRoundTracker = {
-  weekStart: string;
-  completedRounds: number;
-  wonRounds: number;
-  lostRounds: number;
 };

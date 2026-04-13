@@ -12,7 +12,6 @@ export type RemoteChallenges = {
   date: string;
   simple: RemoteChallenge;
   complex: RemoteChallenge;
-  weekly: RemoteChallenge;
 };
 
 export type RemoteChallengeProgress = {
