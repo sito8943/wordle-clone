@@ -201,7 +201,26 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.activeTileIndex).toBe(1);
   });
 
-  it("accepts Ñ as a valid letter in spanish", () => {
+  it("accepts Ñ as a valid letter by default", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+
+    act(() => {
+      result.current.handleKey("Ñ");
+    });
+
+    expect(result.current.current).toBe("Ñ");
+  });
+
+  it("accepts Ñ when language is explicitly set to spanish", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
@@ -220,27 +239,6 @@ describe("useWordle dictionary query integration", () => {
     });
 
     expect(result.current.current).toBe("Ñ");
-  });
-
-  it("ignores Ñ in english", () => {
-    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
-    const queryClient = createTestQueryClient();
-    const wrapper = createHookWrapper(
-      queryClient,
-      createTestApiContextValue({
-        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
-      }),
-    );
-
-    const { result } = renderHook(() => useWordle({ language: "en" }), {
-      wrapper,
-    });
-
-    act(() => {
-      result.current.handleKey("Ñ");
-    });
-
-    expect(result.current.current).toBe("");
   });
 
   it("removes the selected letter with backspace in manual mode", () => {

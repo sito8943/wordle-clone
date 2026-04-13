@@ -9,7 +9,7 @@ import {
   WORDS_REFRESH_CHECKSUM_MUTATION,
 } from "./constants";
 
-const LANGUAGE = "en";
+const LANGUAGE = "es";
 const CACHE_KEY = `${WORDS_CACHE_KEY_PREFIX}:${LANGUAGE}`;
 const CHECKSUM_KEY = `${WORDS_CHECKSUM_KEY_PREFIX}:${LANGUAGE}`;
 const REMOTE_WORDS = ["apple", "berry", "crane"];
@@ -112,6 +112,20 @@ describe("WordDictionaryClient", () => {
         language: LANGUAGE,
       });
       expect(result).toEqual(REMOTE_CHECKSUM);
+    });
+
+    it("normalizes legacy non-spanish language inputs to spanish", async () => {
+      const query = vi.fn().mockResolvedValue(REMOTE_CHECKSUM);
+      const client = new WordDictionaryClient(
+        createGateway({ query }),
+        storage,
+      );
+
+      await client.fetchRemoteChecksum("en" as unknown as "es");
+
+      expect(query).toHaveBeenCalledWith(WORDS_LANGUAGE_CHECKSUM_QUERY, {
+        language: "es",
+      });
     });
   });
 

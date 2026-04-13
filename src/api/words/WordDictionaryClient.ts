@@ -9,7 +9,11 @@ import {
   WORDS_LIST_BY_LANGUAGE_QUERY,
 } from "./constants";
 import type { DictionaryLanguage } from "./types";
-import { normalizeWords, resolveStorage } from "./utils";
+import {
+  normalizeDictionaryLanguage,
+  normalizeWords,
+  resolveStorage,
+} from "./utils";
 
 type RemoteChecksum = { checksum: number; updatedAt: number };
 
@@ -25,8 +29,10 @@ class WordDictionaryClient {
   getCachedWords(
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   ): string[] {
+    const normalizedLanguage = normalizeDictionaryLanguage(language);
+
     try {
-      const raw = this.storage.getItem(this.getCacheKey(language));
+      const raw = this.storage.getItem(this.getCacheKey(normalizedLanguage));
       if (!raw) return [];
       return normalizeWords(JSON.parse(raw));
     } catch {
@@ -37,8 +43,10 @@ class WordDictionaryClient {
   getStoredChecksum(
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   ): number | null {
+    const normalizedLanguage = normalizeDictionaryLanguage(language);
+
     try {
-      const raw = this.storage.getItem(this.getChecksumKey(language));
+      const raw = this.storage.getItem(this.getChecksumKey(normalizedLanguage));
       if (!raw) return null;
       return JSON.parse(raw) as number;
     } catch {
@@ -49,30 +57,37 @@ class WordDictionaryClient {
   async fetchRemoteChecksum(
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   ): Promise<RemoteChecksum | null> {
+    const normalizedLanguage = normalizeDictionaryLanguage(language);
+
     return this.gateway.query<RemoteChecksum | null>(
       WORDS_LANGUAGE_CHECKSUM_QUERY,
-      { language },
+      { language: normalizedLanguage },
     );
   }
 
   clearCache(language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE): void {
-    this.storage.removeItem(this.getCacheKey(language));
-    this.storage.removeItem(this.getChecksumKey(language));
+    const normalizedLanguage = normalizeDictionaryLanguage(language);
+
+    this.storage.removeItem(this.getCacheKey(normalizedLanguage));
+    this.storage.removeItem(this.getChecksumKey(normalizedLanguage));
   }
 
   async refreshRemoteChecksum(
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   ): Promise<RemoteChecksum> {
+    const normalizedLanguage = normalizeDictionaryLanguage(language);
+
     return this.gateway.mutation<RemoteChecksum>(
       WORDS_REFRESH_CHECKSUM_MUTATION,
-      { language },
+      { language: normalizedLanguage },
     );
   }
 
   async loadWords(
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   ): Promise<string[]> {
-    const cachedWords = this.getCachedWords(language);
+    const normalizedLanguage = normalizeDictionaryLanguage(language);
+    const cachedWords = this.getCachedWords(normalizedLanguage);
 
     if (cachedWords.length > 0) {
       return cachedWords;
@@ -83,11 +98,15 @@ class WordDictionaryClient {
     }
 
     try {
-      await this.gateway.mutation(WORDS_ENSURE_MUTATION, { language });
+      await this.gateway.mutation(WORDS_ENSURE_MUTATION, {
+        language: normalizedLanguage,
+      });
 
       const [remoteWords, remoteChecksum] = await Promise.all([
-        this.gateway.query<unknown>(WORDS_LIST_BY_LANGUAGE_QUERY, { language }),
-        this.fetchRemoteChecksum(language),
+        this.gateway.query<unknown>(WORDS_LIST_BY_LANGUAGE_QUERY, {
+          language: normalizedLanguage,
+        }),
+        this.fetchRemoteChecksum(normalizedLanguage),
       ]);
 
       const normalizedRemoteWords = normalizeWords(remoteWords);
@@ -97,12 +116,12 @@ class WordDictionaryClient {
       }
 
       this.storage.setItem(
-        this.getCacheKey(language),
+        this.getCacheKey(normalizedLanguage),
         JSON.stringify(normalizedRemoteWords),
       );
       if (remoteChecksum) {
         this.storage.setItem(
-          this.getChecksumKey(language),
+          this.getChecksumKey(normalizedLanguage),
           JSON.stringify(remoteChecksum.checksum),
         );
       }

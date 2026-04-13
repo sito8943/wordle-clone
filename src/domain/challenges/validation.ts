@@ -41,10 +41,7 @@ const conditionEvaluators: Record<
   extreme_difficulty: (ctx) =>
     ctx.won && (ctx.difficulty === "hard" || ctx.difficulty === "insane"),
 
-  polyglot: (ctx) => {
-    const langs = new Set(ctx.dailyLanguagesWon);
-    return langs.has("en") && langs.has("es");
-  },
+  polyglot: (ctx) => ctx.won && ctx.dailyCompletedRounds >= 2,
 };
 
 export const evaluateCondition = (

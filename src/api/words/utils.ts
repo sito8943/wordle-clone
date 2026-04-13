@@ -1,3 +1,6 @@
+import { WORDS_DEFAULT_LANGUAGE, WORDS_SUPPORTED_LANGUAGES } from "./constants";
+import type { DictionaryLanguage } from "./types";
+
 export const createMemoryStorage = (): Storage => {
   const memory = new Map<string, string>();
 
@@ -21,6 +24,19 @@ export const createMemoryStorage = (): Storage => {
       memory.set(key, value);
     },
   };
+};
+
+export const normalizeDictionaryLanguage = (
+  value: unknown,
+): DictionaryLanguage => {
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (WORDS_SUPPORTED_LANGUAGES.includes(normalized as DictionaryLanguage)) {
+      return normalized as DictionaryLanguage;
+    }
+  }
+
+  return WORDS_DEFAULT_LANGUAGE;
 };
 
 export const resolveStorage = (storage?: Storage): Storage => {

@@ -1801,7 +1801,10 @@ describe("App", () => {
   });
 
   it("accepts unknown words in easy difficulty and counts the attempt", async () => {
-    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      `wordle:dictionary:${WORDS_DEFAULT_LANGUAGE}`,
+      JSON.stringify(["apple"]),
+    );
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1827,7 +1830,10 @@ describe("App", () => {
   });
 
   it("accepts unknown words in normal difficulty and counts the attempt", async () => {
-    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      `wordle:dictionary:${WORDS_DEFAULT_LANGUAGE}`,
+      JSON.stringify(["apple"]),
+    );
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1853,7 +1859,10 @@ describe("App", () => {
   });
 
   it("rejects unknown words in hard difficulty", async () => {
-    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      `wordle:dictionary:${WORDS_DEFAULT_LANGUAGE}`,
+      JSON.stringify(["apple"]),
+    );
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1876,7 +1885,10 @@ describe("App", () => {
   });
 
   it("rejects unknown words in insane difficulty", async () => {
-    localStorage.setItem("wordle:dictionary:en", JSON.stringify(["apple"]));
+    localStorage.setItem(
+      `wordle:dictionary:${WORDS_DEFAULT_LANGUAGE}`,
+      JSON.stringify(["apple"]),
+    );
     localStorage.setItem(
       "player",
       JSON.stringify({

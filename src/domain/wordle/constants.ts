@@ -21,20 +21,14 @@ export const DIFFICULTY_SCORE_MULTIPLIERS: Record<PlayerDifficulty, number> = {
 
 export const NORMAL_DICTIONARY_ROW_BONUS = 0.4;
 
-export const KEYBOARD_ROWS = [
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
-] as const;
-
 export const KEYBOARD_ROWS_ES = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ñ"],
   ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
 ] as const;
 
-export const getKeyboardRows = (language: PlayerLanguage) =>
-  language === "es" ? KEYBOARD_ROWS_ES : KEYBOARD_ROWS;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getKeyboardRows = (_language: PlayerLanguage) => KEYBOARD_ROWS_ES;
 
 export const KEY_STATUS_PRIORITY: TileStatus[] = [
   "correct",

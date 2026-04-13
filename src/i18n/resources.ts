@@ -130,7 +130,7 @@ export const resources = {
         languageDialog: {
           title: "Choose language",
           description:
-            "Select the game language. Changing language starts a new board.",
+            "Select the interface language. The gameplay dictionary remains Spanish.",
           openAction: "Language: {{language}}",
           save: "Apply language",
           browserDetected: "Detected browser language: {{language}}.",
@@ -414,7 +414,7 @@ export const resources = {
           unstoppable_streak: "Unstoppable Streak",
           perfectionist: "Perfectionist",
           extreme_difficulty: "Extreme Difficulty",
-          polyglot: "Polyglot",
+          polyglot: "Daily Double",
         },
         descriptions: {
           first_guess: "Make at least 1 guess in a round",
@@ -429,7 +429,7 @@ export const resources = {
           unstoppable_streak: "Reach a win streak of 3",
           perfectionist: "Guess the word on the first try",
           extreme_difficulty: "Win a round on Hard or Insane difficulty",
-          polyglot: "Win a round in both English and Spanish in the same day",
+          polyglot: "Win 2 rounds in the same day",
         },
       },
     },
@@ -566,7 +566,7 @@ export const resources = {
         languageDialog: {
           title: "Elegir idioma",
           description:
-            "Selecciona el idioma del juego. Al cambiarlo se inicia un tablero nuevo.",
+            "Selecciona el idioma de la interfaz. El diccionario de juego permanece en español.",
           openAction: "Idioma: {{language}}",
           save: "Aplicar idioma",
           browserDetected: "Idioma detectado del navegador: {{language}}.",
@@ -860,7 +860,7 @@ export const resources = {
           unstoppable_streak: "Racha imparable",
           perfectionist: "Perfeccionista",
           extreme_difficulty: "Dificultad extrema",
-          polyglot: "Políglota",
+          polyglot: "Doble diario",
         },
         descriptions: {
           first_guess: "Haz al menos 1 intento en una ronda",
@@ -875,7 +875,7 @@ export const resources = {
           unstoppable_streak: "Alcanza una racha de 3 victorias",
           perfectionist: "Adivina la palabra en el primer intento",
           extreme_difficulty: "Gana una ronda en dificultad Difícil o Insano",
-          polyglot: "Gana una ronda en inglés y español en el mismo día",
+          polyglot: "Gana 2 rondas en el mismo día",
         },
       },
     },

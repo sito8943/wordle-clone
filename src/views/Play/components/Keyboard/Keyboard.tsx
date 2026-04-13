@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import type { KeyboardProps } from "./types";
 import { useTranslation } from "@i18n";
 import useKeyboardController from "./useKeyboardController";
@@ -7,7 +8,7 @@ import { DELETE_HOLD_DELAY_MS, DELETE_REPEAT_INTERVAL_MS } from "./constants";
 export function Keyboard({
   guesses,
   onKey,
-  language = "en",
+  language = WORDS_DEFAULT_LANGUAGE,
   animateEntry = false,
   onEntryAnimationEnd,
   isLoss = false,

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import {
   getRandomWord,
   getWordDictionary,
@@ -42,7 +43,7 @@ describe("setWordDictionary", () => {
 
   it("persists to localStorage", () => {
     setWordDictionary(["crane"]);
-    const key = "wordle:dictionary:en";
+    const key = `wordle:dictionary:${WORDS_DEFAULT_LANGUAGE}`;
     expect(localStorage.getItem(key)).not.toBeNull();
   });
 });
@@ -100,7 +101,7 @@ describe("isValidWord", () => {
 
 describe("getRandomWord", () => {
   it("returns the fallback word in uppercase when dictionary is empty", () => {
-    expect(getRandomWord()).toBe("APPLE");
+    expect(getRandomWord()).toBe("PERRO");
   });
 
   it("returns an uppercase word from the dictionary", () => {
@@ -126,13 +127,13 @@ describe("loadWordDictionaryFromCache", () => {
     // Populate cache first via setWordDictionary
     setWordDictionary(["crane", "stone"]);
     // Then reset in-memory state by loading from cache
-    const result = loadWordDictionaryFromCache("en");
+    const result = loadWordDictionaryFromCache(WORDS_DEFAULT_LANGUAGE);
     expect(result).toEqual(["crane", "stone"]);
   });
 
   it("updates the active dictionary after loading from cache", () => {
-    setWordDictionary(["crane"], "en");
-    loadWordDictionaryFromCache("en");
+    setWordDictionary(["crane"], WORDS_DEFAULT_LANGUAGE);
+    loadWordDictionaryFromCache(WORDS_DEFAULT_LANGUAGE);
     expect(getWordDictionary()).toEqual(["crane"]);
   });
 });

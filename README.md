@@ -160,7 +160,7 @@ Notes:
     - `answer` is not stored; it is derived locally from `gameId`, `seed`, and the dictionary.
   - `wordle:hint-usage`: hint usage snapshot keyed by game reference, without storing `answer` in clear.
   - `wordle:sync-events`: pending offline victory events used to sync score/streak to Convex in order.
-  - `wordle:dictionary:en`: cached dictionary.
+  - `wordle:dictionary:es`: cached dictionary.
   - `player`: player profile and score/streak metadata, including recovery `code`.
     - local `score`/`streak` act as UI cache; confirmed remote values take precedence after sync.
   - `wordle:scoreboard:*`: scoreboard cache/pending/client metadata.
@@ -195,9 +195,9 @@ npm run convex:backfill-player-codes -- --prod
 ## Dictionary + Word List
 
 - Dictionary words are stored in Convex (`words` table) by language.
-- Current language is `en`.
+- Gameplay dictionary language is fixed to `es`.
 - The app reads cached words first and only fetches from Convex when cache is empty.
-- The fetched dictionary is cached locally in `wordle:dictionary:en`.
+- The fetched dictionary is cached locally in `wordle:dictionary:es`.
 
 ## PWA
 

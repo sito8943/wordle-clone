@@ -23,6 +23,7 @@ import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useSound } from "@providers/Sound";
 import { useHardModeTimer } from "./useHardModeTimer";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
 import { getTodayDateUTC } from "@hooks/useDailyChallenges";
 import { useHintController } from "../useHintController";
@@ -92,10 +93,11 @@ export default function usePlayController() {
   const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
   const { hintsEnabled, dailyChallengesEnabled } = useFeatureFlags();
   const { playSound } = useSound();
+  const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
   const wordle = useWordle({
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
-    language: player.language,
+    language: gameplayLanguage,
     manualTileSelection: player.manualTileSelection === true,
   });
   const {
@@ -228,7 +230,7 @@ export default function usePlayController() {
     const dailyTracker = recordDailyChallengeRoundCompletion({
       date,
       playerCode: player.code,
-      language: player.language,
+      language: gameplayLanguage,
       won,
     });
 
@@ -256,7 +258,7 @@ export default function usePlayController() {
         difficulty: player.difficulty,
         streak: won ? player.streak + 1 : 0,
         roundDurationMs,
-        language: player.language,
+        language: gameplayLanguage,
         dailyCompletedRounds: dailyTracker.completedRounds,
         dailyLanguagesWon: dailyTracker.wonLanguages,
       };
@@ -334,8 +336,8 @@ export default function usePlayController() {
     guesses,
     player.code,
     player.difficulty,
-    player.language,
     player.streak,
+    gameplayLanguage,
     roundStartedAt,
     won,
   ]);
@@ -711,9 +713,8 @@ export default function usePlayController() {
     setDictionaryChecksumMessageKind(null);
 
     try {
-      const refreshed = await wordDictionaryClient.refreshRemoteChecksum(
-        player.language,
-      );
+      const refreshed =
+        await wordDictionaryClient.refreshRemoteChecksum(gameplayLanguage);
       setDictionaryChecksumMessage(
         i18n.t("play.developerConsole.checksumUpdated", {
           checksum: refreshed.checksum,
@@ -730,7 +731,7 @@ export default function usePlayController() {
     } finally {
       setIsRefreshingDictionaryChecksum(false);
     }
-  }, [isRefreshingDictionaryChecksum, player.language, wordDictionaryClient]);
+  }, [gameplayLanguage, isRefreshingDictionaryChecksum, wordDictionaryClient]);
 
   const refreshDailyChallengesForDeveloper = useCallback(async () => {
     if (
@@ -1050,7 +1051,7 @@ export default function usePlayController() {
   return {
     ...wordle,
     manualTileSelection: player.manualTileSelection === true,
-    currentLanguage: player.language,
+    currentLanguage: gameplayLanguage,
     currentWinStreak: player.streak,
     showLegacyEndOfGameMessage:
       !showEndOfGameDialogs || showLegacyEndOfGameFeedback,

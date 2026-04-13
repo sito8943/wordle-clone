@@ -34,7 +34,7 @@ describe("Keyboard", () => {
         name: i18n.t("play.gameplay.keys.deleteLetter"),
       }),
     ).toBeTruthy();
-    expect(screen.getAllByRole("button").length).toBe(28);
+    expect(screen.getAllByRole("button").length).toBe(29);
   });
 
   it("renders Ñ in spanish keyboard layout", () => {

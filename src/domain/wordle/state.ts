@@ -236,8 +236,6 @@ export const removeLetterAt = (
 
 export const isLetterKey = (
   key: string,
-  language: PlayerLanguage = "en",
-): boolean => {
-  const letterPattern = language === "es" ? /^[A-ZÑ]$/ : /^[A-Z]$/;
-  return letterPattern.test(key);
-};
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _language: PlayerLanguage = "es",
+): boolean => /^[A-ZÑ]$/.test(key);

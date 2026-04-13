@@ -12,7 +12,7 @@ const createContext = (
   difficulty: "normal",
   streak: 0,
   roundDurationMs: 120_000,
-  language: "en",
+  language: "es",
   dailyCompletedRounds: 0,
   dailyLanguagesWon: [],
   ...overrides,
@@ -244,7 +244,8 @@ describe("challenge condition evaluators", () => {
       evaluateCondition(
         "polyglot",
         createContext({
-          dailyLanguagesWon: ["en"],
+          won: true,
+          dailyCompletedRounds: 1,
         }),
       ),
     ).toBe(false);
@@ -252,7 +253,8 @@ describe("challenge condition evaluators", () => {
       evaluateCondition(
         "polyglot",
         createContext({
-          dailyLanguagesWon: ["en", "es"],
+          won: true,
+          dailyCompletedRounds: 2,
         }),
       ),
     ).toBe(true);

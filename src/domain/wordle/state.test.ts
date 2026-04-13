@@ -315,14 +315,15 @@ describe("validateGuessInput", () => {
 });
 
 describe("isLetterKey", () => {
-  it("returns true for single uppercase letters in english layout", () => {
+  it("returns true for single uppercase letters in default layout", () => {
     expect(isLetterKey("A")).toBe(true);
     expect(isLetterKey("Z")).toBe(true);
-    expect(isLetterKey("Ñ")).toBe(false);
+    expect(isLetterKey("Ñ")).toBe(true);
   });
 
-  it("accepts Ñ only in spanish layout", () => {
+  it("accepts Ñ regardless of selected interface language", () => {
     expect(isLetterKey("Ñ", "es")).toBe(true);
+    expect(isLetterKey("Ñ", "en")).toBe(true);
     expect(isLetterKey("N", "es")).toBe(true);
     expect(isLetterKey("ñ", "es")).toBe(false);
   });

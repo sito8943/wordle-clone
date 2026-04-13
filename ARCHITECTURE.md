@@ -165,11 +165,12 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `player`: player profile and score/streak metadata, including recovery `code`.
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, `showEndOfGameDialogs`, and `manualTileSelection`.
   - It also stores local anti-fraud status (`hackingBan`) when a round is flagged as too short to be legitimate.
-  - It also stores the selected `language` (`en` or `es`) used by i18n, dictionary loading, and scoreboard segmentation.
+  - It also stores the selected `language` (`en` or `es`) used by i18n and scoreboard segmentation.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
+- The gameplay dictionary language is fixed to Spanish (`es`) in frontend game flow.
 - `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp) for offline remote synchronization.
-- `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions (`persistent`, `polyglot`) to store completed rounds count and languages won for the current UTC date.
-- `wordle:dictionary:en`: cached dictionary words.
+- `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions to store completed rounds count and won-language metadata for the current UTC date.
+- `wordle:dictionary:es`: cached dictionary words.
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.
 - additional feature keys for theme/animations/scoreboard caches.

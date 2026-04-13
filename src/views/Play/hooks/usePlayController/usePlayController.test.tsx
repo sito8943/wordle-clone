@@ -1,6 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { i18n, initI18n } from "@i18n";
 import { setWordDictionary } from "@utils/words";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
@@ -288,7 +289,7 @@ describe("usePlayController", () => {
     expect(mockUseWordle).toHaveBeenCalledWith(
       expect.objectContaining({
         allowUnknownWords: true,
-        language: "en",
+        language: WORDS_DEFAULT_LANGUAGE,
       }),
     );
   });
@@ -406,7 +407,7 @@ describe("usePlayController", () => {
     expect(mockUseWordle).toHaveBeenCalledWith(
       expect.objectContaining({
         allowUnknownWords: false,
-        language: "en",
+        language: WORDS_DEFAULT_LANGUAGE,
       }),
     );
   });
@@ -949,6 +950,7 @@ describe("usePlayController", () => {
     });
 
     expect(refreshRemoteChecksum).toHaveBeenCalledTimes(1);
+    expect(refreshRemoteChecksum).toHaveBeenCalledWith(WORDS_DEFAULT_LANGUAGE);
     expect(result.current.dictionaryChecksumMessage).toBe(
       i18n.t("play.developerConsole.checksumUpdated", {
         checksum: 42,

@@ -1,7 +1,7 @@
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import type { DictionaryLanguage } from "@api/words";
 
-const FALLBACK_WORD = "apple";
+const FALLBACK_WORD = "perro";
 
 let currentLanguage: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE;
 let currentWords: string[] = [];
