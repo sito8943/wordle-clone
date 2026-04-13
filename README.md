@@ -1,5 +1,8 @@
 # Wordle Clone
 
+This project is an original word game inspired by popular word-guessing mechanics.
+It is not affiliated with or endorsed by The New York Times.
+
 React + TypeScript Wordle clone with:
 
 - Difficulty modes and scoring/streak system
