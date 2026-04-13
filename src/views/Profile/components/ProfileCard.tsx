@@ -1,7 +1,9 @@
 import { useTranslation } from "@i18n";
 import type { ProfileCardPropsTypes } from "./types";
+import { Button } from "@components";
 
 const ProfileCard = (props: ProfileCardPropsTypes) => {
+  const { name, code, score, toggleEditing } = props;
   const { t } = useTranslation();
 
   return (
@@ -14,7 +16,7 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
           className="profile-card-field-input"
           id="name"
           type="text"
-          value={props.name}
+          value={name}
           readOnly
         />
       </div>
@@ -26,7 +28,7 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
           className="profile-card-field-input"
           id="score"
           type="number"
-          value={props.score}
+          value={score}
           readOnly
         />
       </div>
@@ -38,11 +40,14 @@ const ProfileCard = (props: ProfileCardPropsTypes) => {
           className="profile-card-field-input"
           id="code"
           type="text"
-          value={props.code}
+          value={code}
           readOnly
         />
       </div>
       <p className="profile-help-text">{t("profile.codeHelp")}</p>
+      <div>
+        <Button onClick={toggleEditing}>{t("profile.editAction")}</Button>
+      </div>
     </div>
   );
 };

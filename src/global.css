@@ -517,6 +517,7 @@ h1,
 .settings-entrance {
   opacity: 0;
   animation: settings-entrance 0.35s ease-out forwards;
+  @apply w-full max-w-160 m-auto flex flex-col items-center justify-center;
 }
 
 .wordle-animations-disabled .settings-entrance {

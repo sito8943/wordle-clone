@@ -149,7 +149,11 @@ export const resources = {
         },
         difficultyRules: {
           easy: "Easy shows the word list.",
+          easyNoWordList:
+            "Easy gives more hints and accepts non-dictionary words.",
           normal: "Normal hides the word list.",
+          normalNoWordList:
+            "Normal gives a hint and accepts non-dictionary words.",
           hard: "Hard disables hints and only accepts dictionary words.",
           insane:
             "Insane enables a {{seconds}}-second timer and only accepts dictionary words.",
@@ -581,7 +585,11 @@ export const resources = {
         },
         difficultyRules: {
           easy: "Fácil muestra la lista de palabras.",
+          easyNoWordList:
+            "Fácil da más pistas y acepta palabras fuera del diccionario.",
           normal: "Normal oculta la lista de palabras.",
+          normalNoWordList:
+            "Normal da una pista y acepta palabras fuera del diccionario.",
           hard: "Difícil desactiva las pistas y solo acepta palabras del diccionario.",
           insane:
             "Insano activa un temporizador de {{seconds}} segundos y solo acepta palabras del diccionario.",

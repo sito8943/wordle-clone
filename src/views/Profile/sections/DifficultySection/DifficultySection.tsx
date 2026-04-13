@@ -3,6 +3,7 @@ import type {
   PlayerKeyboardPreference,
 } from "@domain/wordle";
 import { useTranslation } from "@i18n";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import type { DifficultySectionProps } from "./types";
 import {
   PROFILE_DIFFICULTY_MODE_INPUT_ID,
@@ -17,6 +18,7 @@ const DifficultySection = ({
   onChangeDifficulty,
 }: DifficultySectionProps) => {
   const { t } = useTranslation();
+  const { wordListButtonEnabled } = useFeatureFlags();
 
   return (
     <div className="max-w-xl" id="difficulty">
@@ -72,8 +74,16 @@ const DifficultySection = ({
           </option>
         </select>
         <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-          <li>{t("profile.difficultyRules.easy")}</li>
-          <li>{t("profile.difficultyRules.normal")}</li>
+          <li>
+            {wordListButtonEnabled
+              ? t("profile.difficultyRules.easy")
+              : t("profile.difficultyRules.easyNoWordList")}
+          </li>
+          <li>
+            {wordListButtonEnabled
+              ? t("profile.difficultyRules.normal")
+              : t("profile.difficultyRules.normalNoWordList")}
+          </li>
           <li>{t("profile.difficultyRules.hard")}</li>
           <li>
             {t("profile.difficultyRules.insane", {

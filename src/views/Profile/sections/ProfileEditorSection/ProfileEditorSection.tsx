@@ -3,7 +3,14 @@ import { useProfileView } from "@views/Profile/providers";
 
 const ProfileEditorSection = () => {
   const {
-    controller: { editing, savedMessage, player, code, submitProfile },
+    controller: {
+      editing,
+      toggleEditing,
+      savedMessage,
+      player,
+      code,
+      submitProfile,
+    },
   } = useProfileView();
 
   return (
@@ -19,9 +26,15 @@ const ProfileEditorSection = () => {
           code={code}
           score={player.score}
           onSubmit={submitProfile}
+          toggleEditing={toggleEditing}
         />
       ) : (
-        <ProfileCard name={player.name} code={code} score={player.score} />
+        <ProfileCard
+          name={player.name}
+          code={code}
+          score={player.score}
+          toggleEditing={toggleEditing}
+        />
       )}
     </>
   );

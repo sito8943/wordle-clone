@@ -150,19 +150,37 @@ const Toolbar = (): JSX.Element => {
               {t("play.toolbar.hintButton", { count: hintsRemaining })}
             </Button>
           )}
-          {dailyChallengesEnabled && dailyChallenges.challenges && (
-            <Button
-              onClick={dailyChallenges.openDialog}
-              aria-label={t("challenges.buttonAriaLabel")}
-              variant="ghost"
-              icon={faTrophy}
-              iconClassName="text-lg"
-              className="mobile-compact-button"
-              hideLabelOnMobile
-            >
-              {t("challenges.buttonLabel")}
-            </Button>
-          )}
+          {dailyChallengesEnabled &&
+            dailyChallenges.challenges &&
+            (() => {
+              const completedIds = new Set(
+                dailyChallenges.progress
+                  .filter((p) => p.completed)
+                  .map((p) => p.challengeId),
+              );
+              const allChallengesCompleted =
+                completedIds.has(dailyChallenges.challenges.simple.id) &&
+                completedIds.has(dailyChallenges.challenges.complex.id);
+
+              return (
+                <Button
+                  onClick={dailyChallenges.openDialog}
+                  aria-label={t("challenges.buttonAriaLabel")}
+                  variant="ghost"
+                  color={allChallengesCompleted ? "neutral" : "primary"}
+                  icon={faTrophy}
+                  iconClassName="text-lg"
+                  className={
+                    allChallengesCompleted
+                      ? "mobile-compact-button opacity-50"
+                      : "mobile-compact-button"
+                  }
+                  hideLabelOnMobile
+                >
+                  {t("challenges.buttonLabel")}
+                </Button>
+              );
+            })()}
           {helpButtonEnabled && (
             <Button
               onClick={openHelpDialog}
