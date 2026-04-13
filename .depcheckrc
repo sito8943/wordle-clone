@@ -12,5 +12,6 @@
     "@hooks/*",
     "@vitest/coverage-v8",
     "i18next-browser-languagedetector",
-    "@config/env"
+    "@config/env",
+    "@config/routes",
   ]
