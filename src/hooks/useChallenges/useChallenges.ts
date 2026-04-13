@@ -68,7 +68,6 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
         if (!todayChallenges) {
           todayChallenges = await challengeClient.generateDailyChallenges(date);
         }
-        console.log(todayChallenges);
         setChallenges(todayChallenges);
 
         // Fetch challenge catalog + player progress
