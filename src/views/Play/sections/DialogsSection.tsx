@@ -16,7 +16,8 @@ const RefreshConfirmationDialog = lazy(
     import("../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog"),
 );
 const TutorialPromptDialog = lazy(
-  () => import("../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
+  () =>
+    import("../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
 );
 const WordListDialog = lazy(
   () => import("../components/Dialogs/WordListDialog/WordListDialog"),

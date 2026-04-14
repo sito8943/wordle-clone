@@ -31,10 +31,7 @@ export const useHintController = ({
   const currentRowComplete =
     current.length >= WORD_LENGTH && !current.includes(" ");
   const hintButtonDisabled =
-    hintsRemaining <= 0 ||
-    showResumeDialog ||
-    gameOver ||
-    currentRowComplete;
+    hintsRemaining <= 0 || showResumeDialog || gameOver || currentRowComplete;
 
   useEffect(() => {
     if (!hasInProgressGameAtMountRef.current) {

@@ -1,4 +1,10 @@
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TutorialPromptDialog from "./TutorialPromptDialog";
 
@@ -25,9 +31,7 @@ describe("TutorialPromptDialog", () => {
 
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("Welcome to Classic")).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Yes, open Help" }),
-    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Yes, open Help" })).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "No, skip tutorial" }),
     ).toBeTruthy();
