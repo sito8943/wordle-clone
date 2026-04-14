@@ -24,7 +24,7 @@ const routes = createBrowserRouter(
         { path: ROUTES.SETTINGS, element: <Profile /> },
         { path: ROUTES.PROFILE, element: <Profile /> },
         {
-          path: "/*",
+          path: ROUTES.NOT_FOUND,
           element: <NotFound />,
         },
       ],

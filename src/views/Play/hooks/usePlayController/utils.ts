@@ -14,6 +14,44 @@ import type {
 
 let hardModeTimerSnapshot: HardModeTimerSnapshot | null = null;
 
+export const getTileStatusSoundEvent = (
+  status: unknown,
+): "tile_correct" | "tile_present" | "tile_absent" | null => {
+  if (status === "correct") {
+    return "tile_correct";
+  }
+
+  if (status === "present") {
+    return "tile_present";
+  }
+
+  if (status === "absent") {
+    return "tile_absent";
+  }
+
+  return null;
+};
+
+export const getGuessWords = (guesses: unknown[]): string[] =>
+  guesses.reduce<string[]>((words, guess) => {
+    if (typeof guess === "string") {
+      words.push(guess);
+      return words;
+    }
+
+    if (!guess || typeof guess !== "object") {
+      return words;
+    }
+
+    const maybeWord = (guess as { word?: unknown }).word;
+
+    if (typeof maybeWord === "string") {
+      words.push(maybeWord);
+    }
+
+    return words;
+  }, []);
+
 export const getHardModeClockBoostScale = (secondsLeft: number): number => {
   if (secondsLeft <= HARD_MODE_FINAL_STRETCH_SECONDS) {
     return 0.28;

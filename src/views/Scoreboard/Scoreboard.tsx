@@ -9,26 +9,25 @@ import {
   FireStreak,
 } from "@components";
 import { useAnimatedPresence, useAnimationsPreference } from "@hooks";
+import {
+  ALERT_EXIT_MS,
+  SCOREBOARD_DATE_DROPDOWN_EXIT_MS,
+  SCOREBOARD_DATE_DROPDOWN_MIN_HEIGHT_PX,
+} from "./constants";
 import { useScoreboardController } from "./hooks";
-
-const ALERT_EXIT_MS = 200;
-const SCOREBOARD_DATE_DROPDOWN_MIN_HEIGHT_PX = 56;
-const SCOREBOARD_DATE_DROPDOWN_EXIT_MS = 180;
+import type { DropdownPlacement } from "./types";
 
 const Scoreboard = (): JSX.Element => {
   const { t } = useTranslation();
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
-  const [expandedEntryPlacement, setExpandedEntryPlacement] = useState<
-    "above" | "below"
-  >("below");
+  const [expandedEntryPlacement, setExpandedEntryPlacement] =
+    useState<DropdownPlacement>("below");
   const [closingEntryId, setClosingEntryId] = useState<string | null>(null);
-  const [closingEntryPlacement, setClosingEntryPlacement] = useState<
-    "above" | "below"
-  >("below");
+  const [closingEntryPlacement, setClosingEntryPlacement] =
+    useState<DropdownPlacement>("below");
   const [pendingEntryId, setPendingEntryId] = useState<string | null>(null);
-  const [pendingEntryPlacement, setPendingEntryPlacement] = useState<
-    "above" | "below"
-  >("below");
+  const [pendingEntryPlacement, setPendingEntryPlacement] =
+    useState<DropdownPlacement>("below");
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (
       typeof window === "undefined" ||
@@ -84,7 +83,7 @@ const Scoreboard = (): JSX.Element => {
   }, []);
 
   const openDropdownForEntry = useCallback(
-    (entryId: string, placement: "above" | "below") => {
+    (entryId: string, placement: DropdownPlacement) => {
       setExpandedEntryPlacement(placement);
       setExpandedEntryId(entryId);
     },
@@ -92,7 +91,7 @@ const Scoreboard = (): JSX.Element => {
   );
 
   const startDropdownCloseAnimation = useCallback(
-    (entryId: string, placement: "above" | "below") => {
+    (entryId: string, placement: DropdownPlacement) => {
       if (dropdownExitDurationMs <= 0) {
         clearDropdownExitTimeout();
         setClosingEntryId(null);
@@ -110,7 +109,7 @@ const Scoreboard = (): JSX.Element => {
     [clearDropdownExitTimeout, dropdownExitDurationMs],
   );
   const getDropdownPlacementForEntry = useCallback(
-    (entryId: string): "above" | "below" => {
+    (entryId: string): DropdownPlacement => {
       if (typeof window === "undefined") {
         return "below";
       }

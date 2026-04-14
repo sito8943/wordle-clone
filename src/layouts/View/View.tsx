@@ -6,6 +6,7 @@ import { Navbar, Footer } from "./components";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
 import { useApi, usePlayer } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
+import { ROUTES } from "@config/routes";
 import { shouldAskForInitialPlayerName } from "./utils";
 
 const InitialPlayerDialog = lazy(
@@ -17,7 +18,7 @@ const View = () => {
   const { scoreClient } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
   const { pathname, hash } = useLocation();
-  const isHomeRoute = pathname === "/";
+  const isHomeRoute = pathname === ROUTES.HOME;
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(

@@ -4,7 +4,7 @@ import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { usePlayView } from "@views/Play/providers";
-import { ROUTES } from "@config/routes";
+import { ROUTE_ANCHORS, ROUTES } from "@config/routes";
 
 const SessionResumeDialog = lazy(
   () => import("../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
@@ -119,7 +119,7 @@ const DialogsSection = (): JSX.Element => {
 
   const changeDifficulty = () => {
     closeEndOfGameDialog();
-    navigate(`${ROUTES.SETTINGS}#difficulty`);
+    navigate(`${ROUTES.SETTINGS}${ROUTE_ANCHORS.DIFFICULTY}`);
   };
 
   return (

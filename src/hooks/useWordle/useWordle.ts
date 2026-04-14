@@ -43,39 +43,10 @@ import {
   isDirectGameKeyboardKey,
   isEditableKeyboardTarget,
   markStartAnimationAsSeen,
+  shiftHintStatusesLeftFromIndex,
   shouldAnimateKeyboardEntryOnSession,
   shouldAnimateOnFirstSessionView,
 } from "./utils";
-
-const shiftHintStatusesLeftFromIndex = (
-  previous: Record<number, HintTileStatus>,
-  removedIndex: number,
-): Record<number, HintTileStatus> => {
-  let changed = false;
-  const next: Record<number, HintTileStatus> = {};
-
-  for (const [rawIndex, status] of Object.entries(previous)) {
-    const index = Number(rawIndex);
-    if (!Number.isInteger(index)) {
-      continue;
-    }
-
-    if (index === removedIndex) {
-      changed = true;
-      continue;
-    }
-
-    if (index > removedIndex) {
-      next[index - 1] = status;
-      changed = true;
-      continue;
-    }
-
-    next[index] = status;
-  }
-
-  return changed ? next : previous;
-};
 
 export default function useWordle(options: UseWordleOptions = {}) {
   const {

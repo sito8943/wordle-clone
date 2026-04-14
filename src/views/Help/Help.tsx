@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Link } from "react-router";
-import { ROUTES } from "@config/routes";
+import { ROUTE_ANCHORS, ROUTES } from "@config/routes";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 
@@ -60,7 +60,7 @@ const Help = (): JSX.Element => {
         <p className="mt-3 text-xs text-neutral-600 dark:text-neutral-300">
           {t("play.helpDialog.changeDifficultyPrefix")}{" "}
           <Link
-            to={`${ROUTES.SETTINGS}#difficulty`}
+            to={`${ROUTES.SETTINGS}${ROUTE_ANCHORS.DIFFICULTY}`}
             className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
           >
             {t("play.helpDialog.changeDifficultyLink")}

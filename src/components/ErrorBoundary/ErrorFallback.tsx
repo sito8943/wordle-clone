@@ -1,9 +1,6 @@
 import { i18n } from "@i18n";
 import type { ErrorFallbackProps } from "./types";
-
-const reloadPage = () => {
-  window.location.reload();
-};
+import { reloadPage } from "./utils";
 
 export const ErrorFallback = ({
   title = i18n.t("errors.generic.title"),

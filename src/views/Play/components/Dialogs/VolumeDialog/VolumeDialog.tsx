@@ -1,23 +1,11 @@
 import { Dialog } from "@components/Dialogs/Dialog";
 import { Button } from "@components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faVolumeHigh,
-  faVolumeLow,
-  faVolumeOff,
-  faVolumeXmark,
-} from "@fortawesome/free-solid-svg-icons";
 import { useSound } from "@providers/Sound";
 import { useTranslation } from "@i18n";
 import { VOLUME_DIALOG_TITLE_ID } from "./constants";
 import type { VolumeDialogProps } from "./types";
-
-const getVolumeIcon = (volume: number, muted: boolean) => {
-  if (muted) return faVolumeXmark;
-  if (volume === 0) return faVolumeOff;
-  if (volume < 50) return faVolumeLow;
-  return faVolumeHigh;
-};
+import { getVolumeIcon } from "./utils";
 
 const VolumeDialog = ({ visible, onClose }: VolumeDialogProps) => {
   const { t } = useTranslation();

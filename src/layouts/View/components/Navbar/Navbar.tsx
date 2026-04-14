@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleQuestion,
+  faCrown,
   faGear,
   faPlayCircle,
   faSpinner,
-  faTrophy,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
@@ -61,7 +61,7 @@ const Navbar = () => {
       label: t("nav.scoreboard"),
       extraLabel: positionLabel,
       ariaLabel: t("nav.scoreboard"),
-      icon: faTrophy,
+      icon: faCrown,
       toneClassName: getScoreboardToneClassName(rankTone),
     });
 

@@ -1,43 +1,6 @@
 import type { JSX } from "react";
 import { ProfileViewProvider } from "./providers";
-import {
-  DifficultyChangeDialog,
-  LanguageDialog,
-  ProfileEditorSection,
-  ProfileHeader,
-  RecoverySection,
-  SettingsSection,
-} from "./sections";
-import { env } from "@config/env";
-
-const ProfileContent = (): JSX.Element => {
-  return (
-    <main className="page-centered gap-10">
-      <DifficultyChangeDialog />
-      <LanguageDialog />
-      <div className="settings-entrance" style={{ animationDelay: "0ms" }}>
-        <ProfileHeader />
-        {env.appVersion && (
-          <span
-            className="text-xs text-gray-500 dark:text-gray-400 m-auto"
-            aria-hidden="true"
-          >
-            {env.appVersion}
-          </span>
-        )}
-      </div>
-      <div className="settings-entrance" style={{ animationDelay: "80ms" }}>
-        <ProfileEditorSection />
-      </div>
-      <div className="settings-entrance" style={{ animationDelay: "160ms" }}>
-        <SettingsSection />
-      </div>
-      <div className="settings-entrance" style={{ animationDelay: "240ms" }}>
-        <RecoverySection />
-      </div>
-    </main>
-  );
-};
+import ProfileContent from "./ProfileContent";
 
 const Profile = (): JSX.Element => {
   return (

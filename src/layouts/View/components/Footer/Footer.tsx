@@ -9,10 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaypal, faGithub } from "@fortawesome/free-brands-svg-icons";
 import { env } from "@config/env";
 import { useFeatureFlags } from "@providers/FeatureFlags";
-
-type FooterProps = {
-  alwaysVisible?: boolean;
-};
+import type { FooterProps } from "./types";
 
 const Footer = ({ alwaysVisible = false }: FooterProps) => {
   const { t } = useTranslation();

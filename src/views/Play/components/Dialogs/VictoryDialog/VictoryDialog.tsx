@@ -8,16 +8,9 @@ import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog
 import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDialog/utils";
 import { VICTORY_DIALOG_TITLE_ID } from "./constants";
 import type { VictoryDialogProps } from "./types";
+import { formatScoreSummaryValue } from "./utils";
 import SettingsHint from "../SettingsHint";
 import { EndOfGameWordSection } from "../EndOfGameWordSection";
-
-const formatScoreSummaryValue = (key: string, value: number): string => {
-  if (key === "difficulty" || key === "streak") {
-    return `x${Number.isInteger(value) ? value : value.toFixed(2)}`;
-  }
-
-  return `+${Number.isInteger(value) ? value : value.toFixed(1)}`;
-};
 
 const VictoryDialog = ({
   visible,

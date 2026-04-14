@@ -37,6 +37,8 @@ import type {
 import {
   canShareVictoryBoardFile,
   captureVictoryBoardImageFile,
+  getGuessWords,
+  getTileStatusSoundEvent,
   getVictoryBoardShareCaptureElement,
   hasSeenEndOfGameDialogInSession,
   isVictoryBoardShareSupported,
@@ -51,44 +53,6 @@ import {
   TILE_STATUS_SOUND_INITIAL_DELAY_MS,
   TILE_STATUS_SOUND_STEP_DELAY_MS,
 } from "@providers/Sound/constants";
-
-const getTileStatusSoundEvent = (
-  status: unknown,
-): "tile_correct" | "tile_present" | "tile_absent" | null => {
-  if (status === "correct") {
-    return "tile_correct";
-  }
-
-  if (status === "present") {
-    return "tile_present";
-  }
-
-  if (status === "absent") {
-    return "tile_absent";
-  }
-
-  return null;
-};
-
-const getGuessWords = (guesses: unknown[]): string[] =>
-  guesses.reduce<string[]>((words, guess) => {
-    if (typeof guess === "string") {
-      words.push(guess);
-      return words;
-    }
-
-    if (!guess || typeof guess !== "object") {
-      return words;
-    }
-
-    const maybeWord = (guess as { word?: unknown }).word;
-
-    if (typeof maybeWord === "string") {
-      words.push(maybeWord);
-    }
-
-    return words;
-  }, []);
 
 export default function usePlayController() {
   const { scoreClient, wordDictionaryClient, challengeClient } = useApi();

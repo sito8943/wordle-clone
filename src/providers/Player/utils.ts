@@ -17,6 +17,14 @@ export const normalizePlayerName = (value: string): string => {
   return normalized.slice(0, 30);
 };
 
+export const toSafeTimestamp = (value: number | undefined): number | null => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return Math.floor(value);
+};
+
 const normalizePlayerCode = (value: unknown): string => {
   if (typeof value !== "string") {
     return "";

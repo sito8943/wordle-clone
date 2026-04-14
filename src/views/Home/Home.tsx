@@ -9,37 +9,15 @@ import {
 import { useTranslation } from "@i18n";
 import { Alert } from "@components";
 import { useFeatureFlags } from "@providers/FeatureFlags";
-import {
-  HOME_DONATED_HASH,
-  HOME_ENTRY_ANIMATION_SESSION_KEY,
-} from "./constants";
+import { HOME_DONATED_HASH } from "./constants";
 import { env } from "@config/env";
 import { ROUTES } from "@config/routes";
 import { faPaypal } from "@fortawesome/free-brands-svg-icons";
-
-const hasSeenEntryAnimationInSession = (): boolean => {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  try {
-    return sessionStorage.getItem(HOME_ENTRY_ANIMATION_SESSION_KEY) === "seen";
-  } catch {
-    return false;
-  }
-};
-
-const markEntryAnimationAsSeenInSession = (): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    sessionStorage.setItem(HOME_ENTRY_ANIMATION_SESSION_KEY, "seen");
-  } catch {
-    // Ignore sessionStorage errors.
-  }
-};
+import {
+  hasSeenEntryAnimationInSession,
+  markEntryAnimationAsSeenInSession,
+} from "./utils";
+import type { HomeNavigationLink } from "./types";
 
 const Home = () => {
   const location = useLocation();
@@ -69,7 +47,7 @@ const Home = () => {
   }, [shouldAnimateEntry]);
 
   const links = useMemo(
-    () => [
+    (): HomeNavigationLink[] => [
       { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
       { to: ROUTES.SETTINGS, label: t("profile.settingsTitle"), icon: faGear },
       { to: ROUTES.SCOREBOARD, label: t("nav.scoreboard"), icon: faTrophy },

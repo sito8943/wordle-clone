@@ -18,10 +18,7 @@ import type { NativeKeyboardClockStyle } from "./types";
 
 const Toolbar = (): JSX.Element => {
   const { t } = useTranslation();
-  const {
-    hintsEnabled,
-    soundEnabled: soundFeatureEnabled,
-  } = useFeatureFlags();
+  const { hintsEnabled, soundEnabled: soundFeatureEnabled } = useFeatureFlags();
   const { volume, muted } = useSound();
   const toolbarIconClassName = "text-lg toolbar-icon-entry-animation";
   const [showVolumeDialog, setShowVolumeDialog] = useState(false);

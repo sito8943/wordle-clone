@@ -17,9 +17,7 @@ import {
   SOUND_VOLUME_STORAGE_KEY,
   SOUND_MUTED_STORAGE_KEY,
 } from "./constants";
-
-const toWindowWithWebkitAudio = (value: Window) =>
-  value as Window & { webkitAudioContext?: typeof AudioContext };
+import { toWindowWithWebkitAudio } from "./utils";
 
 const SoundProvider = ({ children }: ProviderProps) => {
   const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>(

@@ -12,6 +12,7 @@ import {
   normalizePlayer,
   normalizePlayerName,
   resolveInitialPlayer,
+  toSafeTimestamp,
 } from "./utils";
 import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
@@ -23,14 +24,6 @@ import {
   type PlayerLanguage,
   type RoundSyncEvent,
 } from "@domain/wordle";
-
-const toSafeTimestamp = (value: number | undefined): number | null => {
-  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    return null;
-  }
-
-  return Math.floor(value);
-};
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
