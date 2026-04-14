@@ -33,7 +33,9 @@ describe("Help", () => {
         level: 2,
       }),
     ).toBeTruthy();
-    expect(screen.getByText(i18n.t("play.helpDialog.description"))).toBeTruthy();
+    expect(
+      screen.getByText(i18n.t("play.helpDialog.description")),
+    ).toBeTruthy();
   });
 
   it("renders rules and scoring sections", () => {
@@ -60,7 +62,9 @@ describe("Help", () => {
       bonus: NORMAL_DICTIONARY_ROW_BONUS,
     });
 
-    expect(screen.getByText(i18n.t("play.helpDialog.scoring.hard"))).toBeTruthy();
+    expect(
+      screen.getByText(i18n.t("play.helpDialog.scoring.hard")),
+    ).toBeTruthy();
     expect(
       screen.getByText(i18n.t("play.helpDialog.scoring.insane")),
     ).toBeTruthy();

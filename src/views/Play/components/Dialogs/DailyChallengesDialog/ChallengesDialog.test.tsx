@@ -50,7 +50,7 @@ describe("ChallengesDialog", () => {
   afterEach(() => vi.useRealTimers());
 
   it("renders both daily challenges and countdown", () => {
-    const { container } = render(
+    render(
       <ChallengesDialog
         visible
         challenges={challenges}
@@ -67,7 +67,11 @@ describe("ChallengesDialog", () => {
     expect(screen.getByText("+15 pts")).toBeTruthy();
     expect(screen.getByText("Daily reset in")).toBeTruthy();
     expect(screen.getByText("01h 05m 00s")).toBeTruthy();
-    expect(container.querySelector('svg[data-icon="clock"]')).toBeTruthy();
+    expect(
+      screen
+        .getByRole("dialog", { name: "Challenges" })
+        .querySelector('svg[data-icon="clock"]'),
+    ).toBeTruthy();
   });
 
   it("updates the countdown every second", () => {

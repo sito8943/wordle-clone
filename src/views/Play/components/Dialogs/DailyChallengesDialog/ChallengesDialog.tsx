@@ -112,9 +112,7 @@ const ChallengesDialog = ({
           {countdown}
           <FontAwesomeIcon
             className={`ml-2 transition-all duration-100 ease-in-out ${
-              isCountdownTickAnimating
-                ? "scale-120 text-primary"
-                : "scale-100"
+              isCountdownTickAnimating ? "scale-120 text-primary" : "scale-100"
             }`}
             icon={faClock}
           />

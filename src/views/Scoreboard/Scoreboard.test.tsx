@@ -197,9 +197,7 @@ describe("Scoreboard", () => {
 
       const playerButton = screen.getByRole("button", { name: "Ana" });
       fireEvent.click(playerButton);
-      expect(
-        screen.getByText(i18n.t("scoreboard.headers.date")),
-      ).toBeTruthy();
+      expect(screen.getByText(i18n.t("scoreboard.headers.date"))).toBeTruthy();
       expect(screen.getByText("Jan 1")).toBeTruthy();
 
       fireEvent.click(playerButton);
