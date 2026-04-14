@@ -234,10 +234,15 @@ const Scoreboard = (): JSX.Element => {
                         ref={(node) => {
                           rowRefs.current[entry.id] = node;
                         }}
-                        className={`scoreboard-row-entrance border-t border-neutral-200 dark:border-neutral-700 ${
+                        onClick={() => toggleEntryDateDropdown(entry.id)}
+                        className={`scoreboard-row-entrance cursor-pointer border-t border-neutral-200 transition-colors duration-200 dark:border-neutral-700 ${
                           entry.isCurrentClient
-                            ? "scoreboard-current-player-row"
+                            ? "scoreboard-current-player-row hover:bg-emerald-50/70 dark:hover:bg-emerald-950/20"
                             : ""
+                        } ${
+                          entry.isCurrentClient
+                            ? ""
+                            : "hover:bg-neutral-100/80 dark:hover:bg-neutral-700/30"
                         }`}
                         style={{ animationDelay: `${240 + index * 50}ms` }}
                       >
@@ -249,7 +254,10 @@ const Scoreboard = (): JSX.Element => {
                         <td className="scoreboard-cell">
                           <button
                             type="button"
-                            onClick={() => toggleEntryDateDropdown(entry.id)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleEntryDateDropdown(entry.id);
+                            }}
                             aria-expanded={isExpanded}
                             aria-controls={`scoreboard-date-dropdown-${entry.id}`}
                             className="w-full cursor-pointer rounded-sm text-left outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/40"

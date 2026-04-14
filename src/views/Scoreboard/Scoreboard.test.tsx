@@ -102,6 +102,32 @@ describe("Scoreboard", () => {
     expect(screen.getByText("Carlos")).toBeTruthy();
   });
 
+  it("applies smooth hover/clickable classes to score rows", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Ana",
+          score: 20,
+          streak: 0,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    render(<Scoreboard />);
+
+    const playerButton = screen.getByRole("button", { name: "Ana" });
+    const row = playerButton.closest("tr");
+
+    expect(row?.className).toContain("cursor-pointer");
+    expect(row?.className).toContain("transition-colors");
+    expect(row?.className).toContain("duration-200");
+  });
+
   it("does not render the date as a table header column", () => {
     mockController({
       scores: [
