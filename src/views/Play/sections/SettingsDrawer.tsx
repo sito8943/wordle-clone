@@ -73,7 +73,7 @@ const SettingsDrawer = (): JSX.Element | null => {
         id={PLAY_SETTINGS_PANEL_ID}
         role="complementary"
         aria-label={t("play.settingsPanel.title")}
-        className={`fixed right-0 top-0 z-19 flex h-full w-full max-w-sm overflow-visible transition-transform duration-500 ease-in-out  ${
+        className={`fixed right-0 top-0 z-19 flex h-full w-full max-w-sm overflow-visible transition-all duration-500 ease-in-out  ${
           showSettingsPanel
             ? "translate-x-0 bg-white border-l border-neutral-300 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
             : "pointer-events-none translate-x-[90%]"
@@ -87,7 +87,7 @@ const SettingsDrawer = (): JSX.Element | null => {
           icon={!showSettingsPanel ? faChevronLeft : faChevronRight}
           iconClassName={`text-base transition-transform duration-300 ease-out`}
           variant="ghost"
-          className={`h-full ${showSettingsPanel ? "w-6 max-sm:hidden!" : "w-10 h-full max-h-60 my-auto"}`}
+          className={`h-full pointer-events-auto ${showSettingsPanel ? "w-6 max-sm:hidden!" : "w-10 h-full max-h-60 my-auto"}`}
         />
         <div className={showSettingsPanel ? "" : "pointer-events-none"}>
           <header className="relative border-b border-neutral-200 px-4 py-4 dark:border-neutral-700">
