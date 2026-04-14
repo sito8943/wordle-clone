@@ -1,6 +1,5 @@
 import { memo, useState, type JSX } from "react";
 import {
-  faCircleQuestion,
   faLightbulb,
   faList,
   faRotateRight,
@@ -21,7 +20,6 @@ const Toolbar = (): JSX.Element => {
   const { t } = useTranslation();
   const {
     hintsEnabled,
-    helpButtonEnabled,
     soundEnabled: soundFeatureEnabled,
   } = useFeatureFlags();
   const { volume, muted } = useSound();
@@ -42,7 +40,6 @@ const Toolbar = (): JSX.Element => {
     useHint,
     hintButtonDisabled,
     hintsRemaining,
-    openHelpDialog,
     canReopenEndOfGameDialog,
     reopenEndOfGameDialog,
     openDeveloperConsoleDialog,
@@ -123,19 +120,6 @@ const Toolbar = (): JSX.Element => {
                 </Button>
               );
             })()}
-          {helpButtonEnabled && (
-            <Button
-              onClick={openHelpDialog}
-              aria-label={t("play.toolbar.helpAriaLabel")}
-              variant="ghost"
-              icon={faCircleQuestion}
-              iconClassName="text-lg"
-              className="mobile-compact-button"
-              hideLabelOnMobile
-            >
-              {t("play.toolbar.helpButton")}
-            </Button>
-          )}
           {canReopenEndOfGameDialog ? (
             <Button
               onClick={reopenEndOfGameDialog}

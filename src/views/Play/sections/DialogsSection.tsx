@@ -20,9 +20,6 @@ const RefreshConfirmationDialog = lazy(
 const WordListDialog = lazy(
   () => import("../components/Dialogs/WordListDialog/WordListDialog"),
 );
-const HelpDialog = lazy(
-  () => import("../components/Dialogs/HelpDialog/HelpDialog"),
-);
 const PlayDeveloperConsoleDialog = lazy(
   () => import("../components/Dialogs/DeveloperConsoleDialog"),
 );
@@ -38,7 +35,7 @@ const ChallengesDialog = lazy(
 
 const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
-  const { shareButtonEnabled, helpButtonEnabled } = useFeatureFlags();
+  const { shareButtonEnabled } = useFeatureFlags();
   const {
     controller,
     player,
@@ -53,7 +50,6 @@ const DialogsSection = (): JSX.Element => {
     showDictionaryChecksumDialog,
     showRefreshDialog,
     showWordsDialog,
-    showHelpDialog,
     showDeveloperConsoleDialog,
     showVictoryDialog,
     showDefeatDialog,
@@ -77,7 +73,6 @@ const DialogsSection = (): JSX.Element => {
     dictionaryWords,
     currentLanguage,
     closeWordsDialog,
-    closeHelpDialog,
     closeDeveloperConsoleDialog,
     submitDeveloperPlayer,
     refreshRemoteDictionaryChecksum,
@@ -109,12 +104,6 @@ const DialogsSection = (): JSX.Element => {
     !dictionaryChecksumDialogVisible &&
     wordListButtonEnabled &&
     showWordsDialog;
-  const helpDialogVisible =
-    helpButtonEnabled &&
-    !showResumeDialog &&
-    !endOfGameDialogVisible &&
-    !dictionaryChecksumDialogVisible &&
-    showHelpDialog;
   const challengesDialogVisible =
     challengesEnabled &&
     !showResumeDialog &&
@@ -141,7 +130,6 @@ const DialogsSection = (): JSX.Element => {
         showDictionaryChecksumDialog,
         showRefreshDialog,
         showWordsDialog,
-        showHelpDialog,
         showDeveloperConsoleDialog,
         showVictoryDialog,
         showDefeatDialog,
@@ -195,9 +183,6 @@ const DialogsSection = (): JSX.Element => {
               words={dictionaryWords}
               onClose={closeWordsDialog}
             />
-          ) : null}
-          {helpDialogVisible ? (
-            <HelpDialog visible onClose={closeHelpDialog} />
           ) : null}
           {victoryScoreSummary ? (
             showVictoryDialog ? (

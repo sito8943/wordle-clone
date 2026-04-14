@@ -22,6 +22,7 @@
 
 - `/` -> `Home`
 - `/play` -> `Play` (gameplay)
+- `/ayuda` -> `Help`
 - `/settings` -> `Profile`
 - `/profile` -> `Profile` (legacy alias)
 - `/scoreboard` -> `Scoreboard`

@@ -165,6 +165,7 @@ describe("App", () => {
     renderApp();
     await waitForPlayReady();
     expect(screen.getByRole("link", { name: "Play" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Help" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Settings" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Scoreboard" })).toBeTruthy();
   });
@@ -1607,7 +1608,7 @@ describe("App", () => {
     ).toBe("seen");
   });
 
-  it("opens the help dialog from play and shows rules and scoring", async () => {
+  it("opens the help page from navbar and shows rules and scoring", async () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1621,10 +1622,10 @@ describe("App", () => {
     renderApp();
     await waitForPlayReady();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Help" }));
+    fireEvent.click(await screen.findByRole("link", { name: "Help" }));
 
     expect(
-      await screen.findByRole("dialog", { name: "How to play" }),
+      await screen.findByRole("heading", { name: "How to play" }),
     ).toBeTruthy();
     expect(
       screen.getByText("Guess the hidden 5-letter word in up to 6 attempts."),
@@ -1648,18 +1649,11 @@ describe("App", () => {
         "Final score = round(score base x (1 + 0.3 x sqrt(streak))), where score base includes the difficulty multiplier and the Insane time bonus.",
       ),
     ).toBeTruthy();
-
-    vi.useFakeTimers();
-    const helpDialog = screen.getByRole("dialog", { name: "How to play" });
-    const closeButton = helpDialog.querySelector<HTMLButtonElement>(
-      'button[aria-label="Close"]',
-    )!;
-    fireEvent.click(closeButton);
-
-    act(() => vi.runAllTimers());
-    vi.useRealTimers();
-
-    expect(screen.queryByRole("dialog", { name: "How to play" })).toBeNull();
+    expect(
+      screen
+        .getByRole("link", { name: "difficulty settings" })
+        .getAttribute("href"),
+    ).toBe(`${ROUTES.SETTINGS}#difficulty`);
   });
 
   it("applies easy difficulty scoring on win", async () => {

@@ -1,4 +1,3 @@
-import { HelpDialog } from "./HelpDialog";
 import { DictionaryChecksumDialog } from "./DictionaryChecksumDialog";
 import { RefreshConfirmationDialog } from "./RefreshConfirmationDialog";
 import { SessionResumeDialog } from "./SessionResumeDialog";
@@ -10,7 +9,6 @@ import { VolumeDialog } from "./VolumeDialog";
 export {
   DictionaryChecksumDialog,
   DefeatDialog,
-  HelpDialog,
   RefreshConfirmationDialog,
   SessionResumeDialog,
   VictoryDialog,

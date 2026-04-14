@@ -42,6 +42,7 @@ export const resources = {
       },
       nav: {
         play: "Play",
+        help: "Help",
         profile: "Settings",
         scoreboard: "Scoreboard",
       },
@@ -514,6 +515,7 @@ export const resources = {
       },
       nav: {
         play: "Jugar",
+        help: "Ayuda",
         profile: "Ajustes",
         scoreboard: "Clasificación",
       },

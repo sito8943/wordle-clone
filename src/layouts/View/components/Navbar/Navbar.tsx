@@ -1,20 +1,24 @@
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faCircleQuestion,
   faGear,
   faPlayCircle,
   faSpinner,
   faTrophy,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@i18n";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import NavLink from "./NavLink";
 import { getScoreboardToneClassName } from "./utils";
 import useNavbarController from "./useNavbarController";
 import { Link } from "react-router";
 import { ROUTES } from "@config/routes";
+import type { NavLinkPropsType } from "./types";
 
 const Navbar = () => {
   const { t } = useTranslation();
+  const { helpButtonEnabled } = useFeatureFlags();
   const { currentClientRank, isCurrentClientRankLoading, rankTone } =
     useNavbarController();
 
@@ -35,19 +39,36 @@ const Navbar = () => {
     [isCurrentClientRankLoading, currentClientRank],
   );
   const links = useMemo(
-    () => [
-      { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
-      { to: ROUTES.SETTINGS, label: t("nav.profile"), icon: faGear },
-      {
+    () => {
+      const navLinks: NavLinkPropsType[] = [
+        { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
+      ];
+
+      if (helpButtonEnabled) {
+        navLinks.push({
+          to: ROUTES.HELP,
+          label: t("nav.help"),
+          icon: faCircleQuestion,
+        });
+      }
+
+      navLinks.push({
+        to: ROUTES.SETTINGS,
+        label: t("nav.profile"),
+        icon: faGear,
+      });
+      navLinks.push({
         to: ROUTES.SCOREBOARD,
         label: t("nav.scoreboard"),
         extraLabel: positionLabel,
         ariaLabel: t("nav.scoreboard"),
         icon: faTrophy,
         toneClassName: getScoreboardToneClassName(rankTone),
-      },
-    ],
-    [positionLabel, rankTone, t],
+      });
+
+      return navLinks;
+    },
+    [helpButtonEnabled, positionLabel, rankTone, t],
   );
 
   return (

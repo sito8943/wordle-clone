@@ -134,7 +134,6 @@ export default function usePlayController() {
   const previousGuessesLengthRef = useRef(guesses.length);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
   const [showWordsDialog, setShowWordsDialog] = useState(false);
-  const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showDeveloperConsoleDialog, setShowDeveloperConsoleDialog] =
     useState(false);
   const [isRefreshingDictionaryChecksum, setIsRefreshingDictionaryChecksum] =
@@ -688,14 +687,6 @@ export default function usePlayController() {
     setShowWordsDialog(false);
   }, []);
 
-  const openHelpDialog = useCallback(() => {
-    setShowHelpDialog(true);
-  }, []);
-
-  const closeHelpDialog = useCallback(() => {
-    setShowHelpDialog(false);
-  }, []);
-
   const openDeveloperConsoleDialog = useCallback(() => {
     setDictionaryChecksumMessage(null);
     setDictionaryChecksumMessageKind(null);
@@ -906,7 +897,6 @@ export default function usePlayController() {
       setComboFlash(null);
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
-      setShowHelpDialog(false);
       setShowDeveloperConsoleDialog(false);
       setIsSharingVictoryBoard(false);
       setVictoryBoardShareError(null);
@@ -923,7 +913,6 @@ export default function usePlayController() {
 
     setShowRefreshDialog(false);
     setShowWordsDialog(false);
-    setShowHelpDialog(false);
     setShowDeveloperConsoleDialog(false);
   }, [showDictionaryChecksumDialog]);
 
@@ -1097,12 +1086,9 @@ export default function usePlayController() {
     refreshBoard,
     showRefreshDialog,
     showWordsDialog,
-    showHelpDialog,
     showDeveloperConsoleDialog,
     openWordsDialog,
     closeWordsDialog,
-    openHelpDialog,
-    closeHelpDialog,
     openDeveloperConsoleDialog,
     closeDeveloperConsoleDialog,
     submitDeveloperPlayer,
