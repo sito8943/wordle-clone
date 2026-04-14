@@ -28,7 +28,7 @@ describe("useHintController", () => {
         hasInProgressGameAtMount: true,
         showResumeDialog: false,
         gameOver: false,
-        currentLength: 0,
+        current: "",
         revealHint: vi.fn().mockReturnValue(true),
       }),
     );
@@ -47,7 +47,7 @@ describe("useHintController", () => {
         hasInProgressGameAtMount: false,
         showResumeDialog: false,
         gameOver: false,
-        currentLength: 0,
+        current: "",
         revealHint,
       }),
     );
@@ -78,7 +78,7 @@ describe("useHintController", () => {
         hasInProgressGameAtMount: false,
         showResumeDialog: true,
         gameOver: false,
-        currentLength: 0,
+        current: "",
         revealHint,
       }),
     );
@@ -101,7 +101,7 @@ describe("useHintController", () => {
         hasInProgressGameAtMount: false,
         showResumeDialog: false,
         gameOver: false,
-        currentLength: 0,
+        current: "",
         revealHint: vi.fn().mockReturnValue(true),
       }),
     );
@@ -134,7 +134,7 @@ describe("useHintController", () => {
         hasInProgressGameAtMount: true,
         showResumeDialog: false,
         gameOver: false,
-        currentLength: 0,
+        current: "",
         revealHint: vi.fn().mockReturnValue(true),
       }),
     );
@@ -145,5 +145,31 @@ describe("useHintController", () => {
 
     expect(result.current.hintsRemaining).toBe(2);
     expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeNull();
+  });
+
+  it("keeps hint enabled when there are empty slots represented as spaces", () => {
+    const revealHint = vi.fn().mockReturnValue(true);
+    const { result } = renderHook(() =>
+      useHintController({
+        answer: "APPLE",
+        gameId: "game-1",
+        difficulty: "easy",
+        hasInProgressGameAtMount: false,
+        showResumeDialog: false,
+        gameOver: false,
+        current: "A C E",
+        revealHint,
+      }),
+    );
+
+    expect(result.current.hintButtonDisabled).toBe(false);
+
+    let hintUsed = false;
+    act(() => {
+      hintUsed = result.current.useHint();
+    });
+
+    expect(hintUsed).toBe(true);
+    expect(revealHint).toHaveBeenCalledWith("correct");
   });
 });

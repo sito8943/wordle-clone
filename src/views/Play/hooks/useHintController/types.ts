@@ -14,7 +14,7 @@ export type UseHintControllerParams = {
   hasInProgressGameAtMount: boolean;
   showResumeDialog: boolean;
   gameOver: boolean;
-  currentLength: number;
+  current: string;
   revealHint: (hintStatus: HintTileStatus) => boolean;
 };
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  clearPersistedGameState,
   getGuessCombo,
   getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
@@ -10,6 +11,7 @@ import {
   getRoundDurationMs,
   getTotalPointsForWin,
   type Player,
+  type PlayerDifficulty,
 } from "@domain/wordle";
 import {
   evaluateCondition,
@@ -56,7 +58,14 @@ import {
 
 export default function usePlayController() {
   const { scoreClient, wordDictionaryClient, challengeClient } = useApi();
-  const { player, replacePlayer, commitVictory, commitLoss } = usePlayer();
+  const {
+    player,
+    replacePlayer,
+    commitVictory,
+    commitLoss,
+    updatePlayerDifficulty,
+    updatePlayerManualTileSelection,
+  } = usePlayer();
   const { hintsEnabled, challengesEnabled } = useFeatureFlags();
   const { playSound } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
@@ -100,6 +109,9 @@ export default function usePlayController() {
   const [showWordsDialog, setShowWordsDialog] = useState(false);
   const [showDeveloperConsoleDialog, setShowDeveloperConsoleDialog] =
     useState(false);
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [pendingDifficulty, setPendingDifficulty] =
+    useState<PlayerDifficulty | null>(null);
   const [isRefreshingDictionaryChecksum, setIsRefreshingDictionaryChecksum] =
     useState(false);
   const [dictionaryChecksumMessage, setDictionaryChecksumMessage] = useState<
@@ -434,7 +446,7 @@ export default function usePlayController() {
     hasInProgressGameAtMount,
     showResumeDialog,
     gameOver,
-    currentLength: current.length,
+    current,
     revealHint,
   });
   const hintsEnabledForDifficulty = hintsEnabled && hintsEnabledByDifficulty;
@@ -575,6 +587,8 @@ export default function usePlayController() {
     setShowLegacyEndOfGameFeedback(false);
     setEndOfGameDialogDismissed(false);
     setComboFlash(null);
+    setShowSettingsPanel(false);
+    setPendingDifficulty(null);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
     setChallengeCompletionMessage(null);
@@ -594,6 +608,8 @@ export default function usePlayController() {
     setShowLegacyEndOfGameFeedback(false);
     setEndOfGameDialogDismissed(false);
     setComboFlash(null);
+    setShowSettingsPanel(false);
+    setPendingDifficulty(null);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
     setChallengeCompletionMessage(null);
@@ -638,6 +654,59 @@ export default function usePlayController() {
   const confirmDictionaryChecksumRefresh = useCallback(() => {
     refreshBoardNow();
   }, [refreshBoardNow]);
+  const openSettingsPanel = useCallback(() => {
+    setShowSettingsPanel(true);
+  }, []);
+
+  const closeSettingsPanel = useCallback(() => {
+    setShowSettingsPanel(false);
+  }, []);
+
+  const changeManualTileSelection = useCallback(
+    (enabled: boolean) => {
+      if (enabled === player.manualTileSelection) {
+        return;
+      }
+
+      updatePlayerManualTileSelection(enabled);
+    },
+    [player.manualTileSelection, updatePlayerManualTileSelection],
+  );
+
+  const changeDifficulty = useCallback(
+    (nextDifficulty: PlayerDifficulty) => {
+      if (nextDifficulty === player.difficulty) {
+        return;
+      }
+
+      if (hasActiveGame) {
+        setPendingDifficulty(nextDifficulty);
+        return;
+      }
+
+      updatePlayerDifficulty(nextDifficulty);
+    },
+    [hasActiveGame, player.difficulty, updatePlayerDifficulty],
+  );
+
+  const confirmDifficultyChange = useCallback(() => {
+    if (!pendingDifficulty) {
+      return;
+    }
+
+    clearPersistedGameState();
+    updatePlayerDifficulty(pendingDifficulty);
+    setPendingDifficulty(null);
+    setShowSettingsPanel(false);
+    startNewBoard();
+  }, [pendingDifficulty, startNewBoard, updatePlayerDifficulty]);
+
+  const cancelDifficultyChange = useCallback(() => {
+    setPendingDifficulty(null);
+  }, []);
+
+  const isDifficultyChangeConfirmationOpen = pendingDifficulty !== null;
+  const pendingDifficultyValue = pendingDifficulty ?? player.difficulty;
 
   const openWordsDialog = useCallback(() => {
     if (!wordListEnabledForDifficulty) {
@@ -862,6 +931,8 @@ export default function usePlayController() {
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
       setShowDeveloperConsoleDialog(false);
+      setShowSettingsPanel(false);
+      setPendingDifficulty(null);
       setIsSharingVictoryBoard(false);
       setVictoryBoardShareError(null);
       setChallengeCompletionMessage(null);
@@ -878,6 +949,8 @@ export default function usePlayController() {
     setShowRefreshDialog(false);
     setShowWordsDialog(false);
     setShowDeveloperConsoleDialog(false);
+    setShowSettingsPanel(false);
+    setPendingDifficulty(null);
   }, [showDictionaryChecksumDialog]);
 
   useEffect(() => {
@@ -1009,6 +1082,15 @@ export default function usePlayController() {
   return {
     ...wordle,
     manualTileSelection: player.manualTileSelection === true,
+    showSettingsPanel,
+    openSettingsPanel,
+    closeSettingsPanel,
+    pendingDifficulty: pendingDifficultyValue,
+    isDifficultyChangeConfirmationOpen,
+    changeDifficulty,
+    confirmDifficultyChange,
+    cancelDifficultyChange,
+    changeManualTileSelection,
     currentLanguage: gameplayLanguage,
     currentWinStreak: player.streak,
     showLegacyEndOfGameMessage:

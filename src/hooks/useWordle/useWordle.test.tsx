@@ -201,6 +201,50 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.activeTileIndex).toBe(1);
   });
 
+  it("reveals hints in the first empty slot when manual input has gaps", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(
+      () => useWordle({ manualTileSelection: true }),
+      { wrapper },
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+    act(() => {
+      result.current.selectActiveTile(2);
+    });
+    act(() => {
+      result.current.handleKey("C");
+    });
+    act(() => {
+      result.current.selectActiveTile(4);
+    });
+    act(() => {
+      result.current.handleKey("E");
+    });
+
+    expect(result.current.current).toBe("A C E");
+
+    let hintRevealed = false;
+    act(() => {
+      hintRevealed = result.current.revealHint("correct");
+    });
+
+    expect(hintRevealed).toBe(true);
+    expect(result.current.hintRevealTileIndex).toBe(1);
+    expect(result.current.current[1]).not.toBe(" ");
+    expect(result.current.current[3]).toBe(" ");
+  });
+
   it("accepts Ñ as a valid letter by default", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();

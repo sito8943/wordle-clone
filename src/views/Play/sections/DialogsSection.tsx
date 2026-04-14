@@ -1,10 +1,8 @@
 import { lazy, memo, Suspense, type JSX } from "react";
-import { useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { usePlayView } from "@views/Play/providers";
-import { ROUTE_ANCHORS, ROUTES } from "@config/routes";
 
 const SessionResumeDialog = lazy(
   () => import("../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
@@ -31,6 +29,10 @@ const DefeatDialog = lazy(
 );
 const ChallengesDialog = lazy(
   () => import("../components/Dialogs/DailyChallengesDialog/ChallengesDialog"),
+);
+const DifficultyChangeDialog = lazy(
+  () =>
+    import("../components/Dialogs/DifficultyChangeDialog/DifficultyChangeDialog"),
 );
 
 const DialogsSection = (): JSX.Element => {
@@ -67,6 +69,7 @@ const DialogsSection = (): JSX.Element => {
     continuePreviousBoard,
     startNewBoard,
     closeEndOfGameDialog,
+    openSettingsPanel,
     cancelRefreshBoard,
     confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,
@@ -86,7 +89,6 @@ const DialogsSection = (): JSX.Element => {
     dailyChallengesDeveloperMessage,
     dailyChallengesDeveloperMessageKind,
   } = controller;
-  const navigate = useNavigate();
   const resumeDialogVisible = showResumeDialog;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
   const dictionaryChecksumDialogVisible =
@@ -119,7 +121,7 @@ const DialogsSection = (): JSX.Element => {
 
   const changeDifficulty = () => {
     closeEndOfGameDialog();
-    navigate(`${ROUTES.SETTINGS}${ROUTE_ANCHORS.DIFFICULTY}`);
+    openSettingsPanel();
   };
 
   return (
@@ -176,6 +178,7 @@ const DialogsSection = (): JSX.Element => {
               onConfirm={confirmRefreshBoard}
             />
           ) : null}
+          <DifficultyChangeDialog />
           {wordListDialogVisible ? (
             <WordListDialog
               visible

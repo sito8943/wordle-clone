@@ -18,7 +18,7 @@ export const useHintController = ({
   hasInProgressGameAtMount,
   showResumeDialog,
   gameOver,
-  currentLength,
+  current,
   revealHint,
 }: UseHintControllerParams): UseHintControllerResult => {
   const hintsLimit = getHintsLimitByDifficulty(difficulty);
@@ -28,11 +28,13 @@ export const useHintController = ({
 
   const hintsRemaining = Math.max(0, hintsLimit - hintsUsed);
   const hintsEnabledForDifficulty = hintsLimit > 0;
+  const currentRowComplete =
+    current.length >= WORD_LENGTH && !current.includes(" ");
   const hintButtonDisabled =
     hintsRemaining <= 0 ||
     showResumeDialog ||
     gameOver ||
-    currentLength >= WORD_LENGTH;
+    currentRowComplete;
 
   useEffect(() => {
     if (!hasInProgressGameAtMountRef.current) {

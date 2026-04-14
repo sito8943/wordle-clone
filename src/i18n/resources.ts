@@ -278,6 +278,8 @@ export const resources = {
           helpButton: "Help",
           resultsAriaLabel: "Results",
           resultsButton: "Results",
+          settingsAriaLabel: "Quick settings",
+          settingsButton: "Settings",
           developerConsoleAriaLabel: "Developer console",
           developerConsoleButton: "Dev console",
           insaneTimerAriaLabel: "Insane timer: {{seconds}} seconds",
@@ -285,6 +287,11 @@ export const resources = {
           refreshAriaLabel: "Refresh",
           loadingWordList: "Loading word list...",
           volumeAriaLabel: "Volume",
+        },
+        settingsPanel: {
+          title: "Quick settings",
+          description:
+            "Adjust difficulty and manual tile selection without leaving this board.",
         },
         volumeDialog: {
           title: "Volume",
@@ -752,6 +759,8 @@ export const resources = {
           helpButton: "Ayuda",
           resultsAriaLabel: "Resultados",
           resultsButton: "Resultados",
+          settingsAriaLabel: "Ajustes rápidos",
+          settingsButton: "Ajustes",
           developerConsoleAriaLabel: "Consola de desarrollo",
           developerConsoleButton: "Consola dev",
           insaneTimerAriaLabel: "Temporizador insano: {{seconds}} segundos",
@@ -759,6 +768,11 @@ export const resources = {
           refreshAriaLabel: "Actualizar",
           loadingWordList: "Cargando lista de palabras...",
           volumeAriaLabel: "Volumen",
+        },
+        settingsPanel: {
+          title: "Ajustes rápidos",
+          description:
+            "Ajusta la dificultad y la selección manual de casillas sin salir del tablero.",
         },
         volumeDialog: {
           title: "Volumen",

@@ -2,6 +2,7 @@ import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
+import { env } from "@config";
 import { i18n, initI18n } from "@i18n";
 import { setWordDictionary } from "@utils/words";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
@@ -120,8 +121,11 @@ describe("usePlayController", () => {
         difficulty: "normal",
         keyboardPreference: "onscreen",
         showEndOfGameDialogs: true,
+        manualTileSelection: false,
       },
       replacePlayer: vi.fn(),
+      updatePlayerDifficulty: vi.fn(),
+      updatePlayerManualTileSelection: vi.fn(),
       commitVictory: vi.fn().mockResolvedValue(undefined),
       commitLoss: vi.fn().mockResolvedValue(undefined),
     });
@@ -378,6 +382,99 @@ describe("usePlayController", () => {
         language: WORDS_DEFAULT_LANGUAGE,
       }),
     );
+  });
+
+  it("opens and closes the quick settings panel", () => {
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.showSettingsPanel).toBe(false);
+
+    act(() => {
+      result.current.openSettingsPanel();
+    });
+
+    expect(result.current.showSettingsPanel).toBe(true);
+
+    act(() => {
+      result.current.closeSettingsPanel();
+    });
+
+    expect(result.current.showSettingsPanel).toBe(false);
+  });
+
+  it("updates the manual tile selection preference from quick settings", () => {
+    const updatePlayerManualTileSelection = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+        manualTileSelection: false,
+      },
+      updatePlayerManualTileSelection,
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.changeManualTileSelection(true);
+      result.current.changeManualTileSelection(true);
+    });
+
+    expect(updatePlayerManualTileSelection).toHaveBeenCalledTimes(1);
+    expect(updatePlayerManualTileSelection).toHaveBeenCalledWith(true);
+  });
+
+  it("asks for confirmation before changing difficulty during an active game", () => {
+    const updatePlayerDifficulty = vi.fn();
+    const startNewBoard = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+        manualTileSelection: false,
+      },
+      updatePlayerDifficulty,
+    });
+
+    wordleState = {
+      ...wordleState,
+      current: "AP",
+      startNewBoard,
+    };
+    window.localStorage.setItem(env.wordleGameStorageKey, "persisted-game");
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.changeDifficulty("hard");
+    });
+
+    expect(result.current.isDifficultyChangeConfirmationOpen).toBe(true);
+    expect(updatePlayerDifficulty).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.confirmDifficultyChange();
+    });
+
+    expect(updatePlayerDifficulty).toHaveBeenCalledTimes(1);
+    expect(updatePlayerDifficulty).toHaveBeenCalledWith("hard");
+    expect(startNewBoard).toHaveBeenCalledTimes(1);
+    expect(result.current.isDifficultyChangeConfirmationOpen).toBe(false);
+    expect(window.localStorage.getItem(env.wordleGameStorageKey)).toBeNull();
   });
 
   it("exposes normal dictionary bonus row flags for wrong dictionary rows", () => {

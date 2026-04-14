@@ -1,4 +1,5 @@
 import {
+  WORD_LENGTH,
   WORDLE_START_ANIMATION_SESSION_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
 } from "@domain/wordle";
@@ -131,6 +132,17 @@ export const getPresentHintLetter = (
   }
 
   return fallback;
+};
+
+export const getFirstEmptyTileIndex = (currentGuess: string): number | null => {
+  for (let index = 0; index < WORD_LENGTH; index += 1) {
+    const letter = currentGuess[index];
+    if (!letter || letter.trim() === "") {
+      return index;
+    }
+  }
+
+  return null;
 };
 
 export const shiftHintStatusesLeftFromIndex = (

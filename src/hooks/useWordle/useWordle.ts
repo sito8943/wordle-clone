@@ -39,6 +39,7 @@ import { i18n } from "@i18n";
 import type { HintTileStatus, UseWordleOptions } from "./types";
 import {
   blurRefreshButtonIfFocused,
+  getFirstEmptyTileIndex,
   getPresentHintLetter,
   isDirectGameKeyboardKey,
   isEditableKeyboardTarget,
@@ -470,12 +471,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return false;
       }
 
-      if (current.length >= WORD_LENGTH) {
+      const nextIndex = getFirstEmptyTileIndex(current);
+      if (nextIndex === null) {
         showMessage(i18n.t(ROW_ALREADY_FULL_MESSAGE_KEY));
         return false;
       }
 
-      const nextIndex = current.length;
       const letter =
         hintStatus === "correct"
           ? answer[nextIndex]
@@ -486,7 +487,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return false;
       }
 
-      setGameStateWithPersistence((previous) => addLetter(previous, letter));
+      setGameStateWithPersistence((previous) =>
+        setLetterAt(previous, nextIndex, letter),
+      );
       setActiveRowHintStatuses((previous) => ({
         ...previous,
         [nextIndex]: hintStatus,
