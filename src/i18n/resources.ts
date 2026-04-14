@@ -427,7 +427,7 @@ export const resources = {
         completed: "Completed",
         pending: "Pending",
         points: "+{{points}} pts",
-        dailyResetsIn: "Daily reset in {{countdown}}",
+        dailyResetsIn: "Daily reset in ",
         noChallengesToday: "No challenges available today.",
         challengeCompleted: "Challenge completed: {{name}} (+{{points}} pts)",
         challengeCompletedMultiple:
@@ -910,7 +910,7 @@ export const resources = {
         completed: "Completado",
         pending: "Pendiente",
         points: "+{{points}} pts",
-        dailyResetsIn: "Reinicio diario en {{countdown}}",
+        dailyResetsIn: "Reinicio diario en ",
         noChallengesToday: "No hay retos disponibles hoy.",
         challengeCompleted: "Reto completado: {{name}} (+{{points}} pts)",
         challengeCompletedMultiple:

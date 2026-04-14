@@ -33,7 +33,7 @@ describe("ChallengesDialog", () => {
   afterEach(() => vi.useRealTimers());
 
   it("renders both daily challenges and countdown", () => {
-    render(
+    const { container } = render(
       <ChallengesDialog
         visible
         challenges={challenges}
@@ -48,7 +48,28 @@ describe("ChallengesDialog", () => {
     expect(screen.getByText("Speedster")).toBeTruthy();
     expect(screen.getByText("+5 pts")).toBeTruthy();
     expect(screen.getByText("+15 pts")).toBeTruthy();
-    expect(screen.getByText("Daily reset in 01h 05m")).toBeTruthy();
+    expect(screen.getByText("Daily reset in 01h 05m 00s")).toBeTruthy();
+    expect(container.querySelector(".boost-animation")).toBeTruthy();
+  });
+
+  it("updates the countdown every second", () => {
+    render(
+      <ChallengesDialog
+        visible
+        challenges={challenges}
+        progress={[]}
+        millisUntilEndOfDay={65 * 60 * 1000 + 5_000}
+        onClose={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Daily reset in 01h 05m 05s")).toBeTruthy();
+
+    act(() => {
+      vi.advanceTimersByTime(2_000);
+    });
+
+    expect(screen.getByText("Daily reset in 01h 05m 03s")).toBeTruthy();
   });
 
   it("marks completed challenge rows with strike-through styling", () => {
