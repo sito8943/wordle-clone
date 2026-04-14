@@ -1,5 +1,6 @@
 import { memo, useState, type JSX } from "react";
 import {
+  faCode,
   faLightbulb,
   faList,
   faRotateRight,
@@ -137,8 +138,10 @@ const Toolbar = (): JSX.Element => {
               aria-label={t("play.toolbar.developerConsoleAriaLabel")}
               variant="solid"
               color="danger"
-              iconClassName="text-lg"
-              className="mobile-compact-button fixed bottom-40 right-2"
+              icon={faCode}
+              iconClassName={toolbarIconClassName}
+              hideLabelOnMobile
+              className="mobile-compact-button"
             >
               {t("play.toolbar.developerConsoleButton")}
             </Button>

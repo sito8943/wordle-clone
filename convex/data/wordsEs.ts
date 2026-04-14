@@ -167,7 +167,6 @@ export const ES_WORDS = [
   "alijo",
   "alimo",
   "alisa",
-  "alise",
   "aliso",
   "almas",
   "almos",
