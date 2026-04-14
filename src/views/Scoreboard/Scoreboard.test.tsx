@@ -22,7 +22,10 @@ const mockController = (overrides = {}) => {
   } as ReturnType<typeof useScoreboardController>);
 };
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("Scoreboard", () => {
   it("renders the heading", () => {
@@ -97,6 +100,108 @@ describe("Scoreboard", () => {
     render(<Scoreboard />);
     expect(screen.getByText("Ana")).toBeTruthy();
     expect(screen.getByText("Carlos")).toBeTruthy();
+  });
+
+  it("does not render the date as a table header column", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Ana",
+          score: 20,
+          streak: 0,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    render(<Scoreboard />);
+    expect(screen.queryByRole("columnheader", { name: "Date" })).toBeNull();
+  });
+
+  it("opens and closes the date dropdown when clicking a player name", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Ana",
+          score: 20,
+          streak: 0,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    render(<Scoreboard />);
+
+    const playerButton = screen.getByRole("button", { name: "Ana" });
+    fireEvent.click(playerButton);
+    expect(screen.getByText("Date")).toBeTruthy();
+    expect(screen.getByText("Jan 1")).toBeTruthy();
+
+    fireEvent.click(playerButton);
+    expect(screen.queryByText("Date")).toBeNull();
+    expect(screen.queryByText("Jan 1")).toBeNull();
+  });
+
+  it("positions dropdown above the row when there is not enough space below", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Ana",
+          score: 20,
+          streak: 0,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    render(<Scoreboard />);
+
+    const originalInnerHeight = window.innerHeight;
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 100,
+      writable: true,
+    });
+
+    try {
+      const playerButton = screen.getByRole("button", { name: "Ana" });
+      const playerRow = playerButton.closest("tr") as HTMLTableRowElement;
+      vi.spyOn(playerRow, "getBoundingClientRect").mockReturnValue({
+        x: 0,
+        y: 70,
+        width: 300,
+        height: 24,
+        top: 70,
+        right: 300,
+        bottom: 94,
+        left: 0,
+        toJSON: () => ({}),
+      } as DOMRect);
+
+      fireEvent.click(playerButton);
+
+      const dropdownDate = screen.getByText("Jan 1");
+      const dropdownRow = dropdownDate.closest("tr");
+      expect(dropdownRow?.nextElementSibling).toBe(playerRow);
+    } finally {
+      Object.defineProperty(window, "innerHeight", {
+        configurable: true,
+        value: originalInnerHeight,
+        writable: true,
+      });
+    }
   });
 
   it("highlights the current client row", () => {
