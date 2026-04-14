@@ -417,6 +417,11 @@ h1,
   will-change: transform, opacity;
 }
 
+.toolbar-icon-entry-animation {
+  animation: smooth-entry 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
 .dialog-backdrop-enter-animation {
   animation: dialog-backdrop-enter 220ms ease-out both;
 }
@@ -635,7 +640,8 @@ h1,
   .tile-hint-reveal-animation,
   .board-shake-pulse-animation,
   .boost-animation,
-  .combo-flash-animation {
+  .combo-flash-animation,
+  .toolbar-icon-entry-animation {
     animation: none;
     opacity: 1;
     transform: none;

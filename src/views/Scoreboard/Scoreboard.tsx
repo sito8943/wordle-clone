@@ -30,7 +30,10 @@ const Scoreboard = (): JSX.Element => {
     "above" | "below"
   >("below");
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
       return false;
     }
 
@@ -61,7 +64,8 @@ const Scoreboard = (): JSX.Element => {
     currentClientOutsideTop && currentClientRank !== null,
     ALERT_EXIT_MS,
   );
-  const dropdownAnimationsEnabled = !animationsDisabled && !prefersReducedMotion;
+  const dropdownAnimationsEnabled =
+    !animationsDisabled && !prefersReducedMotion;
   const dropdownExitDurationMs = dropdownAnimationsEnabled
     ? SCOREBOARD_DATE_DROPDOWN_EXIT_MS
     : 0;
@@ -177,7 +181,10 @@ const Scoreboard = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
       return;
     }
 
@@ -371,7 +378,8 @@ const Scoreboard = (): JSX.Element => {
                   scores.map((entry, index) => {
                     const rowKey = `${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`;
                     const isExpanded = expandedEntryId === entry.id;
-                    const isClosing = closingEntryId === entry.id && !isExpanded;
+                    const isClosing =
+                      closingEntryId === entry.id && !isExpanded;
                     const shouldRenderDropdown = isExpanded || isClosing;
                     const dropdownPlacement = isExpanded
                       ? expandedEntryPlacement
@@ -394,7 +402,9 @@ const Scoreboard = (): JSX.Element => {
                             <span className="font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                               {t("scoreboard.headers.date")}
                             </span>
-                            <span className="truncate">{entry.formattedDate}</span>
+                            <span className="truncate">
+                              {entry.formattedDate}
+                            </span>
                           </div>
                         </td>
                       </tr>

@@ -38,38 +38,35 @@ const Navbar = () => {
       ),
     [isCurrentClientRankLoading, currentClientRank],
   );
-  const links = useMemo(
-    () => {
-      const navLinks: NavLinkPropsType[] = [
-        { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
-      ];
+  const links = useMemo(() => {
+    const navLinks: NavLinkPropsType[] = [
+      { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
+    ];
 
-      if (helpButtonEnabled) {
-        navLinks.push({
-          to: ROUTES.HELP,
-          label: t("nav.help"),
-          icon: faCircleQuestion,
-        });
-      }
-
+    if (helpButtonEnabled) {
       navLinks.push({
-        to: ROUTES.SETTINGS,
-        label: t("nav.profile"),
-        icon: faGear,
+        to: ROUTES.HELP,
+        label: t("nav.help"),
+        icon: faCircleQuestion,
       });
-      navLinks.push({
-        to: ROUTES.SCOREBOARD,
-        label: t("nav.scoreboard"),
-        extraLabel: positionLabel,
-        ariaLabel: t("nav.scoreboard"),
-        icon: faTrophy,
-        toneClassName: getScoreboardToneClassName(rankTone),
-      });
+    }
 
-      return navLinks;
-    },
-    [helpButtonEnabled, positionLabel, rankTone, t],
-  );
+    navLinks.push({
+      to: ROUTES.SETTINGS,
+      label: t("nav.profile"),
+      icon: faGear,
+    });
+    navLinks.push({
+      to: ROUTES.SCOREBOARD,
+      label: t("nav.scoreboard"),
+      extraLabel: positionLabel,
+      ariaLabel: t("nav.scoreboard"),
+      icon: faTrophy,
+      toneClassName: getScoreboardToneClassName(rankTone),
+    });
+
+    return navLinks;
+  }, [helpButtonEnabled, positionLabel, rankTone, t]);
 
   return (
     <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 sm:px-4 flex">

@@ -29,7 +29,9 @@ describe("Help", () => {
   it("renders rules and scoring sections", () => {
     renderHelp();
 
-    expect(screen.getByRole("heading", { name: "Rules", level: 3 })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Rules", level: 3 }),
+    ).toBeTruthy();
     expect(
       screen.getByRole("heading", { name: "Scoring", level: 3 }),
     ).toBeTruthy();

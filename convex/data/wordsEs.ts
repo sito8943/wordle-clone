@@ -805,5 +805,5 @@ export const ES_WORDS = [
   "hogar",
   "resto",
   "podar",
-  "suelo"
+  "suelo",
 ];

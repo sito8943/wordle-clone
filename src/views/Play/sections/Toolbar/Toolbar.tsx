@@ -23,6 +23,7 @@ const Toolbar = (): JSX.Element => {
     soundEnabled: soundFeatureEnabled,
   } = useFeatureFlags();
   const { volume, muted } = useSound();
+  const toolbarIconClassName = "text-lg toolbar-icon-entry-animation";
   const [showVolumeDialog, setShowVolumeDialog] = useState(false);
   const {
     controller,
@@ -57,7 +58,7 @@ const Toolbar = (): JSX.Element => {
 
   return (
     <>
-      <div className="w-full flex items-center justify-between sm:px-4">
+      <div className="w-full flex items-center justify-between sm:px-4 toolbar-icon-entry-animation">
         <FireStreak streak={currentWinStreak} />
         <div className="flex items-center justify-end gap-2 sm:gap-4 ">
           {wordListButtonEnabled && (
@@ -66,7 +67,7 @@ const Toolbar = (): JSX.Element => {
               aria-label={t("play.toolbar.wordListAriaLabel")}
               variant="ghost"
               icon={faList}
-              iconClassName="text-lg"
+              iconClassName={toolbarIconClassName}
               className="mobile-compact-button"
               hideLabelOnMobile
               disabled={dictionaryLoading || dictionaryWords.length === 0}
@@ -81,7 +82,7 @@ const Toolbar = (): JSX.Element => {
               variant="ghost"
               color={!hintButtonDisabled ? "primary" : "secondary"}
               icon={faLightbulb}
-              iconClassName="text-lg"
+              iconClassName={toolbarIconClassName}
               className="mobile-compact-button"
               hideLabelOnMobile
               disabled={hintButtonDisabled}
@@ -108,7 +109,7 @@ const Toolbar = (): JSX.Element => {
                   variant="ghost"
                   color={allChallengesCompleted ? "neutral" : "primary"}
                   icon={faTrophy}
-                  iconClassName="text-lg"
+                  iconClassName={toolbarIconClassName}
                   className={
                     allChallengesCompleted
                       ? "mobile-compact-button opacity-50"
@@ -126,7 +127,7 @@ const Toolbar = (): JSX.Element => {
               aria-label={t("play.toolbar.resultsAriaLabel")}
               variant="ghost"
               icon={faSquarePollHorizontal}
-              iconClassName="text-lg"
+              iconClassName={toolbarIconClassName}
               hideLabelOnMobile
               className="mobile-compact-button"
             >
@@ -151,7 +152,7 @@ const Toolbar = (): JSX.Element => {
               aria-label={t("play.toolbar.volumeAriaLabel")}
               variant="ghost"
               icon={getToolbarVolumeIcon(volume, muted)}
-              iconClassName="text-lg"
+              iconClassName={toolbarIconClassName}
               className="mobile-compact-button"
               hideLabelOnMobile
             >
@@ -185,7 +186,7 @@ const Toolbar = (): JSX.Element => {
               data-wordle-refresh="true"
               icon={faRotateRight}
               variant="ghost"
-              iconClassName="text-lg"
+              iconClassName={toolbarIconClassName}
               className={
                 showRefreshAttention
                   ? "mobile-compact-button text-amber-700 dark:text-amber-300"
