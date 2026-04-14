@@ -156,6 +156,7 @@ export default function usePlayController() {
   const [victoryBoardShareError, setVictoryBoardShareError] = useState<
     string | null
   >(null);
+  const manualTileSelectionRef = useRef(player.manualTileSelection === true);
   const victoryBoardShareSupported = useMemo(
     () => isVictoryBoardShareSupported(),
     [],
@@ -679,15 +680,20 @@ export default function usePlayController() {
     replacePlayer({ declinedTutorial: true });
   }, [replacePlayer]);
 
+  useEffect(() => {
+    manualTileSelectionRef.current = player.manualTileSelection === true;
+  }, [player.manualTileSelection]);
+
   const changeManualTileSelection = useCallback(
     (enabled: boolean) => {
-      if (enabled === player.manualTileSelection) {
+      if (enabled === manualTileSelectionRef.current) {
         return;
       }
 
+      manualTileSelectionRef.current = enabled;
       updatePlayerManualTileSelection(enabled);
     },
-    [player.manualTileSelection, updatePlayerManualTileSelection],
+    [updatePlayerManualTileSelection],
   );
 
   const changeDifficulty = useCallback(

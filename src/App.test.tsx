@@ -587,29 +587,32 @@ describe("App", () => {
         await screen.findByRole("button", { name: "Developer console" }),
       );
 
-      expect(
-        await screen.findByRole("dialog", { name: "Developer console" }),
-      ).toBeTruthy();
-      expect(screen.getByText("Current answer")).toBeTruthy();
-      expect(screen.getByText("APPLE")).toBeTruthy();
+      const developerConsoleDialog = await screen.findByRole("dialog", {
+        name: "Developer console",
+      });
+      const dialog = within(developerConsoleDialog);
 
-      fireEvent.change(screen.getByLabelText("Player name"), {
+      expect(developerConsoleDialog).toBeTruthy();
+      expect(dialog.getByText("Current answer")).toBeTruthy();
+      expect(dialog.getByText("APPLE")).toBeTruthy();
+
+      fireEvent.change(dialog.getByLabelText("Player name"), {
         target: { value: "DevUser" },
       });
-      fireEvent.change(screen.getByLabelText("Score"), {
+      fireEvent.change(dialog.getByLabelText("Score"), {
         target: { value: "42" },
       });
-      fireEvent.change(screen.getByLabelText("Streak"), {
+      fireEvent.change(dialog.getByLabelText("Streak"), {
         target: { value: "7" },
       });
-      fireEvent.change(screen.getByLabelText("Difficulty"), {
+      fireEvent.change(dialog.getByLabelText("Difficulty"), {
         target: { value: "hard" },
       });
-      fireEvent.change(screen.getByLabelText("Keyboard mode"), {
+      fireEvent.change(dialog.getByLabelText("Keyboard mode"), {
         target: { value: "native" },
       });
 
-      fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+      fireEvent.click(dialog.getByRole("button", { name: "Apply" }));
 
       await waitFor(() => {
         expect(
@@ -666,17 +669,20 @@ describe("App", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: "Developer console" }),
     );
-    expect(
-      await screen.findByRole("dialog", { name: "Developer console" }),
-    ).toBeTruthy();
+    const developerConsoleDialog = await screen.findByRole("dialog", {
+      name: "Developer console",
+    });
+    const dialog = within(developerConsoleDialog);
 
-    fireEvent.change(screen.getByLabelText("Score"), {
+    expect(developerConsoleDialog).toBeTruthy();
+
+    fireEvent.change(dialog.getByLabelText("Score"), {
       target: { value: "12" },
     });
-    fireEvent.change(screen.getByLabelText("Streak"), {
+    fireEvent.change(dialog.getByLabelText("Streak"), {
       target: { value: "1" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.click(dialog.getByRole("button", { name: "Apply" }));
 
     await waitFor(() => {
       expect(
