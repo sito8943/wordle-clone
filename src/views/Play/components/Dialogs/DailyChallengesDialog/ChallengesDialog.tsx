@@ -98,7 +98,7 @@ const ChallengesDialog = ({
         />
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+      <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
         <span
           aria-live="polite"
           className={`inline-block font-mono tabular-nums transition-all duration-300 ease-out`}
@@ -107,14 +107,17 @@ const ChallengesDialog = ({
         </span>
         <span
           aria-live="polite"
-          className={`inline-block font-mono tabular-nums transition-all duration-300 ease-out ${
-            isCountdownTickAnimating
-              ? "scale-105 opacity-85"
-              : "scale-100 opacity-100"
-          }`}
+          className={`inline-block font-mono tabular-nums`}
         >
           {countdown}
-          <FontAwesomeIcon className="ml-2" icon={faClock} />
+          <FontAwesomeIcon
+            className={`ml-2 transition-all duration-100 ease-in-out ${
+              isCountdownTickAnimating
+                ? "scale-120 text-primary"
+                : "scale-100"
+            }`}
+            icon={faClock}
+          />
         </span>
       </div>
     </Dialog>
