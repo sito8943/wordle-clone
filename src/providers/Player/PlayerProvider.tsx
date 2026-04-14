@@ -77,6 +77,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           language,
           difficulty,
           keyboardPreference,
+          declinedTutorial: normalizedPrevious.declinedTutorial,
           showEndOfGameDialogs: normalizedPrevious.showEndOfGameDialogs,
           manualTileSelection: normalizedPrevious.manualTileSelection,
           hackingBan: normalizedPrevious.hackingBan,

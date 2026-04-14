@@ -174,6 +174,14 @@ const normalizeShowEndOfGameDialogs = (value: unknown): boolean => {
   return value;
 };
 
+const normalizeDeclinedTutorial = (value: unknown): boolean | undefined => {
+  if (typeof value !== "boolean") {
+    return DEFAULT_PLAYER.declinedTutorial;
+  }
+
+  return value;
+};
+
 const normalizeManualTileSelection = (value: unknown): boolean => {
   if (typeof value !== "boolean") {
     return DEFAULT_PLAYER.manualTileSelection;
@@ -203,6 +211,7 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
     keyboardPreference: normalizePlayerKeyboardPreference(
       value.keyboardPreference,
     ),
+    declinedTutorial: normalizeDeclinedTutorial(value.declinedTutorial),
     showEndOfGameDialogs: normalizeShowEndOfGameDialogs(
       value.showEndOfGameDialogs,
     ),
@@ -233,6 +242,7 @@ export const arePlayersEqual = (
     normalizedLeft.language === normalizedRight.language &&
     normalizedLeft.difficulty === normalizedRight.difficulty &&
     normalizedLeft.keyboardPreference === normalizedRight.keyboardPreference &&
+    normalizedLeft.declinedTutorial === normalizedRight.declinedTutorial &&
     normalizedLeft.showEndOfGameDialogs ===
       normalizedRight.showEndOfGameDialogs &&
     normalizedLeft.manualTileSelection ===
@@ -254,6 +264,7 @@ export const isStoredPlayerNormalized = (
     value?.language === normalized.language &&
     value?.difficulty === normalized.difficulty &&
     value?.keyboardPreference === normalized.keyboardPreference &&
+    value?.declinedTutorial === normalized.declinedTutorial &&
     value?.showEndOfGameDialogs === normalized.showEndOfGameDialogs &&
     value?.manualTileSelection === normalized.manualTileSelection &&
     areHackingBansEqual(value?.hackingBan ?? null, normalized.hackingBan)

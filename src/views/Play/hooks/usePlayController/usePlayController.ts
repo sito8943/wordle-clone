@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import {
   clearPersistedGameState,
   getGuessCombo,
@@ -55,8 +56,10 @@ import {
   TILE_STATUS_SOUND_INITIAL_DELAY_MS,
   TILE_STATUS_SOUND_STEP_DELAY_MS,
 } from "@providers/Sound/constants";
+import { ROUTES } from "@config/routes";
 
 export default function usePlayController() {
+  const navigate = useNavigate();
   const { scoreClient, wordDictionaryClient, challengeClient } = useApi();
   const {
     player,
@@ -110,6 +113,9 @@ export default function usePlayController() {
   const [showDeveloperConsoleDialog, setShowDeveloperConsoleDialog] =
     useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showTutorialPromptDialog, setShowTutorialPromptDialog] = useState(
+    () => typeof player.declinedTutorial !== "boolean",
+  );
   const [pendingDifficulty, setPendingDifficulty] =
     useState<PlayerDifficulty | null>(null);
   const [isRefreshingDictionaryChecksum, setIsRefreshingDictionaryChecksum] =
@@ -662,6 +668,17 @@ export default function usePlayController() {
     setShowSettingsPanel(false);
   }, []);
 
+  const acceptTutorialPrompt = useCallback(() => {
+    replacePlayer({ declinedTutorial: false });
+    setShowTutorialPromptDialog(false);
+    navigate(ROUTES.HELP);
+  }, [navigate, replacePlayer]);
+
+  const declineTutorialPrompt = useCallback(() => {
+    setShowTutorialPromptDialog(false);
+    replacePlayer({ declinedTutorial: true });
+  }, [replacePlayer]);
+
   const changeManualTileSelection = useCallback(
     (enabled: boolean) => {
       if (enabled === player.manualTileSelection) {
@@ -959,6 +976,14 @@ export default function usePlayController() {
     }
   }, [wordListEnabledForDifficulty]);
 
+  useEffect(() => {
+    if (typeof player.declinedTutorial !== "boolean") {
+      return;
+    }
+
+    setShowTutorialPromptDialog(false);
+  }, [player.declinedTutorial]);
+
   const showVictoryDialog =
     showEndOfGameDialogs &&
     gameOver &&
@@ -1082,6 +1107,9 @@ export default function usePlayController() {
   return {
     ...wordle,
     manualTileSelection: player.manualTileSelection === true,
+    showTutorialPromptDialog,
+    acceptTutorialPrompt,
+    declineTutorialPrompt,
     showSettingsPanel,
     openSettingsPanel,
     closeSettingsPanel,

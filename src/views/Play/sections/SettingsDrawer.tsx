@@ -73,7 +73,7 @@ const SettingsDrawer = (): JSX.Element | null => {
         id={PLAY_SETTINGS_PANEL_ID}
         role="complementary"
         aria-label={t("play.settingsPanel.title")}
-        className={`fixed right-0 top-0 z-30 flex h-full w-full max-w-sm overflow-visible transition duration-500 ease-in-out  ${
+        className={`fixed right-0 top-0 z-19 flex h-full w-full max-w-sm overflow-visible transition-transform duration-500 ease-in-out  ${
           showSettingsPanel
             ? "translate-x-0 bg-white border-l border-neutral-300 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
             : "translate-x-[90%]"

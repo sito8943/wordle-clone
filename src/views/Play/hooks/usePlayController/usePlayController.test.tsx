@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTotalPointsForWin } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
+import { ROUTES } from "@config/routes";
 import { i18n, initI18n } from "@i18n";
 import { setWordDictionary } from "@utils/words";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
@@ -23,6 +24,7 @@ const mockUseWordle = vi.fn();
 const mockUseHintController = vi.fn();
 const mockUseHardModeTimer = vi.fn();
 const mockUseSound = vi.fn();
+const mockNavigate = vi.fn();
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -45,6 +47,10 @@ vi.mock("./useHardModeTimer", () => ({
   useHardModeTimer: (...args: unknown[]) => mockUseHardModeTimer(...args),
 }));
 
+vi.mock("react-router", () => ({
+  useNavigate: () => mockNavigate,
+}));
+
 describe("usePlayController", () => {
   let wordleState: Record<string, unknown>;
   let originalNavigatorShare: Navigator["share"] | undefined;
@@ -60,6 +66,7 @@ describe("usePlayController", () => {
     mockUseHintController.mockClear();
     mockUseHardModeTimer.mockClear();
     mockUseSound.mockClear();
+    mockNavigate.mockClear();
     window.sessionStorage.clear();
     window.localStorage.clear();
     document.body.innerHTML = "";
@@ -400,6 +407,72 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showSettingsPanel).toBe(false);
+  });
+
+  it("shows the tutorial prompt when the player has not declined it", () => {
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.showTutorialPromptDialog).toBe(true);
+  });
+
+  it("hides and persists tutorial rejection when the player declines it", () => {
+    const replacePlayer = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        declinedTutorial: false,
+        showEndOfGameDialogs: true,
+        manualTileSelection: false,
+      },
+      replacePlayer,
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.declineTutorialPrompt();
+    });
+
+    expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: true });
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("navigates to help when the player accepts the tutorial prompt", () => {
+    const replacePlayer = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        declinedTutorial: false,
+        showEndOfGameDialogs: true,
+        manualTileSelection: false,
+      },
+      replacePlayer,
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.acceptTutorialPrompt();
+    });
+
+    expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.HELP);
+    expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
   });
 
   it("updates the manual tile selection preference from quick settings", () => {

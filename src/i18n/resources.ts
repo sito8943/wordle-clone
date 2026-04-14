@@ -312,6 +312,15 @@ export const resources = {
           confirm: "Yes, refresh game",
           cancel: "Cancel",
         },
+        gameModes: {
+          classic: "Classic",
+        },
+        tutorialPromptDialog: {
+          title: "Welcome to {{gameMode}}",
+          description: "We can open the Help page so you can review the rules.",
+          confirm: "Yes, open Help",
+          cancel: "No, skip tutorial",
+        },
         sessionResumeDialog: {
           title: "Resume previous game?",
           description:
@@ -792,6 +801,16 @@ export const resources = {
             "Tienes un tablero activo. Si actualizas ahora, perderás tu progreso actual y tu racha.",
           confirm: "Sí, actualizar partida",
           cancel: "Cancelar",
+        },
+        gameModes: {
+          classic: "Clásico",
+        },
+        tutorialPromptDialog: {
+          title: "Bienvenido a {{gameMode}}",
+          description:
+            "Podemos abrir la ayuda para que repases las reglas del juego.",
+          confirm: "Sí, abrir ayuda",
+          cancel: "No, omitir tutorial",
         },
         sessionResumeDialog: {
           title: "¿Reanudar partida anterior?",

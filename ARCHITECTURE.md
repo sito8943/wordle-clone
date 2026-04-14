@@ -165,6 +165,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:hint-usage`: snapshot for hint usage (`gameId + derived gameKey + hintsUsed`) to keep hint limits after reload without persisting `answer`.
 - `player`: player profile and score/streak metadata, including recovery `code`.
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, `showEndOfGameDialogs`, and `manualTileSelection`.
+  - It also stores `declinedTutorial` to persist the tutorial prompt decision (`false` accepted, `true` declined) and avoid re-prompting.
   - It also stores local anti-fraud status (`hackingBan`) when a round is flagged as too short to be legitimate.
   - It also stores the selected `language` (`en` or `es`) used by i18n and scoreboard segmentation.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.

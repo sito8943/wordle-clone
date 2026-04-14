@@ -15,6 +15,9 @@ const RefreshConfirmationDialog = lazy(
   () =>
     import("../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog"),
 );
+const TutorialPromptDialog = lazy(
+  () => import("../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
+);
 const WordListDialog = lazy(
   () => import("../components/Dialogs/WordListDialog/WordListDialog"),
 );
@@ -37,6 +40,7 @@ const DifficultyChangeDialog = lazy(
 
 const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
+  const gameMode = t("play.gameModes.classic");
   const { shareButtonEnabled, settingsDrawerEnabled } = useFeatureFlags();
   const {
     controller,
@@ -51,8 +55,10 @@ const DialogsSection = (): JSX.Element => {
     showResumeDialog,
     showDictionaryChecksumDialog,
     showRefreshDialog,
+    showTutorialPromptDialog,
     showWordsDialog,
     showDeveloperConsoleDialog,
+    isDifficultyChangeConfirmationOpen,
     showVictoryDialog,
     showDefeatDialog,
     answer,
@@ -71,6 +77,8 @@ const DialogsSection = (): JSX.Element => {
     closeEndOfGameDialog,
     openSettingsPanel,
     cancelRefreshBoard,
+    acceptTutorialPrompt,
+    declineTutorialPrompt,
     confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,
     dictionaryWords,
@@ -118,6 +126,16 @@ const DialogsSection = (): JSX.Element => {
     !endOfGameDialogVisible &&
     !dictionaryChecksumDialogVisible &&
     showDeveloperConsoleDialog;
+  const tutorialPromptDialogVisible =
+    !showResumeDialog &&
+    !endOfGameDialogVisible &&
+    !dictionaryChecksumDialogVisible &&
+    !refreshDialogVisible &&
+    !wordListDialogVisible &&
+    !challengesDialogVisible &&
+    !developerConsoleDialogVisible &&
+    !isDifficultyChangeConfirmationOpen &&
+    showTutorialPromptDialog;
 
   const changeDifficulty = () => {
     if (!settingsDrawerEnabled) {
@@ -135,6 +153,7 @@ const DialogsSection = (): JSX.Element => {
         showResumeDialog,
         showDictionaryChecksumDialog,
         showRefreshDialog,
+        showTutorialPromptDialog,
         showWordsDialog,
         showDeveloperConsoleDialog,
         showVictoryDialog,
@@ -180,6 +199,14 @@ const DialogsSection = (): JSX.Element => {
               visible
               onClose={cancelRefreshBoard}
               onConfirm={confirmRefreshBoard}
+            />
+          ) : null}
+          {tutorialPromptDialogVisible ? (
+            <TutorialPromptDialog
+              visible
+              gameMode={gameMode}
+              onClose={declineTutorialPrompt}
+              onConfirm={acceptTutorialPrompt}
             />
           ) : null}
           <DifficultyChangeDialog />

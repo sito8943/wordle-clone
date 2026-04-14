@@ -15,6 +15,7 @@ export type Player = {
   language: PlayerLanguage;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
+  declinedTutorial?: boolean;
   showEndOfGameDialogs: boolean;
   manualTileSelection: boolean;
   hackingBan: PlayerHackingBan | null;

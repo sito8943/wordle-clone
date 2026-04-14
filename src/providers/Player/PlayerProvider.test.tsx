@@ -98,6 +98,7 @@ describe("PlayerProvider", () => {
     expect(result.current.player.score).toBe(0);
     expect(result.current.player.streak).toBe(0);
     expect(result.current.player.difficulty).toBe(DEFAULT_PLAYER.difficulty);
+    expect(result.current.player.declinedTutorial).toBeUndefined();
     expect(result.current.player.showEndOfGameDialogs).toBe(true);
     expect(result.current.player.manualTileSelection).toBe(false);
     expect(result.current.player.hackingBan).toBeNull();
@@ -122,6 +123,7 @@ describe("PlayerProvider", () => {
         streak: 3,
         difficulty: "hard",
         keyboardPreference: "onscreen",
+        declinedTutorial: true,
       }),
     );
 
@@ -133,6 +135,7 @@ describe("PlayerProvider", () => {
     expect(result.current.player.score).toBe(10);
     expect(result.current.player.streak).toBe(3);
     expect(result.current.player.difficulty).toBe("hard");
+    expect(result.current.player.declinedTutorial).toBe(true);
     expect(result.current.player.showEndOfGameDialogs).toBe(true);
     expect(result.current.player.manualTileSelection).toBe(false);
   });
@@ -181,11 +184,16 @@ describe("PlayerProvider", () => {
     });
 
     act(() => {
-      result.current.replacePlayer({ score: 50, streak: 5 });
+      result.current.replacePlayer({
+        score: 50,
+        streak: 5,
+        declinedTutorial: true,
+      });
     });
 
     expect(result.current.player.score).toBe(50);
     expect(result.current.player.streak).toBe(5);
+    expect(result.current.player.declinedTutorial).toBe(true);
     expect(result.current.player.name).toBe(DEFAULT_PLAYER.name);
   });
 
