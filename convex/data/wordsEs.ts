@@ -801,4 +801,9 @@ export const ES_WORDS = [
   "pelar",
   "tenaz",
   "apoya",
+  "varon",
+  "hogar",
+  "resto",
+  "podar",
+  "suelo"
 ];

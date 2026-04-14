@@ -8,11 +8,12 @@ import {
   ErrorFallback,
   FireStreak,
 } from "@components";
-import { useAnimatedPresence } from "@hooks";
+import { useAnimatedPresence, useAnimationsPreference } from "@hooks";
 import { useScoreboardController } from "./hooks";
 
 const ALERT_EXIT_MS = 200;
 const SCOREBOARD_DATE_DROPDOWN_MIN_HEIGHT_PX = 56;
+const SCOREBOARD_DATE_DROPDOWN_EXIT_MS = 180;
 
 const Scoreboard = (): JSX.Element => {
   const { t } = useTranslation();
@@ -20,7 +21,24 @@ const Scoreboard = (): JSX.Element => {
   const [expandedEntryPlacement, setExpandedEntryPlacement] = useState<
     "above" | "below"
   >("below");
+  const [closingEntryId, setClosingEntryId] = useState<string | null>(null);
+  const [closingEntryPlacement, setClosingEntryPlacement] = useState<
+    "above" | "below"
+  >("below");
+  const [pendingEntryId, setPendingEntryId] = useState<string | null>(null);
+  const [pendingEntryPlacement, setPendingEntryPlacement] = useState<
+    "above" | "below"
+  >("below");
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return false;
+    }
+
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
   const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
+  const dropdownExitTimeoutRef = useRef<number | null>(null);
+  const dropdownSwitchTimeoutRef = useRef<number | null>(null);
   const {
     convexEnabled,
     source,
@@ -31,6 +49,7 @@ const Scoreboard = (): JSX.Element => {
     currentClientOutsideTop,
     refresh,
   } = useScoreboardController();
+  const { animationsDisabled } = useAnimationsPreference();
 
   const convexAlert = useAnimatedPresence(!convexEnabled, ALERT_EXIT_MS);
   const offlineAlert = useAnimatedPresence(
@@ -41,6 +60,50 @@ const Scoreboard = (): JSX.Element => {
   const rankAlert = useAnimatedPresence(
     currentClientOutsideTop && currentClientRank !== null,
     ALERT_EXIT_MS,
+  );
+  const dropdownAnimationsEnabled = !animationsDisabled && !prefersReducedMotion;
+  const dropdownExitDurationMs = dropdownAnimationsEnabled
+    ? SCOREBOARD_DATE_DROPDOWN_EXIT_MS
+    : 0;
+
+  const clearDropdownSwitchTimeout = useCallback(() => {
+    if (dropdownSwitchTimeoutRef.current !== null) {
+      window.clearTimeout(dropdownSwitchTimeoutRef.current);
+      dropdownSwitchTimeoutRef.current = null;
+    }
+  }, []);
+  const clearDropdownExitTimeout = useCallback(() => {
+    if (dropdownExitTimeoutRef.current !== null) {
+      window.clearTimeout(dropdownExitTimeoutRef.current);
+      dropdownExitTimeoutRef.current = null;
+    }
+  }, []);
+
+  const openDropdownForEntry = useCallback(
+    (entryId: string, placement: "above" | "below") => {
+      setExpandedEntryPlacement(placement);
+      setExpandedEntryId(entryId);
+    },
+    [],
+  );
+
+  const startDropdownCloseAnimation = useCallback(
+    (entryId: string, placement: "above" | "below") => {
+      if (dropdownExitDurationMs <= 0) {
+        clearDropdownExitTimeout();
+        setClosingEntryId(null);
+        return;
+      }
+
+      clearDropdownExitTimeout();
+      setClosingEntryId(entryId);
+      setClosingEntryPlacement(placement);
+      dropdownExitTimeoutRef.current = window.setTimeout(() => {
+        dropdownExitTimeoutRef.current = null;
+        setClosingEntryId((current) => (current === entryId ? null : current));
+      }, dropdownExitDurationMs);
+    },
+    [clearDropdownExitTimeout, dropdownExitDurationMs],
   );
   const getDropdownPlacementForEntry = useCallback(
     (entryId: string): "above" | "below" => {
@@ -72,16 +135,72 @@ const Scoreboard = (): JSX.Element => {
   );
   const toggleEntryDateDropdown = useCallback(
     (entryId: string) => {
+      clearDropdownSwitchTimeout();
+      setPendingEntryId(null);
+
       if (expandedEntryId === entryId) {
+        startDropdownCloseAnimation(entryId, expandedEntryPlacement);
         setExpandedEntryId(null);
         return;
       }
 
-      setExpandedEntryPlacement(getDropdownPlacementForEntry(entryId));
-      setExpandedEntryId(entryId);
+      const nextPlacement = getDropdownPlacementForEntry(entryId);
+
+      if (expandedEntryId !== null) {
+        startDropdownCloseAnimation(expandedEntryId, expandedEntryPlacement);
+        setExpandedEntryId(null);
+
+        if (dropdownAnimationsEnabled) {
+          setPendingEntryId(entryId);
+          setPendingEntryPlacement(nextPlacement);
+          dropdownSwitchTimeoutRef.current = window.setTimeout(() => {
+            dropdownSwitchTimeoutRef.current = null;
+            setPendingEntryId(null);
+            openDropdownForEntry(entryId, nextPlacement);
+          }, dropdownExitDurationMs);
+          return;
+        }
+      }
+
+      openDropdownForEntry(entryId, nextPlacement);
     },
-    [expandedEntryId, getDropdownPlacementForEntry],
+    [
+      clearDropdownSwitchTimeout,
+      dropdownAnimationsEnabled,
+      dropdownExitDurationMs,
+      expandedEntryId,
+      expandedEntryPlacement,
+      getDropdownPlacementForEntry,
+      openDropdownForEntry,
+      startDropdownCloseAnimation,
+    ],
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleMediaQueryChange = () => {
+      setPrefersReducedMotion(mediaQuery.matches);
+    };
+
+    handleMediaQueryChange();
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleMediaQueryChange);
+    } else {
+      mediaQuery.addListener(handleMediaQueryChange);
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === "function") {
+        mediaQuery.removeEventListener("change", handleMediaQueryChange);
+      } else {
+        mediaQuery.removeListener(handleMediaQueryChange);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!expandedEntryId) {
@@ -89,7 +208,11 @@ const Scoreboard = (): JSX.Element => {
     }
 
     if (loading) {
+      clearDropdownExitTimeout();
+      clearDropdownSwitchTimeout();
+      setClosingEntryId(null);
       setExpandedEntryId(null);
+      setPendingEntryId(null);
       return;
     }
 
@@ -98,9 +221,49 @@ const Scoreboard = (): JSX.Element => {
     );
 
     if (!expandedEntryStillVisible) {
+      clearDropdownExitTimeout();
+      clearDropdownSwitchTimeout();
+      setClosingEntryId(null);
       setExpandedEntryId(null);
+      setPendingEntryId(null);
     }
-  }, [expandedEntryId, loading, scores]);
+  }, [
+    clearDropdownExitTimeout,
+    clearDropdownSwitchTimeout,
+    expandedEntryId,
+    loading,
+    scores,
+  ]);
+
+  useEffect(() => {
+    if (dropdownAnimationsEnabled) {
+      return;
+    }
+
+    clearDropdownExitTimeout();
+    clearDropdownSwitchTimeout();
+    setClosingEntryId(null);
+
+    if (pendingEntryId !== null) {
+      openDropdownForEntry(pendingEntryId, pendingEntryPlacement);
+      setPendingEntryId(null);
+    }
+  }, [
+    clearDropdownExitTimeout,
+    clearDropdownSwitchTimeout,
+    dropdownAnimationsEnabled,
+    openDropdownForEntry,
+    pendingEntryId,
+    pendingEntryPlacement,
+  ]);
+
+  useEffect(
+    () => () => {
+      clearDropdownExitTimeout();
+      clearDropdownSwitchTimeout();
+    },
+    [clearDropdownExitTimeout, clearDropdownSwitchTimeout],
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
@@ -208,8 +371,16 @@ const Scoreboard = (): JSX.Element => {
                   scores.map((entry, index) => {
                     const rowKey = `${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`;
                     const isExpanded = expandedEntryId === entry.id;
+                    const isClosing = closingEntryId === entry.id && !isExpanded;
+                    const shouldRenderDropdown = isExpanded || isClosing;
+                    const dropdownPlacement = isExpanded
+                      ? expandedEntryPlacement
+                      : closingEntryPlacement;
+                    const dropdownAnimationClass = isClosing
+                      ? "scoreboard-date-dropdown-exit"
+                      : "scoreboard-date-dropdown-enter";
 
-                    const dropdownRow = isExpanded ? (
+                    const dropdownRow = shouldRenderDropdown ? (
                       <tr
                         key={`${rowKey}-dropdown`}
                         className="border-t border-neutral-200/70 bg-neutral-50/90 dark:border-neutral-700/70 dark:bg-neutral-900/40"
@@ -217,7 +388,8 @@ const Scoreboard = (): JSX.Element => {
                         <td className="scoreboard-cell py-2" colSpan={3}>
                           <div
                             id={`scoreboard-date-dropdown-${entry.id}`}
-                            className="inline-flex max-w-full items-center gap-2 rounded border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-700 shadow-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200"
+                            className={`${dropdownAnimationClass} inline-flex max-w-full items-center gap-2 rounded border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-700 shadow-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200`}
+                            aria-hidden={isClosing}
                           >
                             <span className="font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                               {t("scoreboard.headers.date")}
@@ -280,7 +452,7 @@ const Scoreboard = (): JSX.Element => {
                       </tr>
                     );
 
-                    if (dropdownRow && expandedEntryPlacement === "above") {
+                    if (dropdownRow && dropdownPlacement === "above") {
                       return [dropdownRow, scoreRow];
                     }
 

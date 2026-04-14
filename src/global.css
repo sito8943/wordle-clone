@@ -587,6 +587,47 @@ h1,
   animation: none !important;
 }
 
+@keyframes scoreboard-date-dropdown-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes scoreboard-date-dropdown-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.scoreboard-date-dropdown-enter {
+  animation: scoreboard-date-dropdown-enter 0.22s
+    cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.scoreboard-date-dropdown-exit {
+  animation: scoreboard-date-dropdown-exit 0.18s
+    cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.wordle-animations-disabled .scoreboard-date-dropdown-enter,
+.wordle-animations-disabled .scoreboard-date-dropdown-exit {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .board-entry-animation,
   .keyboard-entry-animation,
@@ -627,6 +668,8 @@ h1,
 
   .settings-entrance,
   .scoreboard-row-entrance,
+  .scoreboard-date-dropdown-enter,
+  .scoreboard-date-dropdown-exit,
   .alert-enter,
   .alert-exit {
     animation: none;

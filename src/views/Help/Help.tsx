@@ -8,7 +8,7 @@ const Help = (): JSX.Element => {
   const { t } = useTranslation();
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8">
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 py-8 pb-16">
       <section
         className="settings-entrance my-0!"
         style={{ animationDelay: "0ms" }}

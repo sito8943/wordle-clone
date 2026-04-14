@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import Scoreboard from "./Scoreboard";
 import { useScoreboardController } from "./hooks";
@@ -149,31 +155,41 @@ describe("Scoreboard", () => {
   });
 
   it("opens and closes the date dropdown when clicking a player name", () => {
-    mockController({
-      scores: [
-        {
-          id: "1",
-          nick: "Ana",
-          score: 20,
-          streak: 0,
-          formattedDate: "Jan 1",
-          displayRank: 1,
-          realRank: 1,
-          isCurrentClient: false,
-          isPinnedCurrentClient: false,
-        },
-      ],
-    });
-    render(<Scoreboard />);
+    vi.useFakeTimers();
+    try {
+      mockController({
+        scores: [
+          {
+            id: "1",
+            nick: "Ana",
+            score: 20,
+            streak: 0,
+            formattedDate: "Jan 1",
+            displayRank: 1,
+            realRank: 1,
+            isCurrentClient: false,
+            isPinnedCurrentClient: false,
+          },
+        ],
+      });
+      render(<Scoreboard />);
 
-    const playerButton = screen.getByRole("button", { name: "Ana" });
-    fireEvent.click(playerButton);
-    expect(screen.getByText("Date")).toBeTruthy();
-    expect(screen.getByText("Jan 1")).toBeTruthy();
+      const playerButton = screen.getByRole("button", { name: "Ana" });
+      fireEvent.click(playerButton);
+      expect(screen.getByText("Date")).toBeTruthy();
+      expect(screen.getByText("Jan 1")).toBeTruthy();
 
-    fireEvent.click(playerButton);
-    expect(screen.queryByText("Date")).toBeNull();
-    expect(screen.queryByText("Jan 1")).toBeNull();
+      fireEvent.click(playerButton);
+
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+
+      expect(screen.queryByText("Date")).toBeNull();
+      expect(screen.queryByText("Jan 1")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("positions dropdown above the row when there is not enough space below", () => {
@@ -227,6 +243,55 @@ describe("Scoreboard", () => {
         value: originalInnerHeight,
         writable: true,
       });
+    }
+  });
+
+  it("switches dropdowns smoothly when clicking another row", () => {
+    vi.useFakeTimers();
+    try {
+      mockController({
+        scores: [
+          {
+            id: "1",
+            nick: "Ana",
+            score: 20,
+            streak: 0,
+            formattedDate: "Jan 1",
+            displayRank: 1,
+            realRank: 1,
+            isCurrentClient: false,
+            isPinnedCurrentClient: false,
+          },
+          {
+            id: "2",
+            nick: "Carlos",
+            score: 15,
+            streak: 0,
+            formattedDate: "Jan 2",
+            displayRank: 2,
+            realRank: 2,
+            isCurrentClient: false,
+            isPinnedCurrentClient: false,
+          },
+        ],
+      });
+      render(<Scoreboard />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Ana" }));
+      expect(screen.getByText("Jan 1")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Carlos" }));
+      expect(screen.getByText("Jan 1")).toBeTruthy();
+      expect(screen.queryByText("Jan 2")).toBeNull();
+
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+
+      expect(screen.queryByText("Jan 1")).toBeNull();
+      expect(screen.getByText("Jan 2")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
     }
   });
 
