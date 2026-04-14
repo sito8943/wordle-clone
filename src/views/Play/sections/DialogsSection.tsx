@@ -37,7 +37,7 @@ const DifficultyChangeDialog = lazy(
 
 const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
-  const { shareButtonEnabled } = useFeatureFlags();
+  const { shareButtonEnabled, settingsDrawerEnabled } = useFeatureFlags();
   const {
     controller,
     player,
@@ -120,6 +120,10 @@ const DialogsSection = (): JSX.Element => {
     showDeveloperConsoleDialog;
 
   const changeDifficulty = () => {
+    if (!settingsDrawerEnabled) {
+      return;
+    }
+
     closeEndOfGameDialog();
     openSettingsPanel();
   };
@@ -211,6 +215,7 @@ const DialogsSection = (): JSX.Element => {
               answer={endOfGameAnswer}
               bestStreak={endOfGameBestStreak}
               showSettingsHint={showEndOfGameSettingsHint}
+              showChangeDifficultyAction={settingsDrawerEnabled}
               onClose={closeEndOfGameDialog}
               onPlayAgain={startNewBoard}
               onChangeDifficulty={changeDifficulty}

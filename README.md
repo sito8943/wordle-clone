@@ -35,6 +35,7 @@ npm run convex:dev
 ```bash
 VITE_CONVEX_URL=https://YOUR-DEPLOYMENT.convex.cloud
 VITE_WORD_LIST_BUTTON_ENABLED=true
+VITE_SETTINGS_DRAWER_ENABLED=true
 ```
 
 4. Run the app:
@@ -125,6 +126,7 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 
 - `VITE_CONVEX_URL` (optional): Convex deployment URL.
 - `VITE_WORD_LIST_BUTTON_ENABLED` (optional, default `true`): enables/disables the **Words** button UI.
+- `VITE_SETTINGS_DRAWER_ENABLED` (optional, default `true`): enables/disables the in-game **Settings Drawer** UI.
 
 Notes:
 

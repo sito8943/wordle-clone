@@ -8,6 +8,7 @@ export type FeatureFlags = {
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
   challengesEnabled: boolean;
+  settingsDrawerEnabled: boolean;
 };
 
 export type FeatureFlagsContextType = FeatureFlags;

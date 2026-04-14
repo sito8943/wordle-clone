@@ -51,6 +51,11 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_CHALLENGES_ENABLED ?? rawEnv.CHALLENGES_ENABLED,
     true,
   ),
+  settingsDrawerEnabled: readBoolean(
+    import.meta.env.VITE_SETTINGS_DRAWER_ENABLED ??
+      rawEnv.SETTINGS_DRAWER_ENABLED,
+    true,
+  ),
   playOfflineStateEnabled: readBoolean(
     import.meta.env.VITE_PLAY_OFFLINE_STATE_ENABLED ??
       rawEnv.PLAY_OFFLINE_STATE_ENABLED,

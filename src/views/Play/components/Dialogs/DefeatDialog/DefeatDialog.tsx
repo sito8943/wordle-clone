@@ -14,6 +14,7 @@ const DefeatDialog = ({
   answer,
   bestStreak,
   showSettingsHint = false,
+  showChangeDifficultyAction = true,
   onClose,
   onPlayAgain,
   onChangeDifficulty,
@@ -80,14 +81,16 @@ const DefeatDialog = ({
           >
             {t("play.endOfGame.playAgain")}
           </Button>
-          <Button
-            onClick={() => closeWithAction(onChangeDifficulty)}
-            variant="outline"
-            color="neutral"
-            disabled={isClosing}
-          >
-            {t("play.defeatDialog.changeDifficulty")}
-          </Button>
+          {showChangeDifficultyAction ? (
+            <Button
+              onClick={() => closeWithAction(onChangeDifficulty)}
+              variant="outline"
+              color="neutral"
+              disabled={isClosing}
+            >
+              {t("play.defeatDialog.changeDifficulty")}
+            </Button>
+          ) : null}
         </div>
       </div>
     </Dialog>

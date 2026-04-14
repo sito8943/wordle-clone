@@ -82,4 +82,22 @@ describe("DefeatDialog", () => {
 
     expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
+
+  it("hides change difficulty action when disabled", () => {
+    render(
+      <DefeatDialog
+        visible
+        answer="APPLE"
+        bestStreak={4}
+        showChangeDifficultyAction={false}
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+        onChangeDifficulty={() => undefined}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Change difficulty" }),
+    ).toBeNull();
+  });
 });

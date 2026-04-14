@@ -2,7 +2,9 @@ import { useEffect, type JSX } from "react";
 import {
   faChevronLeft,
   faChevronRight,
+  faClose,
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { PlayerDifficulty } from "@domain/wordle";
 import { Button } from "@components";
 import { useTranslation } from "@i18n";
@@ -17,7 +19,7 @@ import { usePlayView } from "@views/Play/providers";
 
 const SettingsDrawer = (): JSX.Element | null => {
   const { t } = useTranslation();
-  const { wordListButtonEnabled } = useFeatureFlags();
+  const { wordListButtonEnabled, settingsDrawerEnabled } = useFeatureFlags();
   const { controller, player } = usePlayView();
   const {
     showSettingsPanel,
@@ -55,10 +57,14 @@ const SettingsDrawer = (): JSX.Element | null => {
     openSettingsPanel();
   };
 
+  if (!settingsDrawerEnabled) {
+    return null;
+  }
+
   return (
     <>
       <div
-        className={`dialog-backdrop z-20 transition-opacity duration-300 ease-out ${
+        className={`dialog-backdrop z-19 transition-opacity duration-500 ease-in-out ${
           showSettingsPanel ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={showSettingsPanel ? closeSettingsPanel : undefined}
@@ -81,11 +87,11 @@ const SettingsDrawer = (): JSX.Element | null => {
           icon={!showSettingsPanel ? faChevronLeft : faChevronRight}
           iconClassName={`text-base transition-transform duration-300 ease-out`}
           variant="ghost"
-          className={`h-full ${showSettingsPanel ? "w-6" : "w-10 h-full max-h-60 my-auto"}`}
+          className={`h-full ${showSettingsPanel ? "w-6 max-sm:hidden!" : "w-10 h-full max-h-60 my-auto"}`}
         />
         <div className={showSettingsPanel ? "" : "pointer-events-none"}>
-          <header className="flex items-start justify-between gap-4 border-b border-neutral-200 px-4 py-4 dark:border-neutral-700">
-            <div>
+          <header className="relative border-b border-neutral-200 px-4 py-4 dark:border-neutral-700">
+            <div className="pr-10">
               <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
                 {t("play.settingsPanel.title")}
               </h2>
@@ -93,6 +99,15 @@ const SettingsDrawer = (): JSX.Element | null => {
                 {t("play.settingsPanel.description")}
               </p>
             </div>
+            <Button
+              onClick={closeSettingsPanel}
+              variant="ghost"
+              color="danger"
+              className="absolute right-2 top-2"
+              aria-label={t("common.close")}
+            >
+              <FontAwesomeIcon icon={faClose} />
+            </Button>
           </header>
 
           <div className="flex-1 overflow-y-auto px-4 py-4">
