@@ -26,7 +26,7 @@ const Help = (): JSX.Element => {
         <h3 className="text-base font-semibold">
           {t("play.helpDialog.rulesTitle")}
         </h3>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-800 dark:text-neutral-200">
+        <ul className="w-full mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-800 dark:text-neutral-200">
           <li>{t("play.helpDialog.rules.guessLength")}</li>
           <li>{t("play.helpDialog.rules.pressEnter")}</li>
           <li>{t("play.helpDialog.rules.nonDictionary")}</li>

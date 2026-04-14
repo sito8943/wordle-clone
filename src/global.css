@@ -42,7 +42,7 @@ h1,
   }
 
   .page-centered {
-    @apply flex flex-col items-center justify-center py-20;
+    @apply flex flex-col items-center justify-center py-8;
   }
 
   .mobile-compact-button {

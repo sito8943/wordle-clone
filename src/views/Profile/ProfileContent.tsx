@@ -11,7 +11,7 @@ import {
 
 const ProfileContent = (): JSX.Element => {
   return (
-    <main className="page-centered gap-10">
+    <main className="page-centered gap-4">
       <DifficultyChangeDialog />
       <LanguageDialog />
       <div className="settings-entrance" style={{ animationDelay: "0ms" }}>

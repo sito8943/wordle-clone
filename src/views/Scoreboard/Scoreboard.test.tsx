@@ -5,7 +5,16 @@ import {
   render,
   screen,
 } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { i18n, initI18n } from "@i18n";
 import Scoreboard from "./Scoreboard";
 import { useScoreboardController } from "./hooks";
 
@@ -31,6 +40,14 @@ const mockController = (overrides = {}) => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+});
+
+beforeAll(async () => {
+  await initI18n();
+});
+
+beforeEach(async () => {
+  await i18n.changeLanguage("en");
 });
 
 describe("Scoreboard", () => {
@@ -151,7 +168,11 @@ describe("Scoreboard", () => {
       ],
     });
     render(<Scoreboard />);
-    expect(screen.queryByRole("columnheader", { name: "Date" })).toBeNull();
+    expect(
+      screen.queryByRole("columnheader", {
+        name: i18n.t("scoreboard.headers.date"),
+      }),
+    ).toBeNull();
   });
 
   it("opens and closes the date dropdown when clicking a player name", () => {
@@ -176,7 +197,9 @@ describe("Scoreboard", () => {
 
       const playerButton = screen.getByRole("button", { name: "Ana" });
       fireEvent.click(playerButton);
-      expect(screen.getByText("Date")).toBeTruthy();
+      expect(
+        screen.getByText(i18n.t("scoreboard.headers.date")),
+      ).toBeTruthy();
       expect(screen.getByText("Jan 1")).toBeTruthy();
 
       fireEvent.click(playerButton);
@@ -185,7 +208,7 @@ describe("Scoreboard", () => {
         vi.advanceTimersByTime(200);
       });
 
-      expect(screen.queryByText("Date")).toBeNull();
+      expect(screen.queryByText(i18n.t("scoreboard.headers.date"))).toBeNull();
       expect(screen.queryByText("Jan 1")).toBeNull();
     } finally {
       vi.useRealTimers();

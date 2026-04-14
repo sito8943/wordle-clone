@@ -1,11 +1,20 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import { ROUTES } from "@config/routes";
+import { i18n, initI18n } from "@i18n";
 import Help from "./Help";
 
 afterEach(cleanup);
+
+beforeAll(async () => {
+  await initI18n();
+});
+
+beforeEach(async () => {
+  await i18n.changeLanguage("en");
+});
 
 const renderHelp = () =>
   render(
@@ -19,40 +28,45 @@ describe("Help", () => {
     renderHelp();
 
     expect(
-      screen.getByRole("heading", { name: "How to play", level: 2 }),
+      screen.getByRole("heading", {
+        name: i18n.t("play.helpDialog.title"),
+        level: 2,
+      }),
     ).toBeTruthy();
-    expect(
-      screen.getByText("Guess the hidden 5-letter word in up to 6 attempts."),
-    ).toBeTruthy();
+    expect(screen.getByText(i18n.t("play.helpDialog.description"))).toBeTruthy();
   });
 
   it("renders rules and scoring sections", () => {
     renderHelp();
 
     expect(
-      screen.getByRole("heading", { name: "Rules", level: 3 }),
+      screen.getByRole("heading", {
+        name: i18n.t("play.helpDialog.rulesTitle"),
+        level: 3,
+      }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("heading", { name: "Scoring", level: 3 }),
+      screen.getByRole("heading", {
+        name: i18n.t("play.helpDialog.scoringTitle"),
+        level: 3,
+      }),
     ).toBeTruthy();
   });
 
   it("renders scoring rules including normal dictionary-row bonus", () => {
     renderHelp();
 
-    const normalBonusText = `Normal: x2 difficulty multiplier. Each incorrect dictionary-word row adds +${NORMAL_DICTIONARY_ROW_BONUS} to the difficulty multiplier (○ marker).`;
+    const normalBonusText = i18n.t("play.helpDialog.scoring.normal", {
+      bonus: NORMAL_DICTIONARY_ROW_BONUS,
+    });
 
-    expect(screen.getByText("Hard: x5 difficulty multiplier.")).toBeTruthy();
+    expect(screen.getByText(i18n.t("play.helpDialog.scoring.hard"))).toBeTruthy();
     expect(
-      screen.getByText(
-        "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
-      ),
+      screen.getByText(i18n.t("play.helpDialog.scoring.insane")),
     ).toBeTruthy();
     expect(screen.getByText(normalBonusText)).toBeTruthy();
     expect(
-      screen.getByText(
-        "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
-      ),
+      screen.getByText(i18n.t("play.helpDialog.scoring.streakBonus")),
     ).toBeTruthy();
   });
 
@@ -60,7 +74,7 @@ describe("Help", () => {
     renderHelp();
 
     const difficultyLink = screen.getByRole("link", {
-      name: "difficulty settings",
+      name: i18n.t("play.helpDialog.changeDifficultyLink"),
     });
 
     expect(difficultyLink.getAttribute("href")).toBe(

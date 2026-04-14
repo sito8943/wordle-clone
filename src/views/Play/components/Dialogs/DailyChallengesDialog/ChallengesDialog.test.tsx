@@ -5,7 +5,16 @@ import {
   render,
   screen,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { i18n, initI18n } from "@i18n";
 import ChallengesDialog from "./ChallengesDialog";
 
 const challenges = {
@@ -29,6 +38,14 @@ const challenges = {
 afterEach(cleanup);
 
 describe("ChallengesDialog", () => {
+  beforeAll(async () => {
+    await initI18n();
+  });
+
+  beforeEach(async () => {
+    await i18n.changeLanguage("en");
+  });
+
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
@@ -48,8 +65,9 @@ describe("ChallengesDialog", () => {
     expect(screen.getByText("Speedster")).toBeTruthy();
     expect(screen.getByText("+5 pts")).toBeTruthy();
     expect(screen.getByText("+15 pts")).toBeTruthy();
-    expect(screen.getByText("Daily reset in 01h 05m 00s")).toBeTruthy();
-    expect(container.querySelector(".boost-animation")).toBeTruthy();
+    expect(screen.getByText("Daily reset in")).toBeTruthy();
+    expect(screen.getByText("01h 05m 00s")).toBeTruthy();
+    expect(container.querySelector('svg[data-icon="clock"]')).toBeTruthy();
   });
 
   it("updates the countdown every second", () => {
@@ -63,13 +81,13 @@ describe("ChallengesDialog", () => {
       />,
     );
 
-    expect(screen.getByText("Daily reset in 01h 05m 05s")).toBeTruthy();
+    expect(screen.getByText("01h 05m 05s")).toBeTruthy();
 
     act(() => {
       vi.advanceTimersByTime(2_000);
     });
 
-    expect(screen.getByText("Daily reset in 01h 05m 03s")).toBeTruthy();
+    expect(screen.getByText("01h 05m 03s")).toBeTruthy();
   });
 
   it("marks completed challenge rows with strike-through styling", () => {
