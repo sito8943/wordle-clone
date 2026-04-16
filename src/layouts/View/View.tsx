@@ -104,6 +104,8 @@ const View = () => {
     const storedVersion = getStoredAppVersion();
 
     if (!storedVersion) {
+      setPreviousAppVersion(null);
+      setVersionDialogVisible(true);
       storeAppVersion(currentVersion);
       return;
     }
@@ -121,7 +123,15 @@ const View = () => {
 
   const changelogEntries = useMemo(() => {
     if (!previousAppVersion) {
-      return [];
+      const currentVersionEntry = VIEW_VERSION_HISTORY.find(
+        (entry) => entry.version === env.appVersion,
+      );
+
+      if (currentVersionEntry) {
+        return [currentVersionEntry];
+      }
+
+      return VIEW_VERSION_HISTORY.slice(0, 1);
     }
 
     return getVersionHistoryEntriesForUpdate(

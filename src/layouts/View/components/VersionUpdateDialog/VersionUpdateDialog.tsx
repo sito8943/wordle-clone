@@ -30,9 +30,11 @@ const VersionUpdateDialog = ({
       onClose={onClose}
       titleId="app-version-update-dialog-title"
       title={t("home.versionUpdateDialog.title", { version: currentVersion })}
-      description={t("home.versionUpdateDialog.description", {
-        previousVersion: previousVersion ?? "",
-      })}
+      description={
+        previousVersion
+          ? t("home.versionUpdateDialog.description", { previousVersion })
+          : undefined
+      }
       panelClassName="max-w-2xl"
     >
       <div className="mt-4 flex max-h-[65vh] flex-col gap-5 overflow-y-auto pr-1">
