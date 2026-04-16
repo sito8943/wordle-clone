@@ -103,6 +103,11 @@ const View = () => {
     const currentVersion = env.appVersion;
     const storedVersion = getStoredAppVersion();
 
+    if (!storedVersion) {
+      storeAppVersion(currentVersion);
+      return;
+    }
+
     if (storedVersion === currentVersion) {
       return;
     }
@@ -216,6 +221,7 @@ const View = () => {
             visible={versionDialogVisible}
             onClose={closeVersionDialog}
             currentVersion={env.appVersion}
+            previousVersion={previousAppVersion}
             changelogEntries={changelogEntries}
             versionHistory={VIEW_VERSION_HISTORY}
           />

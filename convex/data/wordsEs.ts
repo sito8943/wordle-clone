@@ -803,4 +803,5 @@ export const ES_WORDS = [
   "frota",
   "tropa",
   "orcas",
+  "viera",
 ];
