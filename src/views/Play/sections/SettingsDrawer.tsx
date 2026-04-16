@@ -85,7 +85,7 @@ const SettingsDrawer = (): JSX.Element | null => {
           aria-expanded={showSettingsPanel}
           aria-controls={PLAY_SETTINGS_PANEL_ID}
           icon={!showSettingsPanel ? faChevronLeft : faChevronRight}
-          iconClassName={`text-base transition-transform duration-300 ease-out`}
+          iconClassName={`text-base transition-[scale] duration-300 ease-out`}
           variant="ghost"
           className={`h-full pointer-events-auto ${showSettingsPanel ? "w-6 max-sm:hidden!" : "w-10 h-full max-h-60 my-auto"}`}
         />

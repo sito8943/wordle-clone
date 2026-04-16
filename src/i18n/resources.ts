@@ -46,6 +46,63 @@ export const resources = {
         profile: "Settings",
         scoreboard: "Scoreboard",
       },
+      gameModes: {
+        title: "Choose game mode",
+        description: "Pick how you want to play this round.",
+        navigationAriaLabel: "Game mode menu",
+        modeInfoTooltip: "Show mode details",
+        modeInfoButtonAriaLabel: "Show details for {{mode}} mode",
+        dialog: {
+          description: "Mode rules",
+        },
+        modes: {
+          zen: {
+            name: "Zen",
+            details: {
+              neverLose: "You never lose a round.",
+              infiniteRows:
+                "Infinite rows: when you reach the end, {{extraRows}} more rows are added.",
+              noScoreImpact: "Score is not affected in this mode.",
+              infiniteGreenHints: "Infinite green hints are available.",
+              anyCombination: "Any letter combination is accepted.",
+            },
+          },
+          classic: {
+            name: "Classic",
+            details: {
+              baseRules:
+                "Current standard mode: {{rows}} rows, {{letters}} letters.",
+              hintsChoice:
+                "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
+              hintsDisabledBonus:
+                "If hints are disabled and you win, you gain {{extraPoints}} extra point.",
+              dictionaryChoice:
+                "You can choose dictionary validation: enabled gives dictionary-word bonus, disabled behaves like hard-mode validation.",
+            },
+          },
+          lightning: {
+            name: "Lightning",
+            details: {
+              baseRules:
+                "Current timed mode: {{rows}} rows, {{letters}} letters.",
+              timer: "You have {{seconds}} seconds to finish the board.",
+              hintsChoice:
+                "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
+              hintsDisabledBonus:
+                "If hints are disabled and you win, you gain {{extraPoints}} extra point.",
+              dictionaryChoice:
+                "You can choose dictionary validation: enabled gives dictionary-word bonus, disabled behaves like hard-mode validation.",
+            },
+          },
+          daily: {
+            name: "Daily",
+            details: {
+              baseRules:
+                "{{rows}} rows and N letters, where N is the daily word length.",
+            },
+          },
+        },
+      },
       home: {
         donate: "Donate",
         donationThankYouAlert:
@@ -565,6 +622,64 @@ export const resources = {
         help: "Ayuda",
         profile: "Ajustes",
         scoreboard: "Clasificación",
+      },
+      gameModes: {
+        title: "Elige modo de juego",
+        description: "Selecciona cómo quieres jugar esta partida.",
+        navigationAriaLabel: "Menú de modos de juego",
+        modeInfoTooltip: "Ver detalles del modo",
+        modeInfoButtonAriaLabel: "Ver detalles del modo {{mode}}",
+        dialog: {
+          description: "Reglas del modo",
+        },
+        modes: {
+          zen: {
+            name: "Zen",
+            details: {
+              neverLose: "Nunca pierdes una partida.",
+              infiniteRows:
+                "Filas infinitas: cuando llegas al final, se añaden {{extraRows}} filas más.",
+              noScoreImpact: "La puntuación no se ve afectada en este modo.",
+              infiniteGreenHints: "Tienes pistas verdes infinitas.",
+              anyCombination:
+                "Se acepta cualquier combinación de letras, esté o no en el diccionario.",
+            },
+          },
+          classic: {
+            name: "Classic",
+            details: {
+              baseRules:
+                "Modo estándar actual: {{rows}} filas y {{letters}} letras.",
+              hintsChoice:
+                "Antes de empezar puedes decidir si activar pistas ({{hintCount}} pista amarilla).",
+              hintsDisabledBonus:
+                "Si desactivas pistas y ganas, obtienes {{extraPoints}} punto extra.",
+              dictionaryChoice:
+                "Puedes elegir validación de diccionario: activada da bonificación por palabra del diccionario; desactivada se comporta como la validación difícil.",
+            },
+          },
+          lightning: {
+            name: "Lightning",
+            details: {
+              baseRules:
+                "Modo contrarreloj actual: {{rows}} filas y {{letters}} letras.",
+              timer: "Tienes {{seconds}} segundos para completar el tablero.",
+              hintsChoice:
+                "Antes de empezar puedes decidir si activar pistas ({{hintCount}} pista amarilla).",
+              hintsDisabledBonus:
+                "Si desactivas pistas y ganas, obtienes {{extraPoints}} punto extra.",
+              dictionaryChoice:
+                "Puedes elegir validación de diccionario: activada da bonificación por palabra del diccionario; desactivada se comporta como la validación difícil.",
+            },
+          },
+          daily: {
+            name: "Daily",
+            details: {
+              baseRules:
+                "{{rows}} filas y N letras, donde N es la longitud de la palabra del día.",
+            },
+          },
+        },
       },
       home: {
         donate: "Donar",

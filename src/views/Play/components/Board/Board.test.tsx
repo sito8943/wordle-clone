@@ -240,7 +240,7 @@ describe("Board", () => {
 
     expect(rows[0].className).toContain("scale-[0.95]");
     expect(rows[1].className).toContain("scale-[1.05]");
-    expect(rows[1].className).toContain("transition-transform");
+    expect(rows[1].className).toContain("transition-[scale]");
   });
 
   it("shows the gray hollow-circle bonus marker with tooltip for marked rows", () => {

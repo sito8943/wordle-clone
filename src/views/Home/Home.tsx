@@ -11,6 +11,7 @@ import { Alert } from "@components";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import {
   HOME_DONATED_HASH,
+  HOME_ENTRY_ANIMATION_SESSION_KEY,
   HOME_NAV_ITEMS_ENTRY_INITIAL_DELAY_MS,
   HOME_NAV_ITEMS_ENTRY_STAGGER_DELAY_MS,
 } from "./constants";
@@ -20,7 +21,7 @@ import { faPaypal } from "@fortawesome/free-brands-svg-icons";
 import {
   hasSeenEntryAnimationInSession,
   markEntryAnimationAsSeenInSession,
-} from "./utils";
+} from "@utils/entryAnimationSession";
 import type { HomeNavigationLink } from "./types";
 
 const Home = () => {
@@ -28,7 +29,7 @@ const Home = () => {
   const { t } = useTranslation();
   const { paypalDonationButtonEnabled } = useFeatureFlags();
   const [shouldAnimateEntry] = useState(
-    () => !hasSeenEntryAnimationInSession(),
+    () => !hasSeenEntryAnimationInSession(HOME_ENTRY_ANIMATION_SESSION_KEY),
   );
   const [entryAnimationReady, setEntryAnimationReady] = useState(
     () => !shouldAnimateEntry,
@@ -40,7 +41,7 @@ const Home = () => {
       return;
     }
 
-    markEntryAnimationAsSeenInSession();
+    markEntryAnimationAsSeenInSession(HOME_ENTRY_ANIMATION_SESSION_KEY);
     const frameId = window.requestAnimationFrame(() => {
       setEntryAnimationReady(true);
     });
@@ -65,8 +66,10 @@ const Home = () => {
   return (
     <main className="page-centered flex-1 gap-8 px-4">
       <h2
-        className={`slab text-center text-6xl font-black tracking-widest text-black sm:text-8xl dark:text-neutral-100 transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none ${
-          entryAnimationReady ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        className={`slab text-center text-6xl font-black tracking-widest text-black sm:text-8xl dark:text-neutral-100 transition-[opacity,translate] duration-500 ease-out motion-reduce:transition-none ${
+          entryAnimationReady
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 -translate-y-3"
         }`}
       >
         {t("app.title").toUpperCase()}

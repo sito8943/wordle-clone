@@ -826,4 +826,13 @@ export const ES_WORDS = [
   "cubro",
   "ruedo",
   "puedo",
+  "truco",
+  "bruto",
+  "grupo",
+  "brujo",
+  "bruja",
+  "cruzo",
+  "cruza",
+  "pitas",
+  "tosco",
 ];

@@ -11,7 +11,7 @@ export function Row({ row, normalDictionaryBonusTooltip }: RowPropsType) {
   return (
     <div
       role="row"
-      className={`relative flex gap-1.5 sm:gap-2 transition-transform duration-200 ${rowScaleClass}`}
+      className={`relative flex gap-1.5 sm:gap-2 transition-[scale] duration-200 ${rowScaleClass}`}
     >
       {row.isActiveRow ? (
         <span
