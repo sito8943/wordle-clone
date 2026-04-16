@@ -1,12 +1,17 @@
 import { useEffect } from "react";
+import { DEFAULT_DIALOG_QUEUE_PRIORITY } from "./constants";
 import { useDialogQueue } from "./useDialogQueue";
 
-const useDialogQueueItem = (dialogId: string, enabled: boolean): boolean => {
+const useDialogQueueItem = (
+  dialogId: string,
+  enabled: boolean,
+  priority = DEFAULT_DIALOG_QUEUE_PRIORITY,
+): boolean => {
   const { activeDialogId, enqueueDialog, removeDialog } = useDialogQueue();
 
   useEffect(() => {
     if (enabled) {
-      enqueueDialog(dialogId);
+      enqueueDialog(dialogId, priority);
 
       return () => {
         removeDialog(dialogId);
@@ -14,7 +19,7 @@ const useDialogQueueItem = (dialogId: string, enabled: boolean): boolean => {
     }
 
     removeDialog(dialogId);
-  }, [dialogId, enabled, enqueueDialog, removeDialog]);
+  }, [dialogId, enabled, enqueueDialog, priority, removeDialog]);
 
   return enabled && activeDialogId === dialogId;
 };

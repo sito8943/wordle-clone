@@ -74,6 +74,10 @@ const playViewMock = vi.hoisted(() => ({
 }));
 
 vi.mock("@providers", () => ({
+  DIALOG_QUEUE_PRIORITIES: {
+    VIEW: 100,
+    PLAY: 0,
+  },
   useDialogQueueItem: (_dialogId: string, enabled: boolean) => enabled,
 }));
 

@@ -110,6 +110,7 @@ const InitialPlayerDialog = ({
     <Dialog
       visible={visible}
       onClose={onClose}
+      headerAction={<></>}
       isClosing={isClosing}
       titleId={INITIAL_PLAYER_DIALOG_TITLE_ID}
       title={t("layout.initialPlayer.title")}

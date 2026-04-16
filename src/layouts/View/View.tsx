@@ -12,6 +12,7 @@ import { useTranslation } from "@i18n";
 import { Navbar, Footer } from "./components";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
 import {
+  DIALOG_QUEUE_PRIORITIES,
   useApi,
   useDialogQueueItem,
   usePlayer,
@@ -52,10 +53,12 @@ const View = () => {
   const queuedInitialPlayerDialogVisible = useDialogQueueItem(
     VIEW_DIALOG_IDS.INITIAL_PLAYER,
     showInitialPlayerDialog,
+    DIALOG_QUEUE_PRIORITIES.VIEW,
   );
   const queuedVersionDialogVisible = useDialogQueueItem(
     VIEW_DIALOG_IDS.VERSION_UPDATE,
     versionDialogVisible,
+    DIALOG_QUEUE_PRIORITIES.VIEW,
   );
 
   const closeVersionDialog = useCallback(() => {

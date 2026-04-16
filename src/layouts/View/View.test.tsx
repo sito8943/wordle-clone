@@ -54,6 +54,10 @@ const recoverPlayerMock = vi.fn().mockResolvedValue(undefined);
 const isNickAvailableMock = vi.fn().mockResolvedValue(true);
 
 vi.mock("@providers", () => ({
+  DIALOG_QUEUE_PRIORITIES: {
+    VIEW: 100,
+    PLAY: 0,
+  },
   useDialogQueueItem: (_dialogId: string, enabled: boolean) => enabled,
   useApi: () => ({
     scoreClient: {

@@ -1,5 +1,7 @@
 import { ApiProvider, useApi } from "./Api";
 import {
+  DEFAULT_DIALOG_QUEUE_PRIORITY,
+  DIALOG_QUEUE_PRIORITIES,
   DialogQueueProvider,
   useDialogQueue,
   useDialogQueueItem,
@@ -9,7 +11,13 @@ import { PlayerProvider, usePlayer } from "./Player";
 import { SoundProvider, useSound } from "./Sound";
 
 export { ApiProvider, useApi };
-export { DialogQueueProvider, useDialogQueue, useDialogQueueItem };
+export {
+  DEFAULT_DIALOG_QUEUE_PRIORITY,
+  DIALOG_QUEUE_PRIORITIES,
+  DialogQueueProvider,
+  useDialogQueue,
+  useDialogQueueItem,
+};
 export { FeatureFlagsProvider, useFeatureFlags };
 export { PlayerProvider, usePlayer };
 export { SoundProvider, useSound };

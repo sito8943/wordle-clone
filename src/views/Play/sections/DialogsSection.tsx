@@ -1,7 +1,7 @@
 import { lazy, memo, Suspense, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
-import { useDialogQueueItem } from "@providers";
+import { DIALOG_QUEUE_PRIORITIES, useDialogQueueItem } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { PLAY_DIALOG_IDS } from "@views/Play/constants";
 import { usePlayView } from "@views/Play/providers";
@@ -104,42 +104,52 @@ const DialogsSection = (): JSX.Element => {
   const resumeDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.RESUME,
     showResumeDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const victoryDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.VICTORY,
     Boolean(victoryScoreSummary) && showVictoryDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const defeatDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.DEFEAT,
     showDefeatDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const dictionaryChecksumDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.DICTIONARY_CHECKSUM,
     showDictionaryChecksumDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const refreshDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.REFRESH_CONFIRMATION,
     showRefreshDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const difficultyChangeDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.DIFFICULTY_CHANGE,
     isDifficultyChangeConfirmationOpen,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const wordListDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.WORD_LIST,
     wordListButtonEnabled && showWordsDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const challengesDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.CHALLENGES,
     challengesEnabled && challenges.showDialog && challenges.challenges !== null,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const developerConsoleDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.DEVELOPER_CONSOLE,
     showDeveloperConsoleDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const tutorialPromptDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.TUTORIAL_PROMPT,
     showTutorialPromptDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
   );
 
   const changeDifficulty = () => {
