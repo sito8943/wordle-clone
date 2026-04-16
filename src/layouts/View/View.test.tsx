@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
@@ -78,6 +78,9 @@ describe("View app version dialog", () => {
       ),
     ).toBeTruthy();
     expect(screen.getByText("Latest changelog")).toBeTruthy();
+    expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.15");
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Close" })[0]);
 
     await waitFor(() => {
       expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.16-beta");

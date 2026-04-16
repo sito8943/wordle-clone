@@ -1,6 +1,13 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Outlet, useLocation } from "react-router";
-import { Button, Dialog, ErrorBoundary, ErrorFallback } from "@components";
+import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { Navbar, Footer } from "./components";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
@@ -16,6 +23,7 @@ import {
   shouldAskForInitialPlayerName,
   storeAppVersion,
 } from "./utils";
+import VersionUpdateDialog from "./components/VersionUpdateDialog/VersionUpdateDialog";
 
 const InitialPlayerDialog = lazy(
   () =>
@@ -23,7 +31,7 @@ const InitialPlayerDialog = lazy(
 );
 
 const View = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { scoreClient } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
   const { pathname, hash } = useLocation();
@@ -37,6 +45,11 @@ const View = () => {
   const [previousAppVersion, setPreviousAppVersion] = useState<string | null>(
     null,
   );
+
+  const closeVersionDialog = useCallback(() => {
+    setVersionDialogVisible(false);
+    storeAppVersion(env.appVersion);
+  }, []);
 
   const confirmInitialPlayerName = useCallback(
     async (name: string): Promise<string | null> => {
@@ -102,6 +115,7 @@ const View = () => {
     if (isVersionNewer(currentVersion, storedVersion)) {
       setPreviousAppVersion(storedVersion);
       setVersionDialogVisible(true);
+      return;
     }
 
     storeAppVersion(currentVersion);
@@ -118,18 +132,6 @@ const View = () => {
       env.appVersion,
     );
   }, [previousAppVersion]);
-
-  const formatReleaseDate = (value: string): string => {
-    const parsedDate = new Date(`${value}T00:00:00`);
-    if (Number.isNaN(parsedDate.getTime())) {
-      return value;
-    }
-
-    const locale = i18n.language === "es" ? "es-ES" : "en-US";
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
-      parsedDate,
-    );
-  };
 
   useEffect(() => {
     if (hash.length <= 1) {
@@ -215,90 +217,18 @@ const View = () => {
         </ErrorBoundary>
       </div>
       <Footer alwaysVisible={isHomeRoute} />
-      <Dialog
-        visible={versionDialogVisible}
-        onClose={() => setVersionDialogVisible(false)}
-        titleId="app-version-update-dialog-title"
-        title={t("home.versionUpdateDialog.title", { version: env.appVersion })}
-        description={t("home.versionUpdateDialog.description", {
-          previousVersion: previousAppVersion ?? "",
-        })}
-        panelClassName="max-w-2xl"
-      >
-        <div className="mt-4 flex max-h-[65vh] flex-col gap-5 overflow-y-auto pr-1">
-          <section className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/60">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-              {t("home.versionUpdateDialog.changelogTitle")}
-            </h3>
-            {changelogEntries.length > 0 ? (
-              <ul className="mt-3 flex flex-col gap-3">
-                {changelogEntries.map((entry) => (
-                  <li
-                    key={`changelog-${entry.version}`}
-                    className="rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900"
-                  >
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                      {t("home.versionUpdateDialog.releaseLabel", {
-                        version: entry.version,
-                        date: formatReleaseDate(entry.releasedAt),
-                      })}
-                    </p>
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-                      {entry.changeKeys.map((changeKey) => (
-                        <li key={changeKey}>{t(changeKey)}</li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
-                {t("home.versionUpdateDialog.emptyChangelog")}
-              </p>
-            )}
-          </section>
-          <section>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-              {t("home.versionUpdateDialog.historyTitle")}
-            </h3>
-            <ol className="mt-3 flex flex-col gap-3">
-              {VIEW_VERSION_HISTORY.map((entry) => {
-                const isCurrentVersion = entry.version === env.appVersion;
-
-                return (
-                  <li
-                    key={`history-${entry.version}`}
-                    className={`rounded-md border p-3 ${
-                      isCurrentVersion
-                        ? "border-primary bg-primary/10 dark:border-primary dark:bg-primary/20"
-                        : "border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900"
-                    }`}
-                  >
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                      {t("home.versionUpdateDialog.releaseLabel", {
-                        version: entry.version,
-                        date: formatReleaseDate(entry.releasedAt),
-                      })}
-                    </p>
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-                      {entry.changeKeys.map((changeKey) => (
-                        <li key={`${entry.version}-${changeKey}`}>
-                          {t(changeKey)}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-          <div className="flex justify-end">
-            <Button onClick={() => setVersionDialogVisible(false)}>
-              {t("home.versionUpdateDialog.closeAction")}
-            </Button>
-          </div>
-        </div>
-      </Dialog>
+      <Suspense fallback={null}>
+        {versionDialogVisible ? (
+          <VersionUpdateDialog
+            visible={versionDialogVisible}
+            onClose={closeVersionDialog}
+            currentVersion={env.appVersion}
+            previousVersion={previousAppVersion}
+            changelogEntries={changelogEntries}
+            versionHistory={VIEW_VERSION_HISTORY}
+          />
+        ) : null}
+      </Suspense>
       <Suspense fallback={null}>
         {showInitialPlayerDialog ? (
           <InitialPlayerDialog
