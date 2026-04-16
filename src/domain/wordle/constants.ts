@@ -20,6 +20,7 @@ export const DIFFICULTY_SCORE_MULTIPLIERS: Record<PlayerDifficulty, number> = {
 };
 
 export const NORMAL_DICTIONARY_ROW_BONUS = 0.4;
+export const MAX_STREAK_FOR_SCORE_MULTIPLIER = 100;
 
 export const KEYBOARD_ROWS_ES = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],

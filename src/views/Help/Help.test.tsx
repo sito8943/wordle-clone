@@ -1,7 +1,10 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
+import {
+  MAX_STREAK_FOR_SCORE_MULTIPLIER,
+  NORMAL_DICTIONARY_ROW_BONUS,
+} from "@domain/wordle";
 import { ROUTES } from "@config/routes";
 import { i18n, initI18n } from "@i18n";
 import Help from "./Help";
@@ -70,7 +73,11 @@ describe("Help", () => {
     ).toBeTruthy();
     expect(screen.getByText(normalBonusText)).toBeTruthy();
     expect(
-      screen.getByText(i18n.t("play.helpDialog.scoring.streakBonus")),
+      screen.getByText(
+        i18n.t("play.helpDialog.scoring.streakBonus", {
+          maxStreak: MAX_STREAK_FOR_SCORE_MULTIPLIER,
+        }),
+      ),
     ).toBeTruthy();
   });
 

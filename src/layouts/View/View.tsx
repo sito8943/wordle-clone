@@ -103,11 +103,6 @@ const View = () => {
     const currentVersion = env.appVersion;
     const storedVersion = getStoredAppVersion();
 
-    if (!storedVersion) {
-      storeAppVersion(currentVersion);
-      return;
-    }
-
     if (storedVersion === currentVersion) {
       return;
     }
@@ -117,8 +112,6 @@ const View = () => {
       setVersionDialogVisible(true);
       return;
     }
-
-    storeAppVersion(currentVersion);
   }, []);
 
   const changelogEntries = useMemo(() => {

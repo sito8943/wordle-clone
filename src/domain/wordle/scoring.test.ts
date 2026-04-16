@@ -9,7 +9,10 @@ import {
   getStreakScoreMultiplier,
   getTotalPointsForWin,
 } from "./scoring";
-import { DIFFICULTY_SCORE_MULTIPLIERS } from "./constants";
+import {
+  DIFFICULTY_SCORE_MULTIPLIERS,
+  MAX_STREAK_FOR_SCORE_MULTIPLIER,
+} from "./constants";
 import { setWordDictionary } from "@utils/words";
 
 describe("getPointsForWin", () => {
@@ -38,6 +41,12 @@ describe("getTotalPointsForWin", () => {
     expect(getTotalPointsForWin(1, 0, -4)).toBe(6);
     expect(getTotalPointsForWin(1, Number.NaN, Number.NaN)).toBe(6);
   });
+
+  it("caps streak bonus contribution at the configured maximum", () => {
+    expect(getTotalPointsForWin(1, 2, MAX_STREAK_FOR_SCORE_MULTIPLIER)).toBe(
+      getTotalPointsForWin(1, 2, MAX_STREAK_FOR_SCORE_MULTIPLIER + 250),
+    );
+  });
 });
 
 describe("getBaseScoreForWin", () => {
@@ -61,6 +70,12 @@ describe("getStreakScoreMultiplier", () => {
   it("normalizes invalid streak values", () => {
     expect(getStreakScoreMultiplier(-2)).toBe(1);
     expect(getStreakScoreMultiplier(Number.NaN)).toBe(1);
+  });
+
+  it("caps streak multiplier contribution at the configured maximum", () => {
+    expect(
+      getStreakScoreMultiplier(MAX_STREAK_FOR_SCORE_MULTIPLIER + 1_000),
+    ).toBe(getStreakScoreMultiplier(MAX_STREAK_FOR_SCORE_MULTIPLIER));
   });
 });
 

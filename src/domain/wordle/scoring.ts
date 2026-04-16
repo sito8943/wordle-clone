@@ -1,5 +1,6 @@
 import {
   DIFFICULTY_SCORE_MULTIPLIERS,
+  MAX_STREAK_FOR_SCORE_MULTIPLIER,
   MAX_GUESSES,
   NORMAL_DICTIONARY_ROW_BONUS,
 } from "./constants";
@@ -25,7 +26,7 @@ const toSafeStreakBonus = (value: number): number => {
     return 0;
   }
 
-  return Math.floor(value);
+  return Math.min(MAX_STREAK_FOR_SCORE_MULTIPLIER, Math.floor(value));
 };
 
 export const getInsaneTimeBonus = (secondsLeft: number): number => {

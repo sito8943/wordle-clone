@@ -95,8 +95,9 @@ const comparePrereleaseTokens = (
 
 export const compareAppVersions = (
   leftVersion: string,
-  rightVersion: string,
+  rightVersion?: string | null,
 ): number => {
+  if (!rightVersion) return 1;
   const [leftCore, leftPrerelease] = leftVersion.split("-", 2);
   const [rightCore, rightPrerelease] = rightVersion.split("-", 2);
   const leftSegments = toNumericSegments(leftCore);
@@ -129,7 +130,7 @@ export const compareAppVersions = (
 
 export const isVersionNewer = (
   currentVersion: string,
-  previousVersion: string,
+  previousVersion?: string | null,
 ): boolean => compareAppVersions(currentVersion, previousVersion) > 0;
 
 export const getVersionHistoryEntriesForUpdate = (

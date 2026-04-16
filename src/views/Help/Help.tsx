@@ -1,7 +1,10 @@
 import type { JSX } from "react";
 import { Link } from "react-router";
 import { ROUTE_ANCHORS, ROUTES } from "@config/routes";
-import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
+import {
+  MAX_STREAK_FOR_SCORE_MULTIPLIER,
+  NORMAL_DICTIONARY_ROW_BONUS,
+} from "@domain/wordle";
 import { useTranslation } from "@i18n";
 
 const Help = (): JSX.Element => {
@@ -46,7 +49,11 @@ const Help = (): JSX.Element => {
         </h3>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-800 dark:text-neutral-200">
           <li>{t("play.helpDialog.scoring.basePoints")}</li>
-          <li>{t("play.helpDialog.scoring.streakBonus")}</li>
+          <li>
+            {t("play.helpDialog.scoring.streakBonus", {
+              maxStreak: MAX_STREAK_FOR_SCORE_MULTIPLIER,
+            })}
+          </li>
           <li>{t("play.helpDialog.scoring.easy")}</li>
           <li>
             {t("play.helpDialog.scoring.normal", {
@@ -55,7 +62,11 @@ const Help = (): JSX.Element => {
           </li>
           <li>{t("play.helpDialog.scoring.hard")}</li>
           <li>{t("play.helpDialog.scoring.insane")}</li>
-          <li>{t("play.helpDialog.scoring.final")}</li>
+          <li>
+            {t("play.helpDialog.scoring.final", {
+              maxStreak: MAX_STREAK_FOR_SCORE_MULTIPLIER,
+            })}
+          </li>
         </ul>
         <p className="mt-3 text-xs text-neutral-600 dark:text-neutral-300">
           {t("play.helpDialog.changeDifficultyPrefix")}{" "}

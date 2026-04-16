@@ -377,7 +377,7 @@ export const resources = {
           scoring: {
             basePoints: "Base points are the remaining attempts after a win.",
             streakBonus:
-              "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
+              "Streak scales your score with x(1 + 0.3 x sqrt(min(streak, {{maxStreak}}))).",
             easy: "Easy: x1 difficulty multiplier.",
             normal:
               "Normal: x2 difficulty multiplier. Each incorrect dictionary-word row adds +{{bonus}} to the difficulty multiplier (○ marker).",
@@ -385,7 +385,7 @@ export const resources = {
             insane:
               "Insane: x9 difficulty multiplier and +1 extra point per 2 seconds left.",
             final:
-              "Final score = round(score base x (1 + 0.3 x sqrt(streak))), where score base includes the difficulty multiplier and the Insane time bonus.",
+              "Final score = round(score base x (1 + 0.3 x sqrt(min(streak, {{maxStreak}})))), where score base includes the difficulty multiplier and the Insane time bonus.",
           },
           changeDifficultyPrefix: "Want to adjust the challenge? Go to",
           changeDifficultyLink: "difficulty settings",
@@ -903,7 +903,7 @@ export const resources = {
             basePoints:
               "Los puntos base son los intentos restantes después de ganar.",
             streakBonus:
-              "La racha escala tu puntuación con x(1 + 0.3 x sqrt(racha)).",
+              "La racha escala tu puntuación con x(1 + 0.3 x sqrt(min(racha, {{maxStreak}}))).",
             easy: "Fácil: multiplicador de dificultad x1.",
             normal:
               "Normal: multiplicador de dificultad x2. Cada fila incorrecta con palabra del diccionario suma +{{bonus}} al multiplicador de dificultad (marca ○).",
@@ -911,7 +911,7 @@ export const resources = {
             insane:
               "Insano: multiplicador de dificultad x9 y +1 punto extra por cada 2 segundos restantes.",
             final:
-              "Puntuación final = round(puntuación base x (1 + 0.3 x sqrt(racha))), donde la puntuación base incluye el multiplicador de dificultad y el bonus de tiempo en Insano.",
+              "Puntuación final = round(puntuación base x (1 + 0.3 x sqrt(min(racha, {{maxStreak}})))), donde la puntuación base incluye el multiplicador de dificultad y el bonus de tiempo en Insano.",
           },
           changeDifficultyPrefix: "¿Quieres ajustar el desafío? Ve a",
           changeDifficultyLink: "ajustes de dificultad",
