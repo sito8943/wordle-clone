@@ -12,7 +12,6 @@ import { useTranslation } from "@i18n";
 import { Navbar, Footer } from "./components";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
 import {
-  DialogQueueProvider,
   useApi,
   useDialogQueueItem,
   usePlayer,
@@ -35,7 +34,7 @@ const InitialPlayerDialog = lazy(
     import("@layouts/View/components/InitialPlayerDialog/InitialPlayerDialog"),
 );
 
-const ViewContent = () => {
+const View = () => {
   const { t } = useTranslation();
   const { scoreClient } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
@@ -265,11 +264,5 @@ const ViewContent = () => {
     </div>
   );
 };
-
-const View = () => (
-  <DialogQueueProvider>
-    <ViewContent />
-  </DialogQueueProvider>
-);
 
 export default View;

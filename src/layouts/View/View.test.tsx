@@ -5,7 +5,6 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
@@ -55,7 +54,6 @@ const recoverPlayerMock = vi.fn().mockResolvedValue(undefined);
 const isNickAvailableMock = vi.fn().mockResolvedValue(true);
 
 vi.mock("@providers", () => ({
-  DialogQueueProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   useDialogQueueItem: (_dialogId: string, enabled: boolean) => enabled,
   useApi: () => ({
     scoreClient: {

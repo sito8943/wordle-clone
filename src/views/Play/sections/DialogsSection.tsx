@@ -1,7 +1,7 @@
 import { lazy, memo, Suspense, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
-import { DialogQueueProvider, useDialogQueueItem } from "@providers";
+import { useDialogQueueItem } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { PLAY_DIALOG_IDS } from "@views/Play/constants";
 import { usePlayView } from "@views/Play/providers";
@@ -41,7 +41,7 @@ const DifficultyChangeDialog = lazy(
     import("../components/Dialogs/DifficultyChangeDialog/DifficultyChangeDialog"),
 );
 
-const DialogsSectionContent = (): JSX.Element => {
+const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
   const gameMode = t("play.gameModes.classic");
   const { shareButtonEnabled, settingsDrawerEnabled } = useFeatureFlags();
@@ -297,11 +297,5 @@ const DialogsSectionContent = (): JSX.Element => {
     </ErrorBoundary>
   );
 };
-
-const DialogsSection = (): JSX.Element => (
-  <DialogQueueProvider>
-    <DialogsSectionContent />
-  </DialogQueueProvider>
-);
 
 export default memo(DialogsSection);

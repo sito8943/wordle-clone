@@ -7,6 +7,7 @@ import App from "./App.tsx";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import {
   ApiProvider,
+  DialogQueueProvider,
   FeatureFlagsProvider,
   PlayerProvider,
   SoundProvider,
@@ -41,7 +42,9 @@ void initI18n().then(() => {
             <FeatureFlagsProvider>
               <ApiProvider>
                 <PlayerProvider>
-                  <App />
+                  <DialogQueueProvider>
+                    <App />
+                  </DialogQueueProvider>
                 </PlayerProvider>
               </ApiProvider>
             </FeatureFlagsProvider>

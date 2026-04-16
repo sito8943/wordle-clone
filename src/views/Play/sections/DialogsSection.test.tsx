@@ -73,6 +73,10 @@ const playViewMock = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("@providers", () => ({
+  useDialogQueueItem: (_dialogId: string, enabled: boolean) => enabled,
+}));
+
 vi.mock("@providers/FeatureFlags", () => ({
   useFeatureFlags: () => featureFlagsMock,
 }));
