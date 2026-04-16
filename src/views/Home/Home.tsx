@@ -76,9 +76,7 @@ const Home = () => {
           <Alert message={t("home.donationThankYouAlert")} color="success" />
         </div>
       )}
-      <nav
-        className={`w-full max-w-sm`}
-      >
+      <nav className={`w-full max-w-sm`}>
         <ul className="flex flex-col gap-3">
           {links.map((link, index) => (
             <li

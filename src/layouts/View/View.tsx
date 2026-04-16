@@ -216,7 +216,6 @@ const View = () => {
             visible={versionDialogVisible}
             onClose={closeVersionDialog}
             currentVersion={env.appVersion}
-            previousVersion={previousAppVersion}
             changelogEntries={changelogEntries}
             versionHistory={VIEW_VERSION_HISTORY}
           />

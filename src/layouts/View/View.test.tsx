@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
@@ -60,7 +66,9 @@ describe("View app version dialog", () => {
     renderView("/play");
 
     await waitFor(() => {
-      expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe(env.appVersion);
+      expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe(
+        env.appVersion,
+      );
     });
   });
 

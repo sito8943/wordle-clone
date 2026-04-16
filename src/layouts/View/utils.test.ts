@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import {
-  APP_VERSION_STORAGE_KEY,
-  VIEW_VERSION_HISTORY,
-} from "./constants";
+import { APP_VERSION_STORAGE_KEY, VIEW_VERSION_HISTORY } from "./constants";
 import {
   compareAppVersions,
   getStoredAppVersion,
@@ -20,9 +17,9 @@ describe("View version helpers", () => {
     expect(compareAppVersions("0.0.16", "0.0.15")).toBeGreaterThan(0);
     expect(compareAppVersions("0.0.16", "0.0.16-beta")).toBeGreaterThan(0);
     expect(compareAppVersions("0.0.16-beta", "0.0.16")).toBeLessThan(0);
-    expect(compareAppVersions("0.0.16-beta.2", "0.0.16-beta.1")).toBeGreaterThan(
-      0,
-    );
+    expect(
+      compareAppVersions("0.0.16-beta.2", "0.0.16-beta.1"),
+    ).toBeGreaterThan(0);
   });
 
   it("detects when the current app version is newer", () => {

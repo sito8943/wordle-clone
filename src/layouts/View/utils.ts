@@ -137,11 +137,25 @@ export const getVersionHistoryEntriesForUpdate = (
   history: ViewVersionHistoryEntry[],
   previousVersion: string,
   currentVersion: string,
-): ViewVersionHistoryEntry[] =>
-  [...history]
-    .sort((left, right) => compareAppVersions(right.version, left.version))
-    .filter(
-      (entry) =>
-        compareAppVersions(entry.version, currentVersion) <= 0 &&
-        compareAppVersions(entry.version, previousVersion) > 0,
-    );
+): ViewVersionHistoryEntry[] => {
+  const currentVersionIndex = history.findIndex(
+    (entry) => entry.version === currentVersion,
+  );
+  const previousVersionIndex = history.findIndex(
+    (entry) => entry.version === previousVersion,
+  );
+
+  if (currentVersionIndex >= 0 && previousVersionIndex >= 0) {
+    if (currentVersionIndex >= previousVersionIndex) {
+      return [];
+    }
+
+    return history.slice(currentVersionIndex, previousVersionIndex);
+  }
+
+  return history.filter(
+    (entry) =>
+      compareAppVersions(entry.version, currentVersion) <= 0 &&
+      compareAppVersions(entry.version, previousVersion) > 0,
+  );
+};
