@@ -10,6 +10,10 @@ const Help = lazy(() => import("@views/Help"));
 const Scoreboard = lazy(() => import("@views/Scoreboard"));
 const Profile = lazy(() => import("@views/Profile"));
 const NotFound = lazy(() => import("@views/NotFound"));
+const Classic = lazy(() => import("@views/GameModes/Classic"));
+const Zen = lazy(() => import("@views/GameModes/Zen"));
+const Lightning = lazy(() => import("@views/GameModes/Lightning"));
+const Daily = lazy(() => import("@views/GameModes/Daily"));
 
 const routes = createBrowserRouter(
   [
@@ -19,6 +23,10 @@ const routes = createBrowserRouter(
       children: [
         { index: true, element: <Home /> },
         { path: ROUTES.PLAY, element: <Play /> },
+        { path: ROUTES.CLASSIC, element: <Classic /> },
+        { path: ROUTES.LIGHTING, element: <Lightning /> },
+        { path: ROUTES.DAILY, element: <Daily /> },
+        { path: ROUTES.ZEN, element: <Zen /> },
         { path: ROUTES.HELP, element: <Help /> },
         { path: ROUTES.SCOREBOARD, element: <Scoreboard /> },
         { path: ROUTES.SETTINGS, element: <Profile /> },
