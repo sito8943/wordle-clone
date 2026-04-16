@@ -3,7 +3,11 @@ import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
 import Home from "./Home";
-import { HOME_ENTRY_ANIMATION_SESSION_KEY } from "./constants";
+import {
+  HOME_ENTRY_ANIMATION_SESSION_KEY,
+  HOME_NAV_ITEMS_ENTRY_INITIAL_DELAY_MS,
+  HOME_NAV_ITEMS_ENTRY_STAGGER_DELAY_MS,
+} from "./constants";
 
 vi.mock("@i18n", () => ({
   useTranslation: () => ({
@@ -62,6 +66,23 @@ describe("Home entry animation", () => {
       expect(heading.className).toContain("scale-100");
       expect(nav.className).toContain("opacity-100");
       expect(nav.className).toContain("scale-100");
+    });
+  });
+
+  it("applies staggered entry delays to home navigation items", () => {
+    renderHome();
+
+    const nav = screen.getByRole("navigation");
+    const navItems = Array.from(nav.querySelectorAll("li"));
+
+    navItems.forEach((item, index) => {
+      expect(item.className).toContain("transition-[opacity,transform]");
+      expect((item as HTMLLIElement).style.transitionDelay).toBe(
+        `${
+          HOME_NAV_ITEMS_ENTRY_INITIAL_DELAY_MS +
+          index * HOME_NAV_ITEMS_ENTRY_STAGGER_DELAY_MS
+        }ms`,
+      );
     });
   });
 

@@ -9,7 +9,11 @@ import {
 import { useTranslation } from "@i18n";
 import { Alert } from "@components";
 import { useFeatureFlags } from "@providers/FeatureFlags";
-import { HOME_DONATED_HASH } from "./constants";
+import {
+  HOME_DONATED_HASH,
+  HOME_NAV_ITEMS_ENTRY_INITIAL_DELAY_MS,
+  HOME_NAV_ITEMS_ENTRY_STAGGER_DELAY_MS,
+} from "./constants";
 import { env } from "@config/env";
 import { ROUTES } from "@config/routes";
 import { faPaypal } from "@fortawesome/free-brands-svg-icons";
@@ -54,6 +58,8 @@ const Home = () => {
     ],
     [t],
   );
+  const getItemTransitionDelay = (index: number) =>
+    `${HOME_NAV_ITEMS_ENTRY_INITIAL_DELAY_MS + index * HOME_NAV_ITEMS_ENTRY_STAGGER_DELAY_MS}ms`;
 
   return (
     <main className="page-centered flex-1 gap-8 px-4">
@@ -70,13 +76,19 @@ const Home = () => {
         </div>
       )}
       <nav
-        className={`w-full max-w-sm transition-[opacity,transform] duration-500 ease-out delay-150 motion-reduce:transition-none ${
-          entryAnimationReady ? "opacity-100 scale-100" : "opacity-0 scale-95"
-        }`}
+        className={`w-full max-w-sm`}
       >
         <ul className="flex flex-col gap-3">
-          {links.map((link) => (
-            <li key={link.to}>
+          {links.map((link, index) => (
+            <li
+              key={link.to}
+              className={`transition-[scale,translate] duration-500 ease-out motion-reduce:transition-none ${
+                entryAnimationReady
+                  ? "translate-y-0 scale-100"
+                  : "translate-y-2 scale-0"
+              }`}
+              style={{ transitionDelay: getItemTransitionDelay(index) }}
+            >
               <Link
                 to={link.to}
                 className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-300 bg-white/80 px-5 py-4 text-lg font-semibold text-neutral-800 transition-colors hover:border-primary hover:text-primary dark:border-neutral-700 dark:bg-neutral-800/60 dark:text-neutral-100 dark:hover:border-primary dark:hover:text-primary"
@@ -87,7 +99,14 @@ const Home = () => {
             </li>
           ))}
           {paypalDonationButtonEnabled ? (
-            <li>
+            <li
+              className={`transition-[scale,translate] duration-500 ease-out motion-reduce:transition-none ${
+                entryAnimationReady
+                  ? "translate-y-0 scale-100"
+                  : "translate-y-2 scale-0"
+              }`}
+              style={{ transitionDelay: getItemTransitionDelay(links.length) }}
+            >
               <a
                 href={env.paypalDonationButtonUrl}
                 target="_blank"
