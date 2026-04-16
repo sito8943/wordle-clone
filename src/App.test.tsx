@@ -14,6 +14,7 @@ import { WORDS_DEFAULT_LANGUAGE, WordDictionaryClient } from "@api/words";
 import { env } from "@config";
 import { ROUTES } from "@config/routes";
 import {
+  MAX_STREAK_FOR_SCORE_MULTIPLIER,
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
   WORDLE_START_ANIMATION_SESSION_KEY,
@@ -1647,12 +1648,12 @@ describe("App", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Streak scales your score with x(1 + 0.3 x sqrt(streak)).",
+        `Streak scales your score with x(1 + 0.3 x sqrt(min(streak, ${MAX_STREAK_FOR_SCORE_MULTIPLIER}))).`,
       ),
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Final score = round(score base x (1 + 0.3 x sqrt(streak))), where score base includes the difficulty multiplier and the Insane time bonus.",
+        `Final score = round(score base x (1 + 0.3 x sqrt(min(streak, ${MAX_STREAK_FOR_SCORE_MULTIPLIER})))), where score base includes the difficulty multiplier and the Insane time bonus.`,
       ),
     ).toBeTruthy();
     expect(
