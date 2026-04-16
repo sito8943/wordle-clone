@@ -138,7 +138,9 @@ const DialogsSection = (): JSX.Element => {
   );
   const challengesDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.CHALLENGES,
-    challengesEnabled && challenges.showDialog && challenges.challenges !== null,
+    challengesEnabled &&
+      challenges.showDialog &&
+      challenges.challenges !== null,
     DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const developerConsoleDialogVisible = useDialogQueueItem(

@@ -20,7 +20,14 @@ import {
   WORDLE_START_ANIMATION_SESSION_KEY,
 } from "@domain/wordle";
 import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
-import { ApiProvider, FeatureFlagsProvider, PlayerProvider } from "@providers";
+import { APP_VERSION_STORAGE_KEY } from "@layouts/View/constants";
+import {
+  ApiProvider,
+  DialogQueueProvider,
+  FeatureFlagsProvider,
+  PlayerProvider,
+  SoundProvider,
+} from "@providers";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Play/hooks/useHintController";
 import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Play/hooks/usePlayController/constants";
@@ -37,13 +44,17 @@ vi.mock("./utils/words", async () => {
 
 const renderApp = () =>
   renderWithQueryClient(
-    <FeatureFlagsProvider>
-      <ApiProvider>
-        <PlayerProvider>
-          <App />
-        </PlayerProvider>
-      </ApiProvider>
-    </FeatureFlagsProvider>,
+    <SoundProvider>
+      <FeatureFlagsProvider>
+        <ApiProvider>
+          <PlayerProvider>
+            <DialogQueueProvider>
+              <App />
+            </DialogQueueProvider>
+          </PlayerProvider>
+        </ApiProvider>
+      </FeatureFlagsProvider>
+    </SoundProvider>,
   );
 
 const waitForPlayReady = async () => {
@@ -114,6 +125,16 @@ describe("App", () => {
     env.convexUrl = defaultEnvConvexUrl;
     env.wordListButtonEnabled = true;
     localStorage.clear();
+    localStorage.setItem(APP_VERSION_STORAGE_KEY, env.appVersion);
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "TestUser",
+        score: 0,
+        streak: 0,
+        declinedTutorial: false,
+      }),
+    );
     sessionStorage.clear();
     sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");
     document.documentElement.classList.remove("dark");
@@ -574,7 +595,12 @@ describe("App", () => {
   it("shows developer console in develpment mode and updates current player", async () => {
     localStorage.setItem(
       "player",
-      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+      JSON.stringify({
+        name: "TestUser",
+        score: 0,
+        streak: 0,
+        declinedTutorial: false,
+      }),
     );
     env.mode = "develpment";
     const recordScoreSpy = vi
@@ -646,7 +672,12 @@ describe("App", () => {
   it("syncs scoreboard with score overrides from developer console", async () => {
     localStorage.setItem(
       "player",
-      JSON.stringify({ name: "Player", score: 80, streak: 5 }),
+      JSON.stringify({
+        name: "TestUser",
+        score: 80,
+        streak: 5,
+        declinedTutorial: false,
+      }),
     );
     localStorage.setItem("wordle:scoreboard:client-id", "dev-client");
     localStorage.setItem(
@@ -708,7 +739,12 @@ describe("App", () => {
   it("refreshes remote dictionary checksum from developer console", async () => {
     localStorage.setItem(
       "player",
-      JSON.stringify({ name: "Player", score: 0, streak: 0 }),
+      JSON.stringify({
+        name: "TestUser",
+        score: 0,
+        streak: 0,
+        declinedTutorial: false,
+      }),
     );
     env.mode = "develpment";
     const refreshRemoteChecksumSpy = vi
@@ -876,10 +912,11 @@ describe("App", () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
-        name: "Player",
+        name: "TestUser",
         score: 0,
         streak: 0,
         difficulty: "normal",
+        declinedTutorial: false,
       }),
     );
 
@@ -2241,6 +2278,9 @@ describe("App", () => {
   });
 
   it("prevents saving a duplicated profile name", async () => {
+    const initialPlayerName = JSON.parse(localStorage.getItem("player") || "{}")
+      .name as string;
+
     localStorage.setItem(
       "wordle:scoreboard:cache",
       JSON.stringify([
@@ -2270,7 +2310,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Cancel" })).toBeTruthy();
 
     const player = JSON.parse(localStorage.getItem("player") || "{}");
-    expect(player.name).toBe("Player");
+    expect(player.name).toBe(initialPlayerName);
   });
 
   it("lets the user toggle start animations from profile", async () => {
@@ -2414,7 +2454,7 @@ describe("App", () => {
     renderApp();
 
     expect(
-      screen.getByRole("dialog", { name: "Resume previous game?" }),
+      await screen.findByRole("dialog", { name: "Resume previous game?" }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Start new game" }));
 
@@ -2429,10 +2469,11 @@ describe("App", () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
-        name: "Player",
+        name: "TestUser",
         score: 0,
         streak: 0,
         difficulty: "normal",
+        declinedTutorial: false,
       }),
     );
     sessionStorage.setItem("wordle:session-id", "session-b");
@@ -2462,7 +2503,7 @@ describe("App", () => {
     renderApp();
 
     expect(
-      screen.getByRole("dialog", { name: "Resume previous game?" }),
+      await screen.findByRole("dialog", { name: "Resume previous game?" }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Start new game" }));
 

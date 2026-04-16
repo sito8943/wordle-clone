@@ -8,6 +8,7 @@ import {
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
+import { DialogQueueProvider } from "@providers";
 import View from "./View";
 import { APP_VERSION_STORAGE_KEY, PLAYER_STORAGE_KEY } from "./constants";
 
@@ -53,35 +54,38 @@ const updatePlayerMock = vi.fn().mockResolvedValue(undefined);
 const recoverPlayerMock = vi.fn().mockResolvedValue(undefined);
 const isNickAvailableMock = vi.fn().mockResolvedValue(true);
 
-vi.mock("@providers", () => ({
-  DIALOG_QUEUE_PRIORITIES: {
-    VIEW: 100,
-    PLAY: 0,
-  },
-  useDialogQueueItem: (_dialogId: string, enabled: boolean) => enabled,
-  useApi: () => ({
-    scoreClient: {
-      isNickAvailable: isNickAvailableMock,
-    },
-  }),
-  usePlayer: () => ({
-    player: { name: "Player" },
-    recoverPlayer: recoverPlayerMock,
-    updatePlayer: updatePlayerMock,
-  }),
-}));
+vi.mock("@providers", async () => {
+  const actual =
+    await vi.importActual<typeof import("@providers")>("@providers");
+
+  return {
+    ...actual,
+    useApi: () => ({
+      scoreClient: {
+        isNickAvailable: isNickAvailableMock,
+      },
+    }),
+    usePlayer: () => ({
+      player: { name: "Player" },
+      recoverPlayer: recoverPlayerMock,
+      updatePlayer: updatePlayerMock,
+    }),
+  };
+});
 
 const renderView = (initialEntry = "/") =>
   render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route path="/" element={<View />}>
-          <Route index element={<div>Home content</div>} />
-          <Route path="play" element={<div>Play content</div>} />
-          <Route path="scoreboard" element={<div>Scoreboard content</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+    <DialogQueueProvider>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route path="/" element={<View />}>
+            <Route index element={<div>Home content</div>} />
+            <Route path="play" element={<div>Play content</div>} />
+            <Route path="scoreboard" element={<div>Scoreboard content</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </DialogQueueProvider>,
   );
 
 afterEach(() => {
@@ -137,7 +141,10 @@ describe("View app version dialog", () => {
   it("queues layout dialogs and renders the next one after closing the active one", async () => {
     env.appVersion = "0.0.16-beta";
     localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.15");
-    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify({ name: "Player" }));
+    localStorage.setItem(
+      PLAYER_STORAGE_KEY,
+      JSON.stringify({ name: "Player" }),
+    );
 
     renderView("/play");
 

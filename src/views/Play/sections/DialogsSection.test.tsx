@@ -1,5 +1,6 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DialogQueueProvider } from "@providers";
 import DialogsSection from "./DialogsSection";
 
 const featureFlagsMock = vi.hoisted(() => ({
@@ -73,14 +74,6 @@ const playViewMock = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@providers", () => ({
-  DIALOG_QUEUE_PRIORITIES: {
-    VIEW: 100,
-    PLAY: 0,
-  },
-  useDialogQueueItem: (_dialogId: string, enabled: boolean) => enabled,
-}));
-
 vi.mock("@providers/FeatureFlags", () => ({
   useFeatureFlags: () => featureFlagsMock,
 }));
@@ -95,10 +88,13 @@ vi.mock("@i18n", () => ({
   }),
 }));
 
-vi.mock("../components/Dialogs/SessionResumeDialog/SessionResumeDialog", () => ({
-  default: ({ visible }: { visible: boolean }) =>
-    visible ? <div>Resume Dialog</div> : null,
-}));
+vi.mock(
+  "../components/Dialogs/SessionResumeDialog/SessionResumeDialog",
+  () => ({
+    default: ({ visible }: { visible: boolean }) =>
+      visible ? <div>Resume Dialog</div> : null,
+  }),
+);
 
 vi.mock(
   "../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog",
@@ -122,7 +118,11 @@ describe("DialogsSection", () => {
     controllerMock.showResumeDialog = true;
     controllerMock.showRefreshDialog = true;
 
-    const { rerender } = render(<DialogsSection />);
+    const { rerender } = render(
+      <DialogQueueProvider>
+        <DialogsSection key="resume-open" />
+      </DialogQueueProvider>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Resume Dialog")).toBeTruthy();
@@ -130,7 +130,11 @@ describe("DialogsSection", () => {
     expect(screen.queryByText("Refresh Dialog")).toBeNull();
 
     controllerMock.showResumeDialog = false;
-    rerender(<DialogsSection />);
+    rerender(
+      <DialogQueueProvider>
+        <DialogsSection key="resume-closed" />
+      </DialogQueueProvider>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Refresh Dialog")).toBeTruthy();
