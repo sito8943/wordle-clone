@@ -4,19 +4,22 @@ import type {
 } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
-import type { DifficultySectionProps } from "./types";
 import {
   PROFILE_DIFFICULTY_MODE_INPUT_ID,
   PROFILE_KEYBOARD_MODE_INPUT_ID,
 } from "@views/Profile/constants";
+import { useProfileView } from "@views/Profile/providers";
 import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 
-const DifficultySection = ({
-  keyboardPreference,
-  onChangeKeyboardPreference,
-  difficulty,
-  onChangeDifficulty,
-}: DifficultySectionProps) => {
+const DifficultySection = () => {
+  const {
+    controller: {
+      keyboardPreference,
+      changeKeyboardPreference,
+      difficulty,
+      changeDifficulty,
+    },
+  } = useProfileView();
   const { t } = useTranslation();
   const { wordListButtonEnabled } = useFeatureFlags();
 
@@ -34,7 +37,7 @@ const DifficultySection = ({
           aria-label={t("profile.labels.keyboardMode")}
           value={keyboardPreference}
           onChange={(event) =>
-            onChangeKeyboardPreference(
+            changeKeyboardPreference(
               event.target.value as PlayerKeyboardPreference,
             )
           }
@@ -60,7 +63,7 @@ const DifficultySection = ({
           aria-label={t("profile.labels.difficulty")}
           value={difficulty}
           onChange={(event) =>
-            onChangeDifficulty(event.target.value as PlayerDifficulty)
+            changeDifficulty(event.target.value as PlayerDifficulty)
           }
           className="profile-select-input"
         >

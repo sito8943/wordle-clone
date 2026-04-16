@@ -10,9 +10,26 @@ vi.mock("@providers/FeatureFlags", () => ({
   useFeatureFlags: () => featureFlagsMock,
 }));
 
+const profileViewMock = vi.hoisted(() => ({
+  controller: {
+    keyboardPreference: "onscreen" as string,
+    changeKeyboardPreference: vi.fn(),
+    difficulty: "normal" as string,
+    changeDifficulty: vi.fn(),
+  },
+}));
+
+vi.mock("@views/Profile/providers", () => ({
+  useProfileView: () => profileViewMock,
+}));
+
 describe("DifficultySection", () => {
   beforeEach(() => {
     featureFlagsMock.wordListButtonEnabled = true;
+    profileViewMock.controller.keyboardPreference = "onscreen";
+    profileViewMock.controller.difficulty = "normal";
+    profileViewMock.controller.changeKeyboardPreference = vi.fn();
+    profileViewMock.controller.changeDifficulty = vi.fn();
   });
 
   afterEach(() => {
@@ -20,17 +37,7 @@ describe("DifficultySection", () => {
   });
 
   it("renders keyboard and difficulty options and triggers callbacks", () => {
-    const onChangeKeyboardPreference = vi.fn();
-    const onChangeDifficulty = vi.fn();
-
-    render(
-      <DifficultySection
-        keyboardPreference="onscreen"
-        onChangeKeyboardPreference={onChangeKeyboardPreference}
-        difficulty="normal"
-        onChangeDifficulty={onChangeDifficulty}
-      />,
-    );
+    render(<DifficultySection />);
 
     const keyboardMode = screen.getByLabelText(
       "Keyboard mode",
@@ -51,21 +58,18 @@ describe("DifficultySection", () => {
     fireEvent.change(keyboardMode, { target: { value: "native" } });
     fireEvent.change(difficultyMode, { target: { value: "hard" } });
 
-    expect(onChangeKeyboardPreference).toHaveBeenCalledWith("native");
-    expect(onChangeDifficulty).toHaveBeenCalledWith("hard");
+    expect(
+      profileViewMock.controller.changeKeyboardPreference,
+    ).toHaveBeenCalledWith("native");
+    expect(profileViewMock.controller.changeDifficulty).toHaveBeenCalledWith(
+      "hard",
+    );
   });
 
   it("shows alternative easy and normal rules when word list is disabled", () => {
     featureFlagsMock.wordListButtonEnabled = false;
 
-    render(
-      <DifficultySection
-        keyboardPreference="onscreen"
-        onChangeKeyboardPreference={vi.fn()}
-        difficulty="normal"
-        onChangeDifficulty={vi.fn()}
-      />,
-    );
+    render(<DifficultySection />);
 
     expect(screen.queryByText("Easy shows the word list.")).toBeNull();
     expect(screen.queryByText("Normal hides the word list.")).toBeNull();
