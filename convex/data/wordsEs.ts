@@ -797,5 +797,5 @@ export const ES_WORDS = [
   "salgo",
   "salud",
   "reina",
-  "ceiba"
+  "ceiba",
 ];
