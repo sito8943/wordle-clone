@@ -50,6 +50,37 @@ export const resources = {
         donate: "Donate",
         donationThankYouAlert:
           "Thanks for supporting Wordle with your donation.",
+        versionUpdateDialog: {
+          title: "Updated to {{version}}",
+          description:
+            "You were on {{previousVersion}}. Review the latest changelog and version history.",
+          changelogTitle: "Latest changelog",
+          historyTitle: "Version history",
+          releaseLabel: "Version {{version}} · {{date}}",
+          emptyChangelog:
+            "No detailed changelog entries were found for this update range.",
+          closeAction: "Got it",
+          changes: {
+            v0016beta: [
+              "Added local app-version tracking to detect when a newer frontend build is available in this browser.",
+              "Introduced an update dialog that explains the latest changes and includes a complete in-app version history.",
+              "Improved release communication flow to make post-update context visible right after loading Home.",
+            ],
+            v0016: [
+              "Expanded gameplay settings and quality-of-life controls in Profile for a more configurable experience.",
+              "Refined core Home and Play interactions with additional UX polish and state consistency fixes.",
+            ],
+            v0015: [
+              "Improved dictionary and validation behavior across difficulty levels to align accepted guesses with configured rules.",
+              "Extended scoring and round feedback coverage to keep wins/losses more transparent for players.",
+            ],
+            v0014: [
+              "Optimized startup and route loading to reduce initial bundle pressure and improve perceived load times.",
+              "Enhanced result dialogs with richer round summaries and tighter integration with replay/profile flows.",
+              "Hardened storage contracts to reduce sensitive persistence exposure while keeping resume behavior stable.",
+            ],
+          },
+        },
       },
       footer: {
         madeBy: "Made by @sito8943",
@@ -538,6 +569,37 @@ export const resources = {
       home: {
         donate: "Donar",
         donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
+        versionUpdateDialog: {
+          title: "Actualizado a {{version}}",
+          description:
+            "Estabas en {{previousVersion}}. Revisa el changelog más reciente y el historial de versiones.",
+          changelogTitle: "Últimos cambios",
+          historyTitle: "Historial de versiones",
+          releaseLabel: "Versión {{version}} · {{date}}",
+          emptyChangelog:
+            "No se han encontrado entradas detalladas para este rango de actualización.",
+          closeAction: "Entendido",
+          changes: {
+            v0016beta: [
+              "Se añadió seguimiento de la versión de la app en local para detectar builds más nuevas del frontend en este navegador.",
+              "Se incorporó un diálogo de actualización con los cambios recientes y un historial completo de versiones dentro de la app.",
+              "Se mejoró el flujo de comunicación de releases para mostrar contexto de la actualización al cargar Home.",
+            ],
+            v0016: [
+              "Se ampliaron ajustes del juego y controles de calidad de vida en Perfil para una experiencia más configurable.",
+              "Se refinaron interacciones clave de Home y Play con mejoras de UX y mayor consistencia de estado.",
+            ],
+            v0015: [
+              "Se mejoró el comportamiento del diccionario y las validaciones por dificultad para alinear intentos válidos con las reglas activas.",
+              "Se amplió la cobertura de puntuación y feedback de rondas para hacer victorias y derrotas más transparentes.",
+            ],
+            v0014: [
+              "Se optimizó la carga inicial y de rutas para reducir el peso del bundle de arranque y mejorar el tiempo percibido de inicio.",
+              "Se mejoraron los diálogos de resultado con resúmenes de ronda más completos e integración más sólida con rejugar/perfil.",
+              "Se reforzaron contratos de almacenamiento para reducir exposición de datos sensibles manteniendo estable la reanudación de partida.",
+            ],
+          },
+        },
       },
       footer: {
         madeBy: "Hecho por @sito8943",

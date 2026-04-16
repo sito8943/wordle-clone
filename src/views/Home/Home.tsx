@@ -58,6 +58,7 @@ const Home = () => {
     ],
     [t],
   );
+
   const getItemTransitionDelay = (index: number) =>
     `${HOME_NAV_ITEMS_ENTRY_INITIAL_DELAY_MS + index * HOME_NAV_ITEMS_ENTRY_STAGGER_DELAY_MS}ms`;
 

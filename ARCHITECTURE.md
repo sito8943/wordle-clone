@@ -176,6 +176,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:dictionary:es`: cached dictionary words.
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.
+- `wordle:app-version`: last frontend app version seen by this browser, used to detect newer releases and show changelog/version-history dialog from the shared `View` layout (available on any route).
 - additional feature keys for theme/animations/scoreboard caches.
 
 ## Data Flow (Play Gameplay)

@@ -55,7 +55,12 @@ describe("Home entry animation", () => {
     renderHome();
 
     const heading = screen.getByRole("heading", { name: "WORDLE" });
-    const nav = screen.getByRole("navigation");
+    const firstNavigationItem = screen
+      .getByRole("link", { name: "Play" })
+      .closest("li");
+    if (!firstNavigationItem) {
+      throw new Error("Expected play navigation item.");
+    }
 
     expect(sessionStorage.getItem(HOME_ENTRY_ANIMATION_SESSION_KEY)).toBe(
       "seen",
@@ -64,8 +69,8 @@ describe("Home entry animation", () => {
     await waitFor(() => {
       expect(heading.className).toContain("opacity-100");
       expect(heading.className).toContain("scale-100");
-      expect(nav.className).toContain("opacity-100");
-      expect(nav.className).toContain("scale-100");
+      expect(firstNavigationItem.className).toContain("translate-y-0");
+      expect(firstNavigationItem.className).toContain("scale-100");
     });
   });
 
@@ -76,7 +81,7 @@ describe("Home entry animation", () => {
     const navItems = Array.from(nav.querySelectorAll("li"));
 
     navItems.forEach((item, index) => {
-      expect(item.className).toContain("transition-[opacity,transform]");
+      expect(item.className).toContain("transition-[scale,translate]");
       expect((item as HTMLLIElement).style.transitionDelay).toBe(
         `${
           HOME_NAV_ITEMS_ENTRY_INITIAL_DELAY_MS +
@@ -93,13 +98,18 @@ describe("Home entry animation", () => {
     renderHome();
 
     const heading = screen.getByRole("heading", { name: "WORDLE" });
-    const nav = screen.getByRole("navigation");
+    const firstNavigationItem = screen
+      .getByRole("link", { name: "Play" })
+      .closest("li");
+    if (!firstNavigationItem) {
+      throw new Error("Expected play navigation item.");
+    }
 
     expect(requestAnimationFrameSpy).not.toHaveBeenCalled();
     expect(heading.className).toContain("opacity-100");
     expect(heading.className).toContain("scale-100");
-    expect(nav.className).toContain("opacity-100");
-    expect(nav.className).toContain("scale-100");
+    expect(firstNavigationItem.className).toContain("translate-y-0");
+    expect(firstNavigationItem.className).toContain("scale-100");
   });
 
   it("hides the donate button when paypal feature flag is disabled", () => {
