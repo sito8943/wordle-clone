@@ -5,11 +5,12 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
 import View from "./View";
-import { APP_VERSION_STORAGE_KEY } from "./constants";
+import { APP_VERSION_STORAGE_KEY, PLAYER_STORAGE_KEY } from "./constants";
 
 const ORIGINAL_APP_VERSION = env.appVersion;
 
@@ -21,14 +22,41 @@ vi.mock("@hooks", () => ({
 vi.mock("./components", () => ({
   Navbar: () => <nav>Navbar</nav>,
   Footer: () => <footer>Footer</footer>,
-  InitialPlayerDialog: () => null,
 }));
+
+vi.mock(
+  "@layouts/View/components/InitialPlayerDialog/InitialPlayerDialog",
+  () => ({
+    default: ({
+      visible,
+      onConfirm,
+    }: {
+      visible: boolean;
+      onConfirm: (name: string) => Promise<string | null>;
+    }) =>
+      visible ? (
+        <div>
+          <p>Initial player dialog</p>
+          <button
+            type="button"
+            onClick={() => {
+              void onConfirm("Player");
+            }}
+          >
+            Confirm initial player
+          </button>
+        </div>
+      ) : null,
+  }),
+);
 
 const updatePlayerMock = vi.fn().mockResolvedValue(undefined);
 const recoverPlayerMock = vi.fn().mockResolvedValue(undefined);
 const isNickAvailableMock = vi.fn().mockResolvedValue(true);
 
 vi.mock("@providers", () => ({
+  DialogQueueProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+  useDialogQueueItem: (_dialogId: string, enabled: boolean) => enabled,
   useApi: () => ({
     scoreClient: {
       isNickAvailable: isNickAvailableMock,
@@ -102,5 +130,26 @@ describe("View app version dialog", () => {
     renderView("/scoreboard");
 
     expect(screen.queryByText("Updated to 0.0.15")).toBeNull();
+  });
+
+  it("queues layout dialogs and renders the next one after closing the active one", async () => {
+    env.appVersion = "0.0.16-beta";
+    localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.15");
+    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify({ name: "Player" }));
+
+    renderView("/play");
+
+    await waitFor(() => {
+      expect(screen.getByText("Initial player dialog")).toBeTruthy();
+    });
+    expect(screen.queryByText("Updated to 0.0.16-beta")).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Confirm initial player" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
+    });
   });
 });

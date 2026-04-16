@@ -11,11 +11,16 @@ import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { Navbar, Footer } from "./components";
 import { useAnimationsPreference, useThemePreference } from "@hooks";
-import { useApi, usePlayer } from "@providers";
+import {
+  DialogQueueProvider,
+  useApi,
+  useDialogQueueItem,
+  usePlayer,
+} from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
 import { env } from "@config/env";
 import { ROUTES } from "@config/routes";
-import { VIEW_VERSION_HISTORY } from "./constants";
+import { VIEW_DIALOG_IDS, VIEW_VERSION_HISTORY } from "./constants";
 import {
   getStoredAppVersion,
   getVersionHistoryEntriesForUpdate,
@@ -30,7 +35,7 @@ const InitialPlayerDialog = lazy(
     import("@layouts/View/components/InitialPlayerDialog/InitialPlayerDialog"),
 );
 
-const View = () => {
+const ViewContent = () => {
   const { t } = useTranslation();
   const { scoreClient } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
@@ -44,6 +49,14 @@ const View = () => {
   const [versionDialogVisible, setVersionDialogVisible] = useState(false);
   const [previousAppVersion, setPreviousAppVersion] = useState<string | null>(
     null,
+  );
+  const queuedInitialPlayerDialogVisible = useDialogQueueItem(
+    VIEW_DIALOG_IDS.INITIAL_PLAYER,
+    showInitialPlayerDialog,
+  );
+  const queuedVersionDialogVisible = useDialogQueueItem(
+    VIEW_DIALOG_IDS.VERSION_UPDATE,
+    versionDialogVisible,
   );
 
   const closeVersionDialog = useCallback(() => {
@@ -226,9 +239,9 @@ const View = () => {
       </div>
       <Footer alwaysVisible={isHomeRoute} />
       <Suspense fallback={null}>
-        {versionDialogVisible ? (
+        {queuedVersionDialogVisible ? (
           <VersionUpdateDialog
-            visible={versionDialogVisible}
+            visible={queuedVersionDialogVisible}
             onClose={closeVersionDialog}
             currentVersion={env.appVersion}
             previousVersion={previousAppVersion}
@@ -238,9 +251,9 @@ const View = () => {
         ) : null}
       </Suspense>
       <Suspense fallback={null}>
-        {showInitialPlayerDialog ? (
+        {queuedInitialPlayerDialogVisible ? (
           <InitialPlayerDialog
-            visible={showInitialPlayerDialog}
+            visible={queuedInitialPlayerDialogVisible}
             onClose={() => undefined}
             initialName={player.name}
             onConfirm={confirmInitialPlayerName}
@@ -252,5 +265,11 @@ const View = () => {
     </div>
   );
 };
+
+const View = () => (
+  <DialogQueueProvider>
+    <ViewContent />
+  </DialogQueueProvider>
+);
 
 export default View;

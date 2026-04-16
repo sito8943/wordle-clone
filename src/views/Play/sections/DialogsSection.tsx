@@ -1,7 +1,9 @@
 import { lazy, memo, Suspense, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
+import { DialogQueueProvider, useDialogQueueItem } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import { PLAY_DIALOG_IDS } from "@views/Play/constants";
 import { usePlayView } from "@views/Play/providers";
 
 const SessionResumeDialog = lazy(
@@ -39,7 +41,7 @@ const DifficultyChangeDialog = lazy(
     import("../components/Dialogs/DifficultyChangeDialog/DifficultyChangeDialog"),
 );
 
-const DialogsSection = (): JSX.Element => {
+const DialogsSectionContent = (): JSX.Element => {
   const { t } = useTranslation();
   const gameMode = t("play.gameModes.classic");
   const { shareButtonEnabled, settingsDrawerEnabled } = useFeatureFlags();
@@ -98,45 +100,47 @@ const DialogsSection = (): JSX.Element => {
     dailyChallengesDeveloperMessage,
     dailyChallengesDeveloperMessageKind,
   } = controller;
-  const resumeDialogVisible = showResumeDialog;
-  const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
-  const dictionaryChecksumDialogVisible =
-    !showResumeDialog &&
-    !endOfGameDialogVisible &&
-    showDictionaryChecksumDialog;
-  const refreshDialogVisible =
-    !showResumeDialog &&
-    !endOfGameDialogVisible &&
-    !dictionaryChecksumDialogVisible &&
-    showRefreshDialog;
-  const wordListDialogVisible =
-    !showResumeDialog &&
-    !endOfGameDialogVisible &&
-    !dictionaryChecksumDialogVisible &&
-    wordListButtonEnabled &&
-    showWordsDialog;
-  const challengesDialogVisible =
-    challengesEnabled &&
-    !showResumeDialog &&
-    !endOfGameDialogVisible &&
-    !dictionaryChecksumDialogVisible &&
-    challenges.showDialog &&
-    challenges.challenges !== null;
-  const developerConsoleDialogVisible =
-    !showResumeDialog &&
-    !endOfGameDialogVisible &&
-    !dictionaryChecksumDialogVisible &&
-    showDeveloperConsoleDialog;
-  const tutorialPromptDialogVisible =
-    !showResumeDialog &&
-    !endOfGameDialogVisible &&
-    !dictionaryChecksumDialogVisible &&
-    !refreshDialogVisible &&
-    !wordListDialogVisible &&
-    !challengesDialogVisible &&
-    !developerConsoleDialogVisible &&
-    !isDifficultyChangeConfirmationOpen &&
-    showTutorialPromptDialog;
+
+  const resumeDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.RESUME,
+    showResumeDialog,
+  );
+  const victoryDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.VICTORY,
+    Boolean(victoryScoreSummary) && showVictoryDialog,
+  );
+  const defeatDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.DEFEAT,
+    showDefeatDialog,
+  );
+  const dictionaryChecksumDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.DICTIONARY_CHECKSUM,
+    showDictionaryChecksumDialog,
+  );
+  const refreshDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.REFRESH_CONFIRMATION,
+    showRefreshDialog,
+  );
+  const difficultyChangeDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.DIFFICULTY_CHANGE,
+    isDifficultyChangeConfirmationOpen,
+  );
+  const wordListDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.WORD_LIST,
+    wordListButtonEnabled && showWordsDialog,
+  );
+  const challengesDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.CHALLENGES,
+    challengesEnabled && challenges.showDialog && challenges.challenges !== null,
+  );
+  const developerConsoleDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.DEVELOPER_CONSOLE,
+    showDeveloperConsoleDialog,
+  );
+  const tutorialPromptDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.TUTORIAL_PROMPT,
+    showTutorialPromptDialog,
+  );
 
   const changeDifficulty = () => {
     if (!settingsDrawerEnabled) {
@@ -157,6 +161,7 @@ const DialogsSection = (): JSX.Element => {
         showTutorialPromptDialog,
         showWordsDialog,
         showDeveloperConsoleDialog,
+        isDifficultyChangeConfirmationOpen,
         showVictoryDialog,
         showDefeatDialog,
         challenges.showDialog,
@@ -202,15 +207,7 @@ const DialogsSection = (): JSX.Element => {
               onConfirm={confirmRefreshBoard}
             />
           ) : null}
-          {tutorialPromptDialogVisible ? (
-            <TutorialPromptDialog
-              visible
-              gameMode={gameMode}
-              onClose={declineTutorialPrompt}
-              onConfirm={acceptTutorialPrompt}
-            />
-          ) : null}
-          <DifficultyChangeDialog />
+          {difficultyChangeDialogVisible ? <DifficultyChangeDialog /> : null}
           {wordListDialogVisible ? (
             <WordListDialog
               visible
@@ -219,25 +216,23 @@ const DialogsSection = (): JSX.Element => {
               onClose={closeWordsDialog}
             />
           ) : null}
-          {victoryScoreSummary ? (
-            showVictoryDialog ? (
-              <VictoryDialog
-                visible
-                answer={endOfGameAnswer}
-                currentStreak={endOfGameCurrentStreak}
-                scoreSummary={victoryScoreSummary}
-                challengeBonusPoints={endOfGameChallengeBonusPoints}
-                showSettingsHint={showEndOfGameSettingsHint}
-                shareEnabled={shareButtonEnabled && victoryBoardShareSupported}
-                isSharing={isSharingVictoryBoard}
-                shareErrorMessage={victoryBoardShareError}
-                onClose={closeEndOfGameDialog}
-                onPlayAgain={startNewBoard}
-                onShare={shareVictoryBoard}
-              />
-            ) : null
+          {victoryDialogVisible && victoryScoreSummary ? (
+            <VictoryDialog
+              visible
+              answer={endOfGameAnswer}
+              currentStreak={endOfGameCurrentStreak}
+              scoreSummary={victoryScoreSummary}
+              challengeBonusPoints={endOfGameChallengeBonusPoints}
+              showSettingsHint={showEndOfGameSettingsHint}
+              shareEnabled={shareButtonEnabled && victoryBoardShareSupported}
+              isSharing={isSharingVictoryBoard}
+              shareErrorMessage={victoryBoardShareError}
+              onClose={closeEndOfGameDialog}
+              onPlayAgain={startNewBoard}
+              onShare={shareVictoryBoard}
+            />
           ) : null}
-          {showDefeatDialog ? (
+          {defeatDialogVisible ? (
             <DefeatDialog
               visible
               answer={endOfGameAnswer}
@@ -289,10 +284,24 @@ const DialogsSection = (): JSX.Element => {
               }
             />
           ) : null}
+          {tutorialPromptDialogVisible ? (
+            <TutorialPromptDialog
+              visible
+              gameMode={gameMode}
+              onClose={declineTutorialPrompt}
+              onConfirm={acceptTutorialPrompt}
+            />
+          ) : null}
         </Suspense>
       </>
     </ErrorBoundary>
   );
 };
+
+const DialogsSection = (): JSX.Element => (
+  <DialogQueueProvider>
+    <DialogsSectionContent />
+  </DialogQueueProvider>
+);
 
 export default memo(DialogsSection);

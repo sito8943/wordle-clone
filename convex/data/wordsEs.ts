@@ -33,8 +33,6 @@ export const ES_WORDS = [
   "acedo",
   "acema",
   "acena",
-  "acepa",
-  "acepo",
   "acera",
   "acere",
   "acero",
@@ -804,4 +802,8 @@ export const ES_WORDS = [
   "tropa",
   "orcas",
   "viera",
+  "salvo",
+  "clavo",
+  "salto",
+  "anida",
 ];
