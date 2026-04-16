@@ -1,6 +1,6 @@
 {
   "name": "wordle",
-  "private": true,
+  "private": false,
   "version": "0.0.16",
   "type": "module",
   "scripts": {

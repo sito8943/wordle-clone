@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-04-16
+
+### Branch `0.0.16-beta`
+
+- Added local frontend version tracking via `wordle:app-version` and semantic version helpers (including prerelease comparison and empty previous-version handling) to detect newer builds in the same browser.
+- Introduced a shared in-app update dialog in `View` that can appear from any route and renders localized release history entries from `VIEW_VERSION_HISTORY`.
+- Extracted the update dialog into a dedicated `VersionUpdateDialog` component and updated the close flow so the stored app version is persisted when the dialog is dismissed.
+- Added staggered Home entry transitions for navigation actions (including donation CTA), with dedicated timing constants and animation assertions in tests.
+- Added `MAX_STREAK_FOR_SCORE_MULTIPLIER = 100` so score multiplier calculation is capped at 100 streak while the real streak counter can continue increasing.
+- Updated Help scoring copy and i18n resources (English/Spanish) to document the capped streak formula: `min(streak, 100)` / `min(racha, 100)`.
+- Updated the Spanish dictionary seed list in `convex/data/wordsEs.ts`.
+- Expanded automated coverage for version update flow, scoring cap behavior, Help scoring copy interpolation, and Home staggered transition behavior.
+
 ## 2026-04-02
 
 ### Branch `0.0.10`
