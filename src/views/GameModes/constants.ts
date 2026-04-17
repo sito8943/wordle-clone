@@ -1,7 +1,7 @@
 import {
   faBolt,
   faCalendarDay,
-  faPeace,
+  faSpa,
   faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { ROUTES } from "@config/routes";
@@ -23,7 +23,7 @@ export const GAME_MODE_CARDS: GameModeCard[] = [
   {
     id: "zen",
     to: ROUTES.ZEN,
-    icon: faPeace,
+    icon: faSpa,
     iconClassName: "text-emerald-600 dark:text-emerald-300",
   },
   {

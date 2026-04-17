@@ -1,6 +1,6 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getTotalPointsForWin } from "@domain/wordle";
+import { CLASSIC_ROUND_CONFIG, getTotalPointsForWin } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
 import { ROUTES } from "@config/routes";
@@ -387,6 +387,7 @@ describe("usePlayController", () => {
       expect.objectContaining({
         allowUnknownWords: true,
         language: WORDS_DEFAULT_LANGUAGE,
+        roundConfig: CLASSIC_ROUND_CONFIG,
       }),
     );
   });
@@ -664,6 +665,7 @@ describe("usePlayController", () => {
       expect.objectContaining({
         allowUnknownWords: false,
         language: WORDS_DEFAULT_LANGUAGE,
+        roundConfig: CLASSIC_ROUND_CONFIG,
       }),
     );
   });

@@ -201,6 +201,35 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.activeTileIndex).toBe(1);
   });
 
+  it("respects custom round config limits for row length", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useWordle({
+          roundConfig: { lettersPerRow: 3, maxGuesses: 6 },
+        }),
+      { wrapper },
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+      result.current.handleKey("B");
+      result.current.handleKey("C");
+      result.current.handleKey("D");
+    });
+
+    expect(result.current.current).toBe("ABC");
+    expect(result.current.roundConfig.lettersPerRow).toBe(3);
+  });
+
   it("reveals hints in the first empty slot when manual input has gaps", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();

@@ -1,5 +1,10 @@
 import type { TileStatus } from "@utils/types";
 
+export type BoardRoundConfig = {
+  lettersPerRow: number;
+  maxGuesses: number;
+};
+
 export type GuessResult = {
   word: string;
   statuses: TileStatus[];

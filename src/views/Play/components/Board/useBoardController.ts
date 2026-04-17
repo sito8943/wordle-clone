@@ -7,6 +7,7 @@ const useBoardController = ({
   guesses,
   current,
   gameOver,
+  roundConfig,
   animateTileEntry = false,
   isLoss = false,
   shakePulse = 0,
@@ -36,7 +37,7 @@ const useBoardController = ({
   }, [shakePulse]);
 
   const rows = useMemo<BoardRowViewModel[]>(() => {
-    const boardRows = buildBoardRows(guesses, current, gameOver);
+    const boardRows = buildBoardRows(guesses, current, gameOver, roundConfig);
     const activeRowIndex = !gameOver ? guesses.length : -1;
 
     return boardRows.map((row, index) => {
@@ -85,6 +86,7 @@ const useBoardController = ({
     current,
     gameOver,
     guesses,
+    roundConfig,
     hintRevealPulse,
     hintRevealTileIndex,
     isLoss,

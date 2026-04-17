@@ -2,7 +2,10 @@ import type { TileStatus } from "./types";
 export type { TileStatus } from "./types";
 
 export function checkGuess(guess: string, answer: string): TileStatus[] {
-  const result: TileStatus[] = Array(5).fill("absent");
+  const result: TileStatus[] = Array.from(
+    { length: guess.length },
+    () => "absent",
+  );
   const answerChars = answer.split("");
   const guessChars = guess.split("");
 

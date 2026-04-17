@@ -11,6 +11,7 @@ import {
   getPointsForWin,
   getRoundDurationMs,
   getTotalPointsForWin,
+  CLASSIC_ROUND_CONFIG,
   type Player,
   type PlayerDifficulty,
 } from "@domain/wordle";
@@ -77,6 +78,7 @@ export default function usePlayController() {
       player.difficulty === "easy" || player.difficulty === "normal",
     language: gameplayLanguage,
     manualTileSelection: player.manualTileSelection === true,
+    roundConfig: CLASSIC_ROUND_CONFIG,
   });
   const {
     sessionId,

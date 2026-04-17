@@ -66,10 +66,10 @@ const Home = () => {
   return (
     <main className="page-centered flex-1 gap-8 px-4">
       <h2
-        className={`slab text-center text-6xl font-black tracking-widest text-black sm:text-8xl dark:text-neutral-100 transition-[opacity,translate] duration-500 ease-out motion-reduce:transition-none ${
+        className={`slab text-center text-6xl font-black tracking-widest text-black sm:text-8xl dark:text-neutral-100 transition-[opacity,translate,scale] duration-500 ease-out motion-reduce:transition-none ${
           entryAnimationReady
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 -translate-y-3"
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 -translate-y-3 scale-95"
         }`}
       >
         {t("app.title").toUpperCase()}

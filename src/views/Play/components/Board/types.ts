@@ -1,9 +1,14 @@
-import type { BoardCellStatus, GuessResult } from "@domain/wordle";
+import type {
+  BoardCellStatus,
+  BoardRoundConfig,
+  GuessResult,
+} from "@domain/wordle";
 
 export type BoardPropsType = {
   guesses: GuessResult[];
   current: string;
   gameOver: boolean;
+  roundConfig?: Partial<BoardRoundConfig>;
   animateEntry?: boolean;
   animateTileEntry?: boolean;
   isLoss?: boolean;
@@ -62,6 +67,7 @@ export type UseBoardControllerParams = Pick<
   | "guesses"
   | "current"
   | "gameOver"
+  | "roundConfig"
   | "animateTileEntry"
   | "isLoss"
   | "shakePulse"

@@ -1,13 +1,14 @@
 import { checkGuess } from "@utils/checker";
 import { isValidWord } from "@utils/words";
-import { MAX_GUESSES, WORD_LENGTH } from "./constants";
 import {
   createGameReferenceForAnswer,
   normalizeSeed,
   resolveAnswerFromGameReference,
 } from "./reference";
+import { resolveBoardRoundConfig } from "./roundConfig";
 import type { PlayerLanguage } from "./player";
 import type {
+  BoardRoundConfig,
   GuessResult,
   GuessValidationResult,
   PersistedGameRef,
@@ -47,7 +48,10 @@ const normalizeRoundStartedAt = (value: unknown): number => {
   return Math.floor(value);
 };
 
-const isGuessResult = (value: unknown): value is GuessResult => {
+const isGuessResult = (
+  value: unknown,
+  lettersPerRow: number,
+): value is GuessResult => {
   if (!value || typeof value !== "object") {
     return false;
   }
@@ -57,7 +61,7 @@ const isGuessResult = (value: unknown): value is GuessResult => {
   return (
     typeof maybeGuess.word === "string" &&
     Array.isArray(maybeGuess.statuses) &&
-    maybeGuess.statuses.length === WORD_LENGTH &&
+    maybeGuess.statuses.length === lettersPerRow &&
     maybeGuess.statuses.every(
       (status) =>
         status === "correct" || status === "present" || status === "absent",
@@ -70,7 +74,10 @@ export const normalizePersistedGameState = (
   sessionId: string,
   initialAnswer: string,
   words: string[] = [],
+  roundConfig?: Partial<BoardRoundConfig>,
 ): PersistedGameState => {
+  const { lettersPerRow } = resolveBoardRoundConfig(roundConfig);
+
   if (value && typeof value === "object") {
     const maybe = value as Partial<PersistedGameState & PersistedGameRef>;
 
@@ -80,7 +87,7 @@ export const normalizePersistedGameState = (
       Array.isArray(maybe.guesses) &&
       typeof maybe.current === "string" &&
       typeof maybe.gameOver === "boolean" &&
-      maybe.guesses.every(isGuessResult)
+      maybe.guesses.every((guess) => isGuessResult(guess, lettersPerRow))
     ) {
       const answer = resolveAnswerFromGameReference(
         {
@@ -114,7 +121,7 @@ export const normalizePersistedGameState = (
       Array.isArray(maybe.guesses) &&
       typeof maybe.current === "string" &&
       typeof maybe.gameOver === "boolean" &&
-      maybe.guesses.every(isGuessResult)
+      maybe.guesses.every((guess) => isGuessResult(guess, lettersPerRow))
     ) {
       const reference = createGameReferenceForAnswer(maybe.answer, words, {
         deterministic: true,
@@ -156,9 +163,14 @@ export const isWon = (state: PersistedGameState): boolean =>
 export const validateGuessInput = (
   input: string,
   answer: string,
-  options: { allowUnknownWords?: boolean } = {},
+  options: {
+    allowUnknownWords?: boolean;
+    roundConfig?: Partial<BoardRoundConfig>;
+  } = {},
 ): GuessValidationResult => {
-  if (input.length < WORD_LENGTH || input.includes(" ")) {
+  const { lettersPerRow } = resolveBoardRoundConfig(options.roundConfig);
+
+  if (input.length < lettersPerRow || input.includes(" ")) {
     return { ok: false, message: "Not enough letters" };
   }
 
@@ -175,22 +187,27 @@ export const validateGuessInput = (
 export const applyGuess = (
   state: PersistedGameState,
   guess: GuessResult,
+  roundConfig?: Partial<BoardRoundConfig>,
 ): PersistedGameState => {
+  const { maxGuesses } = resolveBoardRoundConfig(roundConfig);
   const nextGuesses = [...state.guesses, guess];
 
   return {
     ...state,
     guesses: nextGuesses,
     current: "",
-    gameOver: guess.word === state.answer || nextGuesses.length === MAX_GUESSES,
+    gameOver: guess.word === state.answer || nextGuesses.length === maxGuesses,
   };
 };
 
 export const addLetter = (
   state: PersistedGameState,
   letter: string,
+  roundConfig?: Partial<BoardRoundConfig>,
 ): PersistedGameState => {
-  if (state.current.length >= WORD_LENGTH) {
+  const { lettersPerRow } = resolveBoardRoundConfig(roundConfig);
+
+  if (state.current.length >= lettersPerRow) {
     return state;
   }
 
@@ -201,8 +218,11 @@ export const setLetterAt = (
   state: PersistedGameState,
   index: number,
   letter: string,
+  roundConfig?: Partial<BoardRoundConfig>,
 ): PersistedGameState => {
-  if (index < 0 || index >= WORD_LENGTH) {
+  const { lettersPerRow } = resolveBoardRoundConfig(roundConfig);
+
+  if (index < 0 || index >= lettersPerRow) {
     return state;
   }
 

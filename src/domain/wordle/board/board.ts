@@ -1,13 +1,16 @@
-import type { GuessResult } from "../types";
-import { BOARD_ROWS, BOARD_COLUMNS } from "./constants";
+import { resolveBoardRoundConfig } from "../roundConfig";
+import type { BoardRoundConfig, GuessResult } from "../types";
 import type { BoardRowModel } from "./types";
 
 export const buildBoardRows = (
   guesses: GuessResult[],
   current: string,
   gameOver: boolean,
-): BoardRowModel[] =>
-  Array.from({ length: BOARD_ROWS }, (_, rowIndex) => {
+  roundConfig?: Partial<BoardRoundConfig>,
+): BoardRowModel[] => {
+  const { maxGuesses, lettersPerRow } = resolveBoardRoundConfig(roundConfig);
+
+  return Array.from({ length: maxGuesses }, (_, rowIndex) => {
     if (rowIndex < guesses.length) {
       return {
         letters: guesses[rowIndex].word.split(""),
@@ -18,17 +21,18 @@ export const buildBoardRows = (
     if (rowIndex === guesses.length && !gameOver) {
       return {
         letters: Array.from(
-          { length: BOARD_COLUMNS },
+          { length: lettersPerRow },
           (_, cellIndex) => current[cellIndex]?.trim() || "",
         ),
-        statuses: Array.from({ length: BOARD_COLUMNS }, (_, cellIndex) =>
+        statuses: Array.from({ length: lettersPerRow }, (_, cellIndex) =>
           current[cellIndex]?.trim() ? "tbd" : "empty",
         ),
       };
     }
 
     return {
-      letters: Array.from({ length: BOARD_COLUMNS }, () => ""),
-      statuses: Array.from({ length: BOARD_COLUMNS }, () => "empty"),
+      letters: Array.from({ length: lettersPerRow }, () => ""),
+      statuses: Array.from({ length: lettersPerRow }, () => "empty"),
     };
   });
+};

@@ -159,6 +159,12 @@ describe("addLetter", () => {
     addLetter(state, "A");
     expect(state.current).toBe("CR");
   });
+
+  it("respects custom letters-per-row limits", () => {
+    const state = makeState({ current: "ABC" });
+    const next = addLetter(state, "D", { lettersPerRow: 3, maxGuesses: 6 });
+    expect(next.current).toBe("ABC");
+  });
 });
 
 describe("removeLetter", () => {
@@ -199,6 +205,15 @@ describe("setLetterAt", () => {
     const state = makeState({ current: "CRA" });
     expect(setLetterAt(state, -1, "Z").current).toBe("CRA");
     expect(setLetterAt(state, 5, "Z").current).toBe("CRA");
+  });
+
+  it("ignores indexes outside a custom letters-per-row limit", () => {
+    const state = makeState({ current: "ABC" });
+    const next = setLetterAt(state, 3, "Z", {
+      lettersPerRow: 3,
+      maxGuesses: 6,
+    });
+    expect(next.current).toBe("ABC");
   });
 });
 
@@ -284,6 +299,27 @@ describe("applyGuess", () => {
     const next = applyGuess(state, guess);
     expect(next.gameOver).toBe(false);
   });
+
+  it("respects custom max-guesses limits", () => {
+    const wrongGuess = {
+      word: "ABOUT",
+      statuses: [
+        "absent",
+        "absent",
+        "absent",
+        "absent",
+        "absent",
+      ] as PersistedGameState["guesses"][0]["statuses"],
+    };
+    const state = makeState({
+      guesses: Array(2).fill(wrongGuess),
+    });
+    const next = applyGuess(state, wrongGuess, {
+      lettersPerRow: 5,
+      maxGuesses: 3,
+    });
+    expect(next.gameOver).toBe(true);
+  });
 });
 
 describe("validateGuessInput", () => {
@@ -311,6 +347,21 @@ describe("validateGuessInput", () => {
       allowUnknownWords: true,
     });
     expect(result.ok).toBe(true);
+  });
+
+  it("uses custom letters-per-row during validation", () => {
+    const result = validateGuessInput("APPLE", "ORANGE", {
+      allowUnknownWords: true,
+      roundConfig: {
+        lettersPerRow: 6,
+        maxGuesses: 6,
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.message).toBe("Not enough letters");
+    }
   });
 });
 
@@ -436,5 +487,36 @@ describe("normalizePersistedGameState", () => {
       "stone",
     ]);
     expect(state.sessionId).toBe(SESSION_ID);
+  });
+
+  it("accepts persisted guess status length based on custom round config", () => {
+    const valid = {
+      sessionId: "stored-session",
+      gameId: "game-1",
+      seed: 1,
+      startedAt: 1_700_000_000_000,
+      answer: "PLAY",
+      guesses: [
+        {
+          word: "PLAN",
+          statuses: ["correct", "absent", "present", "absent"],
+        },
+      ],
+      current: "",
+      gameOver: false,
+    };
+
+    const state = normalizePersistedGameState(valid, SESSION_ID, "PLAY", [], {
+      lettersPerRow: 4,
+      maxGuesses: 8,
+    });
+
+    expect(state.guesses).toHaveLength(1);
+    expect(state.guesses[0].statuses).toEqual([
+      "correct",
+      "absent",
+      "present",
+      "absent",
+    ]);
   });
 });

@@ -14,6 +14,17 @@ const makeGuess = (
 });
 
 describe("buildBoardRows", () => {
+  it("supports custom round dimensions", () => {
+    const rows = buildBoardRows([], "", false, {
+      maxGuesses: 2,
+      lettersPerRow: 3,
+    });
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0].letters).toEqual(["", "", ""]);
+    expect(rows[1].statuses).toEqual(["empty", "empty", "empty"]);
+  });
+
   it("returns exactly BOARD_ROWS rows", () => {
     const rows = buildBoardRows([], "", false);
     expect(rows).toHaveLength(BOARD_ROWS);
@@ -48,6 +59,16 @@ describe("buildBoardRows", () => {
     expect(rows[0].statuses[2]).toBe("tbd");
     expect(rows[0].statuses[3]).toBe("empty");
     expect(rows[0].statuses[4]).toBe("empty");
+  });
+
+  it("clips current input to the configured letters per row", () => {
+    const rows = buildBoardRows([], "ABCD", false, {
+      maxGuesses: 3,
+      lettersPerRow: 3,
+    });
+
+    expect(rows[0].letters).toEqual(["A", "B", "C"]);
+    expect(rows[0].statuses).toEqual(["tbd", "tbd", "tbd"]);
   });
 
   it("current row is the row after the last guess", () => {

@@ -10,6 +10,7 @@ export const BoardContent = (): JSX.Element => {
     guesses,
     current,
     gameOver,
+    roundConfig,
     won,
     answer,
     showLegacyEndOfGameMessage,
@@ -33,6 +34,7 @@ export const BoardContent = (): JSX.Element => {
         guesses={guesses}
         current={current}
         gameOver={gameOver}
+        roundConfig={roundConfig}
         animateTileEntry={animateTileEntry}
         isLoss={gameOver && !won}
         animateEntry={startAnimationsEnabled && startAnimationSeed > 0}

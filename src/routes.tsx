@@ -6,6 +6,7 @@ import { ROUTES } from "@config/routes";
 const View = lazy(() => import("@layouts/View"));
 const Home = lazy(() => import("@views/Home"));
 const GameModes = lazy(() => import("@views/GameModes"));
+const Play = lazy(() => import("@views/Play"));
 const Help = lazy(() => import("@views/Help"));
 const Scoreboard = lazy(() => import("@views/Scoreboard"));
 const Profile = lazy(() => import("@views/Profile"));
@@ -22,7 +23,8 @@ const routes = createBrowserRouter(
       element: <View />,
       children: [
         { index: true, element: <Home /> },
-        { path: ROUTES.PLAY, element: <GameModes /> },
+        { path: ROUTES.PLAY, element: <Play /> },
+        { path: "/modos", element: <GameModes /> },
         { path: ROUTES.CLASSIC, element: <Classic /> },
         { path: ROUTES.LIGHTING, element: <Lightning /> },
         { path: ROUTES.DAILY, element: <Daily /> },

@@ -65,7 +65,8 @@ describe("checkGuess", () => {
     expect(result[4]).toBe("correct");
   });
 
-  it("returns an array of length 5", () => {
+  it("returns an array with the same length as the guess", () => {
     expect(checkGuess("ABCDE", "VWXYZ")).toHaveLength(5);
+    expect(checkGuess("ABC", "XYZ")).toHaveLength(3);
   });
 });

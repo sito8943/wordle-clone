@@ -15,9 +15,9 @@ import {
   removeLetter,
   setLetterAt,
   shouldAskToResume,
+  resolveBoardRoundConfig,
   type PersistedGameState,
   validateGuessInput,
-  WORD_LENGTH,
 } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import useDictionaryQuery from "../useDictionaryQuery";
@@ -54,7 +54,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
     allowUnknownWords = false,
     language = WORDS_DEFAULT_LANGUAGE,
     manualTileSelection = false,
+    roundConfig,
   } = options;
+  const resolvedRoundConfig = useMemo(
+    () => resolveBoardRoundConfig(roundConfig),
+    [roundConfig?.lettersPerRow, roundConfig?.maxGuesses],
+  );
   const cachedWords = useMemo(
     () => loadWordDictionaryFromCache(language),
     [language],
@@ -69,8 +74,9 @@ export default function useWordle(options: UseWordleOptions = {}) {
         currentSessionId,
         initialAnswer,
         cachedWords,
+        resolvedRoundConfig,
       ),
-    [cachedWords, currentSessionId, initialAnswer],
+    [cachedWords, currentSessionId, initialAnswer, resolvedRoundConfig],
   );
   const { animationsDisabled } = useAnimationsPreference();
   const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
@@ -106,6 +112,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const persistenceTimeoutRef = useRef<number | null>(null);
   const latestGameStateRef = useRef(initialGameState);
   const previousLanguageRef = useRef(language);
+  const previousRoundConfigRef = useRef(resolvedRoundConfig);
 
   const handleDictionaryChecksumMismatch = useCallback(() => {
     const latestState = latestGameStateRef.current;
@@ -137,7 +144,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
   const { sessionId, gameId, answer, startedAt, guesses, current, gameOver } =
     gameState;
-  const maxSelectableTileIndex = WORD_LENGTH - 1;
+  const maxSelectableTileIndex = resolvedRoundConfig.lettersPerRow - 1;
   const selectedTileIndex = manualTileSelection
     ? Math.min(Math.max(activeTileIndex, 0), maxSelectableTileIndex)
     : null;
@@ -280,6 +287,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     (input: string) => {
       const validation = validateGuessInput(input, answer, {
         allowUnknownWords,
+        roundConfig: resolvedRoundConfig,
       });
 
       if (!validation.ok) {
@@ -302,7 +310,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
       resetActiveHints();
       setGameStateWithPersistence(
-        (prev) => applyGuess(prev, validation.guess),
+        (prev) => applyGuess(prev, validation.guess, resolvedRoundConfig),
         "immediate",
       );
     },
@@ -310,6 +318,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       allowUnknownWords,
       answer,
       resetActiveHints,
+      resolvedRoundConfig,
       setGameStateWithPersistence,
       showMessage,
       triggerInvalidGuessFeedback,
@@ -379,22 +388,24 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const addCurrentLetter = useCallback(
     (letter: string) => {
       if (!manualTileSelection) {
-        if (current.length >= WORD_LENGTH) {
+        if (current.length >= resolvedRoundConfig.lettersPerRow) {
           return;
         }
 
-        setGameStateWithPersistence((prev) => addLetter(prev, letter));
+        setGameStateWithPersistence((prev) =>
+          addLetter(prev, letter, resolvedRoundConfig),
+        );
         playSound("letter_put");
         return;
       }
 
       const targetIndex = selectedTileIndex ?? 0;
-      if (targetIndex < 0 || targetIndex >= WORD_LENGTH) {
+      if (targetIndex < 0 || targetIndex >= resolvedRoundConfig.lettersPerRow) {
         return;
       }
 
       setGameStateWithPersistence((prev) =>
-        setLetterAt(prev, targetIndex, letter),
+        setLetterAt(prev, targetIndex, letter, resolvedRoundConfig),
       );
       setActiveRowHintStatuses((previous) => {
         if (!(targetIndex in previous)) {
@@ -414,6 +425,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       current.length,
       manualTileSelection,
       playSound,
+      resolvedRoundConfig,
       selectedTileIndex,
       setGameStateWithPersistence,
     ],
@@ -471,7 +483,10 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return false;
       }
 
-      const nextIndex = getFirstEmptyTileIndex(current);
+      const nextIndex = getFirstEmptyTileIndex(
+        current,
+        resolvedRoundConfig.lettersPerRow,
+      );
       if (nextIndex === null) {
         showMessage(i18n.t(ROW_ALREADY_FULL_MESSAGE_KEY));
         return false;
@@ -488,7 +503,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       }
 
       setGameStateWithPersistence((previous) =>
-        setLetterAt(previous, nextIndex, letter),
+        setLetterAt(previous, nextIndex, letter, resolvedRoundConfig),
       );
       setActiveRowHintStatuses((previous) => ({
         ...previous,
@@ -503,6 +518,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       answer,
       current,
       gameOver,
+      resolvedRoundConfig,
       setGameStateWithPersistence,
       showMessage,
       showDictionaryChecksumDialog,
@@ -628,6 +644,20 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [language, resetBoard]);
 
   useEffect(() => {
+    const previousRoundConfig = previousRoundConfigRef.current;
+    const configChanged =
+      previousRoundConfig.lettersPerRow !== resolvedRoundConfig.lettersPerRow ||
+      previousRoundConfig.maxGuesses !== resolvedRoundConfig.maxGuesses;
+
+    if (!configChanged) {
+      return;
+    }
+
+    previousRoundConfigRef.current = resolvedRoundConfig;
+    resetBoard();
+  }, [resolvedRoundConfig, resetBoard]);
+
+  useEffect(() => {
     const persistLatestGameState = () => {
       cancelDeferredPersist();
       flushPersistedGameState(latestGameStateRef.current);
@@ -670,6 +700,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     sessionId,
     gameId,
     roundStartedAt: startedAt,
+    roundConfig: resolvedRoundConfig,
     answer,
     guesses,
     current,

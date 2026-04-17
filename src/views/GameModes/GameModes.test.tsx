@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { ROUTES } from "@config/routes";
@@ -48,7 +54,7 @@ describe("GameModes", () => {
     });
   });
 
-  it("opens and closes the info dialog for a mode", () => {
+  it("opens and closes the info dialog for a mode", async () => {
     renderGameModes();
 
     const modeName = i18n.t("gameModes.modes.classic.name");
@@ -74,7 +80,9 @@ describe("GameModes", () => {
       screen.getByRole("button", { name: i18n.t("common.close") }),
     );
 
-    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
   });
 
   it("keeps the play route when touching the info button", () => {
