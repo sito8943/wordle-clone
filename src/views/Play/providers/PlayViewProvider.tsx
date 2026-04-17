@@ -6,8 +6,11 @@ import { PlayViewContext } from "./PlayViewContext";
 import type { PlayViewProviderProps } from "./types";
 import { usePlayController } from "../hooks";
 
-const PlayViewProvider = ({ children }: PlayViewProviderProps): JSX.Element => {
-  const controller = usePlayController();
+const PlayViewProvider = ({
+  children,
+  modeId,
+}: PlayViewProviderProps): JSX.Element => {
+  const controller = usePlayController({ modeId });
   const { player } = usePlayer();
   const { wordListButtonEnabled, devConsoleEnabled, challengesEnabled } =
     useFeatureFlags();

@@ -1,6 +1,10 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CLASSIC_ROUND_CONFIG, getTotalPointsForWin } from "@domain/wordle";
+import {
+  CLASSIC_ROUND_CONFIG,
+  getTotalPointsForWin,
+  WORDLE_MODE_IDS,
+} from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
 import { ROUTES } from "@config/routes";
@@ -390,6 +394,29 @@ describe("usePlayController", () => {
         roundConfig: CLASSIC_ROUND_CONFIG,
       }),
     );
+  });
+
+  it("resolves and exposes modeId from controller options", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.ZEN }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.ZEN);
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        roundConfig: CLASSIC_ROUND_CONFIG,
+      }),
+    );
+  });
+
+  it("falls back to classic mode when an unknown mode is provided", () => {
+    const { result } = renderHook(() =>
+      usePlayController({
+        modeId: "unsupported-mode" as never,
+      }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.CLASSIC);
   });
 
   it("opens and closes the quick settings panel", () => {

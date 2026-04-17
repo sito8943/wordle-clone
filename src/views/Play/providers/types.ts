@@ -2,7 +2,7 @@ import type {
   RemoteChallengeProgress,
   RemoteChallenges,
 } from "@api/challenges";
-import type { Player } from "@domain/wordle";
+import type { Player, WordleModeId } from "@domain/wordle";
 import type { ReactNode } from "react";
 import type { usePlayController } from "../hooks";
 
@@ -30,6 +30,7 @@ export type PlayViewContextValue = {
 
 export type PlayViewProviderProps = {
   children: ReactNode;
+  modeId?: WordleModeId;
 };
 
 export type PlayControllerState = ReturnType<typeof usePlayController>;

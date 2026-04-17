@@ -19,8 +19,8 @@ Restriccion principal:
 
 - [x] Fase 1 completada.
 - [x] Fase 2 completada para flujo clasico.
-- [~] Fase 3 en progreso (tests agregados, validacion global pendiente).
-- [ ] Fase 4 no iniciada.
+- [x] Fase 3 completada (incluyendo validacion global ejecutada manualmente).
+- [~] Fase 4 iniciada (resolver de modo + cableado clasico base).
 
 Notas:
 
@@ -28,7 +28,7 @@ Notas:
 - `Board`, dominio y hook principal ya aceptan configuracion de ronda.
 - El flujo actual sigue cableado a config clasica de forma explicita.
 - Se relevaron puntos que siguen acoplados al clasico (`WORD_LENGTH`/`MAX_GUESSES`) fuera del core de board.
-- No se ejecutaron scripts de test en esta iteracion (pendiente verificacion manual/local).
+- La validacion global de calidad se ejecuto manualmente fuera de esta iteracion.
 
 ## Fase 1: Fundacion configurable (sin cambiar comportamiento)
 
@@ -76,7 +76,7 @@ Estado: [x] Hecha
 
 ## Fase 3: Cobertura de regresion primero
 
-Estado: [~] En progreso
+Estado: [x] Completa
 
 ### 3.1 Conservar tests existentes
 
@@ -98,7 +98,7 @@ Estado: [~] En progreso
 - Revisar supuestos de share del tablero (`MAX_GUESSES/WORD_LENGTH`) y decidir:
 - se mantiene clasico-only de forma explicita, o
 - se migra a config de forma segura.
-- Estado: [~] Diagnostico realizado; decisiones de contrato y cambios pendientes.
+- Estado: [x] Cerrada.
 
 #### 3.3.1 Diagnostico tecnico (completado)
 
@@ -108,24 +108,24 @@ Estado: [~] En progreso
 - Challenges: condicion `comeback` depende de `MAX_GUESSES` fijo.
 - Game Modes copy: valores de traduccion (`rows`, `letters`) siguen leyendo constantes clasicas.
 
-#### 3.3.2 Decision recomendada de contrato (a confirmar)
+#### 3.3.2 Decision de contrato (cerrada)
 
 - Mantener compatibilidad hacia atras de `wordle:game` sin versionado extra en esta fase.
 - Permitir reset de ronda cuando cambie config/modo (ya soportado en hook principal).
 - Migrar a `roundConfig` los puntos de UI/tablero (hints + share fallback + copy de modos) antes de habilitar modos no clasicos.
-- Mantener scoring/challenges en contrato clasico por defecto hasta definir reglas por modo.
+- Mantener scoring/challenges en contrato clasico por defecto hasta definir reglas por modo, pero `comeback` ya acepta `maxGuesses` configurable cuando se provee contexto.
 
-#### 3.3.3 Backlog para cerrar Fase 3.3
+#### 3.3.3 Backlog de cierre (completado)
 
-1. `useHintController`: recibir `roundConfig` y usar `lettersPerRow` en `currentRowComplete`.
-2. Share fallback (`captureVictoryBoardImageFile`): incluir `roundConfig` en snapshot y renderizar canvas con dimensiones dinamicas.
-3. `GameModes/constants.ts`: derivar `rows/letters` desde `CLASSIC_ROUND_CONFIG` en lugar de constantes sueltas.
-4. Challenges (`comeback`): evaluar si se parametriza por `roundConfig.maxGuesses` o se declara clasico-only explicito.
-5. Agregar tests de regresion para 1-4 sin romper flujo clasico.
+1. `useHintController`: ahora recibe `roundConfig` y usa `lettersPerRow`.
+2. Share fallback (`captureVictoryBoardImageFile`): ahora renderiza canvas con dimensiones dinamicas desde `roundConfig`.
+3. `GameModes/constants.ts`: `rows/letters` ahora derivan de `CLASSIC_ROUND_CONFIG`.
+4. Challenges (`comeback`): parametrizado por `maxGuesses` de contexto con fallback clasico.
+5. Cobertura de regresion agregada para los cambios anteriores.
 
 ## Fase 4: Preparar integracion de modos (despues de estabilizar base)
 
-Estado: [ ] Pendiente
+Estado: [~] En progreso
 
 - Introducir un resolver `mode -> config` (classic, lightning, zen, daily).
 - Mantener rutas no clasicas como placeholders/feature-gated hasta cerrar reglas.
@@ -135,16 +135,19 @@ Estado: [ ] Pendiente
 
 - Crear un contrato en dominio para resolver `modeId -> BoardRoundConfig`.
 - Definir `classic` como fuente de verdad para defaults.
+- Estado: [x] Implementado (`resolveWordleModeId` + `resolveRoundConfigForMode`).
 
 ### 4.2 Plomeria de modo en Play
 
 - Resolver modo activo desde ruta/controlador y pasarlo a `useWordle`.
 - Evitar que la UI del tablero conozca reglas de modo; solo consume estado procesado.
+- Estado: [~] Parcial. `Play`/`PlayViewProvider`/`usePlayController` aceptan `modeId`; `/jugar` y `/clasico` ya usan flujo clasico unificado.
 
 ### 4.3 Activacion progresiva de modos
 
 - Arrancar con `classic` conectado al resolver (sin cambios funcionales).
 - Dejar `zen`, `lightning` y `daily` feature-gated hasta cerrar sus reglas de score/hints/timer.
+- Estado: [ ] Pendiente.
 
 ## Definition of Done (alcance de este plan)
 
@@ -165,7 +168,6 @@ Estado: [ ] Pendiente
 
 ## Siguiente bloque recomendado
 
-1. Cerrar decision de contrato en Fase 3.3.2 (persistencia, challenges y alcance de migracion a config).
-2. Implementar backlog 3.3.3 en orden: hints -> share fallback -> copy de modos -> challenges.
-3. Ejecutar validacion completa de tests cuando autorices correr scripts.
-4. Iniciar Fase 4.1 conectando `classic` al nuevo resolver `mode -> config`.
+1. Completar Fase 4.2 conectando resolucion de `modeId` para rutas no clasicas sin habilitar reglas nuevas.
+2. Mantener `zen`, `lightning` y `daily` con feature gate/placeholder funcional hasta definir score, hints y timer por modo.
+3. Preparar Fase 4.3: habilitar un solo modo nuevo por vez sobre el resolver ya creado.

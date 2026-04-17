@@ -11,7 +11,8 @@ import {
   getPointsForWin,
   getRoundDurationMs,
   getTotalPointsForWin,
-  CLASSIC_ROUND_CONFIG,
+  resolveRoundConfigForMode,
+  resolveWordleModeId,
   type Player,
   type PlayerDifficulty,
 } from "@domain/wordle";
@@ -37,6 +38,7 @@ import type {
   ComboFlash,
   EndOfGameSnapshot,
   EndOfGameScoreSummaryItem,
+  UsePlayControllerOptions,
 } from "./types";
 import {
   canShareVictoryBoardFile,
@@ -59,7 +61,9 @@ import {
 } from "@providers/Sound/constants";
 import { ROUTES } from "@config/routes";
 
-export default function usePlayController() {
+export default function usePlayController(
+  options: UsePlayControllerOptions = {},
+) {
   const navigate = useNavigate();
   const { scoreClient, wordDictionaryClient, challengeClient } = useApi();
   const {
@@ -73,12 +77,20 @@ export default function usePlayController() {
   const { hintsEnabled, challengesEnabled } = useFeatureFlags();
   const { playSound } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
+  const modeId = useMemo(
+    () => resolveWordleModeId(options.modeId),
+    [options.modeId],
+  );
+  const modeRoundConfig = useMemo(
+    () => resolveRoundConfigForMode(modeId),
+    [modeId],
+  );
   const wordle = useWordle({
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
     language: gameplayLanguage,
     manualTileSelection: player.manualTileSelection === true,
-    roundConfig: CLASSIC_ROUND_CONFIG,
+    roundConfig: modeRoundConfig,
   });
   const {
     sessionId,
@@ -1121,6 +1133,7 @@ export default function usePlayController() {
 
   return {
     ...wordle,
+    modeId,
     manualTileSelection: player.manualTileSelection === true,
     showTutorialPromptDialog,
     acceptTutorialPrompt,

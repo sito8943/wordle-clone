@@ -5,6 +5,8 @@ export type BoardRoundConfig = {
   maxGuesses: number;
 };
 
+export type WordleModeId = "classic" | "lightning" | "zen" | "daily";
+
 export type GuessResult = {
   word: string;
   statuses: TileStatus[];
