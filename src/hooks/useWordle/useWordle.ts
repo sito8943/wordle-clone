@@ -58,6 +58,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   } = options;
   const resolvedRoundConfig = useMemo(
     () => resolveBoardRoundConfig(roundConfig),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [roundConfig?.lettersPerRow, roundConfig?.maxGuesses],
   );
   const cachedWords = useMemo(

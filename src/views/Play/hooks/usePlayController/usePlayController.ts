@@ -1081,6 +1081,7 @@ export default function usePlayController(
     } finally {
       setIsSharingVictoryBoard(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     answer,
     guesses,

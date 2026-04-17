@@ -141,7 +141,7 @@ Estado: [~] En progreso
 
 - Resolver modo activo desde ruta/controlador y pasarlo a `useWordle`.
 - Evitar que la UI del tablero conozca reglas de modo; solo consume estado procesado.
-- Estado: [~] Parcial. `Play`/`PlayViewProvider`/`usePlayController` aceptan `modeId`; `/jugar` y `/clasico` ya usan flujo clasico unificado.
+- Estado: [x] Completada. `Play`/`PlayViewProvider`/`usePlayController` aceptan `modeId`; `/jugar`, `/clasico`, `/zen`, `/relampago` y `/palabra-diaria` ya enrutan al mismo flujo base sin reglas nuevas por modo.
 
 ### 4.3 Activacion progresiva de modos
 
@@ -168,6 +168,5 @@ Estado: [~] En progreso
 
 ## Siguiente bloque recomendado
 
-1. Completar Fase 4.2 conectando resolucion de `modeId` para rutas no clasicas sin habilitar reglas nuevas.
-2. Mantener `zen`, `lightning` y `daily` con feature gate/placeholder funcional hasta definir score, hints y timer por modo.
-3. Preparar Fase 4.3: habilitar un solo modo nuevo por vez sobre el resolver ya creado.
+1. Definir y aplicar feature gate/placeholder funcional para `zen`, `lightning` y `daily` mientras no existan reglas cerradas de score/hints/timer por modo.
+2. Preparar Fase 4.3: habilitar un solo modo nuevo por vez sobre el resolver ya creado.

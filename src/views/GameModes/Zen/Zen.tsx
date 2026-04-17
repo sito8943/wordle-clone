@@ -1,21 +1,8 @@
-import { Button } from "@components";
-import { ROUTES } from "@config/routes";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
+import Play from "@views/Play";
 
 const Zen = () => {
-  const { t } = useTranslation();
-  return (
-    <main className="page-centered gap-10">
-      <h2 className="page-title">{t("notFound.title")}</h2>
-      <p className="mt-2 text-base text-neutral-600">
-        {t("notFound.description")}
-      </p>
-      <Button>
-        <Link to={ROUTES.HOME}>{t("notFound.action")}</Link>
-      </Button>
-    </main>
-  );
+  return <Play modeId={WORDLE_MODE_IDS.ZEN} />;
 };
 
 export default Zen;
