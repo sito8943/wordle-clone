@@ -23,11 +23,7 @@ const routes = createBrowserRouter(
       element: <View />,
       children: [
         { index: true, element: <Home /> },
-        {
-          path: ROUTES.PLAY,
-          element: <Play modeId={WORDLE_MODE_IDS.CLASSIC} />,
-        },
-        { path: "/modos", element: <GameModes /> },
+        { path: ROUTES.PLAY, element: <GameModes /> },
         {
           path: ROUTES.CLASSIC,
           element: <Play modeId={WORDLE_MODE_IDS.CLASSIC} />,
