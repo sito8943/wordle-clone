@@ -874,4 +874,13 @@ export const ES_WORDS = [
   "trece",
   "cedes",
   "celes",
+  "oreja",
+  "queda",
+  "quepa",
+  "buena",
+  "buena",
+  "suena",
+  "puede",
+  "nueve",
+  "huele",
 ];
