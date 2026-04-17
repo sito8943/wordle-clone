@@ -408,6 +408,7 @@ export const resources = {
         },
         gameModes: {
           classic: "Classic",
+          lightning: "Lightning",
         },
         tutorialPromptDialog: {
           title: "Welcome to {{gameMode}}",
@@ -993,6 +994,7 @@ export const resources = {
         },
         gameModes: {
           classic: "Clásico",
+          lightning: "Relámpago",
         },
         tutorialPromptDialog: {
           title: "Bienvenido a {{gameMode}}",

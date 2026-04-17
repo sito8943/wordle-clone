@@ -146,8 +146,12 @@ Estado: [~] En progreso
 ### 4.3 Activacion progresiva de modos
 
 - Arrancar con `classic` conectado al resolver (sin cambios funcionales).
-- Dejar `zen`, `lightning` y `daily` feature-gated hasta cerrar sus reglas de score/hints/timer.
-- Estado: [~] En progreso. Gate activo (`classic` habilitado; `zen/lightning/daily` en placeholder) sin reglas nuevas por modo.
+- Dejar `zen` y `daily` feature-gated hasta cerrar sus reglas de score/hints/timer.
+- Estado: [~] En progreso. `lightning` habilitado con reglas cerradas v1 (timer activo por modo sobre tablero clasico); `zen/daily` siguen feature-gated con placeholder.
+- Reglas `lightning` v1:
+- Timer activo por modo (60s) aunque la dificultad del perfil no sea `insane`.
+- Bonus de tiempo aplicado cuando hay timer activo.
+- Hints, validacion de intentos y bonus de diccionario se mantienen en el contrato actual por dificultad de perfil.
 
 ## Definition of Done (alcance de este plan)
 
@@ -168,5 +172,5 @@ Estado: [~] En progreso
 
 ## Siguiente bloque recomendado
 
-1. Habilitar un solo modo no clasico sobre el resolver actual (recomendado: `lightning`) definiendo reglas cerradas de score/hints/timer.
+1. Cerrar reglas completas de `lightning` (hints/validacion diccionario/score) y documentar contrato final por modo.
 2. Mantener `zen` y `daily` con gate/placeholder hasta cerrar su contrato de reglas.

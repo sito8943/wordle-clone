@@ -43,7 +43,6 @@ const DifficultyChangeDialog = lazy(
 
 const DialogsSection = (): JSX.Element => {
   const { t } = useTranslation();
-  const gameMode = t("play.gameModes.classic");
   const { shareButtonEnabled, settingsDrawerEnabled } = useFeatureFlags();
   const {
     controller,
@@ -53,6 +52,7 @@ const DialogsSection = (): JSX.Element => {
     challengesEnabled,
     challenges,
   } = usePlayView();
+  const gameMode = t(`play.gameModes.${controller.activeModeId}`);
   const {
     message,
     showResumeDialog,

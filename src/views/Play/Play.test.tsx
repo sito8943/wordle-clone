@@ -72,6 +72,17 @@ describe("Play", () => {
     ).toBe("classic");
   });
 
+  it("renders enabled lightning mode through PlayViewProvider", () => {
+    env.playOfflineStateEnabled = false;
+
+    renderPlay("lightning");
+
+    expect(
+      screen.getByTestId("play-provider").getAttribute("data-mode-id"),
+    ).toBe("lightning");
+    expect(screen.queryByTestId("play-mode-gate-placeholder")).toBeNull();
+  });
+
   it("renders mode placeholder when non-classic mode is feature-gated", () => {
     env.playOfflineStateEnabled = false;
 

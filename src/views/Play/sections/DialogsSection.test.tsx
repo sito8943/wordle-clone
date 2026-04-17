@@ -9,6 +9,7 @@ const featureFlagsMock = vi.hoisted(() => ({
 }));
 
 const controllerMock = vi.hoisted(() => ({
+  activeModeId: "classic",
   message: "",
   showResumeDialog: false,
   showDictionaryChecksumDialog: false,

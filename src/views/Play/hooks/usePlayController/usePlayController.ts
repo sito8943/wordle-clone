@@ -15,6 +15,7 @@ import {
   getTotalPointsForWin,
   resolveRoundConfigForMode,
   resolveWordleModeId,
+  WORDLE_MODE_IDS,
   type Player,
   type PlayerDifficulty,
 } from "@domain/wordle";
@@ -119,7 +120,8 @@ export default function usePlayController(
     revealHint,
     invalidGuessShakePulse = 0,
   } = wordle;
-  const hardModeEnabled = player.difficulty === "insane";
+  const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
+  const hardModeEnabled = lightningModeActive || player.difficulty === "insane";
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
 
   const roundSettled = useRef(false);
@@ -383,10 +385,9 @@ export default function usePlayController(
       const baseDifficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
       );
-      const timeBonus =
-        player.difficulty === "insane"
-          ? getInsaneTimeBonus(hardModeSecondsLeft)
-          : 0;
+      const timeBonus = hardModeEnabled
+        ? getInsaneTimeBonus(hardModeSecondsLeft)
+        : 0;
       const normalDictionaryRowsBonusMultiplier =
         player.difficulty === "normal"
           ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
@@ -412,7 +413,7 @@ export default function usePlayController(
         });
       }
 
-      if (player.difficulty === "insane") {
+      if (hardModeEnabled) {
         scoreSummaryItems.push({ key: "time", value: timeBonus });
       }
 
@@ -457,6 +458,7 @@ export default function usePlayController(
     commitVictory,
     answer,
     guessWords,
+    hardModeEnabled,
     hardModeSecondsLeft,
     player.difficulty,
     player.streak,

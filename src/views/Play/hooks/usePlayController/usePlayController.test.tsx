@@ -411,6 +411,16 @@ describe("usePlayController", () => {
     );
   });
 
+  it("keeps lightning as enabled mode and active gameplay mode", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
+  });
+
   it("falls back to classic mode when an unknown mode is provided", () => {
     const { result } = renderHook(() =>
       usePlayController({
@@ -752,6 +762,60 @@ describe("usePlayController", () => {
       getTotalPointsForWin(3, 9, 2, 5),
     );
     expect(result.current.showVictoryDialog).toBe(true);
+  });
+
+  it("adds timed-mode bonus to lightning wins using current difficulty multiplier", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+    mockUseHardModeTimer.mockReturnValue({
+      ...mockUseHardModeTimer(),
+      hardModeSecondsLeft: 11,
+    });
+
+    const { rerender, result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(
+      getTotalPointsForWin(3, 2, 2, 5),
+      undefined,
+      1_000,
+    );
+    expect(result.current.victoryScoreSummary?.items).toEqual(
+      expect.arrayContaining([{ key: "time", value: 5 }]),
+    );
+  });
+
+  it("activates hard-mode timer in lightning mode regardless of player difficulty", () => {
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }));
+
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hardModeEnabled: true,
+      }),
+    );
   });
 
   it("plays line and tile-status sounds when a new guess is added", () => {
