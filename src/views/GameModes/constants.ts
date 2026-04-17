@@ -5,7 +5,7 @@ import {
   faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { ROUTES } from "@config/routes";
-import { MAX_GUESSES, WORD_LENGTH } from "@domain/wordle";
+import { CLASSIC_ROUND_CONFIG } from "@domain/wordle";
 import { NORMAL_MODE_HINT_LIMIT } from "@views/Play/hooks/useHintController/constants";
 import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 import type {
@@ -71,8 +71,8 @@ export const GAME_MODE_DETAIL_KEYS: GameModeDetailKeyMap = {
 };
 
 export const GAME_MODE_TRANSLATION_VALUES: GameModeTranslationValues = {
-  rows: MAX_GUESSES,
-  letters: WORD_LENGTH,
+  rows: CLASSIC_ROUND_CONFIG.maxGuesses,
+  letters: CLASSIC_ROUND_CONFIG.lettersPerRow,
   seconds: HARD_MODE_TOTAL_SECONDS,
   hintCount: NORMAL_MODE_HINT_LIMIT,
   extraPoints: 1,

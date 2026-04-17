@@ -84,6 +84,7 @@ export default function usePlayController() {
     sessionId,
     gameId,
     roundStartedAt,
+    roundConfig,
     answer,
     won,
     guesses,
@@ -236,6 +237,7 @@ export default function usePlayController() {
         gameOver,
         won,
         answer,
+        maxGuesses: roundConfig?.maxGuesses,
         playerDifficulty: player.difficulty,
         roundDurationMs,
         dailyCompletedRounds: dailyTracker.completedRounds,
@@ -327,6 +329,7 @@ export default function usePlayController() {
     guesses,
     player.code,
     player.difficulty,
+    roundConfig?.maxGuesses,
     roundStartedAt,
     won,
   ]);
@@ -452,6 +455,7 @@ export default function usePlayController() {
     answer,
     gameId,
     difficulty: player.difficulty,
+    roundConfig,
     hasInProgressGameAtMount,
     showResumeDialog,
     gameOver,
@@ -1037,6 +1041,7 @@ export default function usePlayController() {
       const boardImageFile = await captureVictoryBoardImageFile(boardElement, {
         answer,
         guesses,
+        roundConfig,
       });
 
       if (!canShareVictoryBoardFile(boardImageFile)) {
@@ -1068,6 +1073,8 @@ export default function usePlayController() {
     answer,
     guesses,
     isSharingVictoryBoard,
+    roundConfig?.lettersPerRow,
+    roundConfig?.maxGuesses,
     showVictoryDialog,
     victoryBoardShareSupported,
   ]);

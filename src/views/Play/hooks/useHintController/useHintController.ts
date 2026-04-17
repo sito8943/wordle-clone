@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WORD_LENGTH } from "@domain/wordle";
+import { resolveBoardRoundConfig } from "@domain/wordle";
 import { HINT_USAGE_STORAGE_KEY } from "./constants";
 import type { UseHintControllerParams, UseHintControllerResult } from "./types";
 import {
@@ -15,12 +15,14 @@ export const useHintController = ({
   answer,
   gameId,
   difficulty,
+  roundConfig,
   hasInProgressGameAtMount,
   showResumeDialog,
   gameOver,
   current,
   revealHint,
 }: UseHintControllerParams): UseHintControllerResult => {
+  const { lettersPerRow } = resolveBoardRoundConfig(roundConfig);
   const hintsLimit = getHintsLimitByDifficulty(difficulty);
   const initialGameIdRef = useRef(gameId);
   const hasInProgressGameAtMountRef = useRef(hasInProgressGameAtMount);
@@ -29,7 +31,7 @@ export const useHintController = ({
   const hintsRemaining = Math.max(0, hintsLimit - hintsUsed);
   const hintsEnabledForDifficulty = hintsLimit > 0;
   const currentRowComplete =
-    current.length >= WORD_LENGTH && !current.includes(" ");
+    current.length >= lettersPerRow && !current.includes(" ");
   const hintButtonDisabled =
     hintsRemaining <= 0 || showResumeDialog || gameOver || currentRowComplete;
 

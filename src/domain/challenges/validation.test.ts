@@ -57,6 +57,16 @@ describe("challenge condition evaluators", () => {
         }),
       ),
     ).toBe(true);
+    expect(
+      evaluateCondition(
+        "comeback",
+        createContext({
+          won: true,
+          maxGuesses: 4,
+          guesses: [row("A", []), row("B", []), row("C", []), row("D", [])],
+        }),
+      ),
+    ).toBe(true);
   });
 
   it("evaluates steady_player", () => {

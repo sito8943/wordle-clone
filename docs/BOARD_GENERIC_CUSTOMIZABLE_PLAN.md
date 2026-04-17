@@ -15,7 +15,24 @@ Restriccion principal:
 - El `Board` UI consume filas derivadas desde dominio; no recibe configuracion de tablero.
 - Hoy las variantes de juego se aplican por dificultad, no por configuracion real de modo/tablero.
 
+## Estado actual
+
+- [x] Fase 1 completada.
+- [x] Fase 2 completada para flujo clasico.
+- [~] Fase 3 en progreso (tests agregados, validacion global pendiente).
+- [ ] Fase 4 no iniciada.
+
+Notas:
+
+- Ya existe `BoardRoundConfig` y un `CLASSIC_ROUND_CONFIG` como base por defecto.
+- `Board`, dominio y hook principal ya aceptan configuracion de ronda.
+- El flujo actual sigue cableado a config clasica de forma explicita.
+- Se relevaron puntos que siguen acoplados al clasico (`WORD_LENGTH`/`MAX_GUESSES`) fuera del core de board.
+- No se ejecutaron scripts de test en esta iteracion (pendiente verificacion manual/local).
+
 ## Fase 1: Fundacion configurable (sin cambiar comportamiento)
+
+Estado: [x] Hecha
 
 ### 1.1 Crear tipos de configuracion en dominio
 
@@ -38,6 +55,8 @@ Restriccion principal:
 
 ## Fase 2: Cableado de hooks/controladores (clasico por defecto)
 
+Estado: [x] Hecha
+
 ### 2.1 Extender options del hook principal
 
 - Agregar config opcional en el tipo de options del hook principal.
@@ -57,9 +76,12 @@ Restriccion principal:
 
 ## Fase 3: Cobertura de regresion primero
 
+Estado: [~] En progreso
+
 ### 3.1 Conservar tests existentes
 
 - Los tests actuales de board/domain/controller deben seguir pasando sin cambios semanticos.
+- Pendiente: ejecutar validacion completa para confirmar regresion cero.
 
 ### 3.2 Agregar tests de configurabilidad
 
@@ -68,6 +90,7 @@ Restriccion principal:
 - validacion de longitud de input
 - `gameOver` por max intentos configurable
 - Tests de hook para verificar que se respetan los limites de config.
+- Estado: [x] Cobertura base agregada (dominio + board + hook + controller).
 
 ### 3.3 Chequeos de compatibilidad
 
@@ -75,12 +98,53 @@ Restriccion principal:
 - Revisar supuestos de share del tablero (`MAX_GUESSES/WORD_LENGTH`) y decidir:
 - se mantiene clasico-only de forma explicita, o
 - se migra a config de forma segura.
+- Estado: [~] Diagnostico realizado; decisiones de contrato y cambios pendientes.
+
+#### 3.3.1 Diagnostico tecnico (completado)
+
+- Persistencia: `wordle:game` sigue serializando `PersistedGameRef` sin `roundConfig`.
+- Share fallback de tablero: usa dimensiones fijas en `usePlayController/utils.ts`.
+- Hints: `useHintController` calcula fila completa con `WORD_LENGTH` fijo.
+- Challenges: condicion `comeback` depende de `MAX_GUESSES` fijo.
+- Game Modes copy: valores de traduccion (`rows`, `letters`) siguen leyendo constantes clasicas.
+
+#### 3.3.2 Decision recomendada de contrato (a confirmar)
+
+- Mantener compatibilidad hacia atras de `wordle:game` sin versionado extra en esta fase.
+- Permitir reset de ronda cuando cambie config/modo (ya soportado en hook principal).
+- Migrar a `roundConfig` los puntos de UI/tablero (hints + share fallback + copy de modos) antes de habilitar modos no clasicos.
+- Mantener scoring/challenges en contrato clasico por defecto hasta definir reglas por modo.
+
+#### 3.3.3 Backlog para cerrar Fase 3.3
+
+1. `useHintController`: recibir `roundConfig` y usar `lettersPerRow` en `currentRowComplete`.
+2. Share fallback (`captureVictoryBoardImageFile`): incluir `roundConfig` en snapshot y renderizar canvas con dimensiones dinamicas.
+3. `GameModes/constants.ts`: derivar `rows/letters` desde `CLASSIC_ROUND_CONFIG` en lugar de constantes sueltas.
+4. Challenges (`comeback`): evaluar si se parametriza por `roundConfig.maxGuesses` o se declara clasico-only explicito.
+5. Agregar tests de regresion para 1-4 sin romper flujo clasico.
 
 ## Fase 4: Preparar integracion de modos (despues de estabilizar base)
+
+Estado: [ ] Pendiente
 
 - Introducir un resolver `mode -> config` (classic, lightning, zen, daily).
 - Mantener rutas no clasicas como placeholders/feature-gated hasta cerrar reglas.
 - Integrar un modo nuevo por vez despues de validar regresion del clasico.
+
+### 4.1 Resolver explicito de modo
+
+- Crear un contrato en dominio para resolver `modeId -> BoardRoundConfig`.
+- Definir `classic` como fuente de verdad para defaults.
+
+### 4.2 Plomeria de modo en Play
+
+- Resolver modo activo desde ruta/controlador y pasarlo a `useWordle`.
+- Evitar que la UI del tablero conozca reglas de modo; solo consume estado procesado.
+
+### 4.3 Activacion progresiva de modos
+
+- Arrancar con `classic` conectado al resolver (sin cambios funcionales).
+- Dejar `zen`, `lightning` y `daily` feature-gated hasta cerrar sus reglas de score/hints/timer.
 
 ## Definition of Done (alcance de este plan)
 
@@ -98,3 +162,10 @@ Restriccion principal:
 5. Cableado clasico-config en `usePlayController`.
 6. Tests de regresion + configurabilidad.
 7. Recien ahi empezar implementacion de modos extra.
+
+## Siguiente bloque recomendado
+
+1. Cerrar decision de contrato en Fase 3.3.2 (persistencia, challenges y alcance de migracion a config).
+2. Implementar backlog 3.3.3 en orden: hints -> share fallback -> copy de modos -> challenges.
+3. Ejecutar validacion completa de tests cuando autorices correr scripts.
+4. Iniciar Fase 4.1 conectando `classic` al nuevo resolver `mode -> config`.

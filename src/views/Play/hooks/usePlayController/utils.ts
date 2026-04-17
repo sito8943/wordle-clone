@@ -1,5 +1,5 @@
 import html2canvas from "html2canvas";
-import { MAX_GUESSES, WORD_LENGTH } from "@domain/wordle";
+import { resolveBoardRoundConfig } from "@domain/wordle";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
@@ -246,13 +246,16 @@ const renderVictoryBoardFallbackCanvas = (
   }
 
   const canvas = document.createElement("canvas");
+  const { lettersPerRow, maxGuesses } = resolveBoardRoundConfig(
+    snapshot.roundConfig,
+  );
   const boardWidth =
-    WORD_LENGTH * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
-    (WORD_LENGTH - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
+    lettersPerRow * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
+    (lettersPerRow - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
     VICTORY_BOARD_SHARE_PADDING_PX * 2;
   const boardHeight =
-    MAX_GUESSES * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
-    (MAX_GUESSES - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
+    maxGuesses * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
+    (maxGuesses - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
     VICTORY_BOARD_SHARE_PADDING_PX * 2;
 
   canvas.width = boardWidth;
@@ -270,8 +273,8 @@ const renderVictoryBoardFallbackCanvas = (
   context.textBaseline = "middle";
   context.font = '700 28px "Roboto Slab Variable", "Roboto", sans-serif';
 
-  for (let rowIndex = 0; rowIndex < MAX_GUESSES; rowIndex += 1) {
-    for (let columnIndex = 0; columnIndex < WORD_LENGTH; columnIndex += 1) {
+  for (let rowIndex = 0; rowIndex < maxGuesses; rowIndex += 1) {
+    for (let columnIndex = 0; columnIndex < lettersPerRow; columnIndex += 1) {
       const x =
         VICTORY_BOARD_SHARE_PADDING_PX +
         columnIndex *

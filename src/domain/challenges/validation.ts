@@ -149,13 +149,25 @@ const hasUsedAllRareLetters = (words: string[]): boolean => {
 const hasSingleVowelPattern = (word: string): boolean =>
   getDistinctVowels(word).size === 1;
 
+const getRoundMaxGuesses = (ctx: ChallengeConditionContext): number => {
+  if (
+    typeof ctx.maxGuesses !== "number" ||
+    !Number.isFinite(ctx.maxGuesses) ||
+    ctx.maxGuesses <= 0
+  ) {
+    return MAX_GUESSES;
+  }
+
+  return Math.floor(ctx.maxGuesses);
+};
+
 const conditionEvaluators: Record<
   ChallengeConditionKey,
   (ctx: ChallengeConditionContext) => boolean
 > = {
   // Simple challenges
   [CHALLENGE_CONDITION_KEYS.COMEBACK]: (ctx) =>
-    ctx.won && ctx.guesses.length === MAX_GUESSES,
+    ctx.won && ctx.guesses.length === getRoundMaxGuesses(ctx),
 
   [CHALLENGE_CONDITION_KEYS.STEADY_PLAYER]: (ctx) => ctx.won,
 
