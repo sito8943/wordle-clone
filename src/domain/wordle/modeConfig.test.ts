@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { CLASSIC_ROUND_CONFIG } from "./roundConfig";
 import {
+  isWordleModeEnabled,
+  resolvePlayableWordleModeId,
   resolveRoundConfigForMode,
   resolveWordleModeId,
   WORDLE_MODE_IDS,
@@ -38,6 +40,28 @@ describe("modeConfig", () => {
     );
     expect(resolveRoundConfigForMode(WORDLE_MODE_IDS.DAILY)).toEqual(
       CLASSIC_ROUND_CONFIG,
+    );
+  });
+
+  it("keeps classic enabled and feature-gates non-classic modes", () => {
+    expect(isWordleModeEnabled(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
+    expect(isWordleModeEnabled(WORDLE_MODE_IDS.ZEN)).toBe(false);
+    expect(isWordleModeEnabled(WORDLE_MODE_IDS.LIGHTNING)).toBe(false);
+    expect(isWordleModeEnabled(WORDLE_MODE_IDS.DAILY)).toBe(false);
+  });
+
+  it("falls back to classic as playable mode when requested mode is gated", () => {
+    expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.CLASSIC)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.ZEN)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.LIGHTNING)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.DAILY)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
     );
   });
 

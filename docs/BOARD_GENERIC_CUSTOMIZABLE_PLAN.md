@@ -147,7 +147,7 @@ Estado: [~] En progreso
 
 - Arrancar con `classic` conectado al resolver (sin cambios funcionales).
 - Dejar `zen`, `lightning` y `daily` feature-gated hasta cerrar sus reglas de score/hints/timer.
-- Estado: [ ] Pendiente.
+- Estado: [~] En progreso. Gate activo (`classic` habilitado; `zen/lightning/daily` en placeholder) sin reglas nuevas por modo.
 
 ## Definition of Done (alcance de este plan)
 
@@ -168,5 +168,5 @@ Estado: [~] En progreso
 
 ## Siguiente bloque recomendado
 
-1. Definir y aplicar feature gate/placeholder funcional para `zen`, `lightning` y `daily` mientras no existan reglas cerradas de score/hints/timer por modo.
-2. Preparar Fase 4.3: habilitar un solo modo nuevo por vez sobre el resolver ya creado.
+1. Habilitar un solo modo no clasico sobre el resolver actual (recomendado: `lightning`) definiendo reglas cerradas de score/hints/timer.
+2. Mantener `zen` y `daily` con gate/placeholder hasta cerrar su contrato de reglas.

@@ -19,6 +19,7 @@ import {
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
   WORDLE_START_ANIMATION_SESSION_KEY,
 } from "@domain/wordle";
+import { i18n } from "@i18n";
 import { THEME_PREFERENCE_STORAGE_KEY } from "@hooks/useThemePreference";
 import { APP_VERSION_STORAGE_KEY } from "@layouts/View/constants";
 import {
@@ -81,6 +82,17 @@ const defaultEnvMode = env.mode;
 const defaultEnvConvexUrl = env.convexUrl;
 const defaultEnvWordListButtonEnabled = env.wordListButtonEnabled;
 
+const mockNavigatorLanguage = (language: string) => {
+  Object.defineProperty(window.navigator, "language", {
+    configurable: true,
+    value: language,
+  });
+  Object.defineProperty(window.navigator, "languages", {
+    configurable: true,
+    value: [language],
+  });
+};
+
 const mockSystemTheme = (mode: "light" | "dark") => {
   const prefersDark = mode === "dark";
 
@@ -104,7 +116,12 @@ const preloadAppRoutes = async () => {
   await Promise.all([
     import("@layouts/View"),
     import("@views/Home"),
+    import("@views/GameModes"),
     import("@views/Play"),
+    import("@views/GameModes/Zen"),
+    import("@views/GameModes/Lightning"),
+    import("@views/GameModes/Daily"),
+    import("@views/Help"),
     import("@views/Scoreboard"),
     import("@views/Profile"),
     import("@views/NotFound"),
@@ -116,11 +133,15 @@ describe("App", () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     env.wordListButtonEnabled = defaultEnvWordListButtonEnabled;
+    Reflect.deleteProperty(window.navigator, "language");
+    Reflect.deleteProperty(window.navigator, "languages");
     cleanup();
   });
 
   beforeEach(async () => {
     await preloadAppRoutes();
+    mockNavigatorLanguage("en-US");
+    await i18n.changeLanguage("en");
     env.mode = defaultEnvMode;
     env.convexUrl = defaultEnvConvexUrl;
     env.wordListButtonEnabled = true;
@@ -132,6 +153,7 @@ describe("App", () => {
         name: "TestUser",
         score: 0,
         streak: 0,
+        language: "en",
         declinedTutorial: false,
       }),
     );

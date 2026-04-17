@@ -306,6 +306,12 @@ export const resources = {
           contactAction: "Stay in touch on WhatsApp",
           settingsAction: "Open settings",
         },
+        modeGate: {
+          title: "{{mode}} is not available yet",
+          description:
+            "This mode is still in preparation. You can keep playing in Classic meanwhile.",
+          classicAction: "Play Classic",
+        },
         sections: {
           boardError: {
             title: "The board crashed.",
@@ -884,6 +890,12 @@ export const resources = {
             "El juego está offline en este momento. Estamos trabajando para traerlo de vuelta pronto.",
           contactAction: "Mantente al contacto por WhatsApp",
           settingsAction: "Ir a ajustes",
+        },
+        modeGate: {
+          title: "{{mode}} todavía no está disponible",
+          description:
+            "Este modo sigue en preparación. Mientras tanto puedes seguir jugando en Clásico.",
+          classicAction: "Jugar Clásico",
         },
         sections: {
           boardError: {

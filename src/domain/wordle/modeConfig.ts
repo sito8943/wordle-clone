@@ -15,6 +15,13 @@ const ROUND_CONFIG_BY_MODE: Record<WordleModeId, Partial<BoardRoundConfig>> = {
   daily: CLASSIC_ROUND_CONFIG,
 };
 
+const MODE_RULES_ENABLED_BY_ID: Record<WordleModeId, boolean> = {
+  classic: true,
+  lightning: false,
+  zen: false,
+  daily: false,
+};
+
 const isWordleModeId = (value: unknown): value is WordleModeId =>
   value === WORDLE_MODE_IDS.CLASSIC ||
   value === WORDLE_MODE_IDS.LIGHTNING ||
@@ -23,6 +30,14 @@ const isWordleModeId = (value: unknown): value is WordleModeId =>
 
 export const resolveWordleModeId = (value?: string | null): WordleModeId =>
   isWordleModeId(value) ? value : WORDLE_MODE_IDS.CLASSIC;
+
+export const isWordleModeEnabled = (modeId: WordleModeId): boolean =>
+  MODE_RULES_ENABLED_BY_ID[modeId];
+
+export const resolvePlayableWordleModeId = (
+  modeId: WordleModeId,
+): WordleModeId =>
+  isWordleModeEnabled(modeId) ? modeId : WORDLE_MODE_IDS.CLASSIC;
 
 export const resolveRoundConfigForMode = (
   modeId: WordleModeId,

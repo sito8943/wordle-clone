@@ -8,7 +8,9 @@ import {
   getInsaneTimeBonus,
   getNormalDictionaryBonusRowFlags,
   getNormalDictionaryRowsBonusPoints,
+  isWordleModeEnabled,
   getPointsForWin,
+  resolvePlayableWordleModeId,
   getRoundDurationMs,
   getTotalPointsForWin,
   resolveRoundConfigForMode,
@@ -81,9 +83,14 @@ export default function usePlayController(
     () => resolveWordleModeId(options.modeId),
     [options.modeId],
   );
-  const modeRoundConfig = useMemo(
-    () => resolveRoundConfigForMode(modeId),
+  const modeEnabled = useMemo(() => isWordleModeEnabled(modeId), [modeId]);
+  const activeModeId = useMemo(
+    () => resolvePlayableWordleModeId(modeId),
     [modeId],
+  );
+  const modeRoundConfig = useMemo(
+    () => resolveRoundConfigForMode(activeModeId),
+    [activeModeId],
   );
   const wordle = useWordle({
     allowUnknownWords:
@@ -1135,6 +1142,8 @@ export default function usePlayController(
   return {
     ...wordle,
     modeId,
+    activeModeId,
+    modeEnabled,
     manualTileSelection: player.manualTileSelection === true,
     showTutorialPromptDialog,
     acceptTutorialPrompt,

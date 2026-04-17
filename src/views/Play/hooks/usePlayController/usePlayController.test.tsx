@@ -402,6 +402,8 @@ describe("usePlayController", () => {
     );
 
     expect(result.current.modeId).toBe(WORDLE_MODE_IDS.ZEN);
+    expect(result.current.modeEnabled).toBe(false);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
     expect(mockUseWordle).toHaveBeenCalledWith(
       expect.objectContaining({
         roundConfig: CLASSIC_ROUND_CONFIG,
@@ -417,6 +419,18 @@ describe("usePlayController", () => {
     );
 
     expect(result.current.modeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+  });
+
+  it("keeps classic as enabled mode and active gameplay mode", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.CLASSIC }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
   });
 
   it("opens and closes the quick settings panel", () => {

@@ -71,4 +71,15 @@ describe("Play", () => {
       screen.getByTestId("play-provider").getAttribute("data-mode-id"),
     ).toBe("classic");
   });
+
+  it("renders mode placeholder when non-classic mode is feature-gated", () => {
+    env.playOfflineStateEnabled = false;
+
+    renderPlay("zen");
+
+    expect(screen.getByTestId("play-mode-gate-placeholder")).toBeTruthy();
+    expect(screen.queryByTestId("play-provider")).toBeNull();
+    expect(screen.queryByText("PlayContent Stub")).toBeNull();
+    expect(screen.getByRole("link").getAttribute("href")).toBe("/clasico");
+  });
 });
