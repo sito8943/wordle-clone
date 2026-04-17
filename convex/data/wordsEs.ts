@@ -873,4 +873,5 @@ export const ES_WORDS = [
   "debes",
   "trece",
   "cedes",
+  "celes",
 ];

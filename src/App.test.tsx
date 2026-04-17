@@ -163,7 +163,7 @@ describe("App", () => {
     document.documentElement.classList.remove("wordle-animations-disabled");
     document.documentElement.style.colorScheme = "";
     mockSystemTheme("light");
-    window.history.pushState({}, "", ROUTES.PLAY);
+    window.history.pushState({}, "", ROUTES.CLASSIC);
     window.dispatchEvent(new PopStateEvent("popstate"));
     let mockedNow = 10_000;
     vi.spyOn(Date, "now").mockImplementation(() => {
@@ -821,7 +821,8 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "easy" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Play" }));
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     expect(
       await screen.findByRole("button", { name: "Word list" }),
@@ -833,7 +834,8 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "normal" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Play" }));
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "Word list" })).toBeNull();
@@ -861,7 +863,8 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "hard" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Play" }));
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "Hint" })).toBeNull();
@@ -873,7 +876,8 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "insane" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Play" }));
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "Hint" })).toBeNull();
@@ -885,7 +889,8 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Difficulty"), {
       target: { value: "easy" },
     });
-    fireEvent.click(screen.getByRole("link", { name: "Play" }));
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     expect(await screen.findByRole("button", { name: "Hint" })).toBeTruthy();
   });
@@ -1219,7 +1224,8 @@ describe("App", () => {
         vi.advanceTimersByTime(10000);
       });
 
-      fireEvent.click(screen.getByRole("link", { name: "Play" }));
+      window.history.pushState({}, "", ROUTES.CLASSIC);
+      window.dispatchEvent(new PopStateEvent("popstate"));
 
       expect(screen.getByLabelText("Insane timer: 57 seconds")).toBeTruthy();
 
@@ -2061,6 +2067,9 @@ describe("App", () => {
 
   it("asks confirmation before refreshing an active game", async () => {
     renderApp();
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await screen.findByRole("button", { name: "Letter A" });
 
     fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
     expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
@@ -2107,6 +2116,9 @@ describe("App", () => {
     );
     renderApp();
     await waitForPlayReady();
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await screen.findByRole("button", { name: "Letter A" });
 
     for (const letter of ["A", "P", "P", "L", "E"]) {
       fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
@@ -2363,6 +2375,8 @@ describe("App", () => {
   });
 
   it("animates the keyboard only once per tab session", async () => {
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
     renderApp();
 
     const firstKeyboard = await screen.findByRole("group", {
@@ -2374,7 +2388,8 @@ describe("App", () => {
     ).toBe("seen");
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-    fireEvent.click(screen.getByRole("link", { name: "Play" }));
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     const secondKeyboard = await screen.findByRole("group", {
       name: "On-screen keyboard",
@@ -2387,6 +2402,8 @@ describe("App", () => {
     sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");
 
     renderApp();
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     const keyboard = await screen.findByRole("group", {
       name: "On-screen keyboard",
@@ -2397,6 +2414,16 @@ describe("App", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    const refreshDialog = screen.queryByRole("dialog", {
+      name: "Refresh current game?",
+    });
+    if (refreshDialog) {
+      fireEvent.click(
+        within(refreshDialog).getByRole("button", {
+          name: "Yes, refresh game",
+        }),
+      );
+    }
 
     await waitFor(() => {
       expect(screen.getAllByRole("gridcell")[0].className).toContain(
@@ -2425,12 +2452,13 @@ describe("App", () => {
         gameOver: false,
       }),
     );
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     renderApp();
+    const board = await screen.findByRole("grid", { name: "Wordle board" });
 
-    expect(
-      screen.getByRole("grid", { name: "Wordle board" }).className,
-    ).not.toContain("board-entry-animation");
+    expect(board.className).not.toContain("board-entry-animation");
     expect(screen.getByRole("gridcell", { name: "B, absent" })).toBeTruthy();
     expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
     expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
@@ -2448,10 +2476,14 @@ describe("App", () => {
         gameOver: false,
       }),
     );
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     renderApp();
 
-    expect(screen.getByRole("gridcell", { name: "A, typing" })).toBeTruthy();
+    expect(
+      await screen.findByRole("gridcell", { name: "A, typing" }),
+    ).toBeTruthy();
     expect(screen.getByRole("gridcell", { name: "P, typing" })).toBeTruthy();
   });
 
@@ -2472,6 +2504,8 @@ describe("App", () => {
         gameOver: false,
       }),
     );
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     renderApp();
 
@@ -2521,6 +2555,8 @@ describe("App", () => {
         hintsUsed: 1,
       }),
     );
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     renderApp();
 
@@ -2554,11 +2590,13 @@ describe("App", () => {
         gameOver: false,
       }),
     );
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     renderApp();
 
     expect(
-      screen.getByRole("dialog", { name: "Resume previous game?" }),
+      await screen.findByRole("dialog", { name: "Resume previous game?" }),
     ).toBeTruthy();
   });
 
