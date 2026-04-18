@@ -806,4 +806,6 @@ export const ES_WORDS = [
   "clavo",
   "salto",
   "anida",
+  "mueca",
+  "sidra",
 ];
