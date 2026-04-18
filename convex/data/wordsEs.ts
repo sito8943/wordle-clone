@@ -883,4 +883,6 @@ export const ES_WORDS = [
   "puede",
   "nueve",
   "huele",
+  "mueca",
+  "sidra",
 ];
