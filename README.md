@@ -49,9 +49,10 @@ If `VITE_CONVEX_URL` is not set, the app still works with local-only behavior fo
 ## Scoring
 
 - Base points are the remaining attempts after a win.
-- Difficulty multiplies base points: `easy x1`, `normal x2`, `hard x5`, `insane x9`.
-- `insane` also adds `+1` point for every `2` seconds left.
-- Final win score uses streak as a multiplier instead of a flat addition:
+- Difficulty multiplies base points: `easy x1`, `normal x2`, `hard x5`, `insane x7`.
+- `insane` also adds `+1` point for every `4` seconds left.
+- `normal` adds a `+0.4` dictionary bonus per valid non-answer guess row.
+- Streak acts as a multiplier (capped at `100`) instead of a flat addition:
 
 ```ts
 const scoreBase = basePoints * difficultyMultiplier + timeBonus;
@@ -70,18 +71,26 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 | `MAX_GUESSES`                  | `6`                                          | `src/domain/wordle/constants.ts`       |
 | `BOARD_ROWS`                   | `6`                                          | `src/domain/wordle/board/constants.ts` |
 | `BOARD_COLUMNS`                | `5`                                          | `src/domain/wordle/board/constants.ts` |
-| `DIFFICULTY_SCORE_MULTIPLIERS` | `{ easy: 1, normal: 2, hard: 5, insane: 9 }` | `src/domain/wordle/constants.ts`       |
+| `DIFFICULTY_SCORE_MULTIPLIERS` | `{ easy: 1, normal: 2, hard: 5, insane: 7 }` | `src/domain/wordle/constants.ts`       |
+| `STREAK_MODIFIER`              | `0.3`                                        | `src/domain/wordle/constants.ts`       |
+| `MAX_STREAK_FOR_SCORE_MULTIPLIER` | `100`                                     | `src/domain/wordle/constants.ts`       |
+| `LIGHTNING_SECONDS_BONUS`      | `4`                                          | `src/domain/wordle/constants.ts`       |
+| `NORMAL_DICTIONARY_ROW_BONUS`  | `0.4`                                        | `src/domain/wordle/constants.ts`       |
+| `SCORE_DECIMAL_FACTOR`         | `10`                                         | `src/domain/wordle/constants.ts`       |
+| `MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS` | `4000`                             | `src/domain/wordle/constants.ts`       |
 | `PlayerDifficulty`             | `"easy" \| "normal" \| "hard" \| "insane"`   | `src/domain/wordle/player.ts`          |
 
 ### Timer and Hints
 
 | Constant                          | Value | Source                                                |
 | --------------------------------- | ----- | ----------------------------------------------------- |
-| `HARD_MODE_TOTAL_SECONDS`         | `60`  | `src/views/Home/hooks/useHomeController/constants.ts` |
-| `HARD_MODE_FINAL_STRETCH_SECONDS` | `15`  | `src/views/Home/hooks/useHomeController/constants.ts` |
-| `EASY_MODE_HINT_LIMIT`            | `2`   | `src/views/Home/hooks/useHintController/constants.ts` |
-| `NORMAL_MODE_HINT_LIMIT`          | `1`   | `src/views/Home/hooks/useHintController/constants.ts` |
-| `HARD_MODE_HINT_LIMIT`            | `0`   | `src/views/Home/hooks/useHintController/constants.ts` |
+| `HARD_MODE_TOTAL_SECONDS`         | `60`  | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `HARD_MODE_FINAL_STRETCH_SECONDS` | `15`  | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `HARD_MODE_CLOCK_BOOST_SCALES`    | `[0.28, 0.2, 0.14, 0.1]` | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `HARD_MODE_CLOCK_BOOST_THRESHOLDS`| `[30, 45]` | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `EASY_MODE_HINT_LIMIT`            | `2`   | `src/views/Play/hooks/useHintController/constants.ts` |
+| `NORMAL_MODE_HINT_LIMIT`          | `1`   | `src/views/Play/hooks/useHintController/constants.ts` |
+| `HARD_MODE_HINT_LIMIT`            | `0`   | `src/views/Play/hooks/useHintController/constants.ts` |
 
 ### Player Defaults
 
@@ -97,8 +106,8 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 
 | Constant                    | Value                          | Source                       |
 | --------------------------- | ------------------------------ | ---------------------------- |
-| `WORDS_DEFAULT_LANGUAGE`    | `"en"`                         | `src/api/words/constants.ts` |
-| `WORDS_SUPPORTED_LANGUAGES` | `["en", "es"]`                 | `src/api/words/constants.ts` |
+| `WORDS_DEFAULT_LANGUAGE`    | `"es"`                         | `src/api/words/constants.ts` |
+| `WORDS_SUPPORTED_LANGUAGES` | `["es"]`                       | `src/api/words/constants.ts` |
 | `WORDS_CACHE_KEY_PREFIX`    | `"wordle:dictionary"`          | `src/api/words/constants.ts` |
 | `WORDS_CHECKSUM_KEY_PREFIX` | `"wordle:dictionary:checksum"` | `src/api/words/constants.ts` |
 
@@ -110,7 +119,12 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 | `WORDLE_SESSION_STORAGE_KEY`                  | `"wordle:session-id"`                    | `src/domain/wordle/constants.ts`                      |
 | `HINT_USAGE_STORAGE_KEY`                      | `"wordle:hint-usage"`                    | `src/views/Home/hooks/useHintController/constants.ts` |
 | `WORDLE_SYNC_EVENTS_KEY`                      | `"wordle:sync-events"`                   | `src/api/score/constants.ts`                          |
-| `END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY` | `"wordle:end-of-game-dialog-seen"`       | `src/views/Home/hooks/useHomeController/constants.ts` |
+| `END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY` | `"wordle:end-of-game-dialog-seen"`       | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `HARD_MODE_TIMER_STORAGE_KEY`                 | `"wordle:hard-mode-timer"`               | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `SCOREBOARD_CACHE_KEY`                        | `"wordle:scoreboard:cache"`              | `src/api/score/constants.ts`                          |
+| `SCOREBOARD_PENDING_KEY`                      | `"wordle:scoreboard:pending"`            | `src/api/score/constants.ts`                          |
+| `SCOREBOARD_CLIENT_ID_KEY`                    | `"wordle:scoreboard:client-id"`          | `src/api/score/constants.ts`                          |
+| `SCOREBOARD_PROFILE_IDENTITY_KEY`             | `"wordle:scoreboard:profile-identity"`   | `src/api/score/constants.ts`                          |
 | `WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY`      | `"wordle:disable-start-animations"`      | `src/domain/wordle/constants.ts`                      |
 | `WORDLE_START_ANIMATION_SESSION_KEY`          | `"wordle:start-animation-session-seen"`  | `src/domain/wordle/constants.ts`                      |
 | `WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY` | `"wordle:keyboard-entry-animation-seen"` | `src/domain/wordle/constants.ts`                      |
@@ -121,12 +135,34 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 | -------------------------------- | ------ | ---------------------------------- |
 | `MESSAGE_VISIBILITY_DURATION_MS` | `1800` | `src/hooks/useWordle/constants.ts` |
 | `GAME_STATE_PERSIST_DEBOUNCE_MS` | `150`  | `src/hooks/useWordle/constants.ts` |
+| `COMBO_FLASH_VISIBILITY_DURATION_MS` | `820` | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `CHALLENGE_COMPLETION_ALERT_VISIBILITY_DURATION_MS` | `4000` | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `SCORE_LIMIT`                    | `10`   | `src/config/constants.ts`          |
 
 ## Environment Variables
 
+All flags are read from `src/config/env.ts`.
+
+- `VITE_APP_VERSION` (default `"0.0.0"`): app version.
 - `VITE_CONVEX_URL` (optional): Convex deployment URL.
-- `VITE_WORD_LIST_BUTTON_ENABLED` (optional, default `true`): enables/disables the **Words** button UI.
-- `VITE_SETTINGS_DRAWER_ENABLED` (optional, default `true`): enables/disables the in-game **Settings Drawer** UI.
+- `VITE_WORD_REPORT_PHONE_NUMBER` (optional): WhatsApp target for the invalid-word report link.
+- `VITE_PAYPAL_DONATION_BUTTON_URL` (optional): PayPal donation URL.
+
+Feature flags (all default `true` unless noted):
+
+- `VITE_WORD_LIST_BUTTON_ENABLED`: enables the **Words** button (shown only in Easy).
+- `VITE_WORD_REPORT_BUTTON_ENABLED`: enables the invalid-word report button.
+- `VITE_PAYPAL_DONATION_BUTTON_ENABLED`: enables the donate button.
+- `VITE_SHARE_BUTTON_ENABLED`: enables the victory share action.
+- `VITE_DEV_CONSOLE_ENABLED`: enables the developer console (only in dev mode at runtime).
+- `VITE_SOUND_ENABLED`: enables procedural sound effects.
+- `VITE_HINTS_ENABLED`: enables the hint system.
+- `VITE_HELP_BUTTON_ENABLED`: enables the help button.
+- `VITE_CHALLENGES_ENABLED`: enables daily challenges.
+- `VITE_SETTINGS_DRAWER_ENABLED`: enables the in-game settings drawer.
+- `VITE_PLAY_OFFLINE_STATE_ENABLED` (default `false`): shows the offline state in Play view.
+- `VITE_LIGHTNING_MODE_ENABLED`: enables the lightning/insane timer mode.
+- `VITE_DIFFICULTY_EASY_ENABLED` / `VITE_DIFFICULTY_NORMAL_ENABLED` / `VITE_DIFFICULTY_HARD_ENABLED` / `VITE_DIFFICULTY_INSANE_ENABLED`: individual difficulty toggles.
 
 Notes:
 
