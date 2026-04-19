@@ -1,6 +1,6 @@
 import { useTranslation } from "@i18n";
-import { STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "./constants";
-import type { TilePropsType } from "./types";
+import { STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "../constants";
+import type { TilePropsType } from "../types";
 
 export function Tile({ tile }: TilePropsType) {
   const {

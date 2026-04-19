@@ -34,7 +34,7 @@ export const getInsaneTimeBonus = (secondsLeft: number): number => {
     return 0;
   }
 
-  return Math.max(0, Math.floor(secondsLeft / 2));
+  return Math.max(0, Math.floor(secondsLeft / 4));
 };
 
 export const getDifficultyScoreMultiplier = (

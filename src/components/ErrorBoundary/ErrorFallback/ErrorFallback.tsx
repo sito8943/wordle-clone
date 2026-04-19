@@ -1,6 +1,6 @@
 import { i18n } from "@i18n";
-import type { ErrorFallbackProps } from "./types";
-import { reloadPage } from "./utils";
+import type { ErrorFallbackProps } from "../types";
+import { reloadPage } from "../utils";
 
 export const ErrorFallback = ({
   title = i18n.t("errors.generic.title"),

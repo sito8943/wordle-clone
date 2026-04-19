@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { buildWhatsAppContactHref } from "../utils";
+import { buildWhatsAppContactHref } from "../../utils";
 import { env } from "@config";
 import { ROUTES } from "@config/routes";
 

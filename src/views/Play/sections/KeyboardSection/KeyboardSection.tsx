@@ -2,8 +2,8 @@ import { memo, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { usePlayView } from "@views/Play/providers";
-import { Keyboard } from "../components";
-import { useNativeKeyboardInput } from "../hooks";
+import { Keyboard } from "../../components";
+import { useNativeKeyboardInput } from "../../hooks";
 
 const KeyboardSection = (): JSX.Element => {
   const { t } = useTranslation();

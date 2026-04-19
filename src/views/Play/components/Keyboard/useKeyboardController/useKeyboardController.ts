@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { getKeyboardRows, getKeyStatuses } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { i18n } from "@i18n";
-import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "./constants";
-import type { KeyboardRowModel, UseKeyboardControllerParams } from "./types";
+import { KEY_STYLE, KEY_STYLE_ON_LOSS } from "../constants";
+import type { KeyboardRowModel, UseKeyboardControllerParams } from "../types";
 
 const useKeyboardController = ({
   guesses,

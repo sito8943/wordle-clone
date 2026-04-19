@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { WORDS_DEFAULT_LANGUAGE, type DictionaryLanguage } from "@api/words";
 import { useApi } from "@providers";
-import { queryKeys } from "./queryKeys";
+import { queryKeys } from "../queryKeys";
 
 const useDictionaryQuery = (
   language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,

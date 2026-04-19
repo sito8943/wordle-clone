@@ -1,6 +1,6 @@
 import { memo, type JSX } from "react";
 import { useTranslation } from "react-i18next";
-import type { HardModeProgressProps } from "./types";
+import type { HardModeProgressProps } from "../types";
 
 export const HardModeProgressBar = memo(
   ({

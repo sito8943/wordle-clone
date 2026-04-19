@@ -1,5 +1,5 @@
-import { Tile } from "./Tile";
-import type { RowPropsType } from "./types";
+import { Tile } from "../Tile";
+import type { RowPropsType } from "../types";
 
 export function Row({ row, normalDictionaryBonusTooltip }: RowPropsType) {
   const rowScaleClass = row.isActiveRow

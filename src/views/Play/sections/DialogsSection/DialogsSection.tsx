@@ -7,38 +7,38 @@ import { PLAY_DIALOG_IDS } from "@views/Play/constants";
 import { usePlayView } from "@views/Play/providers";
 
 const SessionResumeDialog = lazy(
-  () => import("../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
+  () => import("../../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
 );
 const DictionaryChecksumDialog = lazy(
   () =>
-    import("../components/Dialogs/DictionaryChecksumDialog/DictionaryChecksumDialog"),
+    import("../../components/Dialogs/DictionaryChecksumDialog/DictionaryChecksumDialog"),
 );
 const RefreshConfirmationDialog = lazy(
   () =>
-    import("../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog"),
+    import("../../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog"),
 );
 const TutorialPromptDialog = lazy(
   () =>
-    import("../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
+    import("../../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
 );
 const WordListDialog = lazy(
-  () => import("../components/Dialogs/WordListDialog/WordListDialog"),
+  () => import("../../components/Dialogs/WordListDialog/WordListDialog"),
 );
 const PlayDeveloperConsoleDialog = lazy(
-  () => import("../components/Dialogs/DeveloperConsoleDialog"),
+  () => import("../../components/Dialogs/DeveloperConsoleDialog"),
 );
 const VictoryDialog = lazy(
-  () => import("../components/Dialogs/VictoryDialog/VictoryDialog"),
+  () => import("../../components/Dialogs/VictoryDialog/VictoryDialog"),
 );
 const DefeatDialog = lazy(
-  () => import("../components/Dialogs/DefeatDialog/DefeatDialog"),
+  () => import("../../components/Dialogs/DefeatDialog/DefeatDialog"),
 );
 const ChallengesDialog = lazy(
-  () => import("../components/Dialogs/DailyChallengesDialog/ChallengesDialog"),
+  () => import("../../components/Dialogs/DailyChallengesDialog/ChallengesDialog"),
 );
 const DifficultyChangeDialog = lazy(
   () =>
-    import("../components/Dialogs/DifficultyChangeDialog/DifficultyChangeDialog"),
+    import("../../components/Dialogs/DifficultyChangeDialog/DifficultyChangeDialog"),
 );
 
 const DialogsSection = (): JSX.Element => {

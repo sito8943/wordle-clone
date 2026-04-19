@@ -1,9 +1,9 @@
 import { useId } from "react";
 import type { CSSProperties } from "react";
-import type { FireProps } from "./types";
-import { clampSize, getFireVisualState, sanitizeCounter } from "./utils";
+import type { FireProps } from "../types";
+import { clampSize, getFireVisualState, sanitizeCounter } from "../utils";
 import "./Fire.css";
-import { FIRE_VISUAL_CONFIG } from "./constants";
+import { FIRE_VISUAL_CONFIG } from "../constants";
 
 const Fire = ({ streak, size = 24, className = "" }: FireProps) => {
   const safeStreak = sanitizeCounter(streak);

@@ -2,7 +2,7 @@ import { faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { memo, type JSX } from "react";
 import { useTranslation } from "react-i18next";
-import type { NativeKeyboardClockStyle, ToolbarTimerProps } from "./types";
+import type { NativeKeyboardClockStyle, ToolbarTimerProps } from "../types";
 
 export const HardModeTimerIndicator = memo(
   ({

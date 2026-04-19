@@ -2,13 +2,13 @@ import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import useDictionaryQuery from "./useDictionaryQuery";
-import { queryKeys } from "./queryKeys";
+import { queryKeys } from "../queryKeys";
 import {
   createHookWrapper,
   createMockWordDictionaryClient,
   createTestApiContextValue,
   createTestQueryClient,
-} from "../test/utils";
+} from "../../test/utils";
 
 const CHECKSUM_A = 12345;
 const CHECKSUM_B = 99999;

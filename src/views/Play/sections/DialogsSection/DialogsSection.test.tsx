@@ -90,7 +90,7 @@ vi.mock("@i18n", () => ({
 }));
 
 vi.mock(
-  "../components/Dialogs/SessionResumeDialog/SessionResumeDialog",
+  "../../components/Dialogs/SessionResumeDialog/SessionResumeDialog",
   () => ({
     default: ({ visible }: { visible: boolean }) =>
       visible ? <div>Resume Dialog</div> : null,
@@ -98,7 +98,7 @@ vi.mock(
 );
 
 vi.mock(
-  "../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog",
+  "../../components/Dialogs/RefreshConfirmationDialog/RefreshConfirmationDialog",
   () => ({
     default: ({ visible }: { visible: boolean }) =>
       visible ? <div>Refresh Dialog</div> : null,
