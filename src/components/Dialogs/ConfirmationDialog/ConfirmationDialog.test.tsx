@@ -6,6 +6,13 @@ import {
   act,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
 import ConfirmationDialog from "./ConfirmationDialog";
 
 afterEach(cleanup);
