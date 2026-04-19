@@ -8,6 +8,7 @@ export const CHALLENGE_CONDITION_KEYS = {
   SAME_N_ENDS: "same_n_ends",
   LATE_WIN: "late_win",
   YELLOW_FOCUS: "yellow_focus",
+  FIRST_GREEN: "first_green",
   NO_HINTS: "no_hints",
   SPEEDSTER: "speedster",
   RECKLESS: "reckless",
@@ -36,6 +37,7 @@ const SIMPLE_CHALLENGE_CONDITION_KEYS = [
   CHALLENGE_CONDITION_KEYS.SAME_N_ENDS,
   CHALLENGE_CONDITION_KEYS.LATE_WIN,
   CHALLENGE_CONDITION_KEYS.YELLOW_FOCUS,
+  CHALLENGE_CONDITION_KEYS.FIRST_GREEN,
   CHALLENGE_CONDITION_KEYS.NO_HINTS,
 ] as const;
 
@@ -154,6 +156,11 @@ const CHALLENGE_SEED_BY_CONDITION_KEY: Record<
   [CHALLENGE_CONDITION_KEYS.YELLOW_FOCUS]: {
     name: "Yellow Focus",
     description: `Get at least ${CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT} yellow tiles in one row`,
+    type: "simple",
+  },
+  [CHALLENGE_CONDITION_KEYS.FIRST_GREEN]: {
+    name: "First Green",
+    description: "Get at least one green tile on your first guess",
     type: "simple",
   },
   [CHALLENGE_CONDITION_KEYS.NO_HINTS]: {

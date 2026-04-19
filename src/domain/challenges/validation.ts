@@ -109,9 +109,6 @@ const getStatusCount = (statuses: TileStatus[], target: TileStatus): number =>
     0,
   );
 
-const countVowels = (word: string): number =>
-  word.split("").filter((char) => VOWELS.has(char)).length;
-
 const getDistinctVowels = (word: string): Set<string> =>
   new Set(word.split("").filter((char) => VOWELS.has(char)));
 
@@ -214,9 +211,12 @@ const conditionEvaluators: Record<
         CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT,
     ),
 
-  [CHALLENGE_CONDITION_KEYS.ONLY_ONE_VOWEL]: (ctx) => {
-    const winningWord = getWinningGuessWord(ctx);
-    return winningWord !== null && countVowels(winningWord) === 1;
+  [CHALLENGE_CONDITION_KEYS.FIRST_GREEN]: (ctx) => {
+    const firstGuess = ctx.guesses[0];
+    return (
+      firstGuess !== undefined &&
+      getStatusCount(firstGuess.statuses, "correct") >= 1
+    );
   },
 
   [CHALLENGE_CONDITION_KEYS.NO_HINTS]: (ctx) => ctx.won && ctx.hintsUsed === 0,

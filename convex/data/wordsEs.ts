@@ -902,4 +902,5 @@ export const ES_WORDS = [
   "rayas",
   "nadar",
   "safar",
+  "cobra",
 ];

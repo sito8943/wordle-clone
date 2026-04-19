@@ -215,6 +215,30 @@ describe("challenge condition evaluators", () => {
     ).toBe(true);
   });
 
+  it("evaluates first_green", () => {
+    expect(evaluateCondition("first_green", createContext())).toBe(false);
+    expect(
+      evaluateCondition(
+        "first_green",
+        createContext({
+          guesses: [
+            row("AUDIO", ["absent", "absent", "absent", "absent", "absent"]),
+          ],
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      evaluateCondition(
+        "first_green",
+        createContext({
+          guesses: [
+            row("AUDIO", ["correct", "absent", "absent", "absent", "absent"]),
+          ],
+        }),
+      ),
+    ).toBe(true);
+  });
+
   it("evaluates no_hints", () => {
     expect(
       evaluateCondition(
