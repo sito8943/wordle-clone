@@ -65,32 +65,32 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 
 ### Core Gameplay
 
-| Constant                       | Value                                        | Source                                 |
-| ------------------------------ | -------------------------------------------- | -------------------------------------- |
-| `WORD_LENGTH`                  | `5`                                          | `src/domain/wordle/constants.ts`       |
-| `MAX_GUESSES`                  | `6`                                          | `src/domain/wordle/constants.ts`       |
-| `BOARD_ROWS`                   | `6`                                          | `src/domain/wordle/board/constants.ts` |
-| `BOARD_COLUMNS`                | `5`                                          | `src/domain/wordle/board/constants.ts` |
-| `DIFFICULTY_SCORE_MULTIPLIERS` | `{ easy: 1, normal: 2, hard: 5, insane: 7 }` | `src/domain/wordle/constants.ts`       |
-| `STREAK_MODIFIER`              | `0.3`                                        | `src/domain/wordle/constants.ts`       |
-| `MAX_STREAK_FOR_SCORE_MULTIPLIER` | `100`                                     | `src/domain/wordle/constants.ts`       |
-| `LIGHTNING_SECONDS_BONUS`      | `4`                                          | `src/domain/wordle/constants.ts`       |
-| `NORMAL_DICTIONARY_ROW_BONUS`  | `0.4`                                        | `src/domain/wordle/constants.ts`       |
-| `SCORE_DECIMAL_FACTOR`         | `10`                                         | `src/domain/wordle/constants.ts`       |
-| `MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS` | `4000`                             | `src/domain/wordle/constants.ts`       |
-| `PlayerDifficulty`             | `"easy" \| "normal" \| "hard" \| "insane"`   | `src/domain/wordle/player.ts`          |
+| Constant                                 | Value                                        | Source                                 |
+| ---------------------------------------- | -------------------------------------------- | -------------------------------------- |
+| `WORD_LENGTH`                            | `5`                                          | `src/domain/wordle/constants.ts`       |
+| `MAX_GUESSES`                            | `6`                                          | `src/domain/wordle/constants.ts`       |
+| `BOARD_ROWS`                             | `6`                                          | `src/domain/wordle/board/constants.ts` |
+| `BOARD_COLUMNS`                          | `5`                                          | `src/domain/wordle/board/constants.ts` |
+| `DIFFICULTY_SCORE_MULTIPLIERS`           | `{ easy: 1, normal: 2, hard: 5, insane: 7 }` | `src/domain/wordle/constants.ts`       |
+| `STREAK_MODIFIER`                        | `0.3`                                        | `src/domain/wordle/constants.ts`       |
+| `MAX_STREAK_FOR_SCORE_MULTIPLIER`        | `100`                                        | `src/domain/wordle/constants.ts`       |
+| `LIGHTNING_SECONDS_BONUS`                | `4`                                          | `src/domain/wordle/constants.ts`       |
+| `NORMAL_DICTIONARY_ROW_BONUS`            | `0.4`                                        | `src/domain/wordle/constants.ts`       |
+| `SCORE_DECIMAL_FACTOR`                   | `10`                                         | `src/domain/wordle/constants.ts`       |
+| `MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS` | `4000`                                       | `src/domain/wordle/constants.ts`       |
+| `PlayerDifficulty`                       | `"easy" \| "normal" \| "hard" \| "insane"`   | `src/domain/wordle/player.ts`          |
 
 ### Timer and Hints
 
-| Constant                          | Value | Source                                                |
-| --------------------------------- | ----- | ----------------------------------------------------- |
-| `HARD_MODE_TOTAL_SECONDS`         | `60`  | `src/views/Play/hooks/usePlayController/constants.ts` |
-| `HARD_MODE_FINAL_STRETCH_SECONDS` | `15`  | `src/views/Play/hooks/usePlayController/constants.ts` |
-| `HARD_MODE_CLOCK_BOOST_SCALES`    | `[0.28, 0.2, 0.14, 0.1]` | `src/views/Play/hooks/usePlayController/constants.ts` |
-| `HARD_MODE_CLOCK_BOOST_THRESHOLDS`| `[30, 45]` | `src/views/Play/hooks/usePlayController/constants.ts` |
-| `EASY_MODE_HINT_LIMIT`            | `2`   | `src/views/Play/hooks/useHintController/constants.ts` |
-| `NORMAL_MODE_HINT_LIMIT`          | `1`   | `src/views/Play/hooks/useHintController/constants.ts` |
-| `HARD_MODE_HINT_LIMIT`            | `0`   | `src/views/Play/hooks/useHintController/constants.ts` |
+| Constant                           | Value                    | Source                                                |
+| ---------------------------------- | ------------------------ | ----------------------------------------------------- |
+| `HARD_MODE_TOTAL_SECONDS`          | `60`                     | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `HARD_MODE_FINAL_STRETCH_SECONDS`  | `15`                     | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `HARD_MODE_CLOCK_BOOST_SCALES`     | `[0.28, 0.2, 0.14, 0.1]` | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `HARD_MODE_CLOCK_BOOST_THRESHOLDS` | `[30, 45]`               | `src/views/Play/hooks/usePlayController/constants.ts` |
+| `EASY_MODE_HINT_LIMIT`             | `2`                      | `src/views/Play/hooks/useHintController/constants.ts` |
+| `NORMAL_MODE_HINT_LIMIT`           | `1`                      | `src/views/Play/hooks/useHintController/constants.ts` |
+| `HARD_MODE_HINT_LIMIT`             | `0`                      | `src/views/Play/hooks/useHintController/constants.ts` |
 
 ### Player Defaults
 
@@ -131,13 +131,13 @@ This list centralizes the main game-related constants (difficulty, timer, board,
 
 ### Gameplay UX Timing
 
-| Constant                         | Value  | Source                             |
-| -------------------------------- | ------ | ---------------------------------- |
-| `MESSAGE_VISIBILITY_DURATION_MS` | `1800` | `src/hooks/useWordle/constants.ts` |
-| `GAME_STATE_PERSIST_DEBOUNCE_MS` | `150`  | `src/hooks/useWordle/constants.ts` |
-| `COMBO_FLASH_VISIBILITY_DURATION_MS` | `820` | `src/views/Play/hooks/usePlayController/constants.ts` |
+| Constant                                            | Value  | Source                                                |
+| --------------------------------------------------- | ------ | ----------------------------------------------------- |
+| `MESSAGE_VISIBILITY_DURATION_MS`                    | `1800` | `src/hooks/useWordle/constants.ts`                    |
+| `GAME_STATE_PERSIST_DEBOUNCE_MS`                    | `150`  | `src/hooks/useWordle/constants.ts`                    |
+| `COMBO_FLASH_VISIBILITY_DURATION_MS`                | `820`  | `src/views/Play/hooks/usePlayController/constants.ts` |
 | `CHALLENGE_COMPLETION_ALERT_VISIBILITY_DURATION_MS` | `4000` | `src/views/Play/hooks/usePlayController/constants.ts` |
-| `SCORE_LIMIT`                    | `10`   | `src/config/constants.ts`          |
+| `SCORE_LIMIT`                                       | `10`   | `src/config/constants.ts`                             |
 
 ## Environment Variables
 
