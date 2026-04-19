@@ -1,6 +1,30 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Player } from "@domain/wordle";
+
+vi.mock("@i18n", () => {
+  const dictionary: Record<string, string> = {
+    "profile.savedMessage": "Configuration saved.",
+    "profile.labels.name": "Name:",
+    "profile.labels.code": "Recovery code:",
+    "profile.labels.score": "Score:",
+    "profile.codeHelp":
+      "Use this 4-character code to recover your settings on another browser.",
+    "profile.editAction": "Edit",
+    "profile.cancelAction": "Cancel",
+    "profile.saveAction": "Save",
+    "profile.savingAction": "Saving...",
+    "profile.emptyNameError": "Name cannot be empty.",
+  };
+
+  const translate = (key: string) => dictionary[key] ?? key;
+
+  return {
+    i18n: { t: translate },
+    useTranslation: () => ({ t: translate }),
+  };
+});
+
 import { i18n } from "@i18n";
 import type { ProfileViewContextValue } from "@views/Profile/providers/types";
 import ProfileEditorSection from "./ProfileEditorSection";
