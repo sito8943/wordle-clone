@@ -119,6 +119,11 @@ export const resources = {
             "No detailed changelog entries were found for this update range.",
           closeAction: "Got it",
           changes: {
+            v0017beta: [
+              "Added a Game Modes hub with a new Lightning mode that challenges players against a countdown timer.",
+              "Introduced the Green challenge alongside per-difficulty feature flags to tune which modes appear in-app.",
+              "Polished scoring and in-game UX with refined dictionary-bonus logic and streak-aware score summaries.",
+            ],
             v0016beta: [
               "Added local app-version tracking to detect when a newer frontend build is available in this browser.",
               "Introduced an update dialog that explains the latest changes and includes a complete in-app version history.",
@@ -704,6 +709,11 @@ export const resources = {
             "No se han encontrado entradas detalladas para este rango de actualización.",
           closeAction: "Entendido",
           changes: {
+            v0017beta: [
+              "Se añadió un hub de Modos de juego con el nuevo modo Relámpago que reta al jugador contra un temporizador.",
+              "Se incorporó el reto Green junto con feature flags por dificultad para ajustar qué modos aparecen en la app.",
+              "Se pulió la puntuación y la UX en partida con lógica refinada de bonus de diccionario y resúmenes por racha.",
+            ],
             v0016beta: [
               "Se añadió seguimiento de la versión de la app en local para detectar builds más nuevas del frontend en este navegador.",
               "Se incorporó un diálogo de actualización con los cambios recientes y un historial completo de versiones dentro de la app.",

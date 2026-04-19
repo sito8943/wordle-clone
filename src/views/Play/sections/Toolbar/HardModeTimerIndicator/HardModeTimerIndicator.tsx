@@ -38,7 +38,7 @@ export const HardModeTimerIndicator = memo(
           <FontAwesomeIcon
             icon={faClock}
             aria-hidden="true"
-            className="text-lg toolbar-icon-entry-animation"
+            className="text-lg"
           />
         </span>
         <span>

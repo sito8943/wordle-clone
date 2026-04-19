@@ -44,10 +44,9 @@ vi.mock("./utils/words", async () => {
 });
 
 vi.mock("@providers/FeatureFlags", async () => {
-  const actual =
-    await vi.importActual<typeof import("@providers/FeatureFlags")>(
-      "@providers/FeatureFlags",
-    );
+  const actual = await vi.importActual<
+    typeof import("@providers/FeatureFlags")
+  >("@providers/FeatureFlags");
 
   return {
     ...actual,
