@@ -54,6 +54,7 @@ export type UseHardModeTimerParams = {
   guessesLength: number;
   currentLength: number;
   forceLoss: () => void;
+  modeId: WordleModeId;
 };
 
 export type UseHardModeTimerResult = {

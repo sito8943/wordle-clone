@@ -55,6 +55,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     language = WORDS_DEFAULT_LANGUAGE,
     manualTileSelection = false,
     roundConfig,
+    modeId,
   } = options;
   const resolvedRoundConfig = useMemo(
     () => resolveBoardRoundConfig(roundConfig),
@@ -71,13 +72,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const initialGameState = useMemo(
     () =>
       normalizePersistedGameState(
-        readPersistedGameState(),
+        readPersistedGameState(modeId),
         currentSessionId,
         initialAnswer,
         cachedWords,
         resolvedRoundConfig,
       ),
-    [cachedWords, currentSessionId, initialAnswer, resolvedRoundConfig],
+    [cachedWords, currentSessionId, initialAnswer, modeId, resolvedRoundConfig],
   );
   const { animationsDisabled } = useAnimationsPreference();
   const [startAnimationSeed, setStartAnimationSeed] = useState(() =>
@@ -160,9 +161,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
     );
   }, [manualTileSelection, maxSelectableTileIndex]);
 
-  const flushPersistedGameState = useCallback((state: PersistedGameState) => {
-    persistGameState(state);
-  }, []);
+  const flushPersistedGameState = useCallback(
+    (state: PersistedGameState) => {
+      persistGameState(state, modeId);
+    },
+    [modeId],
+  );
 
   const cancelDeferredPersist = useCallback(() => {
     if (persistenceTimeoutRef.current === null) {

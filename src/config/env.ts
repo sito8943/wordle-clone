@@ -61,6 +61,11 @@ const env: RuntimeEnv = {
       rawEnv.PLAY_OFFLINE_STATE_ENABLED,
     false,
   ),
+  lightningModeEnabled: readBoolean(
+    import.meta.env.VITE_LIGHTNING_MODE_ENABLED ??
+      rawEnv.LIGHTNING_MODE_ENABLED,
+    true,
+  ),
   scoreLimit: SCORE_LIMIT,
   wordleGameStorageKey: WORDLE_GAME_STORAGE_KEY,
   paypalDonationButtonUrl: readOptionalString(

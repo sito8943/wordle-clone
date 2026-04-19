@@ -1,9 +1,14 @@
 import html2canvas from "html2canvas";
-import { resolveBoardRoundConfig } from "@domain/wordle";
+import {
+  resolveBoardRoundConfig,
+  WORDLE_MODE_IDS,
+  type WordleModeId,
+} from "@domain/wordle";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
   HARD_MODE_FINAL_STRETCH_SECONDS,
+  HARD_MODE_TIMER_STORAGE_KEY,
   HARD_MODE_TOTAL_SECONDS,
   VICTORY_BOARD_SHARE_FILE_NAME,
 } from "./constants";
@@ -12,7 +17,45 @@ import type {
   VictoryBoardShareCaptureSnapshot,
 } from "./types";
 
-let hardModeTimerSnapshot: HardModeTimerSnapshot | null = null;
+const resolveHardModeTimerStorageKey = (modeId: WordleModeId): string =>
+  modeId === WORDLE_MODE_IDS.CLASSIC
+    ? HARD_MODE_TIMER_STORAGE_KEY
+    : `${HARD_MODE_TIMER_STORAGE_KEY}:${modeId}`;
+
+const isHardModeTimerSnapshot = (
+  value: unknown,
+): value is HardModeTimerSnapshot => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const maybe = value as Partial<HardModeTimerSnapshot>;
+  return (
+    typeof maybe.sessionId === "string" &&
+    typeof maybe.secondsLeft === "number" &&
+    typeof maybe.timerStarted === "boolean"
+  );
+};
+
+const readHardModeTimerSnapshot = (
+  modeId: WordleModeId,
+): HardModeTimerSnapshot | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = localStorage.getItem(resolveHardModeTimerStorageKey(modeId));
+    if (!raw) {
+      return null;
+    }
+
+    const parsed: unknown = JSON.parse(raw);
+    return isHardModeTimerSnapshot(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
 
 export const getTileStatusSoundEvent = (
   status: unknown,
@@ -92,27 +135,46 @@ export const getInitialHardModeTimerSnapshot = (
   sessionId: string,
   hardModeEnabled: boolean,
   hasActiveGame: boolean,
+  modeId: WordleModeId,
 ): HardModeTimerSnapshot => {
-  if (
-    hardModeEnabled &&
-    hasActiveGame &&
-    hardModeTimerSnapshot &&
-    hardModeTimerSnapshot.sessionId === sessionId
-  ) {
-    return hardModeTimerSnapshot;
+  if (hardModeEnabled && hasActiveGame) {
+    const persisted = readHardModeTimerSnapshot(modeId);
+    if (persisted) {
+      return { ...persisted, sessionId };
+    }
   }
 
   return getDefaultHardModeTimerSnapshot(sessionId);
 };
 
-export const clearHardModeTimerSnapshot = (): void => {
-  hardModeTimerSnapshot = null;
+export const clearHardModeTimerSnapshot = (modeId: WordleModeId): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(resolveHardModeTimerStorageKey(modeId));
+  } catch {
+    // Ignore storage remove errors.
+  }
 };
 
 export const setHardModeTimerSnapshot = (
   snapshot: HardModeTimerSnapshot,
+  modeId: WordleModeId,
 ): void => {
-  hardModeTimerSnapshot = snapshot;
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.setItem(
+      resolveHardModeTimerStorageKey(modeId),
+      JSON.stringify(snapshot),
+    );
+  } catch {
+    // Ignore storage write errors.
+  }
 };
 
 export const hasSeenEndOfGameDialogInSession = (): boolean => {

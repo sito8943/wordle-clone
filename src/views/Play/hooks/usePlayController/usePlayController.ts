@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  clearPersistedGameState,
+  clearAllPersistedGameStates,
   getGuessCombo,
   getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
@@ -99,6 +99,7 @@ export default function usePlayController(
     language: gameplayLanguage,
     manualTileSelection: player.manualTileSelection === true,
     roundConfig: modeRoundConfig,
+    modeId: activeModeId,
   });
   const {
     sessionId,
@@ -223,10 +224,16 @@ export default function usePlayController(
     guessesLength: guesses.length,
     currentLength: current.length,
     forceLoss,
+    modeId: activeModeId,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
   const completeEligibleChallenges = useCallback(async () => {
-    if (!challengesEnabled || !challengeClient?.isConfigured || !gameOver) {
+    if (
+      !challengesEnabled ||
+      lightningModeActive ||
+      !challengeClient?.isConfigured ||
+      !gameOver
+    ) {
       return;
     }
 
@@ -348,6 +355,7 @@ export default function usePlayController(
     gameId,
     gameOver,
     guesses,
+    lightningModeActive,
     player.code,
     player.difficulty,
     roundConfig?.maxGuesses,
@@ -744,7 +752,7 @@ export default function usePlayController(
       return;
     }
 
-    clearPersistedGameState();
+    clearAllPersistedGameStates();
     updatePlayerDifficulty(pendingDifficulty);
     setPendingDifficulty(null);
     setShowSettingsPanel(false);
@@ -1072,10 +1080,14 @@ export default function usePlayController(
         return;
       }
 
+      const shareTextKey = lightningModeActive
+        ? "play.victoryDialog.sharePayloadTextLightning"
+        : "play.victoryDialog.sharePayloadText";
+
       await navigator.share({
         files: [boardImageFile],
         title: i18n.t("play.victoryDialog.sharePayloadTitle"),
-        text: i18n.t("play.victoryDialog.sharePayloadText", {
+        text: i18n.t(shareTextKey, {
           count: guesses.length,
         }),
       });
@@ -1095,6 +1107,7 @@ export default function usePlayController(
     answer,
     guesses,
     isSharingVictoryBoard,
+    lightningModeActive,
     roundConfig?.lettersPerRow,
     roundConfig?.maxGuesses,
     showVictoryDialog,

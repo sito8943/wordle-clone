@@ -20,7 +20,7 @@ Restriccion principal:
 - [x] Fase 1 completada.
 - [x] Fase 2 completada para flujo clasico.
 - [x] Fase 3 completada (incluyendo validacion global ejecutada manualmente).
-- [~] Fase 4 iniciada (resolver de modo + cableado clasico base).
+- [x] Fase 4 completada para `lightning` en 0.0.17. `zen/daily` siguen diferidos.
 
 Notas:
 
@@ -147,11 +147,21 @@ Estado: [~] En progreso
 
 - Arrancar con `classic` conectado al resolver (sin cambios funcionales).
 - Dejar `zen` y `daily` feature-gated hasta cerrar sus reglas de score/hints/timer.
-- Estado: [~] En progreso. `lightning` habilitado con reglas cerradas v1 (timer activo por modo sobre tablero clasico); `zen/daily` siguen feature-gated con placeholder.
-- Reglas `lightning` v1:
-- Timer activo por modo (60s) aunque la dificultad del perfil no sea `insane`.
-- Bonus de tiempo aplicado cuando hay timer activo.
-- Hints, validacion de intentos y bonus de diccionario se mantienen en el contrato actual por dificultad de perfil.
+- Estado: [x] Cerrada para `lightning` en 0.0.17. `zen/daily` siguen feature-gated con placeholder.
+- Reglas `lightning` (cerradas en 0.0.17):
+- Timer fijo de `HARD_MODE_TOTAL_SECONDS` (60s) aunque la dificultad del perfil no sea `insane`. Timeout fuerza derrota.
+- Bonus de tiempo aplicado cuando hay timer activo (misma formula de insane).
+- Hints, validacion de intentos y bonus/multiplicador de diccionario se heredan del contrato clasico por dificultad de perfil (opcion A).
+- Retos diarios ocultos de toolbar y no evaluados cuando `activeModeId === lightning`.
+- Tablero por modo en `localStorage`: `wordle:game` (classic, back-compat) + `wordle:game:{modeId}` por modo; timer persistido tambien por modo en `wordle:hard-mode-timer:{modeId}`. F5 en `/relampago` continua el estado guardado.
+- Cambio de dificultad o idioma en `Profile` limpia tableros de todos los modos via `clearAllPersistedGameStates`.
+- Share de victoria usa copy especifica cuando el modo activo es `lightning`.
+- Feature flag `VITE_LIGHTNING_MODE_ENABLED` (default `true`). OFF muestra `ModeGatePlaceholder` existente.
+
+### 4.4 Diferido para 0.0.18
+
+- Pausa del timer al ocultar tab/dialogos (no implementado en 0.0.17; el timer solo se pausa por `showResumeDialog`/`gameOver` como antes).
+- Cierre de reglas de `zen` y `daily` (siguen en placeholder).
 
 ## Definition of Done (alcance de este plan)
 
@@ -170,7 +180,8 @@ Estado: [~] En progreso
 6. Tests de regresion + configurabilidad.
 7. Recien ahi empezar implementacion de modos extra.
 
-## Siguiente bloque recomendado
+## Siguiente bloque recomendado (0.0.18)
 
-1. Cerrar reglas completas de `lightning` (hints/validacion diccionario/score) y documentar contrato final por modo.
-2. Mantener `zen` y `daily` con gate/placeholder hasta cerrar su contrato de reglas.
+1. Pausa real del timer al abrir dialogos o ocultar la pestana (Page Visibility API).
+2. Cerrar reglas de `zen` (no-lose, infinite rows, infinite green hints, score neutral).
+3. Cerrar reglas de `daily` (palabra diaria, longitud variable).

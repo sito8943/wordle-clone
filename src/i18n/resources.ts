@@ -11,6 +11,7 @@ import {
   CHALLENGE_DEFAULT_SIMPLE_SAME_N_STARTS,
   CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT,
 } from "@domain/challenges/constants";
+import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 
 const SPEEDSTER_MAX_SECONDS = Math.floor(
   CHALLENGE_DEFAULT_COMPLEX_SPEEDSTER_MAX_DURATION_MS / 1000,
@@ -472,6 +473,7 @@ export const resources = {
           shareInProgress: "Sharing...",
           sharePayloadTitle: "Wordle victory",
           sharePayloadText: "I solved this board in {{count}} tries.",
+          sharePayloadTextLightning: `Lightning mode: I solved this board in {{count}} tries under the ${HARD_MODE_TOTAL_SECONDS}s timer.`,
           shareErrors: {
             captureUnavailable: "The board screenshot is not available yet.",
             unavailable: "This device cannot share image files from the game.",
@@ -1063,6 +1065,7 @@ export const resources = {
           shareInProgress: "Compartiendo...",
           sharePayloadTitle: "Victoria en Wordle",
           sharePayloadText: "He resuelto este tablero en {{count}} intentos.",
+          sharePayloadTextLightning: `Modo relampago: he resuelto este tablero en {{count}} intentos antes de los ${HARD_MODE_TOTAL_SECONDS}s.`,
           shareErrors: {
             captureUnavailable:
               "La captura del tablero todavía no está disponible.",

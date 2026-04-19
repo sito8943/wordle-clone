@@ -3,6 +3,7 @@ import { env } from "@config";
 import {
   isWordleModeEnabled,
   resolveWordleModeId,
+  WORDLE_MODE_IDS,
   type WordleModeId,
 } from "@domain/wordle";
 import { PlayViewProvider } from "./providers";
@@ -20,7 +21,10 @@ const Play = ({ modeId }: PlayProps): JSX.Element => {
   }
 
   const resolvedModeId = resolveWordleModeId(modeId);
-  if (!isWordleModeEnabled(resolvedModeId)) {
+  const lightningGated =
+    resolvedModeId === WORDLE_MODE_IDS.LIGHTNING &&
+    !env.lightningModeEnabled;
+  if (!isWordleModeEnabled(resolvedModeId) || lightningGated) {
     return <ModeGatePlaceholder modeId={resolvedModeId} />;
   }
 
