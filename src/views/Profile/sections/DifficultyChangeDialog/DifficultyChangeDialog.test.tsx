@@ -6,6 +6,39 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@i18n", () => {
+  const dictionary: Record<string, string> = {
+    "profile.difficultyChange.title": "Change difficulty?",
+    "profile.difficultyChange.description":
+      "You have an active game. If you change the difficulty, your current progress will be lost.",
+    "profile.difficultyChange.nextDifficulty": "New difficulty: {{difficulty}}.",
+    "profile.difficultyChange.confirm": "Yes, change and restart",
+    "profile.difficultyChange.cancel": "Cancel",
+    "profile.difficultyOptions.easy": "Easy",
+    "profile.difficultyOptions.normal": "Normal",
+    "profile.difficultyOptions.hard": "Hard",
+    "profile.difficultyOptions.insane": "Insane",
+  };
+
+  const translate = (
+    key: string,
+    options?: Record<string, string | number>,
+  ) => {
+    const template = dictionary[key] ?? key;
+    if (!options) return template;
+    return Object.entries(options).reduce(
+      (acc, [name, value]) => acc.replace(`{{${name}}}`, String(value)),
+      template,
+    );
+  };
+
+  return {
+    i18n: { t: translate },
+    useTranslation: () => ({ t: translate }),
+  };
+});
+
 import { i18n } from "@i18n";
 import type { ProfileViewContextValue } from "@views/Profile/providers/types";
 import DifficultyChangeDialog from "./DifficultyChangeDialog";
