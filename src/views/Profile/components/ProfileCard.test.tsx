@@ -6,6 +6,28 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const dictionary: Record<string, string> = {
+        "profile.labels.name": "Name:",
+        "profile.labels.code": "Recovery code:",
+        "profile.labels.score": "Score:",
+        "profile.codeHelp":
+          "Use this 4-character code to recover your settings on another browser.",
+        "profile.editAction": "Edit",
+        "profile.cancelAction": "Cancel",
+        "profile.saveAction": "Save",
+        "profile.savingAction": "Saving...",
+        "profile.emptyNameError": "Name cannot be empty.",
+      };
+
+      return dictionary[key] ?? key;
+    },
+  }),
+}));
+
 import { EditableProfileCard, ProfileCard } from "./index";
 
 describe("ProfileCard", () => {
