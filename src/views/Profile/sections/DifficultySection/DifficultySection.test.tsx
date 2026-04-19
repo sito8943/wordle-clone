@@ -4,6 +4,10 @@ import DifficultySection from "./DifficultySection";
 
 const featureFlagsMock = vi.hoisted(() => ({
   wordListButtonEnabled: true,
+  difficultyEasyEnabled: true,
+  difficultyNormalEnabled: true,
+  difficultyHardEnabled: true,
+  difficultyInsaneEnabled: true,
 }));
 
 vi.mock("@providers/FeatureFlags", () => ({
@@ -26,6 +30,10 @@ vi.mock("@views/Profile/providers", () => ({
 describe("DifficultySection", () => {
   beforeEach(() => {
     featureFlagsMock.wordListButtonEnabled = true;
+    featureFlagsMock.difficultyEasyEnabled = true;
+    featureFlagsMock.difficultyNormalEnabled = true;
+    featureFlagsMock.difficultyHardEnabled = true;
+    featureFlagsMock.difficultyInsaneEnabled = true;
     profileViewMock.controller.keyboardPreference = "onscreen";
     profileViewMock.controller.difficulty = "normal";
     profileViewMock.controller.changeKeyboardPreference = vi.fn();

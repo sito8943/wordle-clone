@@ -7,6 +7,8 @@ import {
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  HARD_MODE_CLOCK_BOOST_SCALES,
+  HARD_MODE_CLOCK_BOOST_THRESHOLDS,
   HARD_MODE_FINAL_STRETCH_SECONDS,
   HARD_MODE_TIMER_STORAGE_KEY,
   HARD_MODE_TOTAL_SECONDS,
@@ -97,18 +99,18 @@ export const getGuessWords = (guesses: unknown[]): string[] =>
 
 export const getHardModeClockBoostScale = (secondsLeft: number): number => {
   if (secondsLeft <= HARD_MODE_FINAL_STRETCH_SECONDS) {
-    return 0.28;
+    return HARD_MODE_CLOCK_BOOST_SCALES[0];
   }
 
-  if (secondsLeft <= 30) {
-    return 0.2;
+  if (secondsLeft <= HARD_MODE_CLOCK_BOOST_THRESHOLDS[0]) {
+    return HARD_MODE_CLOCK_BOOST_SCALES[1];
   }
 
-  if (secondsLeft <= 45) {
-    return 0.14;
+  if (secondsLeft <= HARD_MODE_CLOCK_BOOST_THRESHOLDS[1]) {
+    return HARD_MODE_CLOCK_BOOST_SCALES[2];
   }
 
-  return 0.1;
+  return HARD_MODE_CLOCK_BOOST_SCALES[3];
 };
 
 export const getHardModeFinalStretchProgressPercent = (

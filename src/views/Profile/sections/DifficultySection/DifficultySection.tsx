@@ -21,7 +21,13 @@ const DifficultySection = () => {
     },
   } = useProfileView();
   const { t } = useTranslation();
-  const { wordListButtonEnabled } = useFeatureFlags();
+  const {
+    wordListButtonEnabled,
+    difficultyEasyEnabled,
+    difficultyNormalEnabled,
+    difficultyHardEnabled,
+    difficultyInsaneEnabled,
+  } = useFeatureFlags();
 
   return (
     <div className="max-w-xl" id="difficulty">
@@ -67,32 +73,48 @@ const DifficultySection = () => {
           }
           className="profile-select-input"
         >
-          <option value="easy">{t("profile.difficultyOptions.easy")}</option>
-          <option value="normal">
-            {t("profile.difficultyOptions.normal")}
-          </option>
-          <option value="hard">{t("profile.difficultyOptions.hard")}</option>
-          <option value="insane">
-            {t("profile.difficultyOptions.insane")}
-          </option>
+          {difficultyEasyEnabled && (
+            <option value="easy">{t("profile.difficultyOptions.easy")}</option>
+          )}
+          {difficultyNormalEnabled && (
+            <option value="normal">
+              {t("profile.difficultyOptions.normal")}
+            </option>
+          )}
+          {difficultyHardEnabled && (
+            <option value="hard">{t("profile.difficultyOptions.hard")}</option>
+          )}
+          {difficultyInsaneEnabled && (
+            <option value="insane">
+              {t("profile.difficultyOptions.insane")}
+            </option>
+          )}
         </select>
         <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-          <li>
-            {wordListButtonEnabled
-              ? t("profile.difficultyRules.easy")
-              : t("profile.difficultyRules.easyNoWordList")}
-          </li>
-          <li>
-            {wordListButtonEnabled
-              ? t("profile.difficultyRules.normal")
-              : t("profile.difficultyRules.normalNoWordList")}
-          </li>
-          <li>{t("profile.difficultyRules.hard")}</li>
-          <li>
-            {t("profile.difficultyRules.insane", {
-              seconds: HARD_MODE_TOTAL_SECONDS,
-            })}
-          </li>
+          {difficultyEasyEnabled && (
+            <li>
+              {wordListButtonEnabled
+                ? t("profile.difficultyRules.easy")
+                : t("profile.difficultyRules.easyNoWordList")}
+            </li>
+          )}
+          {difficultyNormalEnabled && (
+            <li>
+              {wordListButtonEnabled
+                ? t("profile.difficultyRules.normal")
+                : t("profile.difficultyRules.normalNoWordList")}
+            </li>
+          )}
+          {difficultyHardEnabled && (
+            <li>{t("profile.difficultyRules.hard")}</li>
+          )}
+          {difficultyInsaneEnabled && (
+            <li>
+              {t("profile.difficultyRules.insane", {
+                seconds: HARD_MODE_TOTAL_SECONDS,
+              })}
+            </li>
+          )}
         </ul>
       </div>
     </div>

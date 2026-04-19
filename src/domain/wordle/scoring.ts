@@ -3,12 +3,15 @@ import {
   MAX_STREAK_FOR_SCORE_MULTIPLIER,
   MAX_GUESSES,
   NORMAL_DICTIONARY_ROW_BONUS,
+  LIGHTNING_SECONDS_BONUS,
+  STREAK_MODIFIER,
+  SCORE_DECIMAL_FACTOR,
 } from "./constants";
 import type { PlayerDifficulty } from "./player";
 import { isValidWord } from "@utils/words";
 
 const roundScoreToSingleDecimal = (value: number): number =>
-  Math.round(value * 10) / 10;
+  Math.round(value * 10) / SCORE_DECIMAL_FACTOR;
 
 export const getPointsForWin = (guessesUsed: number): number =>
   Math.max(0, MAX_GUESSES - guessesUsed + 1);
@@ -34,7 +37,7 @@ export const getInsaneTimeBonus = (secondsLeft: number): number => {
     return 0;
   }
 
-  return Math.max(0, Math.floor(secondsLeft / 4));
+  return Math.max(0, Math.floor(secondsLeft / LIGHTNING_SECONDS_BONUS));
 };
 
 export const getDifficultyScoreMultiplier = (
@@ -60,7 +63,7 @@ const toSafeDictionaryRowBonus = (value: number): number => {
 export const getStreakScoreMultiplier = (streak: number): number => {
   const safeStreak = toSafeStreakBonus(streak);
 
-  return 1 + 0.3 * Math.sqrt(safeStreak);
+  return 1 + STREAK_MODIFIER * Math.sqrt(safeStreak);
 };
 
 export const getBaseScoreForWin = (

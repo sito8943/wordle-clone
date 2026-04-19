@@ -7,7 +7,8 @@ import { PLAY_DIALOG_IDS } from "@views/Play/constants";
 import { usePlayView } from "@views/Play/providers";
 
 const SessionResumeDialog = lazy(
-  () => import("../../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
+  () =>
+    import("../../components/Dialogs/SessionResumeDialog/SessionResumeDialog"),
 );
 const DictionaryChecksumDialog = lazy(
   () =>
@@ -34,7 +35,8 @@ const DefeatDialog = lazy(
   () => import("../../components/Dialogs/DefeatDialog/DefeatDialog"),
 );
 const ChallengesDialog = lazy(
-  () => import("../../components/Dialogs/DailyChallengesDialog/ChallengesDialog"),
+  () =>
+    import("../../components/Dialogs/DailyChallengesDialog/ChallengesDialog"),
 );
 const DifficultyChangeDialog = lazy(
   () =>

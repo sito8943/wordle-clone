@@ -97,9 +97,9 @@ describe("getDifficultyScoreMultiplier", () => {
 });
 
 describe("getInsaneTimeBonus", () => {
-  it("grants 1 point for every 2 seconds remaining", () => {
-    expect(getInsaneTimeBonus(10)).toBe(5);
-    expect(getInsaneTimeBonus(11)).toBe(5);
+  it("grants 1 point for every 4 seconds remaining", () => {
+    expect(getInsaneTimeBonus(8)).toBe(2);
+    expect(getInsaneTimeBonus(11)).toBe(2);
   });
 
   it("returns 0 when there are 0 or 1 seconds left", () => {

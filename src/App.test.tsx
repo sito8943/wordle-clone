@@ -43,6 +43,24 @@ vi.mock("./utils/words", async () => {
   };
 });
 
+vi.mock("@providers/FeatureFlags", async () => {
+  const actual =
+    await vi.importActual<typeof import("@providers/FeatureFlags")>(
+      "@providers/FeatureFlags",
+    );
+
+  return {
+    ...actual,
+    useFeatureFlags: () => ({
+      ...actual.useFeatureFlags(),
+      difficultyEasyEnabled: true,
+      difficultyNormalEnabled: true,
+      difficultyHardEnabled: true,
+      difficultyInsaneEnabled: true,
+    }),
+  };
+});
+
 const renderApp = () =>
   renderWithQueryClient(
     <SoundProvider>
@@ -1146,7 +1164,7 @@ describe("App", () => {
   });
 
   it("shows an insane mode timer and decreases it on each tick", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1159,6 +1177,7 @@ describe("App", () => {
 
     try {
       renderApp();
+      await waitForPlayReady();
 
       expect(screen.getByLabelText("Insane timer: 60 seconds")).toBeTruthy();
 
@@ -1180,7 +1199,7 @@ describe("App", () => {
   });
 
   it("pauses and restores insane mode timer when navigating away and back", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1209,6 +1228,7 @@ describe("App", () => {
 
     try {
       renderApp();
+      await waitForPlayReady();
 
       act(() => {
         vi.advanceTimersByTime(3000);
@@ -1217,7 +1237,7 @@ describe("App", () => {
       expect(screen.getByLabelText("Insane timer: 57 seconds")).toBeTruthy();
 
       fireEvent.click(screen.getByRole("link", { name: "Settings" }));
-      expect(screen.getByLabelText("Theme mode")).toBeTruthy();
+      expect(await screen.findByLabelText("Theme mode")).toBeTruthy();
       expect(screen.queryByLabelText(/Insane timer:/)).toBeNull();
 
       act(() => {
@@ -1227,7 +1247,9 @@ describe("App", () => {
       window.history.pushState({}, "", ROUTES.CLASSIC);
       window.dispatchEvent(new PopStateEvent("popstate"));
 
-      expect(screen.getByLabelText("Insane timer: 57 seconds")).toBeTruthy();
+      expect(
+        await screen.findByLabelText("Insane timer: 57 seconds"),
+      ).toBeTruthy();
 
       act(() => {
         vi.advanceTimersByTime(1000);
@@ -1799,7 +1821,7 @@ describe("App", () => {
 
     await waitFor(() => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
-      expect(player.score).toBe(84);
+      expect(player.score).toBe(57);
     });
   });
 

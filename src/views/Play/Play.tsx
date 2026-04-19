@@ -22,8 +22,7 @@ const Play = ({ modeId }: PlayProps): JSX.Element => {
 
   const resolvedModeId = resolveWordleModeId(modeId);
   const lightningGated =
-    resolvedModeId === WORDLE_MODE_IDS.LIGHTNING &&
-    !env.lightningModeEnabled;
+    resolvedModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled;
   if (!isWordleModeEnabled(resolvedModeId) || lightningGated) {
     return <ModeGatePlaceholder modeId={resolvedModeId} />;
   }

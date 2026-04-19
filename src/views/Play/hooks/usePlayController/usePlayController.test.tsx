@@ -754,12 +754,12 @@ describe("usePlayController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 9, 2, 5),
+      getTotalPointsForWin(3, 7, 2, 2),
       undefined,
       1_000,
     );
     expect(result.current.victoryScoreSummary?.total).toBe(
-      getTotalPointsForWin(3, 9, 2, 5),
+      getTotalPointsForWin(3, 7, 2, 2),
     );
     expect(result.current.showVictoryDialog).toBe(true);
   });
@@ -799,12 +799,12 @@ describe("usePlayController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 2, 2, 5),
+      getTotalPointsForWin(3, 2, 2, 2),
       undefined,
       1_000,
     );
     expect(result.current.victoryScoreSummary?.items).toEqual(
-      expect.arrayContaining([{ key: "time", value: 5 }]),
+      expect.arrayContaining([{ key: "time", value: 2 }]),
     );
   });
 

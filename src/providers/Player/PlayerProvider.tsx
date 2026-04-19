@@ -16,18 +16,27 @@ import {
 } from "./utils";
 import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  clearAllPersistedGameStates,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
+  resolveEnabledDifficulty,
   type Player,
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
   type PlayerLanguage,
   type RoundSyncEvent,
 } from "@domain/wordle";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
   const queryClient = useQueryClient();
+  const {
+    difficultyEasyEnabled,
+    difficultyNormalEnabled,
+    difficultyHardEnabled,
+    difficultyInsaneEnabled,
+  } = useFeatureFlags();
 
   const [storedPlayer, setStoredPlayer] = useLocalStorage<Player>(
     "player",
@@ -117,6 +126,38 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       return normalizePlayer(previous);
     });
   }, [setStoredPlayer]);
+
+  const difficultyMigrationRef = useRef(false);
+  useEffect(() => {
+    if (difficultyMigrationRef.current) {
+      return;
+    }
+    difficultyMigrationRef.current = true;
+
+    const resolved = resolveEnabledDifficulty(player.difficulty, {
+      easy: difficultyEasyEnabled,
+      normal: difficultyNormalEnabled,
+      hard: difficultyHardEnabled,
+      insane: difficultyInsaneEnabled,
+    });
+
+    if (!resolved || resolved === player.difficulty) {
+      return;
+    }
+
+    clearAllPersistedGameStates();
+    setStoredPlayer((previous) => ({
+      ...normalizePlayer(previous),
+      difficulty: resolved,
+    }));
+  }, [
+    difficultyEasyEnabled,
+    difficultyHardEnabled,
+    difficultyInsaneEnabled,
+    difficultyNormalEnabled,
+    player.difficulty,
+    setStoredPlayer,
+  ]);
 
   const syncQueuedRoundEvents = useCallback(
     async (currentPlayer: Player) => {

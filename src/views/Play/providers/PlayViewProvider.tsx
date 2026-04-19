@@ -19,7 +19,8 @@ const PlayViewProvider = ({
     challengesEnabled: challengesFlagEnabled,
   } = useFeatureFlags();
   const challengesEnabled =
-    challengesFlagEnabled && controller.activeModeId !== WORDLE_MODE_IDS.LIGHTNING;
+    challengesFlagEnabled &&
+    controller.activeModeId !== WORDLE_MODE_IDS.LIGHTNING;
 
   const challenges = useChallenges(challengesEnabled);
 

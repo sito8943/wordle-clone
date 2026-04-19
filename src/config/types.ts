@@ -16,6 +16,10 @@ export type RuntimeEnv = {
   settingsDrawerEnabled: boolean;
   playOfflineStateEnabled: boolean;
   lightningModeEnabled: boolean;
+  difficultyEasyEnabled: boolean;
+  difficultyNormalEnabled: boolean;
+  difficultyHardEnabled: boolean;
+  difficultyInsaneEnabled: boolean;
   scoreLimit: number;
   wordleGameStorageKey: string;
   paypalDonationButtonUrl?: string;
