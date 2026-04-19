@@ -12,7 +12,8 @@ vi.mock("@i18n", () => {
     "profile.difficultyChange.title": "Change difficulty?",
     "profile.difficultyChange.description":
       "You have an active game. If you change the difficulty, your current progress will be lost.",
-    "profile.difficultyChange.nextDifficulty": "New difficulty: {{difficulty}}.",
+    "profile.difficultyChange.nextDifficulty":
+      "New difficulty: {{difficulty}}.",
     "profile.difficultyChange.confirm": "Yes, change and restart",
     "profile.difficultyChange.cancel": "Cancel",
     "profile.difficultyOptions.easy": "Easy",
