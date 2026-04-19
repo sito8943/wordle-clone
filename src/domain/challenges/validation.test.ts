@@ -215,45 +215,6 @@ describe("challenge condition evaluators", () => {
     ).toBe(true);
   });
 
-  it("evaluates only_one_vowel", () => {
-    expect(
-      evaluateCondition(
-        "only_one_vowel",
-        createContext({
-          won: true,
-          answer: "CRANE",
-          guesses: [
-            row("CRANE", [
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-            ]),
-          ],
-        }),
-      ),
-    ).toBe(false);
-    expect(
-      evaluateCondition(
-        "only_one_vowel",
-        createContext({
-          won: true,
-          answer: "TRUCK",
-          guesses: [
-            row("TRUCK", [
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-            ]),
-          ],
-        }),
-      ),
-    ).toBe(true);
-  });
-
   it("evaluates no_hints", () => {
     expect(
       evaluateCondition(

@@ -11,7 +11,6 @@
 | same_n_ends         | N (default N \= 2\) filas terminan con la misma letra  | Simple     | No                  |
 | late_win            | Gana en menos de N (default N \= 180\) segundos        | Simple     | No                  |
 | yellow_focus        | Al menos N (default 3 ) amarillas en una fila          | Simple     | No                  |
-| only_one_vowel      | El acierto tiene solo una vocal                        | Simple     | No                  |
 | no_hints            | Gana sin usar las pistas                               | Simple     | No                  |
 |                     |                                                        |            |                     |
 | speedster           | Gana en menos de N (default N \= 60\) segundos         | Complejo   | Si                  |
