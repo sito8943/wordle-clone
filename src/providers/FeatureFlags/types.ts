@@ -9,6 +9,11 @@ export type FeatureFlags = {
   helpButtonEnabled: boolean;
   challengesEnabled: boolean;
   settingsDrawerEnabled: boolean;
+  lightningModeEnabled: boolean;
+  difficultyEasyEnabled: boolean;
+  difficultyNormalEnabled: boolean;
+  difficultyHardEnabled: boolean;
+  difficultyInsaneEnabled: boolean;
 };
 
 export type FeatureFlagsContextType = FeatureFlags;

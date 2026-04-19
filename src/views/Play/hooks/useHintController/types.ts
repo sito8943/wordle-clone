@@ -1,4 +1,4 @@
-import type { PlayerDifficulty } from "@domain/wordle";
+import type { BoardRoundConfig, PlayerDifficulty } from "@domain/wordle";
 import type { HintTileStatus } from "@hooks/useWordle/types";
 
 export type HintUsageSnapshot = {
@@ -11,6 +11,7 @@ export type UseHintControllerParams = {
   answer: string;
   gameId: string;
   difficulty: PlayerDifficulty;
+  roundConfig?: Partial<BoardRoundConfig>;
   hasInProgressGameAtMount: boolean;
   showResumeDialog: boolean;
   gameOver: boolean;

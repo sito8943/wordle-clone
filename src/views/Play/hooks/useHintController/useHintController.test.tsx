@@ -172,4 +172,22 @@ describe("useHintController", () => {
     expect(hintUsed).toBe(true);
     expect(revealHint).toHaveBeenCalledWith("correct");
   });
+
+  it("disables hints when the configured row length is reached", () => {
+    const { result } = renderHook(() =>
+      useHintController({
+        answer: "APPLE",
+        gameId: "game-1",
+        difficulty: "easy",
+        roundConfig: { lettersPerRow: 3, maxGuesses: 6 },
+        hasInProgressGameAtMount: false,
+        showResumeDialog: false,
+        gameOver: false,
+        current: "ABC",
+        revealHint: vi.fn().mockReturnValue(true),
+      }),
+    );
+
+    expect(result.current.hintButtonDisabled).toBe(true);
+  });
 });

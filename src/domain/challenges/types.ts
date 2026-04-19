@@ -33,6 +33,7 @@ export type ChallengeConditionContext = {
   gameOver: boolean;
   won: boolean;
   answer: string;
+  maxGuesses?: number;
   playerDifficulty: PlayerDifficulty;
   roundDurationMs: number;
   dailyCompletedRounds: number;

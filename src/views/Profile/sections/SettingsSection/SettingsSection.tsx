@@ -22,16 +22,12 @@ const SettingsSection = () => {
       changeThemePreference,
       language,
       openLanguageDialog,
-      keyboardPreference,
-      changeKeyboardPreference,
       showEndOfGameDialogs,
       changeShowEndOfGameDialogs,
       soundEnabled,
       changeSoundEnabled,
       manualTileSelection,
       changeManualTileSelection,
-      difficulty,
-      changeDifficulty,
     },
   } = useProfileView();
 
@@ -144,12 +140,7 @@ const SettingsSection = () => {
           </div>
         </div>
       </div>
-      <DifficultySection
-        keyboardPreference={keyboardPreference}
-        onChangeKeyboardPreference={changeKeyboardPreference}
-        difficulty={difficulty}
-        onChangeDifficulty={changeDifficulty}
-      />
+      <DifficultySection />
     </section>
   );
 };

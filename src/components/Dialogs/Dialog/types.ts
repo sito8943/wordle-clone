@@ -5,7 +5,7 @@ export type DialogProps = {
   onClose: () => void;
   isClosing?: boolean;
   titleId: string;
-  title: string;
+  title: string | ReactNode;
   description?: string;
   children?: ReactNode;
   headerAction?: ReactNode;

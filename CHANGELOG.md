@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-04-19
+
+### Branch `0.0.17`
+
+- Closed lightning mode rules (Fase 4.3 of `BOARD_GENERIC_CUSTOMIZABLE_PLAN`). Lightning inherits classic difficulty-driven rules for hints/dictionary (option A), while forcing a 60s timer (`HARD_MODE_TOTAL_SECONDS`) regardless of profile difficulty; timeout forces a loss.
+- Hidden daily challenges toolbar entry and disabled challenge evaluation while `activeModeId === "lightning"`.
+- Introduced per-mode persistence: `wordle:game` stays the classic key (back-compat) and non-classic modes use `wordle:game:{modeId}`. Hard-mode timer also persisted per mode under `wordle:hard-mode-timer[:modeId]`, so refreshing `/relampago` continues the saved board and timer.
+- Added `clearAllPersistedGameStates` helper; `Profile` difficulty/language changes now invalidate every mode's saved board.
+- Added a lightning-specific victory share message in EN/ES so shared boards mention the mode.
+- Added `VITE_LIGHTNING_MODE_ENABLED` feature flag (default `true`). Disabling it renders the existing `ModeGatePlaceholder` on `/relampago`.
+- Deferred to 0.0.18: timer pause on dialog/visibility change, and the `zen`/`daily` rule sets.
+
 ## 2026-04-16
 
 ### Branch `0.0.16-beta`

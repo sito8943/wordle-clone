@@ -21,11 +21,13 @@ export const useHardModeTimer = ({
   guessesLength,
   currentLength,
   forceLoss,
+  modeId,
 }: UseHardModeTimerParams): UseHardModeTimerResult => {
   const initialHardModeTimerSnapshot = getInitialHardModeTimerSnapshot(
     sessionId,
     hardModeEnabled,
     hasInProgressGameAtMount,
+    modeId,
   );
   const skipInitialHardModeReset = useRef(true);
   const hardModeEnabledRef = useRef(hardModeEnabled);
@@ -65,9 +67,11 @@ export const useHardModeTimer = ({
     hardModeTimerStateRef.current = defaultHardModeTimerSnapshot;
 
     if (hardModeEnabled) {
-      setHardModeTimerSnapshot(defaultHardModeTimerSnapshot);
+      setHardModeTimerSnapshot(defaultHardModeTimerSnapshot, modeId);
+    } else {
+      clearHardModeTimerSnapshot(modeId);
     }
-  }, [hardModeEnabled, sessionId]);
+  }, [hardModeEnabled, modeId, sessionId]);
 
   useEffect(() => {
     hardModeTimerStateRef.current = {
@@ -81,9 +85,17 @@ export const useHardModeTimer = ({
     hardModeEnabledRef.current = hardModeEnabled;
 
     if (!hardModeEnabled) {
-      clearHardModeTimerSnapshot();
+      clearHardModeTimerSnapshot(modeId);
     }
-  }, [hardModeEnabled]);
+  }, [hardModeEnabled, modeId]);
+
+  useEffect(() => {
+    if (!hardModeEnabled) {
+      return;
+    }
+
+    setHardModeTimerSnapshot({ ...hardModeTimerStateRef.current }, modeId);
+  }, [hardModeEnabled, hardModeSecondsLeft, hardModeTimerStarted, modeId]);
 
   useEffect(() => {
     return () => {
@@ -91,9 +103,9 @@ export const useHardModeTimer = ({
         return;
       }
 
-      setHardModeTimerSnapshot({ ...hardModeTimerStateRef.current });
+      setHardModeTimerSnapshot({ ...hardModeTimerStateRef.current }, modeId);
     };
-  }, []);
+  }, [modeId]);
 
   useEffect(() => {
     if (skipInitialHardModeReset.current) {

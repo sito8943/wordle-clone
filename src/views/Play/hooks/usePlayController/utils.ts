@@ -1,9 +1,16 @@
 import html2canvas from "html2canvas";
-import { MAX_GUESSES, WORD_LENGTH } from "@domain/wordle";
+import {
+  resolveBoardRoundConfig,
+  WORDLE_MODE_IDS,
+  type WordleModeId,
+} from "@domain/wordle";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  HARD_MODE_CLOCK_BOOST_SCALES,
+  HARD_MODE_CLOCK_BOOST_THRESHOLDS,
   HARD_MODE_FINAL_STRETCH_SECONDS,
+  HARD_MODE_TIMER_STORAGE_KEY,
   HARD_MODE_TOTAL_SECONDS,
   VICTORY_BOARD_SHARE_FILE_NAME,
 } from "./constants";
@@ -12,7 +19,45 @@ import type {
   VictoryBoardShareCaptureSnapshot,
 } from "./types";
 
-let hardModeTimerSnapshot: HardModeTimerSnapshot | null = null;
+const resolveHardModeTimerStorageKey = (modeId: WordleModeId): string =>
+  modeId === WORDLE_MODE_IDS.CLASSIC
+    ? HARD_MODE_TIMER_STORAGE_KEY
+    : `${HARD_MODE_TIMER_STORAGE_KEY}:${modeId}`;
+
+const isHardModeTimerSnapshot = (
+  value: unknown,
+): value is HardModeTimerSnapshot => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const maybe = value as Partial<HardModeTimerSnapshot>;
+  return (
+    typeof maybe.sessionId === "string" &&
+    typeof maybe.secondsLeft === "number" &&
+    typeof maybe.timerStarted === "boolean"
+  );
+};
+
+const readHardModeTimerSnapshot = (
+  modeId: WordleModeId,
+): HardModeTimerSnapshot | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = localStorage.getItem(resolveHardModeTimerStorageKey(modeId));
+    if (!raw) {
+      return null;
+    }
+
+    const parsed: unknown = JSON.parse(raw);
+    return isHardModeTimerSnapshot(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
 
 export const getTileStatusSoundEvent = (
   status: unknown,
@@ -54,18 +99,18 @@ export const getGuessWords = (guesses: unknown[]): string[] =>
 
 export const getHardModeClockBoostScale = (secondsLeft: number): number => {
   if (secondsLeft <= HARD_MODE_FINAL_STRETCH_SECONDS) {
-    return 0.28;
+    return HARD_MODE_CLOCK_BOOST_SCALES[0];
   }
 
-  if (secondsLeft <= 30) {
-    return 0.2;
+  if (secondsLeft <= HARD_MODE_CLOCK_BOOST_THRESHOLDS[0]) {
+    return HARD_MODE_CLOCK_BOOST_SCALES[1];
   }
 
-  if (secondsLeft <= 45) {
-    return 0.14;
+  if (secondsLeft <= HARD_MODE_CLOCK_BOOST_THRESHOLDS[1]) {
+    return HARD_MODE_CLOCK_BOOST_SCALES[2];
   }
 
-  return 0.1;
+  return HARD_MODE_CLOCK_BOOST_SCALES[3];
 };
 
 export const getHardModeFinalStretchProgressPercent = (
@@ -92,27 +137,46 @@ export const getInitialHardModeTimerSnapshot = (
   sessionId: string,
   hardModeEnabled: boolean,
   hasActiveGame: boolean,
+  modeId: WordleModeId,
 ): HardModeTimerSnapshot => {
-  if (
-    hardModeEnabled &&
-    hasActiveGame &&
-    hardModeTimerSnapshot &&
-    hardModeTimerSnapshot.sessionId === sessionId
-  ) {
-    return hardModeTimerSnapshot;
+  if (hardModeEnabled && hasActiveGame) {
+    const persisted = readHardModeTimerSnapshot(modeId);
+    if (persisted) {
+      return { ...persisted, sessionId };
+    }
   }
 
   return getDefaultHardModeTimerSnapshot(sessionId);
 };
 
-export const clearHardModeTimerSnapshot = (): void => {
-  hardModeTimerSnapshot = null;
+export const clearHardModeTimerSnapshot = (modeId: WordleModeId): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(resolveHardModeTimerStorageKey(modeId));
+  } catch {
+    // Ignore storage remove errors.
+  }
 };
 
 export const setHardModeTimerSnapshot = (
   snapshot: HardModeTimerSnapshot,
+  modeId: WordleModeId,
 ): void => {
-  hardModeTimerSnapshot = snapshot;
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.setItem(
+      resolveHardModeTimerStorageKey(modeId),
+      JSON.stringify(snapshot),
+    );
+  } catch {
+    // Ignore storage write errors.
+  }
 };
 
 export const hasSeenEndOfGameDialogInSession = (): boolean => {
@@ -246,13 +310,16 @@ const renderVictoryBoardFallbackCanvas = (
   }
 
   const canvas = document.createElement("canvas");
+  const { lettersPerRow, maxGuesses } = resolveBoardRoundConfig(
+    snapshot.roundConfig,
+  );
   const boardWidth =
-    WORD_LENGTH * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
-    (WORD_LENGTH - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
+    lettersPerRow * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
+    (lettersPerRow - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
     VICTORY_BOARD_SHARE_PADDING_PX * 2;
   const boardHeight =
-    MAX_GUESSES * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
-    (MAX_GUESSES - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
+    maxGuesses * VICTORY_BOARD_SHARE_TILE_SIZE_PX +
+    (maxGuesses - 1) * VICTORY_BOARD_SHARE_TILE_GAP_PX +
     VICTORY_BOARD_SHARE_PADDING_PX * 2;
 
   canvas.width = boardWidth;
@@ -270,8 +337,8 @@ const renderVictoryBoardFallbackCanvas = (
   context.textBaseline = "middle";
   context.font = '700 28px "Roboto Slab Variable", "Roboto", sans-serif';
 
-  for (let rowIndex = 0; rowIndex < MAX_GUESSES; rowIndex += 1) {
-    for (let columnIndex = 0; columnIndex < WORD_LENGTH; columnIndex += 1) {
+  for (let rowIndex = 0; rowIndex < maxGuesses; rowIndex += 1) {
+    for (let columnIndex = 0; columnIndex < lettersPerRow; columnIndex += 1) {
       const x =
         VICTORY_BOARD_SHARE_PADDING_PX +
         columnIndex *

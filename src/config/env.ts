@@ -61,6 +61,31 @@ const env: RuntimeEnv = {
       rawEnv.PLAY_OFFLINE_STATE_ENABLED,
     false,
   ),
+  lightningModeEnabled: readBoolean(
+    import.meta.env.VITE_LIGHTNING_MODE_ENABLED ??
+      rawEnv.LIGHTNING_MODE_ENABLED,
+    true,
+  ),
+  difficultyEasyEnabled: readBoolean(
+    import.meta.env.VITE_DIFFICULTY_EASY_ENABLED ??
+      rawEnv.DIFFICULTY_EASY_ENABLED,
+    true,
+  ),
+  difficultyNormalEnabled: readBoolean(
+    import.meta.env.VITE_DIFFICULTY_NORMAL_ENABLED ??
+      rawEnv.DIFFICULTY_NORMAL_ENABLED,
+    true,
+  ),
+  difficultyHardEnabled: readBoolean(
+    import.meta.env.VITE_DIFFICULTY_HARD_ENABLED ??
+      rawEnv.DIFFICULTY_HARD_ENABLED,
+    true,
+  ),
+  difficultyInsaneEnabled: readBoolean(
+    import.meta.env.VITE_DIFFICULTY_INSANE_ENABLED ??
+      rawEnv.DIFFICULTY_INSANE_ENABLED,
+    true,
+  ),
   scoreLimit: SCORE_LIMIT,
   wordleGameStorageKey: WORDLE_GAME_STORAGE_KEY,
   paypalDonationButtonUrl: readOptionalString(

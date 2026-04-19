@@ -1,6 +1,10 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getTotalPointsForWin } from "@domain/wordle";
+import {
+  CLASSIC_ROUND_CONFIG,
+  getTotalPointsForWin,
+  WORDLE_MODE_IDS,
+} from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
 import { ROUTES } from "@config/routes";
@@ -387,8 +391,56 @@ describe("usePlayController", () => {
       expect.objectContaining({
         allowUnknownWords: true,
         language: WORDS_DEFAULT_LANGUAGE,
+        roundConfig: CLASSIC_ROUND_CONFIG,
       }),
     );
+  });
+
+  it("resolves and exposes modeId from controller options", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.ZEN }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.ZEN);
+    expect(result.current.modeEnabled).toBe(false);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        roundConfig: CLASSIC_ROUND_CONFIG,
+      }),
+    );
+  });
+
+  it("keeps lightning as enabled mode and active gameplay mode", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
+  });
+
+  it("falls back to classic mode when an unknown mode is provided", () => {
+    const { result } = renderHook(() =>
+      usePlayController({
+        modeId: "unsupported-mode" as never,
+      }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+  });
+
+  it("keeps classic as enabled mode and active gameplay mode", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.CLASSIC }),
+    );
+
+    expect(result.current.modeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
   });
 
   it("opens and closes the quick settings panel", () => {
@@ -664,6 +716,7 @@ describe("usePlayController", () => {
       expect.objectContaining({
         allowUnknownWords: false,
         language: WORDS_DEFAULT_LANGUAGE,
+        roundConfig: CLASSIC_ROUND_CONFIG,
       }),
     );
   });
@@ -701,14 +754,68 @@ describe("usePlayController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 9, 2, 5),
+      getTotalPointsForWin(3, 7, 2, 2),
       undefined,
       1_000,
     );
     expect(result.current.victoryScoreSummary?.total).toBe(
-      getTotalPointsForWin(3, 9, 2, 5),
+      getTotalPointsForWin(3, 7, 2, 2),
     );
     expect(result.current.showVictoryDialog).toBe(true);
+  });
+
+  it("adds timed-mode bonus to lightning wins using current difficulty multiplier", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+    mockUseHardModeTimer.mockReturnValue({
+      ...mockUseHardModeTimer(),
+      hardModeSecondsLeft: 11,
+    });
+
+    const { rerender, result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "CRANE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(
+      getTotalPointsForWin(3, 2, 2, 2),
+      undefined,
+      1_000,
+    );
+    expect(result.current.victoryScoreSummary?.items).toEqual(
+      expect.arrayContaining([{ key: "time", value: 2 }]),
+    );
+  });
+
+  it("activates hard-mode timer in lightning mode regardless of player difficulty", () => {
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }));
+
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hardModeEnabled: true,
+      }),
+    );
   });
 
   it("plays line and tile-status sounds when a new guess is added", () => {

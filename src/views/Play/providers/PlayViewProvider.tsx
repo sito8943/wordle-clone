@@ -2,15 +2,25 @@ import { useMemo, type JSX } from "react";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { usePlayer } from "@providers";
 import { useChallenges } from "@hooks/useChallenges";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { PlayViewContext } from "./PlayViewContext";
 import type { PlayViewProviderProps } from "./types";
 import { usePlayController } from "../hooks";
 
-const PlayViewProvider = ({ children }: PlayViewProviderProps): JSX.Element => {
-  const controller = usePlayController();
+const PlayViewProvider = ({
+  children,
+  modeId,
+}: PlayViewProviderProps): JSX.Element => {
+  const controller = usePlayController({ modeId });
   const { player } = usePlayer();
-  const { wordListButtonEnabled, devConsoleEnabled, challengesEnabled } =
-    useFeatureFlags();
+  const {
+    wordListButtonEnabled,
+    devConsoleEnabled,
+    challengesEnabled: challengesFlagEnabled,
+  } = useFeatureFlags();
+  const challengesEnabled =
+    challengesFlagEnabled &&
+    controller.activeModeId !== WORDLE_MODE_IDS.LIGHTNING;
 
   const challenges = useChallenges(challengesEnabled);
 

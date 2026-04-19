@@ -57,6 +57,16 @@ describe("challenge condition evaluators", () => {
         }),
       ),
     ).toBe(true);
+    expect(
+      evaluateCondition(
+        "comeback",
+        createContext({
+          won: true,
+          maxGuesses: 4,
+          guesses: [row("A", []), row("B", []), row("C", []), row("D", [])],
+        }),
+      ),
+    ).toBe(true);
   });
 
   it("evaluates steady_player", () => {
@@ -205,39 +215,24 @@ describe("challenge condition evaluators", () => {
     ).toBe(true);
   });
 
-  it("evaluates only_one_vowel", () => {
+  it("evaluates first_green", () => {
+    expect(evaluateCondition("first_green", createContext())).toBe(false);
     expect(
       evaluateCondition(
-        "only_one_vowel",
+        "first_green",
         createContext({
-          won: true,
-          answer: "CRANE",
           guesses: [
-            row("CRANE", [
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-            ]),
+            row("AUDIO", ["absent", "absent", "absent", "absent", "absent"]),
           ],
         }),
       ),
     ).toBe(false);
     expect(
       evaluateCondition(
-        "only_one_vowel",
+        "first_green",
         createContext({
-          won: true,
-          answer: "TRUCK",
           guesses: [
-            row("TRUCK", [
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-              "correct",
-            ]),
+            row("AUDIO", ["correct", "absent", "absent", "absent", "absent"]),
           ],
         }),
       ),

@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  clearPersistedGameState,
+  clearAllPersistedGameStates,
   getGuessCombo,
   getStreakScoreMultiplier,
   getDifficultyScoreMultiplier,
   getInsaneTimeBonus,
   getNormalDictionaryBonusRowFlags,
   getNormalDictionaryRowsBonusPoints,
+  isWordleModeEnabled,
   getPointsForWin,
+  resolvePlayableWordleModeId,
   getRoundDurationMs,
   getTotalPointsForWin,
+  resolveRoundConfigForMode,
+  resolveWordleModeId,
+  WORDLE_MODE_IDS,
   type Player,
   type PlayerDifficulty,
 } from "@domain/wordle";
@@ -36,6 +41,7 @@ import type {
   ComboFlash,
   EndOfGameSnapshot,
   EndOfGameScoreSummaryItem,
+  UsePlayControllerOptions,
 } from "./types";
 import {
   canShareVictoryBoardFile,
@@ -58,7 +64,9 @@ import {
 } from "@providers/Sound/constants";
 import { ROUTES } from "@config/routes";
 
-export default function usePlayController() {
+export default function usePlayController(
+  options: UsePlayControllerOptions = {},
+) {
   const navigate = useNavigate();
   const { scoreClient, wordDictionaryClient, challengeClient } = useApi();
   const {
@@ -72,16 +80,32 @@ export default function usePlayController() {
   const { hintsEnabled, challengesEnabled } = useFeatureFlags();
   const { playSound } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
+  const modeId = useMemo(
+    () => resolveWordleModeId(options.modeId),
+    [options.modeId],
+  );
+  const modeEnabled = useMemo(() => isWordleModeEnabled(modeId), [modeId]);
+  const activeModeId = useMemo(
+    () => resolvePlayableWordleModeId(modeId),
+    [modeId],
+  );
+  const modeRoundConfig = useMemo(
+    () => resolveRoundConfigForMode(activeModeId),
+    [activeModeId],
+  );
   const wordle = useWordle({
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
     language: gameplayLanguage,
     manualTileSelection: player.manualTileSelection === true,
+    roundConfig: modeRoundConfig,
+    modeId: activeModeId,
   });
   const {
     sessionId,
     gameId,
     roundStartedAt,
+    roundConfig,
     answer,
     won,
     guesses,
@@ -97,7 +121,8 @@ export default function usePlayController() {
     revealHint,
     invalidGuessShakePulse = 0,
   } = wordle;
-  const hardModeEnabled = player.difficulty === "insane";
+  const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
+  const hardModeEnabled = lightningModeActive || player.difficulty === "insane";
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
 
   const roundSettled = useRef(false);
@@ -199,10 +224,16 @@ export default function usePlayController() {
     guessesLength: guesses.length,
     currentLength: current.length,
     forceLoss,
+    modeId: activeModeId,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
   const completeEligibleChallenges = useCallback(async () => {
-    if (!challengesEnabled || !challengeClient?.isConfigured || !gameOver) {
+    if (
+      !challengesEnabled ||
+      lightningModeActive ||
+      !challengeClient?.isConfigured ||
+      !gameOver
+    ) {
       return;
     }
 
@@ -234,6 +265,7 @@ export default function usePlayController() {
         gameOver,
         won,
         answer,
+        maxGuesses: roundConfig?.maxGuesses,
         playerDifficulty: player.difficulty,
         roundDurationMs,
         dailyCompletedRounds: dailyTracker.completedRounds,
@@ -323,8 +355,10 @@ export default function usePlayController() {
     gameId,
     gameOver,
     guesses,
+    lightningModeActive,
     player.code,
     player.difficulty,
+    roundConfig?.maxGuesses,
     roundStartedAt,
     won,
   ]);
@@ -359,10 +393,9 @@ export default function usePlayController() {
       const baseDifficultyMultiplier = getDifficultyScoreMultiplier(
         player.difficulty,
       );
-      const timeBonus =
-        player.difficulty === "insane"
-          ? getInsaneTimeBonus(hardModeSecondsLeft)
-          : 0;
+      const timeBonus = hardModeEnabled
+        ? getInsaneTimeBonus(hardModeSecondsLeft)
+        : 0;
       const normalDictionaryRowsBonusMultiplier =
         player.difficulty === "normal"
           ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
@@ -388,7 +421,7 @@ export default function usePlayController() {
         });
       }
 
-      if (player.difficulty === "insane") {
+      if (hardModeEnabled) {
         scoreSummaryItems.push({ key: "time", value: timeBonus });
       }
 
@@ -433,6 +466,7 @@ export default function usePlayController() {
     commitVictory,
     answer,
     guessWords,
+    hardModeEnabled,
     hardModeSecondsLeft,
     player.difficulty,
     player.streak,
@@ -450,6 +484,7 @@ export default function usePlayController() {
     answer,
     gameId,
     difficulty: player.difficulty,
+    roundConfig,
     hasInProgressGameAtMount,
     showResumeDialog,
     gameOver,
@@ -717,7 +752,7 @@ export default function usePlayController() {
       return;
     }
 
-    clearPersistedGameState();
+    clearAllPersistedGameStates();
     updatePlayerDifficulty(pendingDifficulty);
     setPendingDifficulty(null);
     setShowSettingsPanel(false);
@@ -1035,6 +1070,7 @@ export default function usePlayController() {
       const boardImageFile = await captureVictoryBoardImageFile(boardElement, {
         answer,
         guesses,
+        roundConfig,
       });
 
       if (!canShareVictoryBoardFile(boardImageFile)) {
@@ -1044,10 +1080,14 @@ export default function usePlayController() {
         return;
       }
 
+      const shareTextKey = lightningModeActive
+        ? "play.victoryDialog.sharePayloadTextLightning"
+        : "play.victoryDialog.sharePayloadText";
+
       await navigator.share({
         files: [boardImageFile],
         title: i18n.t("play.victoryDialog.sharePayloadTitle"),
-        text: i18n.t("play.victoryDialog.sharePayloadText", {
+        text: i18n.t(shareTextKey, {
           count: guesses.length,
         }),
       });
@@ -1062,10 +1102,14 @@ export default function usePlayController() {
     } finally {
       setIsSharingVictoryBoard(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     answer,
     guesses,
     isSharingVictoryBoard,
+    lightningModeActive,
+    roundConfig?.lettersPerRow,
+    roundConfig?.maxGuesses,
     showVictoryDialog,
     victoryBoardShareSupported,
   ]);
@@ -1112,6 +1156,9 @@ export default function usePlayController() {
 
   return {
     ...wordle,
+    modeId,
+    activeModeId,
+    modeEnabled,
     manualTileSelection: player.manualTileSelection === true,
     showTutorialPromptDialog,
     acceptTutorialPrompt,

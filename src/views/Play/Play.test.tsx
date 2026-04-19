@@ -8,8 +8,16 @@ import Play from "./Play";
 const defaultPlayOfflineStateEnabled = env.playOfflineStateEnabled;
 
 vi.mock("./providers", () => ({
-  PlayViewProvider: ({ children }: { children: ReactNode }) => (
-    <div data-testid="play-provider">{children}</div>
+  PlayViewProvider: ({
+    children,
+    modeId,
+  }: {
+    children: ReactNode;
+    modeId?: string;
+  }) => (
+    <div data-testid="play-provider" data-mode-id={modeId ?? ""}>
+      {children}
+    </div>
   ),
 }));
 
@@ -21,10 +29,10 @@ vi.mock("./sections/PlayContent", () => ({
   PlayContent: () => <div>PlayContent Stub</div>,
 }));
 
-const renderPlay = () =>
+const renderPlay = (modeId?: "classic" | "lightning" | "zen" | "daily") =>
   render(
     <MemoryRouter>
-      <Play />
+      <Play modeId={modeId} />
     </MemoryRouter>,
   );
 
@@ -52,5 +60,37 @@ describe("Play", () => {
     expect(screen.getByText("PlayContent Stub")).toBeTruthy();
     expect(screen.getByTestId("play-provider")).toBeTruthy();
     expect(screen.queryByText("Offline Stub")).toBeNull();
+  });
+
+  it("passes modeId through PlayViewProvider", () => {
+    env.playOfflineStateEnabled = false;
+
+    renderPlay("classic");
+
+    expect(
+      screen.getByTestId("play-provider").getAttribute("data-mode-id"),
+    ).toBe("classic");
+  });
+
+  it("renders enabled lightning mode through PlayViewProvider", () => {
+    env.playOfflineStateEnabled = false;
+
+    renderPlay("lightning");
+
+    expect(
+      screen.getByTestId("play-provider").getAttribute("data-mode-id"),
+    ).toBe("lightning");
+    expect(screen.queryByTestId("play-mode-gate-placeholder")).toBeNull();
+  });
+
+  it("renders mode placeholder when non-classic mode is feature-gated", () => {
+    env.playOfflineStateEnabled = false;
+
+    renderPlay("zen");
+
+    expect(screen.getByTestId("play-mode-gate-placeholder")).toBeTruthy();
+    expect(screen.queryByTestId("play-provider")).toBeNull();
+    expect(screen.queryByText("PlayContent Stub")).toBeNull();
+    expect(screen.getByRole("link").getAttribute("href")).toBe("/clasico");
   });
 });

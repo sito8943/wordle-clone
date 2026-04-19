@@ -16,9 +16,12 @@ export const DIFFICULTY_SCORE_MULTIPLIERS: Record<PlayerDifficulty, number> = {
   easy: 1,
   normal: 2,
   hard: 5,
-  insane: 9,
+  insane: 7,
 };
 
+export const SCORE_DECIMAL_FACTOR = 10;
+export const STREAK_MODIFIER = 0.3;
+export const LIGHTNING_SECONDS_BONUS = 4;
 export const NORMAL_DICTIONARY_ROW_BONUS = 0.4;
 export const MAX_STREAK_FOR_SCORE_MULTIPLIER = 100;
 

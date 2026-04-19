@@ -1,17 +1,20 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { clearHardModeTimerSnapshot, setHardModeTimerSnapshot } from "./utils";
 import { useHardModeTimer } from "./useHardModeTimer";
 
+const TEST_MODE_ID = WORDLE_MODE_IDS.CLASSIC;
+
 describe("useHardModeTimer", () => {
   beforeEach(() => {
-    clearHardModeTimerSnapshot();
+    clearHardModeTimerSnapshot(TEST_MODE_ID);
     vi.useFakeTimers();
   });
 
   afterEach(() => {
     cleanup();
-    clearHardModeTimerSnapshot();
+    clearHardModeTimerSnapshot(TEST_MODE_ID);
     vi.useRealTimers();
   });
 
@@ -35,6 +38,7 @@ describe("useHardModeTimer", () => {
           guessesLength,
           currentLength,
           forceLoss,
+          modeId: TEST_MODE_ID,
         }),
       {
         initialProps: {
@@ -76,6 +80,7 @@ describe("useHardModeTimer", () => {
         guessesLength: 1,
         currentLength: 0,
         forceLoss,
+        modeId: TEST_MODE_ID,
       }),
     );
 
@@ -87,11 +92,14 @@ describe("useHardModeTimer", () => {
   });
 
   it("restores a persisted in-memory snapshot for the same session", () => {
-    setHardModeTimerSnapshot({
-      sessionId: "session-1",
-      secondsLeft: 12,
-      timerStarted: true,
-    });
+    setHardModeTimerSnapshot(
+      {
+        sessionId: "session-1",
+        secondsLeft: 12,
+        timerStarted: true,
+      },
+      TEST_MODE_ID,
+    );
 
     const { result } = renderHook(() =>
       useHardModeTimer({
@@ -104,6 +112,7 @@ describe("useHardModeTimer", () => {
         guessesLength: 1,
         currentLength: 0,
         forceLoss: vi.fn(),
+        modeId: TEST_MODE_ID,
       }),
     );
 
@@ -125,6 +134,7 @@ describe("useHardModeTimer", () => {
           guessesLength: 1,
           currentLength: 0,
           forceLoss: vi.fn(),
+          modeId: TEST_MODE_ID,
         }),
       {
         initialProps: { boardVersion: 1 },

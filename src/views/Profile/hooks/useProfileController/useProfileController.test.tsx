@@ -11,6 +11,7 @@ const mockUseThemePreference = vi.fn();
 const mockUseSound = vi.fn();
 const mockReadPersistedGameState = vi.fn();
 const mockClearPersistedGameState = vi.fn();
+const mockClearAllPersistedGameStates = vi.fn();
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -36,6 +37,8 @@ vi.mock("@domain/wordle", async () => {
       mockReadPersistedGameState(...args),
     clearPersistedGameState: (...args: unknown[]) =>
       mockClearPersistedGameState(...args),
+    clearAllPersistedGameStates: (...args: unknown[]) =>
+      mockClearAllPersistedGameStates(...args),
   };
 });
 
@@ -81,6 +84,7 @@ describe("useProfileController", () => {
     });
     mockReadPersistedGameState.mockReturnValue(null);
     mockClearPersistedGameState.mockReset();
+    mockClearAllPersistedGameStates.mockReset();
   });
 
   afterEach(() => {
@@ -209,7 +213,7 @@ describe("useProfileController", () => {
       result.current.confirmDifficultyChange();
     });
 
-    expect(mockClearPersistedGameState).toHaveBeenCalledTimes(1);
+    expect(mockClearAllPersistedGameStates).toHaveBeenCalledTimes(1);
     expect(updatePlayerDifficulty).toHaveBeenCalledWith("hard");
     expect(result.current.isDifficultyChangeConfirmationOpen).toBe(false);
   });

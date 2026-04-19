@@ -1,4 +1,9 @@
-import type { GuessCombo, GuessResult } from "@domain/wordle";
+import type {
+  BoardRoundConfig,
+  GuessCombo,
+  GuessResult,
+  WordleModeId,
+} from "@domain/wordle";
 
 export type ComboFlash = GuessCombo & {
   pulse: number;
@@ -35,6 +40,10 @@ export type EndOfGameSnapshot = {
   scoreSummary: EndOfGameScoreSummary | null;
 };
 
+export type UsePlayControllerOptions = {
+  modeId?: WordleModeId;
+};
+
 export type UseHardModeTimerParams = {
   sessionId: string;
   hardModeEnabled: boolean;
@@ -45,6 +54,7 @@ export type UseHardModeTimerParams = {
   guessesLength: number;
   currentLength: number;
   forceLoss: () => void;
+  modeId: WordleModeId;
 };
 
 export type UseHardModeTimerResult = {
@@ -62,4 +72,5 @@ export type UseHardModeTimerResult = {
 export type VictoryBoardShareCaptureSnapshot = {
   answer: string;
   guesses: GuessResult[];
+  roundConfig?: Partial<BoardRoundConfig>;
 };

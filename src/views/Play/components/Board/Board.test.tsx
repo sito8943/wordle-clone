@@ -17,6 +17,20 @@ describe("Board", () => {
     expect(screen.getAllByRole("gridcell").length).toBe(30);
   });
 
+  it("renders rows and cells based on a custom round config", () => {
+    render(
+      <Board
+        guesses={[]}
+        current=""
+        gameOver={false}
+        roundConfig={{ maxGuesses: 4, lettersPerRow: 4 }}
+      />,
+    );
+
+    expect(screen.getAllByRole("row").length).toBe(4);
+    expect(screen.getAllByRole("gridcell").length).toBe(16);
+  });
+
   it("shows a played guess and the current typing row", () => {
     const correct: TileStatus[] = [
       "correct",
@@ -240,7 +254,7 @@ describe("Board", () => {
 
     expect(rows[0].className).toContain("scale-[0.95]");
     expect(rows[1].className).toContain("scale-[1.05]");
-    expect(rows[1].className).toContain("transition-transform");
+    expect(rows[1].className).toContain("transition-[scale]");
   });
 
   it("shows the gray hollow-circle bonus marker with tooltip for marked rows", () => {

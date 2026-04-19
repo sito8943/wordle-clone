@@ -1,6 +1,10 @@
 export const ROUTES = {
   HOME: "/",
   PLAY: "/jugar",
+  CLASSIC: "/clasico",
+  ZEN: "/zen",
+  LIGHTING: "/relampago",
+  DAILY: "/palabra-diaria",
   HELP: "/ayuda",
   SETTINGS: "/ajustes",
   PROFILE: "/perfil",

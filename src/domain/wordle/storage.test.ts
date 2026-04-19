@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  clearAllPersistedGameStates,
   clearPersistedGameState,
   persistGameState,
   readPersistedGameState,
 } from "./storage";
+import { WORDLE_MODE_IDS } from "./modeConfig";
 import type { PersistedGameState } from "./types";
 
 const makeState = (
@@ -106,5 +108,45 @@ describe("clearPersistedGameState", () => {
     });
     expect(() => clearPersistedGameState()).not.toThrow();
     vi.restoreAllMocks();
+  });
+});
+
+describe("per-mode persistence", () => {
+  const CLASSIC_KEY =
+    import.meta.env.VITE_WORDLE_GAME_STORAGE_KEY ?? "wordle:game";
+
+  beforeEach(() => localStorage.clear());
+  afterEach(() => localStorage.clear());
+
+  it("writes lightning state under a mode-scoped key", () => {
+    const state = makeState({ current: "LI" });
+    persistGameState(state, WORDLE_MODE_IDS.LIGHTNING);
+
+    expect(localStorage.getItem(`${CLASSIC_KEY}:lightning`)).not.toBeNull();
+    expect(localStorage.getItem(CLASSIC_KEY)).toBeNull();
+  });
+
+  it("reads lightning state only from the lightning key", () => {
+    const classicState = makeState({ current: "CL" });
+    const lightningState = makeState({ current: "LI" });
+    persistGameState(classicState, WORDLE_MODE_IDS.CLASSIC);
+    persistGameState(lightningState, WORDLE_MODE_IDS.LIGHTNING);
+
+    expect(readPersistedGameState(WORDLE_MODE_IDS.CLASSIC)).toMatchObject({
+      current: "CL",
+    });
+    expect(readPersistedGameState(WORDLE_MODE_IDS.LIGHTNING)).toMatchObject({
+      current: "LI",
+    });
+  });
+
+  it("clearAllPersistedGameStates removes every mode entry", () => {
+    persistGameState(makeState({ current: "CL" }), WORDLE_MODE_IDS.CLASSIC);
+    persistGameState(makeState({ current: "LI" }), WORDLE_MODE_IDS.LIGHTNING);
+
+    clearAllPersistedGameStates();
+
+    expect(readPersistedGameState(WORDLE_MODE_IDS.CLASSIC)).toBeNull();
+    expect(readPersistedGameState(WORDLE_MODE_IDS.LIGHTNING)).toBeNull();
   });
 });

@@ -108,6 +108,65 @@ describe("captureVictoryBoardImageFile", () => {
       expect.any(Number),
     );
   });
+
+  it("uses the configured board dimensions in the fallback canvas", async () => {
+    vi.mocked(html2canvas).mockRejectedValue(new Error("capture failed"));
+
+    const fakeContext = {
+      clearRect: vi.fn(),
+      beginPath: vi.fn(),
+      rect: vi.fn(),
+      closePath: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      fillText: vi.fn(),
+      lineWidth: 0,
+      textAlign: "left",
+      textBaseline: "alphabetic",
+      font: "",
+      fillStyle: "",
+      strokeStyle: "",
+    } as unknown as CanvasRenderingContext2D;
+    const fakeCanvas = {
+      width: 0,
+      height: 0,
+      getContext: vi.fn().mockReturnValue(fakeContext),
+      toBlob: vi.fn((callback: BlobCallback | null) => {
+        callback?.(new Blob(["fallback"], { type: "image/png" }));
+      }),
+    } as unknown as HTMLCanvasElement;
+    const originalCreateElement = document.createElement.bind(document);
+
+    vi.spyOn(document, "createElement").mockImplementation(((
+      tagName: string,
+      options?: ElementCreationOptions,
+    ) => {
+      if (tagName.toLowerCase() === "canvas") {
+        return fakeCanvas as unknown as HTMLElement;
+      }
+
+      return originalCreateElement(tagName, options);
+    }) as typeof document.createElement);
+
+    await captureVictoryBoardImageFile(document.createElement("div"), {
+      answer: "PLAY",
+      roundConfig: { lettersPerRow: 4, maxGuesses: 2 },
+      guesses: [
+        {
+          word: "PLAN",
+          statuses: [
+            "correct",
+            "absent",
+            "present",
+            "absent",
+          ] satisfies GuessResult["statuses"],
+        },
+      ],
+    });
+
+    expect(fakeCanvas.width).toBe(280);
+    expect(fakeCanvas.height).toBe(152);
+  });
 });
 
 describe("getVictoryBoardShareCaptureElement", () => {

@@ -11,6 +11,7 @@ import {
   CHALLENGE_DEFAULT_SIMPLE_SAME_N_STARTS,
   CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT,
 } from "@domain/challenges/constants";
+import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 
 const SPEEDSTER_MAX_SECONDS = Math.floor(
   CHALLENGE_DEFAULT_COMPLEX_SPEEDSTER_MAX_DURATION_MS / 1000,
@@ -46,6 +47,63 @@ export const resources = {
         profile: "Settings",
         scoreboard: "Scoreboard",
       },
+      gameModes: {
+        title: "Choose game mode",
+        description: "Pick how you want to play this round.",
+        navigationAriaLabel: "Game mode menu",
+        modeInfoTooltip: "Show mode details",
+        modeInfoButtonAriaLabel: "Show details for {{mode}} mode",
+        dialog: {
+          description: "Mode rules",
+        },
+        modes: {
+          zen: {
+            name: "Zen",
+            details: {
+              neverLose: "You never lose a round.",
+              infiniteRows:
+                "Infinite rows: when you reach the end, {{extraRows}} more rows are added.",
+              noScoreImpact: "Score is not affected in this mode.",
+              infiniteGreenHints: "Infinite green hints are available.",
+              anyCombination: "Any letter combination is accepted.",
+            },
+          },
+          classic: {
+            name: "Classic",
+            details: {
+              baseRules:
+                "Current standard mode: {{rows}} rows, {{letters}} letters.",
+              hintsChoice:
+                "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
+              hintsDisabledBonus:
+                "If hints are disabled and you win, you gain {{extraPoints}} extra point.",
+              dictionaryChoice:
+                "You can choose dictionary validation: enabled gives dictionary-word bonus, disabled behaves like hard-mode validation.",
+            },
+          },
+          lightning: {
+            name: "Lightning",
+            details: {
+              baseRules:
+                "Current timed mode: {{rows}} rows, {{letters}} letters.",
+              timer: "You have {{seconds}} seconds to finish the board.",
+              hintsChoice:
+                "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
+              hintsDisabledBonus:
+                "If hints are disabled and you win, you gain {{extraPoints}} extra point.",
+              dictionaryChoice:
+                "You can choose dictionary validation: enabled gives dictionary-word bonus, disabled behaves like hard-mode validation.",
+            },
+          },
+          daily: {
+            name: "Daily",
+            details: {
+              baseRules:
+                "{{rows}} rows and N letters, where N is the daily word length.",
+            },
+          },
+        },
+      },
       home: {
         donate: "Donate",
         donationThankYouAlert:
@@ -61,6 +119,11 @@ export const resources = {
             "No detailed changelog entries were found for this update range.",
           closeAction: "Got it",
           changes: {
+            v0017beta: [
+              "Added a Game Modes hub with a new Lightning mode that challenges players against a countdown timer.",
+              "Introduced the Green challenge alongside per-difficulty feature flags to tune which modes appear in-app.",
+              "Polished scoring and in-game UX with refined dictionary-bonus logic and streak-aware score summaries.",
+            ],
             v0016beta: [
               "Added local app-version tracking to detect when a newer frontend build is available in this browser.",
               "Introduced an update dialog that explains the latest changes and includes a complete in-app version history.",
@@ -249,6 +312,12 @@ export const resources = {
           contactAction: "Stay in touch on WhatsApp",
           settingsAction: "Open settings",
         },
+        modeGate: {
+          title: "{{mode}} is not available yet",
+          description:
+            "This mode is still in preparation. You can keep playing in Classic meanwhile.",
+          classicAction: "Play Classic",
+        },
         sections: {
           boardError: {
             title: "The board crashed.",
@@ -345,6 +414,7 @@ export const resources = {
         },
         gameModes: {
           classic: "Classic",
+          lightning: "Lightning",
         },
         tutorialPromptDialog: {
           title: "Welcome to {{gameMode}}",
@@ -408,6 +478,7 @@ export const resources = {
           shareInProgress: "Sharing...",
           sharePayloadTitle: "Wordle victory",
           sharePayloadText: "I solved this board in {{count}} tries.",
+          sharePayloadTextLightning: `Lightning mode: I solved this board in {{count}} tries under the ${HARD_MODE_TOTAL_SECONDS}s timer.`,
           shareErrors: {
             captureUnavailable: "The board screenshot is not available yet.",
             unavailable: "This device cannot share image files from the game.",
@@ -492,7 +563,7 @@ export const resources = {
           same_n_ends: `Same ${CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS} Ends`,
           late_win: "Late Win",
           yellow_focus: "Yellow Focus",
-          only_one_vowel: "Only One Vowel",
+          first_green: "First Green",
           no_hints: "No Hints",
           speedster: "Speedster",
           reckless: "Reckless",
@@ -520,7 +591,7 @@ export const resources = {
           same_n_ends: `At least ${CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS} rows end with the same letter`,
           late_win: `Win in less than ${LATE_WIN_MAX_SECONDS} seconds`,
           yellow_focus: `At least ${CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT} yellow tiles in one row`,
-          only_one_vowel: "The winning guess has exactly one vowel",
+          first_green: "Get at least one green tile on your first guess",
           no_hints: "Win without using hints",
           speedster: `Win a round in less than ${SPEEDSTER_MAX_SECONDS} seconds`,
           reckless: `Repeat a row between ${CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MIN_REPEATS} and ${CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MAX_REPEATS} times`,
@@ -566,6 +637,64 @@ export const resources = {
         profile: "Ajustes",
         scoreboard: "Clasificación",
       },
+      gameModes: {
+        title: "Elige modo de juego",
+        description: "Selecciona cómo quieres jugar esta partida.",
+        navigationAriaLabel: "Menú de modos de juego",
+        modeInfoTooltip: "Ver detalles del modo",
+        modeInfoButtonAriaLabel: "Ver detalles del modo {{mode}}",
+        dialog: {
+          description: "Reglas del modo",
+        },
+        modes: {
+          zen: {
+            name: "Zen",
+            details: {
+              neverLose: "Nunca pierdes una partida.",
+              infiniteRows:
+                "Filas infinitas: cuando llegas al final, se añaden {{extraRows}} filas más.",
+              noScoreImpact: "La puntuación no se ve afectada en este modo.",
+              infiniteGreenHints: "Tienes pistas verdes infinitas.",
+              anyCombination:
+                "Se acepta cualquier combinación de letras, esté o no en el diccionario.",
+            },
+          },
+          classic: {
+            name: "Classic",
+            details: {
+              baseRules:
+                "Modo estándar actual: {{rows}} filas y {{letters}} letras.",
+              hintsChoice:
+                "Antes de empezar puedes decidir si activar pistas ({{hintCount}} pista amarilla).",
+              hintsDisabledBonus:
+                "Si desactivas pistas y ganas, obtienes {{extraPoints}} punto extra.",
+              dictionaryChoice:
+                "Puedes elegir validación de diccionario: activada da bonificación por palabra del diccionario; desactivada se comporta como la validación difícil.",
+            },
+          },
+          lightning: {
+            name: "Lightning",
+            details: {
+              baseRules:
+                "Modo contrarreloj actual: {{rows}} filas y {{letters}} letras.",
+              timer: "Tienes {{seconds}} segundos para completar el tablero.",
+              hintsChoice:
+                "Antes de empezar puedes decidir si activar pistas ({{hintCount}} pista amarilla).",
+              hintsDisabledBonus:
+                "Si desactivas pistas y ganas, obtienes {{extraPoints}} punto extra.",
+              dictionaryChoice:
+                "Puedes elegir validación de diccionario: activada da bonificación por palabra del diccionario; desactivada se comporta como la validación difícil.",
+            },
+          },
+          daily: {
+            name: "Daily",
+            details: {
+              baseRules:
+                "{{rows}} filas y N letras, donde N es la longitud de la palabra del día.",
+            },
+          },
+        },
+      },
       home: {
         donate: "Donar",
         donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
@@ -580,6 +709,11 @@ export const resources = {
             "No se han encontrado entradas detalladas para este rango de actualización.",
           closeAction: "Entendido",
           changes: {
+            v0017beta: [
+              "Se añadió un hub de Modos de juego con el nuevo modo Relámpago que reta al jugador contra un temporizador.",
+              "Se incorporó el reto Green junto con feature flags por dificultad para ajustar qué modos aparecen en la app.",
+              "Se pulió la puntuación y la UX en partida con lógica refinada de bonus de diccionario y resúmenes por racha.",
+            ],
             v0016beta: [
               "Se añadió seguimiento de la versión de la app en local para detectar builds más nuevas del frontend en este navegador.",
               "Se incorporó un diálogo de actualización con los cambios recientes y un historial completo de versiones dentro de la app.",
@@ -770,6 +904,12 @@ export const resources = {
           contactAction: "Mantente al contacto por WhatsApp",
           settingsAction: "Ir a ajustes",
         },
+        modeGate: {
+          title: "{{mode}} todavía no está disponible",
+          description:
+            "Este modo sigue en preparación. Mientras tanto puedes seguir jugando en Clásico.",
+          classicAction: "Jugar Clásico",
+        },
         sections: {
           boardError: {
             title: "El tablero ha fallado.",
@@ -866,6 +1006,7 @@ export const resources = {
         },
         gameModes: {
           classic: "Clásico",
+          lightning: "Relámpago",
         },
         tutorialPromptDialog: {
           title: "Bienvenido a {{gameMode}}",
@@ -934,6 +1075,7 @@ export const resources = {
           shareInProgress: "Compartiendo...",
           sharePayloadTitle: "Victoria en Wordle",
           sharePayloadText: "He resuelto este tablero en {{count}} intentos.",
+          sharePayloadTextLightning: `Modo relampago: he resuelto este tablero en {{count}} intentos antes de los ${HARD_MODE_TOTAL_SECONDS}s.`,
           shareErrors: {
             captureUnavailable:
               "La captura del tablero todavía no está disponible.",
@@ -1024,7 +1166,7 @@ export const resources = {
           same_n_ends: `Mismos ${CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS} finales`,
           late_win: "Victoria rápida",
           yellow_focus: "Enfoque amarillo",
-          only_one_vowel: "Solo una vocal",
+          first_green: "Primera verde",
           no_hints: "Sin pistas",
           speedster: "Velocista",
           reckless: "Temerario",
@@ -1052,7 +1194,7 @@ export const resources = {
           same_n_ends: `Al menos ${CHALLENGE_DEFAULT_SIMPLE_SAME_N_ENDS} filas terminan con la misma letra`,
           late_win: `Gana en menos de ${LATE_WIN_MAX_SECONDS} segundos`,
           yellow_focus: `Al menos ${CHALLENGE_DEFAULT_SIMPLE_YELLOW_FOCUS_MIN_PRESENT} amarillas en una fila`,
-          only_one_vowel: "El acierto tiene exactamente una vocal",
+          first_green: "Consigue al menos una verde en tu primer intento",
           no_hints: "Gana sin usar pistas",
           speedster: `Gana una ronda en menos de ${SPEEDSTER_MAX_SECONDS} segundos`,
           reckless: `Repite una fila entre ${CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MIN_REPEATS} y ${CHALLENGE_DEFAULT_COMPLEX_RECKLESS_MAX_REPEATS} veces`,

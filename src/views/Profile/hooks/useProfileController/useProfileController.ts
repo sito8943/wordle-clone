@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { i18n } from "@i18n";
 import {
-  clearPersistedGameState,
+  clearAllPersistedGameStates,
   readPersistedGameState,
+  WORDLE_MODE_IDS,
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
   type PlayerLanguage,
@@ -182,7 +183,7 @@ export default function useProfileController() {
 
   const saveLanguage = useCallback(() => {
     if (pendingLanguage !== player.language) {
-      clearPersistedGameState();
+      clearAllPersistedGameStates();
       updatePlayerLanguage(pendingLanguage);
     }
 
@@ -195,8 +196,16 @@ export default function useProfileController() {
         return;
       }
 
-      const persistedState = readPersistedGameState();
-      if (hasActivePersistedGame(persistedState)) {
+      const hasActiveInAnyMode = [
+        WORDLE_MODE_IDS.CLASSIC,
+        WORDLE_MODE_IDS.LIGHTNING,
+        WORDLE_MODE_IDS.ZEN,
+        WORDLE_MODE_IDS.DAILY,
+      ].some((modeId) =>
+        hasActivePersistedGame(readPersistedGameState(modeId)),
+      );
+
+      if (hasActiveInAnyMode) {
         setPendingDifficulty(nextDifficulty);
         return;
       }
@@ -211,7 +220,7 @@ export default function useProfileController() {
       return;
     }
 
-    clearPersistedGameState();
+    clearAllPersistedGameStates();
     updatePlayerDifficulty(pendingDifficulty);
     setPendingDifficulty(null);
   }, [pendingDifficulty, updatePlayerDifficulty]);

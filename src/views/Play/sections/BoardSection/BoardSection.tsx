@@ -7,25 +7,14 @@ import { HardModeProgressBar } from "./HardModeProgressBar";
 
 const BoardSection = (): JSX.Element => {
   const { t } = useTranslation();
-  const { controller, animateTileEntry } = usePlayView();
+  const { controller } = usePlayView();
   const {
     guesses,
     current,
     gameOver,
     won,
-    answer,
-    showLegacyEndOfGameMessage,
     startAnimationSeed,
-    startAnimationsEnabled,
     boardShakePulse,
-    activeRowHintStatuses,
-    hintRevealPulse,
-    hintRevealTileIndex,
-    comboFlash,
-    normalDictionaryBonusRowFlags,
-    activeTileIndex,
-    selectActiveTile,
-    manualTileSelection,
     showHardModeFinalStretchBar,
     hardModeSecondsLeft,
     hardModeFinalStretchProgressPercent,
@@ -58,26 +47,7 @@ const BoardSection = (): JSX.Element => {
             hardModeFinalStretchProgressPercent
           }
         />
-        <BoardContent
-          guesses={guesses}
-          current={current}
-          gameOver={gameOver}
-          won={won}
-          answer={answer}
-          showLegacyEndOfGameMessage={showLegacyEndOfGameMessage}
-          startAnimationSeed={startAnimationSeed}
-          startAnimationsEnabled={startAnimationsEnabled}
-          boardShakePulse={boardShakePulse}
-          activeRowHintStatuses={activeRowHintStatuses}
-          hintRevealPulse={hintRevealPulse}
-          hintRevealTileIndex={hintRevealTileIndex}
-          comboFlash={comboFlash}
-          normalDictionaryBonusRowFlags={normalDictionaryBonusRowFlags}
-          activeTileIndex={activeTileIndex}
-          selectActiveTile={selectActiveTile}
-          manualTileSelection={manualTileSelection}
-          animateTileEntry={animateTileEntry}
-        />
+        <BoardContent />
       </>
     </ErrorBoundary>
   );
