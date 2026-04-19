@@ -2,6 +2,45 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import DifficultySection from "./DifficultySection";
 
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, string | number>) => {
+      const dictionary: Record<string, string> = {
+        "profile.labels.keyboard": "Keyboard",
+        "profile.labels.keyboardMode": "Keyboard mode",
+        "profile.labels.difficulty": "Difficulty",
+        "profile.keyboardOptions.onscreen": "On-screen keyboard",
+        "profile.keyboardOptions.native": "Device keyboard (mobile)",
+        "profile.keyboardDescription":
+          "Device keyboard is shown on mobile. Desktop keeps the on-screen keyboard.",
+        "profile.difficultyOptions.easy": "Easy",
+        "profile.difficultyOptions.normal": "Normal",
+        "profile.difficultyOptions.hard": "Hard",
+        "profile.difficultyOptions.insane": "Insane",
+        "profile.difficultyRules.easy": "Easy shows the word list.",
+        "profile.difficultyRules.easyNoWordList":
+          "Easy gives more hints and accepts non-dictionary words.",
+        "profile.difficultyRules.normal": "Normal hides the word list.",
+        "profile.difficultyRules.normalNoWordList":
+          "Normal gives a hint and accepts non-dictionary words.",
+        "profile.difficultyRules.hard":
+          "Hard disables hints and only accepts dictionary words.",
+        "profile.difficultyRules.insane":
+          "Insane enables a {{seconds}}-second timer and only accepts dictionary words.",
+      };
+
+      const template = dictionary[key] ?? key;
+
+      if (!options) return template;
+
+      return Object.entries(options).reduce(
+        (acc, [name, value]) => acc.replace(`{{${name}}}`, String(value)),
+        template,
+      );
+    },
+  }),
+}));
+
 const featureFlagsMock = vi.hoisted(() => ({
   wordListButtonEnabled: true,
   difficultyEasyEnabled: true,

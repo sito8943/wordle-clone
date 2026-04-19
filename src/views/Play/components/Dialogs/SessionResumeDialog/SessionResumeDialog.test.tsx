@@ -8,6 +8,22 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SessionResumeDialog from "./SessionResumeDialog";
 
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const dictionary: Record<string, string> = {
+        "play.sessionResumeDialog.title": "Resume previous game?",
+        "play.sessionResumeDialog.description":
+          "We found an in-progress board from another browser tab session.",
+        "play.sessionResumeDialog.startNew": "Start new game",
+        "play.sessionResumeDialog.continuePrevious": "Continue previous board",
+      };
+
+      return dictionary[key] ?? key;
+    },
+  }),
+}));
+
 afterEach(cleanup);
 
 describe("SessionResumeDialog", () => {

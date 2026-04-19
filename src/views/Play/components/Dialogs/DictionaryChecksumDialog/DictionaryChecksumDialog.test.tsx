@@ -2,6 +2,21 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import DictionaryChecksumDialog from "./DictionaryChecksumDialog";
 
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const dictionary: Record<string, string> = {
+        "play.dictionaryChecksumDialog.title": "Dictionary updated",
+        "play.dictionaryChecksumDialog.description":
+          "Dictionary changed. Restart required.",
+        "play.dictionaryChecksumDialog.accept": "Accept and restart",
+      };
+
+      return dictionary[key] ?? key;
+    },
+  }),
+}));
+
 afterEach(cleanup);
 
 describe("DictionaryChecksumDialog", () => {

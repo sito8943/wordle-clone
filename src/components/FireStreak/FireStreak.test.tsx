@@ -1,5 +1,29 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@i18n", () => {
+  const dictionary: Record<string, string> = {
+    "common.streakLabel": "Streak: {{count}}",
+  };
+
+  const translate = (
+    key: string,
+    options?: Record<string, string | number>,
+  ) => {
+    const template = dictionary[key] ?? key;
+    if (!options) return template;
+    return Object.entries(options).reduce(
+      (acc, [name, value]) => acc.replace(`{{${name}}}`, String(value)),
+      template,
+    );
+  };
+
+  return {
+    i18n: { t: translate },
+    useTranslation: () => ({ t: translate }),
+  };
+});
+
 import { i18n } from "@i18n";
 import FireStreak from "./FireStreak";
 

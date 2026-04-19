@@ -1,7 +1,20 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config/env";
 import EndOfGameWordSection from "./EndOfGameWordSection";
+
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const dictionary: Record<string, string> = {
+        "play.endOfGame.wordLabel": "Correct word",
+        "play.endOfGame.invalidWordReport": "I think this word is not valid",
+      };
+
+      return dictionary[key] ?? key;
+    },
+  }),
+}));
 
 const defaultWordReportPhoneNumber = env.wordReportPhoneNumber;
 const defaultWordReportButtonEnabled = env.wordReportButtonEnabled;

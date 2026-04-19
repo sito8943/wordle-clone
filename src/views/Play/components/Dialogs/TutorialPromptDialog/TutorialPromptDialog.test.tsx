@@ -8,6 +8,29 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TutorialPromptDialog from "./TutorialPromptDialog";
 
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, string>) => {
+      const dictionary: Record<string, string> = {
+        "play.tutorialPromptDialog.title": "Welcome to {{gameMode}}",
+        "play.tutorialPromptDialog.description":
+          "We can open the Help page so you can review the rules.",
+        "play.tutorialPromptDialog.confirm": "Yes, open Help",
+        "play.tutorialPromptDialog.cancel": "No, skip tutorial",
+      };
+
+      const template = dictionary[key] ?? key;
+
+      if (!options) return template;
+
+      return Object.entries(options).reduce(
+        (acc, [name, value]) => acc.replace(`{{${name}}}`, value),
+        template,
+      );
+    },
+  }),
+}));
+
 afterEach(cleanup);
 
 describe("TutorialPromptDialog", () => {

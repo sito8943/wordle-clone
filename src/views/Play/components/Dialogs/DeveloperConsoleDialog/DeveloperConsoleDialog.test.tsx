@@ -3,6 +3,45 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Player } from "@domain/wordle";
 import DeveloperConsoleDialog from "./DeveloperConsoleDialog";
 
+vi.mock("@i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const dictionary: Record<string, string> = {
+        "play.developerConsole.title": "Developer console",
+        "play.developerConsole.description":
+          "Update current player values for local development.",
+        "play.developerConsole.currentAnswerLabel": "Current answer",
+        "play.developerConsole.nameLabel": "Player name",
+        "play.developerConsole.difficultyLabel": "Difficulty",
+        "play.developerConsole.keyboardModeLabel": "Keyboard mode",
+        "play.developerConsole.checksumDescription":
+          "Recompute checksum from current Convex words.",
+        "play.developerConsole.refreshChecksum": "Refresh remote checksum",
+        "play.developerConsole.refreshing": "Refreshing...",
+        "play.developerConsole.challengesDescription":
+          "Developer tools for daily challenges.",
+        "play.developerConsole.refreshChallenges": "Refresh today's challenges",
+        "play.developerConsole.changeChallenges": "Change today's challenges",
+        "play.developerConsole.challengesRefreshing":
+          "Refreshing challenges...",
+        "play.developerConsole.challengesChanging": "Changing challenges...",
+        "play.developerConsole.apply": "Apply",
+        "play.developerConsole.cancel": "Cancel",
+        "common.score": "Score",
+        "common.streak": "Streak",
+        "profile.difficultyOptions.easy": "Easy",
+        "profile.difficultyOptions.normal": "Normal",
+        "profile.difficultyOptions.hard": "Hard",
+        "profile.difficultyOptions.insane": "Insane",
+        "profile.keyboardOptions.onscreen": "On-screen keyboard",
+        "profile.keyboardOptions.native": "Device keyboard (mobile)",
+      };
+
+      return dictionary[key] ?? key;
+    },
+  }),
+}));
+
 afterEach(cleanup);
 
 const basePlayer: Player = {
