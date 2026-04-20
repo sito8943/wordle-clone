@@ -124,6 +124,11 @@ export const resources = {
             "No detailed changelog entries were found for this update range.",
           closeAction: "Got it",
           changes: {
+            v0018beta: [
+              "Split Scoreboard data by game mode so Classic and Lightning keep independent rankings.",
+              "Added a mode switcher in Scoreboard to toggle between Classic and Lightning tables.",
+              "Extended local/remote score sync contracts with mode-aware stats and event payloads.",
+            ],
             v0017beta: [
               "Added a Game Modes hub with a new Lightning mode that challenges players against a countdown timer.",
               "Introduced the Green challenge alongside per-difficulty feature flags to tune which modes appear in-app.",
@@ -711,6 +716,11 @@ export const resources = {
             "No se han encontrado entradas detalladas para este rango de actualización.",
           closeAction: "Entendido",
           changes: {
+            v0018beta: [
+              "Se separó la clasificación por modo de juego para que Clásico y Relámpago tengan rankings independientes.",
+              "Se añadió un selector de modo en Clasificación para alternar entre las tablas de Clásico y Relámpago.",
+              "Se amplió el contrato de sincronización local/remota de puntuación con estadísticas y eventos por modo.",
+            ],
             v0017beta: [
               "Se añadió un hub de Modos de juego con el nuevo modo Relámpago que reta al jugador contra un temporizador.",
               "Se incorporó el reto Green junto con feature flags por dificultad para ajustar qué modos aparecen en la app.",

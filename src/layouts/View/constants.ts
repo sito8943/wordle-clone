@@ -9,6 +9,15 @@ export const VIEW_DIALOG_IDS = {
 
 export const VIEW_VERSION_HISTORY: ViewVersionHistoryEntry[] = [
   {
+    version: "0.0.18-beta",
+    releasedAt: "2026-04-20",
+    changeKeys: [
+      "home.versionUpdateDialog.changes.v0018beta.0",
+      "home.versionUpdateDialog.changes.v0018beta.1",
+      "home.versionUpdateDialog.changes.v0018beta.2",
+    ],
+  },
+  {
     version: "0.0.17-beta",
     releasedAt: "2026-04-19",
     changeKeys: [

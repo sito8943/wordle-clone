@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-04-20
+
+### Branch `0.0.18-beta`
+
+- Split scoreboard data by mode so Classic and Lightning now keep independent rankings end-to-end (UI, local cache, pending queue, and remote queries).
+- Added a mode selector in `/marcador` to switch between Classic and Lightning tables without leaving the screen.
+- Extended score synchronization contracts with `modeId` for score records and round events, including Convex schema/query updates for mode-aware leaderboard stats.
+- Updated version update dialog history (`VIEW_VERSION_HISTORY`) and EN/ES i18n changelog entries with the new 0.0.18-beta release notes.
+
 ## 2026-04-19
 
 ### Branch `0.0.17`
