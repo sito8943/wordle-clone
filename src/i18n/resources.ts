@@ -130,6 +130,7 @@ export const resources = {
               "Extended local/remote score sync contracts with mode-aware stats and event payloads.",
               "Updated Help navigation/content to support mode-aware guidance (`/ayuda?mode=<modeId>`) from tutorial and navbar entry points.",
               "Updated Help rules/scoring copy rendering to respect difficulty feature flags, hiding disabled difficulty sections and adjusting formula copy when Insane is unavailable.",
+              "Persisted the current game mode in local storage (`wordle:current-mode`) so Home/Navbar Play shortcuts reopen your latest mode, with fallback to Classic when the stored mode is gated.",
             ],
             v0017beta: [
               "Added a Game Modes hub with a new Lightning mode that challenges players against a countdown timer.",
@@ -731,6 +732,7 @@ export const resources = {
               "Se amplió el contrato de sincronización local/remota de puntuación con estadísticas y eventos por modo.",
               "Se actualizó la navegación y contenido de Ayuda para soportar guía contextual por modo (`/ayuda?mode=<modeId>`) desde el tutorial y el navbar.",
               "Se ajustó el render de reglas/puntuación de Ayuda para respetar feature flags de dificultad, ocultando secciones deshabilitadas y adaptando la fórmula cuando Insano no está disponible.",
+              "Se persistió el modo de juego actual en local storage (`wordle:current-mode`) para que los accesos de Jugar en Home/Navbar reabran el último modo usado, con fallback a Clásico cuando el modo guardado esté bloqueado por feature flag.",
             ],
             v0017beta: [
               "Se añadió un hub de Modos de juego con el nuevo modo Relámpago que reta al jugador contra un temporizador.",

@@ -9,6 +9,7 @@
 - Extended score synchronization contracts with `modeId` for score records and round events, including Convex schema/query updates for mode-aware leaderboard stats.
 - Updated Help navigation/content to support mode-aware guidance (`/ayuda?mode=<modeId>`) so each mode can show specific rules from entry points like tutorial and navbar.
 - Updated Help rules/scoring copy rendering to respect difficulty feature flags, hiding disabled difficulty sections and adjusting formula copy when Insane is unavailable.
+- Added current game mode persistence under `wordle:current-mode`; Home and Navbar `Play` shortcuts now open the last played mode directly, with fallback to Classic when the stored mode is gated.
 - Updated version update dialog history (`VIEW_VERSION_HISTORY`) and EN/ES i18n changelog entries with the new 0.0.18-beta release notes.
 
 ## 2026-04-19
