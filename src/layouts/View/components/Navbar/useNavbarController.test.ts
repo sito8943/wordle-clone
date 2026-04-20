@@ -1,10 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { getHelpRoute, ROUTES } from "@config/routes";
+import { env } from "@config";
+import { getHelpRoute, getModeRoute, ROUTES } from "@config/routes";
+import {
+  CURRENT_WORDLE_MODE_STORAGE_KEY,
+  WORDLE_MODE_IDS,
+} from "@domain/wordle";
 
 const mockListTopScores = vi.fn();
 const mockPlayer = { score: 0, code: "", name: "Player", language: "en" };
-const mockLocation = { pathname: ROUTES.HOME };
+const mockLocation: { pathname: string } = { pathname: ROUTES.HOME };
+const defaultLightningModeEnabled = env.lightningModeEnabled;
 
 vi.mock("react-router", () => ({
   useLocation: () => mockLocation,
@@ -21,6 +27,8 @@ const { default: useNavbarController } = await import("./useNavbarController");
 describe("useNavbarController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    env.lightningModeEnabled = defaultLightningModeEnabled;
     mockLocation.pathname = ROUTES.HOME;
     mockPlayer.score = 0;
     mockPlayer.code = "";
@@ -108,5 +116,32 @@ describe("useNavbarController", () => {
     const { result } = renderHook(() => useNavbarController());
 
     expect(result.current.helpRoute).toBe(getHelpRoute("lightning"));
+  });
+
+  it("builds Play route from stored current mode", () => {
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.LIGHTNING,
+    );
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.playRoute).toBe(getModeRoute("lightning"));
+  });
+
+  it("falls back Play route to classic when current mode is missing", () => {
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.playRoute).toBe(getModeRoute("classic"));
+  });
+
+  it("falls back Play route to classic when lightning flag is disabled", () => {
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.LIGHTNING,
+    );
+    env.lightningModeEnabled = false;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.playRoute).toBe(getModeRoute("classic"));
   });
 });

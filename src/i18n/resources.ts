@@ -1064,8 +1064,7 @@ export const resources = {
               "Normal acepta palabras fuera del diccionario.",
             insaneDictionary:
               "Difícil e Insano solo aceptan palabras del diccionario.",
-            hardDictionaryOnly:
-              "Difícil solo acepta palabras del diccionario.",
+            hardDictionaryOnly: "Difícil solo acepta palabras del diccionario.",
             insaneDictionaryOnly:
               "Insano solo acepta palabras del diccionario.",
             green: "Casilla verde: letra correcta en la posición correcta.",

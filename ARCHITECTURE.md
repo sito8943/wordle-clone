@@ -163,6 +163,7 @@ This is an evolution of the current layered architecture, not a replacement for 
   - `answer` is resolved at runtime from `gameId + seed + dictionary`, not stored in clear.
   - It is persisted as soon as there is in-progress input (submitted rows or typed letters in `current`).
 - `wordle:hint-usage`: snapshot for hint usage (`gameId + derived gameKey + hintsUsed`) to keep hint limits after reload without persisting `answer`.
+- `wordle:current-mode`: last enabled game mode visited by the player (`classic`, `lightning`, `zen`, `daily`), used by navigation shortcuts (Home/Navbar Play button) to reopen the latest mode directly.
 - `player`: player profile and score/streak metadata, including recovery `code`.
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, `showEndOfGameDialogs`, and `manualTileSelection`.
   - It may include legacy `declinedTutorial` (`false` accepted, `true` declined) from older tutorial-prompt behavior.

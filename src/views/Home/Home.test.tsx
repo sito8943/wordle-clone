@@ -2,6 +2,11 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
+import { ROUTES } from "@config/routes";
+import {
+  CURRENT_WORDLE_MODE_STORAGE_KEY,
+  WORDLE_MODE_IDS,
+} from "@domain/wordle";
 import Home from "./Home";
 import {
   HOME_ENTRY_ANIMATION_SESSION_KEY,
@@ -27,9 +32,13 @@ vi.mock("@i18n", () => ({
   }),
 }));
 
+const defaultLightningModeEnabled = env.lightningModeEnabled;
+
 afterEach(() => {
   env.paypalDonationButtonEnabled = true;
+  env.lightningModeEnabled = defaultLightningModeEnabled;
   cleanup();
+  localStorage.clear();
   sessionStorage.clear();
   vi.restoreAllMocks();
 });
@@ -118,5 +127,40 @@ describe("Home entry animation", () => {
     renderHome();
 
     expect(screen.queryByRole("link", { name: "Donate" })).toBeNull();
+  });
+
+  it("links Play to classic mode when no current mode is stored", () => {
+    renderHome();
+
+    expect(
+      screen.getByRole("link", { name: "Play" }).getAttribute("href"),
+    ).toBe(ROUTES.CLASSIC);
+  });
+
+  it("links Play to the stored current mode route", () => {
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.LIGHTNING,
+    );
+
+    renderHome();
+
+    expect(
+      screen.getByRole("link", { name: "Play" }).getAttribute("href"),
+    ).toBe(ROUTES.LIGHTING);
+  });
+
+  it("falls back Play link to classic when lightning mode flag is disabled", () => {
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.LIGHTNING,
+    );
+    env.lightningModeEnabled = false;
+
+    renderHome();
+
+    expect(
+      screen.getByRole("link", { name: "Play" }).getAttribute("href"),
+    ).toBe(ROUTES.CLASSIC);
   });
 });

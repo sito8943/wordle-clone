@@ -57,7 +57,7 @@ beforeEach(async () => {
   featureFlagsMock.difficultyInsaneEnabled = true;
 });
 
-const renderHelp = (entry = ROUTES.HELP) =>
+const renderHelp = (entry: string = ROUTES.HELP) =>
   render(
     <MemoryRouter initialEntries={[entry]}>
       <Help />

@@ -1,7 +1,8 @@
-import type { JSX } from "react";
+import { useEffect, type JSX } from "react";
 import { env } from "@config";
 import {
   isWordleModeEnabled,
+  persistCurrentWordleModeId,
   resolveWordleModeId,
   WORDLE_MODE_IDS,
   type WordleModeId,
@@ -16,14 +17,24 @@ type PlayProps = {
 };
 
 const Play = ({ modeId }: PlayProps): JSX.Element => {
+  const resolvedModeId = resolveWordleModeId(modeId);
+  const lightningGated =
+    resolvedModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled;
+  const blockedMode = !isWordleModeEnabled(resolvedModeId) || lightningGated;
+
+  useEffect(() => {
+    if (blockedMode) {
+      return;
+    }
+
+    persistCurrentWordleModeId(resolvedModeId);
+  }, [blockedMode, resolvedModeId]);
+
   if (env.playOfflineStateEnabled) {
     return <PlayOfflineState />;
   }
 
-  const resolvedModeId = resolveWordleModeId(modeId);
-  const lightningGated =
-    resolvedModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled;
-  if (!isWordleModeEnabled(resolvedModeId) || lightningGated) {
+  if (blockedMode) {
     return <ModeGatePlaceholder modeId={resolvedModeId} />;
   }
 

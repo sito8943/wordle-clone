@@ -12,3 +12,4 @@ export * from "./player";
 export * from "./reference";
 export * from "./roundConfig";
 export * from "./modeConfig";
+export * from "./currentModeStorage";

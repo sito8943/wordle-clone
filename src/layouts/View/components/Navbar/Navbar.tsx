@@ -19,8 +19,13 @@ import type { NavLinkPropsType } from "./types";
 const Navbar = () => {
   const { t } = useTranslation();
   const { helpButtonEnabled } = useFeatureFlags();
-  const { currentClientRank, isCurrentClientRankLoading, rankTone, helpRoute } =
-    useNavbarController();
+  const {
+    currentClientRank,
+    isCurrentClientRankLoading,
+    rankTone,
+    helpRoute,
+    playRoute,
+  } = useNavbarController();
 
   const positionLabel = useMemo(
     () =>
@@ -40,7 +45,7 @@ const Navbar = () => {
   );
   const links = useMemo(() => {
     const navLinks: NavLinkPropsType[] = [
-      { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
+      { to: playRoute, label: t("nav.play"), icon: faPlayCircle },
     ];
 
     if (helpButtonEnabled) {
@@ -66,7 +71,7 @@ const Navbar = () => {
     });
 
     return navLinks;
-  }, [helpButtonEnabled, helpRoute, positionLabel, rankTone, t]);
+  }, [helpButtonEnabled, helpRoute, playRoute, positionLabel, rankTone, t]);
 
   return (
     <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 sm:px-4 flex">

@@ -1,3 +1,5 @@
+import { WORDLE_MODE_IDS, type WordleModeId } from "@domain/wordle";
+
 export const ROUTES = {
   HOME: "/",
   PLAY: "/jugar",
@@ -23,6 +25,16 @@ export const ROUTE_HASHES = {
 export const ROUTE_ANCHORS = {
   DIFFICULTY: `#${ROUTE_HASHES.DIFFICULTY}`,
 } as const;
+
+const MODE_ROUTE_BY_ID: Record<WordleModeId, string> = {
+  [WORDLE_MODE_IDS.CLASSIC]: ROUTES.CLASSIC,
+  [WORDLE_MODE_IDS.LIGHTNING]: ROUTES.LIGHTING,
+  [WORDLE_MODE_IDS.ZEN]: ROUTES.ZEN,
+  [WORDLE_MODE_IDS.DAILY]: ROUTES.DAILY,
+};
+
+export const getModeRoute = (modeId: WordleModeId): string =>
+  MODE_ROUTE_BY_ID[modeId];
 
 export const getHelpRoute = (modeId?: string | null): string => {
   if (!modeId) {

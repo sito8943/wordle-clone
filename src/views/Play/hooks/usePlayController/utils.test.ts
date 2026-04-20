@@ -22,35 +22,29 @@ describe("tutorial prompt visibility by mode", () => {
 
   it("tracks tutorial visibility independently for each mode", () => {
     expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC)).toBe(false);
-    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(
-      false,
-    );
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(false);
 
     markTutorialPromptAsSeenForMode(WORDLE_MODE_IDS.CLASSIC);
 
     expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
-    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(
-      false,
-    );
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(false);
 
     markTutorialPromptAsSeenForMode(WORDLE_MODE_IDS.LIGHTNING);
 
     expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
-    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(
-      true,
-    );
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(true);
   });
 
   it("keeps backward compatibility with legacy global tutorial flag for classic only", () => {
     expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC, false)).toBe(
       true,
     );
-    expect(
-      hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC, true),
-    ).toBe(true);
-    expect(
-      hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING, true),
-    ).toBe(false);
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC, true)).toBe(
+      true,
+    );
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING, true)).toBe(
+      false,
+    );
   });
 });
 

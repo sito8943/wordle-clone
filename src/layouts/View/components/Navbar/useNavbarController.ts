@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 import { env } from "@config";
-import { getHelpRoute, ROUTES } from "@config/routes";
+import { getHelpRoute, getModeRoute, ROUTES } from "@config/routes";
 import {
+  readCurrentWordleModeId,
+  resolvePlayableWordleModeId,
   SCOREBOARD_MODE_IDS,
   WORDLE_MODE_IDS,
   type WordleModeId,
@@ -42,6 +44,15 @@ const useNavbarController = () => {
   const helpRoute = useMemo(() => {
     const modeId = HELP_MODE_BY_PATHNAME[normalizePathname(location.pathname)];
     return getHelpRoute(modeId ?? null);
+  }, [location.pathname]);
+  const playRoute = useMemo(() => {
+    const playModeId = resolvePlayableWordleModeId(readCurrentWordleModeId());
+    const resolvedPlayModeId =
+      playModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled
+        ? WORDLE_MODE_IDS.CLASSIC
+        : playModeId;
+    return getModeRoute(resolvedPlayModeId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   useEffect(() => {
@@ -95,6 +106,7 @@ const useNavbarController = () => {
     isCurrentClientRankLoading,
     rankTone,
     helpRoute,
+    playRoute,
   };
 };
 

@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
+import { CURRENT_WORDLE_MODE_STORAGE_KEY } from "@domain/wordle";
 import Play from "./Play";
 
 const defaultPlayOfflineStateEnabled = env.playOfflineStateEnabled;
@@ -38,6 +39,7 @@ const renderPlay = (modeId?: "classic" | "lightning" | "zen" | "daily") =>
 
 afterEach(() => {
   env.playOfflineStateEnabled = defaultPlayOfflineStateEnabled;
+  localStorage.clear();
   cleanup();
 });
 
@@ -70,6 +72,9 @@ describe("Play", () => {
     expect(
       screen.getByTestId("play-provider").getAttribute("data-mode-id"),
     ).toBe("classic");
+    expect(localStorage.getItem(CURRENT_WORDLE_MODE_STORAGE_KEY)).toBe(
+      "classic",
+    );
   });
 
   it("renders enabled lightning mode through PlayViewProvider", () => {
@@ -81,6 +86,9 @@ describe("Play", () => {
       screen.getByTestId("play-provider").getAttribute("data-mode-id"),
     ).toBe("lightning");
     expect(screen.queryByTestId("play-mode-gate-placeholder")).toBeNull();
+    expect(localStorage.getItem(CURRENT_WORDLE_MODE_STORAGE_KEY)).toBe(
+      "lightning",
+    );
   });
 
   it("renders mode placeholder when non-classic mode is feature-gated", () => {
@@ -92,5 +100,6 @@ describe("Play", () => {
     expect(screen.queryByTestId("play-provider")).toBeNull();
     expect(screen.queryByText("PlayContent Stub")).toBeNull();
     expect(screen.getByRole("link").getAttribute("href")).toBe("/clasico");
+    expect(localStorage.getItem(CURRENT_WORDLE_MODE_STORAGE_KEY)).toBeNull();
   });
 });
