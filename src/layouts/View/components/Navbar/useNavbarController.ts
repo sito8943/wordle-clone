@@ -1,10 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 import { env } from "@config";
-import { ROUTES } from "@config/routes";
-import { SCOREBOARD_MODE_IDS } from "@domain/wordle";
+import { getHelpRoute, ROUTES } from "@config/routes";
+import {
+  SCOREBOARD_MODE_IDS,
+  WORDLE_MODE_IDS,
+  type WordleModeId,
+} from "@domain/wordle";
 import { useApi, usePlayer } from "@providers";
 import { NAVBAR_TOP_TEN_LIMIT } from "./constants";
+
+const HELP_MODE_BY_PATHNAME: Record<string, WordleModeId> = {
+  [ROUTES.CLASSIC]: WORDLE_MODE_IDS.CLASSIC,
+  [ROUTES.LIGHTING]: WORDLE_MODE_IDS.LIGHTNING,
+  [ROUTES.ZEN]: WORDLE_MODE_IDS.ZEN,
+  [ROUTES.DAILY]: WORDLE_MODE_IDS.DAILY,
+};
+
+const normalizePathname = (pathname: string): string => {
+  if (pathname.length <= 1) {
+    return pathname;
+  }
+
+  return pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+};
 
 const useNavbarController = () => {
   const { scoreClient } = useApi();
@@ -20,6 +39,10 @@ const useNavbarController = () => {
     location.pathname === ROUTES.LIGHTING
       ? SCOREBOARD_MODE_IDS.LIGHTNING
       : SCOREBOARD_MODE_IDS.CLASSIC;
+  const helpRoute = useMemo(() => {
+    const modeId = HELP_MODE_BY_PATHNAME[normalizePathname(location.pathname)];
+    return getHelpRoute(modeId ?? null);
+  }, [location.pathname]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +94,7 @@ const useNavbarController = () => {
     currentClientRank,
     isCurrentClientRankLoading,
     rankTone,
+    helpRoute,
   };
 };
 

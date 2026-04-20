@@ -128,6 +128,8 @@ export const resources = {
               "Split Scoreboard data by game mode so Classic and Lightning keep independent rankings.",
               "Added a mode switcher in Scoreboard to toggle between Classic and Lightning tables.",
               "Extended local/remote score sync contracts with mode-aware stats and event payloads.",
+              "Updated Help navigation/content to support mode-aware guidance (`/ayuda?mode=<modeId>`) from tutorial and navbar entry points.",
+              "Updated Help rules/scoring copy rendering to respect difficulty feature flags, hiding disabled difficulty sections and adjusting formula copy when Insane is unavailable.",
             ],
             v0017beta: [
               "Added a Game Modes hub with a new Lightning mode that challenges players against a countdown timer.",
@@ -444,13 +446,19 @@ export const resources = {
           title: "How to play",
           description: "Guess the hidden 5-letter word in up to 6 attempts.",
           rulesTitle: "Rules",
+          modeTitle: "{{mode}} mode rules",
           scoringTitle: "Scoring",
           rules: {
             guessLength: "Each guess must be 5 letters long.",
             pressEnter: "Press Enter to submit your guess.",
             nonDictionary: "Easy and Normal accept non-dictionary words.",
+            nonDictionaryEasyOnly: "Easy accepts non-dictionary words.",
+            nonDictionaryNormalOnly: "Normal accepts non-dictionary words.",
             insaneDictionary:
               "Hard and Insane only accept words from the dictionary.",
+            hardDictionaryOnly: "Hard only accepts words from the dictionary.",
+            insaneDictionaryOnly:
+              "Insane only accepts words from the dictionary.",
             green: "Green tile: correct letter in the correct position.",
             yellow: "Yellow tile: correct letter in the wrong position.",
             gray: "Gray tile: letter is not in the word.",
@@ -463,6 +471,7 @@ export const resources = {
             hard: `Hard: x${DIFFICULTY_SCORE_MULTIPLIERS.hard} difficulty multiplier.`,
             insane: `Insane: x${DIFFICULTY_SCORE_MULTIPLIERS.insane} difficulty multiplier and +1 extra point per ${LIGHTNING_SECONDS_BONUS} seconds left.`,
             final: `Final score = round(score base x (1 + ${STREAK_MODIFIER} x sqrt(min(streak, {{maxStreak}})))), where score base includes the difficulty multiplier and the Insane time bonus.`,
+            finalNoInsane: `Final score = round(score base x (1 + ${STREAK_MODIFIER} x sqrt(min(streak, {{maxStreak}})))), where score base includes the difficulty multiplier.`,
           },
           changeDifficultyPrefix: "Want to adjust the challenge? Go to",
           changeDifficultyLink: "difficulty settings",
@@ -720,6 +729,8 @@ export const resources = {
               "Se separó la clasificación por modo de juego para que Clásico y Relámpago tengan rankings independientes.",
               "Se añadió un selector de modo en Clasificación para alternar entre las tablas de Clásico y Relámpago.",
               "Se amplió el contrato de sincronización local/remota de puntuación con estadísticas y eventos por modo.",
+              "Se actualizó la navegación y contenido de Ayuda para soportar guía contextual por modo (`/ayuda?mode=<modeId>`) desde el tutorial y el navbar.",
+              "Se ajustó el render de reglas/puntuación de Ayuda para respetar feature flags de dificultad, ocultando secciones deshabilitadas y adaptando la fórmula cuando Insano no está disponible.",
             ],
             v0017beta: [
               "Se añadió un hub de Modos de juego con el nuevo modo Relámpago que reta al jugador contra un temporizador.",
@@ -1040,14 +1051,23 @@ export const resources = {
           description:
             "Adivina la palabra oculta de 5 letras en hasta 6 intentos.",
           rulesTitle: "Reglas",
+          modeTitle: "Reglas del modo {{mode}}",
           scoringTitle: "Puntuación",
           rules: {
             guessLength: "Cada intento debe tener 5 letras.",
             pressEnter: "Pulsa Enter para enviar tu intento.",
             nonDictionary:
               "Fácil y Normal aceptan palabras fuera del diccionario.",
+            nonDictionaryEasyOnly:
+              "Fácil acepta palabras fuera del diccionario.",
+            nonDictionaryNormalOnly:
+              "Normal acepta palabras fuera del diccionario.",
             insaneDictionary:
               "Difícil e Insano solo aceptan palabras del diccionario.",
+            hardDictionaryOnly:
+              "Difícil solo acepta palabras del diccionario.",
+            insaneDictionaryOnly:
+              "Insano solo acepta palabras del diccionario.",
             green: "Casilla verde: letra correcta en la posición correcta.",
             yellow:
               "Casilla amarilla: letra correcta en la posición incorrecta.",
@@ -1062,6 +1082,7 @@ export const resources = {
             hard: `Difícil: multiplicador de dificultad x${DIFFICULTY_SCORE_MULTIPLIERS.hard}.`,
             insane: `Insano: multiplicador de dificultad x${DIFFICULTY_SCORE_MULTIPLIERS.insane} y +1 punto extra por cada ${LIGHTNING_SECONDS_BONUS} segundos restantes.`,
             final: `Puntuación final = round(puntuación base x (1 + ${STREAK_MODIFIER} x sqrt(min(racha, {{maxStreak}})))), donde la puntuación base incluye el multiplicador de dificultad y el bonus de tiempo en Insano.`,
+            finalNoInsane: `Puntuación final = round(puntuación base x (1 + ${STREAK_MODIFIER} x sqrt(min(racha, {{maxStreak}})))), donde la puntuación base incluye el multiplicador de dificultad.`,
           },
           changeDifficultyPrefix: "¿Quieres ajustar el desafío? Ve a",
           changeDifficultyLink: "ajustes de dificultad",

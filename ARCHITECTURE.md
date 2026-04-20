@@ -165,10 +165,11 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:hint-usage`: snapshot for hint usage (`gameId + derived gameKey + hintsUsed`) to keep hint limits after reload without persisting `answer`.
 - `player`: player profile and score/streak metadata, including recovery `code`.
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, `showEndOfGameDialogs`, and `manualTileSelection`.
-  - It also stores `declinedTutorial` to persist the tutorial prompt decision (`false` accepted, `true` declined) and avoid re-prompting.
+  - It may include legacy `declinedTutorial` (`false` accepted, `true` declined) from older tutorial-prompt behavior.
   - It also stores local anti-fraud status (`hackingBan`) when a round is flagged as too short to be legitimate.
   - It also stores the selected `language` (`en` or `es`) used by i18n and scoreboard segmentation.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
+- `wordle:tutorial-prompt-seen-modes`: tutorial prompt state by mode (`classic`, `lightning`, `zen`, `daily`) so each mode can show its first-run welcome independently.
 - The gameplay dictionary language is fixed to Spanish (`es`) in frontend game flow.
 - `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp), each event scoped to a scoreboard mode (`classic` or `lightning`) for offline remote synchronization.
 - `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions to store completed rounds count, won rounds count, and consecutive wins count for the current UTC date.

@@ -98,6 +98,10 @@ const waitForInitialPlayerDialog = async () => {
 const defaultEnvMode = env.mode;
 const defaultEnvConvexUrl = env.convexUrl;
 const defaultEnvWordListButtonEnabled = env.wordListButtonEnabled;
+const defaultEnvDifficultyEasyEnabled = env.difficultyEasyEnabled;
+const defaultEnvDifficultyNormalEnabled = env.difficultyNormalEnabled;
+const defaultEnvDifficultyHardEnabled = env.difficultyHardEnabled;
+const defaultEnvDifficultyInsaneEnabled = env.difficultyInsaneEnabled;
 
 const mockNavigatorLanguage = (language: string) => {
   Object.defineProperty(window.navigator, "language", {
@@ -150,6 +154,10 @@ describe("App", () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     env.wordListButtonEnabled = defaultEnvWordListButtonEnabled;
+    env.difficultyEasyEnabled = defaultEnvDifficultyEasyEnabled;
+    env.difficultyNormalEnabled = defaultEnvDifficultyNormalEnabled;
+    env.difficultyHardEnabled = defaultEnvDifficultyHardEnabled;
+    env.difficultyInsaneEnabled = defaultEnvDifficultyInsaneEnabled;
     Reflect.deleteProperty(window.navigator, "language");
     Reflect.deleteProperty(window.navigator, "languages");
     cleanup();
@@ -162,6 +170,10 @@ describe("App", () => {
     env.mode = defaultEnvMode;
     env.convexUrl = defaultEnvConvexUrl;
     env.wordListButtonEnabled = true;
+    env.difficultyEasyEnabled = true;
+    env.difficultyNormalEnabled = true;
+    env.difficultyHardEnabled = true;
+    env.difficultyInsaneEnabled = true;
     localStorage.clear();
     localStorage.setItem(APP_VERSION_STORAGE_KEY, env.appVersion);
     localStorage.setItem(
@@ -1253,6 +1265,12 @@ describe("App", () => {
       act(() => {
         vi.advanceTimersByTime(1000);
       });
+
+      if (!screen.queryByLabelText("Insane timer: 56 seconds")) {
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
 
       expect(screen.getByLabelText("Insane timer: 56 seconds")).toBeTruthy();
     } finally {

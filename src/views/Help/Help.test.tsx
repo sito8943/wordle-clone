@@ -1,13 +1,47 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
+  CLASSIC_ROUND_CONFIG,
   MAX_STREAK_FOR_SCORE_MULTIPLIER,
   NORMAL_DICTIONARY_ROW_BONUS,
 } from "@domain/wordle";
 import { ROUTES } from "@config/routes";
 import { i18n, initI18n } from "@i18n";
+import type { FeatureFlags } from "@providers/FeatureFlags/types";
+import { NORMAL_MODE_HINT_LIMIT } from "@views/Play/hooks/useHintController/constants";
+import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 import Help from "./Help";
+
+const featureFlagsMock: FeatureFlags = {
+  wordListButtonEnabled: true,
+  wordReportButtonEnabled: true,
+  paypalDonationButtonEnabled: true,
+  shareButtonEnabled: true,
+  devConsoleEnabled: true,
+  soundEnabled: true,
+  hintsEnabled: true,
+  helpButtonEnabled: true,
+  challengesEnabled: true,
+  settingsDrawerEnabled: true,
+  lightningModeEnabled: true,
+  difficultyEasyEnabled: true,
+  difficultyNormalEnabled: true,
+  difficultyHardEnabled: true,
+  difficultyInsaneEnabled: true,
+};
+
+vi.mock("@providers/FeatureFlags", () => ({
+  useFeatureFlags: () => featureFlagsMock,
+}));
 
 afterEach(cleanup);
 
@@ -17,11 +51,15 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await i18n.changeLanguage("en");
+  featureFlagsMock.difficultyEasyEnabled = true;
+  featureFlagsMock.difficultyNormalEnabled = true;
+  featureFlagsMock.difficultyHardEnabled = true;
+  featureFlagsMock.difficultyInsaneEnabled = true;
 });
 
-const renderHelp = () =>
+const renderHelp = (entry = ROUTES.HELP) =>
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[entry]}>
       <Help />
     </MemoryRouter>,
   );
@@ -91,5 +129,63 @@ describe("Help", () => {
     expect(difficultyLink.getAttribute("href")).toBe(
       `${ROUTES.SETTINGS}#difficulty`,
     );
+  });
+
+  it("renders mode-specific rules when mode query is provided", () => {
+    renderHelp(`${ROUTES.HELP}?mode=lightning`);
+
+    const modeName = i18n.t("gameModes.modes.lightning.name");
+    expect(
+      screen.getByRole("heading", {
+        name: i18n.t("play.helpDialog.modeTitle", { mode: modeName }),
+        level: 3,
+      }),
+    ).toBeTruthy();
+
+    expect(
+      screen.getByText(
+        i18n.t("gameModes.modes.lightning.details.baseRules", {
+          rows: CLASSIC_ROUND_CONFIG.maxGuesses,
+          letters: CLASSIC_ROUND_CONFIG.lettersPerRow,
+        }),
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        i18n.t("gameModes.modes.lightning.details.timer", {
+          seconds: HARD_MODE_TOTAL_SECONDS,
+        }),
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        i18n.t("gameModes.modes.lightning.details.hintsChoice", {
+          hintCount: NORMAL_MODE_HINT_LIMIT,
+        }),
+      ),
+    ).toBeTruthy();
+  });
+
+  it("hides easy and insane scoring descriptions when those difficulties are disabled", () => {
+    featureFlagsMock.difficultyEasyEnabled = false;
+    featureFlagsMock.difficultyInsaneEnabled = false;
+    renderHelp();
+
+    expect(
+      screen.queryByText(i18n.t("play.helpDialog.scoring.easy")),
+    ).toBeNull();
+    expect(
+      screen.queryByText(i18n.t("play.helpDialog.scoring.insane")),
+    ).toBeNull();
+    expect(
+      screen.getByText(i18n.t("play.helpDialog.scoring.hard")),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        i18n.t("play.helpDialog.scoring.finalNoInsane", {
+          maxStreak: MAX_STREAK_FOR_SCORE_MULTIPLIER,
+        }),
+      ),
+    ).toBeTruthy();
   });
 });

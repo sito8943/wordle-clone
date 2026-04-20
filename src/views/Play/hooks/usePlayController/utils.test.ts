@@ -1,24 +1,68 @@
-import html2canvas from "html2canvas";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { GuessResult } from "@domain/wordle";
+import { WORDLE_MODE_IDS, type GuessResult } from "@domain/wordle";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
+import { TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY } from "./constants";
 import {
   captureVictoryBoardImageFile,
+  hasSeenTutorialPromptForMode,
   getVictoryBoardShareCaptureElement,
+  markTutorialPromptAsSeenForMode,
 } from "./utils";
 
+const html2canvasMock = vi.hoisted(() => vi.fn());
+
 vi.mock("html2canvas", () => ({
-  default: vi.fn(),
+  default: html2canvasMock,
 }));
+
+describe("tutorial prompt visibility by mode", () => {
+  afterEach(() => {
+    window.localStorage.removeItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY);
+  });
+
+  it("tracks tutorial visibility independently for each mode", () => {
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC)).toBe(false);
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(
+      false,
+    );
+
+    markTutorialPromptAsSeenForMode(WORDLE_MODE_IDS.CLASSIC);
+
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(
+      false,
+    );
+
+    markTutorialPromptAsSeenForMode(WORDLE_MODE_IDS.LIGHTNING);
+
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(
+      true,
+    );
+  });
+
+  it("keeps backward compatibility with legacy global tutorial flag for classic only", () => {
+    expect(hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC, false)).toBe(
+      true,
+    );
+    expect(
+      hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC, true),
+    ).toBe(true);
+    expect(
+      hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.LIGHTNING, true),
+    ).toBe(false);
+  });
+});
 
 describe("captureVictoryBoardImageFile", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    html2canvasMock.mockReset();
     document.body.innerHTML = "";
   });
 
   it("falls back to drawing the board from guess data when html2canvas fails", async () => {
-    vi.mocked(html2canvas).mockRejectedValue(
+    html2canvasMock.mockRejectedValue(
       new Error("Unsupported CSS color function."),
     );
 
@@ -90,8 +134,8 @@ describe("captureVictoryBoardImageFile", () => {
 
     expect(file.name).toBe("wordle-board.png");
     expect(file.type).toBe("image/png");
-    expect(vi.mocked(html2canvas)).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(html2canvas)).toHaveBeenCalledWith(
+    expect(html2canvasMock).toHaveBeenCalledTimes(1);
+    expect(html2canvasMock).toHaveBeenCalledWith(
       expect.any(HTMLDivElement),
       expect.objectContaining({
         scale: 2,
@@ -110,7 +154,7 @@ describe("captureVictoryBoardImageFile", () => {
   });
 
   it("uses the configured board dimensions in the fallback canvas", async () => {
-    vi.mocked(html2canvas).mockRejectedValue(new Error("capture failed"));
+    html2canvasMock.mockRejectedValue(new Error("capture failed"));
 
     const fakeContext = {
       clearRect: vi.fn(),

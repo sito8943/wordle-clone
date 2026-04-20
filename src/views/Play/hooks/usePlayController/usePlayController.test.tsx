@@ -7,7 +7,7 @@ import {
 } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
-import { ROUTES } from "@config/routes";
+import { getHelpRoute } from "@config/routes";
 import { i18n, initI18n } from "@i18n";
 import { setWordDictionary } from "@utils/words";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
@@ -20,6 +20,7 @@ import usePlayController from "./usePlayController";
 import {
   COMBO_FLASH_VISIBILITY_DURATION_MS,
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
 } from "./constants";
 
 const mockUseApi = vi.fn();
@@ -462,10 +463,60 @@ describe("usePlayController", () => {
     expect(result.current.showSettingsPanel).toBe(false);
   });
 
-  it("shows the tutorial prompt when the player has not declined it", () => {
+  it("shows the tutorial prompt when the selected mode has not been seen", () => {
     const { result } = renderHook(() => usePlayController());
 
     expect(result.current.showTutorialPromptDialog).toBe(true);
+  });
+
+  it("does not show the tutorial prompt when the selected mode was already seen", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ classic: true }),
+    );
+
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.showTutorialPromptDialog).toBe(false);
+  });
+
+  it("shows lightning tutorial when only classic was seen before", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ classic: true }),
+    );
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showTutorialPromptDialog).toBe(true);
+  });
+
+  it("keeps legacy tutorial flag behavior for classic only", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        declinedTutorial: true,
+        showEndOfGameDialogs: true,
+        manualTileSelection: false,
+      },
+    });
+
+    const { result: classicResult } = renderHook(() => usePlayController());
+    const { result: lightningResult } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(classicResult.current.showTutorialPromptDialog).toBe(false);
+    expect(lightningResult.current.showTutorialPromptDialog).toBe(true);
   });
 
   it("hides and persists tutorial rejection when the player declines it", () => {
@@ -480,7 +531,6 @@ describe("usePlayController", () => {
         language: "en",
         difficulty: "normal",
         keyboardPreference: "onscreen",
-        declinedTutorial: false,
         showEndOfGameDialogs: true,
         manualTileSelection: false,
       },
@@ -494,6 +544,12 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(
+      JSON.parse(
+        window.localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY) ??
+          "{}",
+      ),
+    ).toMatchObject({ classic: true });
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: true });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -510,7 +566,6 @@ describe("usePlayController", () => {
         language: "en",
         difficulty: "normal",
         keyboardPreference: "onscreen",
-        declinedTutorial: false,
         showEndOfGameDialogs: true,
         manualTileSelection: false,
       },
@@ -524,7 +579,50 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showTutorialPromptDialog).toBe(false);
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.HELP);
+    expect(
+      JSON.parse(
+        window.localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY) ??
+          "{}",
+      ),
+    ).toMatchObject({ classic: true });
+    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("classic"));
+    expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
+  });
+
+  it("navigates to mode-specific help for lightning tutorial acceptance", () => {
+    const replacePlayer = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+        manualTileSelection: false,
+      },
+      replacePlayer,
+    });
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    act(() => {
+      result.current.acceptTutorialPrompt();
+    });
+
+    expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(
+      JSON.parse(
+        window.localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY) ??
+          "{}",
+      ),
+    ).toMatchObject({ lightning: true });
+    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("lightning"));
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
   });
 

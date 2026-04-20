@@ -12,6 +12,7 @@ import {
   HARD_MODE_FINAL_STRETCH_SECONDS,
   HARD_MODE_TIMER_STORAGE_KEY,
   HARD_MODE_TOTAL_SECONDS,
+  TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
   VICTORY_BOARD_SHARE_FILE_NAME,
 } from "./constants";
 import type {
@@ -200,6 +201,84 @@ export const markEndOfGameDialogAsSeenInSession = (): void => {
     END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
     "seen",
   );
+};
+
+type TutorialPromptSeenModes = Partial<Record<WordleModeId, boolean>>;
+
+const toTutorialPromptSeenModes = (
+  value: unknown,
+): TutorialPromptSeenModes | null => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const maybeModes = value as Partial<Record<WordleModeId, unknown>>;
+  const modes: TutorialPromptSeenModes = {};
+
+  (Object.values(WORDLE_MODE_IDS) as WordleModeId[]).forEach((modeId) => {
+    if (maybeModes[modeId] === true) {
+      modes[modeId] = true;
+    }
+  });
+
+  return modes;
+};
+
+const readTutorialPromptSeenModes = (): TutorialPromptSeenModes => {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+    );
+    if (!raw) {
+      return {};
+    }
+
+    const parsed: unknown = JSON.parse(raw);
+    return toTutorialPromptSeenModes(parsed) ?? {};
+  } catch {
+    return {};
+  }
+};
+
+export const hasSeenTutorialPromptForMode = (
+  modeId: WordleModeId,
+  legacyDeclinedTutorial?: boolean,
+): boolean => {
+  const seenModes = readTutorialPromptSeenModes();
+
+  if (seenModes[modeId] === true) {
+    return true;
+  }
+
+  // Backward compatibility: old versions tracked a single global tutorial flag.
+  return (
+    modeId === WORDLE_MODE_IDS.CLASSIC &&
+    typeof legacyDeclinedTutorial === "boolean"
+  );
+};
+
+export const markTutorialPromptAsSeenForMode = (modeId: WordleModeId): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const seenModes = readTutorialPromptSeenModes();
+    if (seenModes[modeId] === true) {
+      return;
+    }
+
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ ...seenModes, [modeId]: true }),
+    );
+  } catch {
+    // Ignore storage write errors.
+  }
 };
 
 const canvasToPngBlob = (canvas: HTMLCanvasElement): Promise<Blob> =>

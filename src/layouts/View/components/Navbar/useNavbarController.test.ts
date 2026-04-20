@@ -1,11 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
+import { getHelpRoute, ROUTES } from "@config/routes";
 
 const mockListTopScores = vi.fn();
 const mockPlayer = { score: 0, code: "", name: "Player", language: "en" };
+const mockLocation = { pathname: ROUTES.HOME };
 
 vi.mock("react-router", () => ({
-  useLocation: () => ({ pathname: "/" }),
+  useLocation: () => mockLocation,
 }));
 
 vi.mock("@providers", () => ({
@@ -19,6 +21,7 @@ const { default: useNavbarController } = await import("./useNavbarController");
 describe("useNavbarController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocation.pathname = ROUTES.HOME;
     mockPlayer.score = 0;
     mockPlayer.code = "";
     mockPlayer.name = "Player";
@@ -91,5 +94,19 @@ describe("useNavbarController", () => {
         initialCallCount,
       );
     });
+  });
+
+  it("builds a help route with the active classic mode", () => {
+    mockLocation.pathname = ROUTES.CLASSIC;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.helpRoute).toBe(getHelpRoute("classic"));
+  });
+
+  it("builds a help route with the active lightning mode", () => {
+    mockLocation.pathname = ROUTES.LIGHTING;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.helpRoute).toBe(getHelpRoute("lightning"));
   });
 });

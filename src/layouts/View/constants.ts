@@ -15,6 +15,8 @@ export const VIEW_VERSION_HISTORY: ViewVersionHistoryEntry[] = [
       "home.versionUpdateDialog.changes.v0018beta.0",
       "home.versionUpdateDialog.changes.v0018beta.1",
       "home.versionUpdateDialog.changes.v0018beta.2",
+      "home.versionUpdateDialog.changes.v0018beta.3",
+      "home.versionUpdateDialog.changes.v0018beta.4",
     ],
   },
   {

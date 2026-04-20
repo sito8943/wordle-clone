@@ -49,8 +49,10 @@ import {
   getGuessWords,
   getTileStatusSoundEvent,
   getVictoryBoardShareCaptureElement,
+  hasSeenTutorialPromptForMode,
   hasSeenEndOfGameDialogInSession,
   isVictoryBoardShareSupported,
+  markTutorialPromptAsSeenForMode,
   markEndOfGameDialogAsSeenInSession,
 } from "./utils";
 import { i18n } from "@i18n";
@@ -62,7 +64,7 @@ import {
   TILE_STATUS_SOUND_INITIAL_DELAY_MS,
   TILE_STATUS_SOUND_STEP_DELAY_MS,
 } from "@providers/Sound/constants";
-import { ROUTES } from "@config/routes";
+import { getHelpRoute } from "@config/routes";
 
 export default function usePlayController(
   options: UsePlayControllerOptions = {},
@@ -139,7 +141,7 @@ export default function usePlayController(
     useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showTutorialPromptDialog, setShowTutorialPromptDialog] = useState(
-    () => typeof player.declinedTutorial !== "boolean",
+    () => !hasSeenTutorialPromptForMode(activeModeId, player.declinedTutorial),
   );
   const [pendingDifficulty, setPendingDifficulty] =
     useState<PlayerDifficulty | null>(null);
@@ -227,6 +229,13 @@ export default function usePlayController(
     modeId: activeModeId,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
+
+  useEffect(() => {
+    setShowTutorialPromptDialog(
+      !hasSeenTutorialPromptForMode(activeModeId, player.declinedTutorial),
+    );
+  }, [activeModeId, player.declinedTutorial]);
+
   const completeEligibleChallenges = useCallback(async () => {
     if (
       !challengesEnabled ||
@@ -706,15 +715,17 @@ export default function usePlayController(
   }, []);
 
   const acceptTutorialPrompt = useCallback(() => {
+    markTutorialPromptAsSeenForMode(activeModeId);
     replacePlayer({ declinedTutorial: false });
     setShowTutorialPromptDialog(false);
-    navigate(ROUTES.HELP);
-  }, [navigate, replacePlayer]);
+    navigate(getHelpRoute(activeModeId));
+  }, [activeModeId, navigate, replacePlayer]);
 
   const declineTutorialPrompt = useCallback(() => {
+    markTutorialPromptAsSeenForMode(activeModeId);
     setShowTutorialPromptDialog(false);
     replacePlayer({ declinedTutorial: true });
-  }, [replacePlayer]);
+  }, [activeModeId, replacePlayer]);
 
   useEffect(() => {
     manualTileSelectionRef.current = player.manualTileSelection === true;
@@ -1019,14 +1030,6 @@ export default function usePlayController(
       setShowWordsDialog(false);
     }
   }, [wordListEnabledForDifficulty]);
-
-  useEffect(() => {
-    if (typeof player.declinedTutorial !== "boolean") {
-      return;
-    }
-
-    setShowTutorialPromptDialog(false);
-  }, [player.declinedTutorial]);
 
   const showVictoryDialog =
     showEndOfGameDialogs &&

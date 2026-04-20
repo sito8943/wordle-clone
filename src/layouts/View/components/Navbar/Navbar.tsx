@@ -19,7 +19,7 @@ import type { NavLinkPropsType } from "./types";
 const Navbar = () => {
   const { t } = useTranslation();
   const { helpButtonEnabled } = useFeatureFlags();
-  const { currentClientRank, isCurrentClientRankLoading, rankTone } =
+  const { currentClientRank, isCurrentClientRankLoading, rankTone, helpRoute } =
     useNavbarController();
 
   const positionLabel = useMemo(
@@ -45,7 +45,7 @@ const Navbar = () => {
 
     if (helpButtonEnabled) {
       navLinks.push({
-        to: ROUTES.HELP,
+        to: helpRoute,
         label: t("nav.help"),
         icon: faCircleQuestion,
       });
@@ -66,7 +66,7 @@ const Navbar = () => {
     });
 
     return navLinks;
-  }, [helpButtonEnabled, positionLabel, rankTone, t]);
+  }, [helpButtonEnabled, helpRoute, positionLabel, rankTone, t]);
 
   return (
     <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 sm:px-4 flex">
