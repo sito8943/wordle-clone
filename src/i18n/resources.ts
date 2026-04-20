@@ -184,6 +184,7 @@ export const resources = {
       scoreboard: {
         title: "Scoreboard",
         refreshAriaLabel: "Refresh scores",
+        modeSelectorAriaLabel: "Select scoreboard mode",
         convexNotConfigured:
           "Convex is not configured (`VITE_CONVEX_URL`). Using local storage only.",
         offlineFallback:
@@ -771,6 +772,7 @@ export const resources = {
       scoreboard: {
         title: "Clasificación",
         refreshAriaLabel: "Actualizar puntuaciones",
+        modeSelectorAriaLabel: "Seleccionar modo del marcador",
         convexNotConfigured:
           "Convex no está configurado (`VITE_CONVEX_URL`). Se usará solo almacenamiento local.",
         offlineFallback:

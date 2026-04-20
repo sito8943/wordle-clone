@@ -3,6 +3,7 @@ import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
   PlayerLanguage,
+  ScoreboardModeId,
 } from "@domain/wordle";
 
 export type PlayerContextType = {
@@ -22,6 +23,7 @@ export type PlayerContextType = {
     points: number,
     wonAt?: number,
     roundStartedAt?: number,
+    modeId?: ScoreboardModeId,
   ) => Promise<void>;
-  commitLoss: () => Promise<void>;
+  commitLoss: (modeId?: ScoreboardModeId) => Promise<void>;
 };

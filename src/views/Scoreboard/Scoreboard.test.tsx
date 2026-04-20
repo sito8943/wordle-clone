@@ -63,6 +63,18 @@ describe("Scoreboard", () => {
     expect(screen.getByRole("button", { name: "Refresh scores" })).toBeTruthy();
   });
 
+  it("lets the player switch between Classic and Lightning scoreboards", () => {
+    mockController();
+    render(<Scoreboard />);
+
+    const lightningButton = screen.getByRole("button", { name: "Lightning" });
+    fireEvent.click(lightningButton);
+
+    expect(vi.mocked(useScoreboardController)).toHaveBeenLastCalledWith(
+      "lightning",
+    );
+  });
+
   it("shows 'No scores yet.' when list is empty and not loading", () => {
     mockController();
     render(<Scoreboard />);

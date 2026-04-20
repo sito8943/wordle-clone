@@ -8,6 +8,8 @@ import {
   ErrorFallback,
   FireStreak,
 } from "@components";
+import { SCOREBOARD_MODE_IDS } from "@domain/wordle";
+import type { ScoreboardModeId } from "@domain/wordle";
 import { useAnimatedPresence, useAnimationsPreference } from "@hooks";
 import {
   ALERT_EXIT_MS,
@@ -19,6 +21,9 @@ import type { DropdownPlacement } from "./types";
 
 const Scoreboard = (): JSX.Element => {
   const { t } = useTranslation();
+  const [selectedModeId, setSelectedModeId] = useState<ScoreboardModeId>(
+    SCOREBOARD_MODE_IDS.CLASSIC,
+  );
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
   const [expandedEntryPlacement, setExpandedEntryPlacement] =
     useState<DropdownPlacement>("below");
@@ -50,7 +55,7 @@ const Scoreboard = (): JSX.Element => {
     currentClientRank,
     currentClientOutsideTop,
     refresh,
-  } = useScoreboardController();
+  } = useScoreboardController(selectedModeId);
   const { animationsDisabled } = useAnimationsPreference();
 
   const convexAlert = useAnimatedPresence(!convexEnabled, ALERT_EXIT_MS);
@@ -209,6 +214,14 @@ const Scoreboard = (): JSX.Element => {
   }, []);
 
   useEffect(() => {
+    clearDropdownExitTimeout();
+    clearDropdownSwitchTimeout();
+    setExpandedEntryId(null);
+    setClosingEntryId(null);
+    setPendingEntryId(null);
+  }, [clearDropdownExitTimeout, clearDropdownSwitchTimeout, selectedModeId]);
+
+  useEffect(() => {
     if (!expandedEntryId) {
       return;
     }
@@ -289,6 +302,44 @@ const Scoreboard = (): JSX.Element => {
             hideLabelOnMobile
           >
             {t("common.refresh")}
+          </Button>
+        </div>
+        <div
+          className="mt-3 inline-flex rounded border border-neutral-300 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900/50"
+          role="group"
+          aria-label={t("scoreboard.modeSelectorAriaLabel")}
+        >
+          <Button
+            variant={
+              selectedModeId === SCOREBOARD_MODE_IDS.CLASSIC ? "solid" : "ghost"
+            }
+            color={
+              selectedModeId === SCOREBOARD_MODE_IDS.CLASSIC
+                ? "primary"
+                : "neutral"
+            }
+            className="px-3 py-1.5 text-xs"
+            onClick={() => setSelectedModeId(SCOREBOARD_MODE_IDS.CLASSIC)}
+            aria-pressed={selectedModeId === SCOREBOARD_MODE_IDS.CLASSIC}
+          >
+            {t("gameModes.modes.classic.name")}
+          </Button>
+          <Button
+            variant={
+              selectedModeId === SCOREBOARD_MODE_IDS.LIGHTNING
+                ? "solid"
+                : "ghost"
+            }
+            color={
+              selectedModeId === SCOREBOARD_MODE_IDS.LIGHTNING
+                ? "primary"
+                : "neutral"
+            }
+            className="px-3 py-1.5 text-xs"
+            onClick={() => setSelectedModeId(SCOREBOARD_MODE_IDS.LIGHTNING)}
+            aria-pressed={selectedModeId === SCOREBOARD_MODE_IDS.LIGHTNING}
+          >
+            {t("gameModes.modes.lightning.name")}
           </Button>
         </div>
       </div>

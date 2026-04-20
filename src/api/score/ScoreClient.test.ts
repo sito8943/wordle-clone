@@ -89,6 +89,35 @@ describe("ScoreClient", () => {
     expect(cito?.streak).toBe(2);
   });
 
+  it("keeps separate local scoreboards for classic and lightning modes", async () => {
+    const client = new ScoreClient(createGateway(), storage);
+
+    await client.recordScore({
+      nick: "CITO",
+      score: 12,
+      streak: 3,
+      modeId: "classic",
+      createdAt: 1000,
+    });
+    await client.recordScore({
+      nick: "CITO",
+      score: 6,
+      streak: 2,
+      modeId: "lightning",
+      createdAt: 2000,
+    });
+
+    const classic = await client.listTopScores(10, "en", "classic");
+    const lightning = await client.listTopScores(10, "en", "lightning");
+
+    expect(classic.scores).toHaveLength(1);
+    expect(classic.scores[0].score).toBe(12);
+    expect(classic.scores[0].modeId).toBe("classic");
+    expect(lightning.scores).toHaveLength(1);
+    expect(lightning.scores[0].score).toBe(6);
+    expect(lightning.scores[0].modeId).toBe("lightning");
+  });
+
   it("merges remote and pending rows without duplicating the same nick", async () => {
     const networkError = new Error("Network offline");
     const query = vi.fn().mockResolvedValue([
@@ -535,6 +564,7 @@ describe("ScoreClient", () => {
     expect(query).toHaveBeenNthCalledWith(2, "scores:listTopScores", {
       limit: 10,
       language: "en",
+      modeId: "classic",
       clientId: expect.any(String),
       clientRecordId: "remote-record",
     });
@@ -597,12 +627,14 @@ describe("ScoreClient", () => {
       id: "win-1",
       kind: "win",
       pointsDelta: 8,
+      modeId: "classic",
       happenedAt: 1000,
       version: 2,
     });
     client.queueRoundEvent({
       id: "loss-1",
       kind: "loss",
+      modeId: "classic",
       happenedAt: 2000,
       version: 2,
     });
@@ -623,12 +655,14 @@ describe("ScoreClient", () => {
             id: "win-1",
             kind: "win",
             pointsDelta: 8,
+            modeId: "classic",
             happenedAt: 1000,
             version: 2,
           },
           {
             id: "loss-1",
             kind: "loss",
+            modeId: "classic",
             happenedAt: 2000,
             version: 2,
           },

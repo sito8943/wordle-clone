@@ -19,12 +19,14 @@ import {
   clearAllPersistedGameStates,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
+  resolveScoreboardModeId,
   resolveEnabledDifficulty,
   type Player,
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
   type PlayerLanguage,
   type RoundSyncEvent,
+  type ScoreboardModeId,
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 
@@ -247,9 +249,15 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 
   const commitVictory = useCallback(
-    async (points: number, wonAt = Date.now(), roundStartedAt?: number) => {
+    async (
+      points: number,
+      wonAt = Date.now(),
+      roundStartedAt?: number,
+      modeId?: ScoreboardModeId,
+    ) => {
       const safePoints =
         Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
+      const safeModeId = resolveScoreboardModeId(modeId);
 
       if (safePoints === 0) {
         return;
@@ -294,13 +302,18 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         score: current.score + safePoints,
         streak: current.streak + 1,
       });
+      const currentModeScore = scoreClient.getCurrentClientScoreSnapshot(
+        current.language,
+        safeModeId,
+      );
 
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,
         language: nextPlayer.language,
-        score: nextPlayer.score,
-        streak: nextPlayer.streak,
+        modeId: safeModeId,
+        score: currentModeScore.score + safePoints,
+        streak: currentModeScore.streak + 1,
         createdAt: safeWonAt,
         overwriteExisting: true,
       });
@@ -312,6 +325,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
             : `${safeWonAt}-${Math.random().toString(36).slice(2)}`,
         kind: "win",
         pointsDelta: safePoints,
+        modeId: safeModeId,
         happenedAt: safeWonAt,
         version: 2,
       };
@@ -327,43 +341,53 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents],
   );
 
-  const commitLoss = useCallback(async () => {
-    const current = normalizePlayer(storedPlayer);
+  const commitLoss = useCallback(
+    async (modeId?: ScoreboardModeId) => {
+      const safeModeId = resolveScoreboardModeId(modeId);
+      const current = normalizePlayer(storedPlayer);
+      const currentModeScore = scoreClient.getCurrentClientScoreSnapshot(
+        current.language,
+        safeModeId,
+      );
 
-    if (current.hackingBan !== null) {
-      return;
-    }
+      if (current.hackingBan !== null) {
+        return;
+      }
 
-    if (current.streak === 0) {
-      return;
-    }
+      if (current.streak === 0 && currentModeScore.streak === 0) {
+        return;
+      }
 
-    const nextPlayer = { ...current, streak: 0 };
-    setStoredPlayer(nextPlayer);
-    scoreClient.cachePlayerScore({
-      nick: nextPlayer.name,
-      language: nextPlayer.language,
-      score: nextPlayer.score,
-      streak: nextPlayer.streak,
-      overwriteExisting: true,
-    });
+      const nextPlayer = { ...current, streak: 0 };
+      setStoredPlayer(nextPlayer);
+      scoreClient.cachePlayerScore({
+        nick: nextPlayer.name,
+        language: nextPlayer.language,
+        modeId: safeModeId,
+        score: currentModeScore.score,
+        streak: 0,
+        overwriteExisting: true,
+      });
 
-    if (current.name === DEFAULT_PLAYER.name) {
-      return;
-    }
+      if (current.name === DEFAULT_PLAYER.name) {
+        return;
+      }
 
-    scoreClient.queueRoundEvent({
-      id:
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      kind: "loss",
-      happenedAt: Date.now(),
-      version: 2,
-    });
+      scoreClient.queueRoundEvent({
+        id:
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        kind: "loss",
+        modeId: safeModeId,
+        happenedAt: Date.now(),
+        version: 2,
+      });
 
-    await syncQueuedRoundEvents(nextPlayer);
-  }, [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents]);
+      await syncQueuedRoundEvents(nextPlayer);
+    },
+    [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents],
+  );
 
   const updatePlayerDifficulty = useCallback(
     (difficulty: PlayerDifficulty) => {

@@ -108,6 +108,10 @@ const createMockScoreClient = (
     syncPendingScores: vi.fn().mockResolvedValue({ flushed: false }),
     queueRoundEvent: vi.fn(),
     syncRoundEvents: vi.fn().mockResolvedValue(null),
+    getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+      score: 0,
+      streak: 0,
+    }),
     adoptRecoveredIdentity: vi.fn(),
     ...overrides,
   }) as unknown as ApiContextType["scoreClient"];

@@ -36,7 +36,7 @@ describe("useTopScoresQuery", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(listTopScores).toHaveBeenCalledWith(env.scoreLimit, "en");
+    expect(listTopScores).toHaveBeenCalledWith(env.scoreLimit, "en", "classic");
   });
 
   it("uses the provided limit and exposes returned data", async () => {
@@ -45,6 +45,7 @@ describe("useTopScoresQuery", () => {
         {
           id: "1",
           nick: "Ana",
+          modeId: "classic",
           score: 55,
           streak: 2,
           createdAt: Date.UTC(2026, 2, 18),
@@ -70,7 +71,7 @@ describe("useTopScoresQuery", () => {
       expect(result.current.data?.currentClientRank).toBe(7);
     });
 
-    expect(listTopScores).toHaveBeenCalledWith(3, "en");
+    expect(listTopScores).toHaveBeenCalledWith(3, "en", "classic");
     expect(result.current.data?.scores).toHaveLength(1);
     expect(result.current.data?.currentClientRank).toBe(7);
   });
@@ -93,6 +94,7 @@ describe("useTopScoresQuery", () => {
         {
           id: "local-1",
           nick: "Ana",
+          modeId: "classic",
           score: 42,
           streak: 1,
           createdAt: Date.UTC(2026, 2, 18),

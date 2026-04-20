@@ -368,7 +368,7 @@ export default function usePlayController(
       hydrated.current = true;
 
       if (gameOver && !won) {
-        void commitLoss();
+        void commitLoss(activeModeId);
       }
 
       roundSettled.current = gameOver;
@@ -443,7 +443,7 @@ export default function usePlayController(
         },
       });
 
-      void commitVictory(totalPoints, undefined, roundStartedAt);
+      void commitVictory(totalPoints, undefined, roundStartedAt, activeModeId);
     } else {
       setEndOfGameSnapshot({
         answer,
@@ -452,12 +452,13 @@ export default function usePlayController(
         challengeBonusPoints: 0,
         scoreSummary: null,
       });
-      void commitLoss();
+      void commitLoss(activeModeId);
     }
 
     void completeEligibleChallenges();
     roundSettled.current = true;
   }, [
+    activeModeId,
     completeEligibleChallenges,
     gameOver,
     guesses,
@@ -960,6 +961,7 @@ export default function usePlayController(
         {
           nick: nextNick,
           language: player.language,
+          modeId: activeModeId,
           score: nextScore,
           streak: nextStreak,
           overwriteExisting: true,
@@ -971,6 +973,7 @@ export default function usePlayController(
       setShowDeveloperConsoleDialog(false);
     },
     [
+      activeModeId,
       player.language,
       player.name,
       player.score,

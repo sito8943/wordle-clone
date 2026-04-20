@@ -28,6 +28,54 @@ export default defineSchema({
         es: v.optional(v.number()),
       }),
     ),
+    scoreByLanguageAndMode: v.optional(
+      v.object({
+        en: v.optional(
+          v.object({
+            classic: v.optional(v.number()),
+            lightning: v.optional(v.number()),
+          }),
+        ),
+        es: v.optional(
+          v.object({
+            classic: v.optional(v.number()),
+            lightning: v.optional(v.number()),
+          }),
+        ),
+      }),
+    ),
+    streakByLanguageAndMode: v.optional(
+      v.object({
+        en: v.optional(
+          v.object({
+            classic: v.optional(v.number()),
+            lightning: v.optional(v.number()),
+          }),
+        ),
+        es: v.optional(
+          v.object({
+            classic: v.optional(v.number()),
+            lightning: v.optional(v.number()),
+          }),
+        ),
+      }),
+    ),
+    createdAtByLanguageAndMode: v.optional(
+      v.object({
+        en: v.optional(
+          v.object({
+            classic: v.optional(v.number()),
+            lightning: v.optional(v.number()),
+          }),
+        ),
+        es: v.optional(
+          v.object({
+            classic: v.optional(v.number()),
+            lightning: v.optional(v.number()),
+          }),
+        ),
+      }),
+    ),
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
     createdAt: v.number(),
@@ -43,6 +91,7 @@ export default defineSchema({
     eventId: v.string(),
     kind: v.string(),
     pointsDelta: v.optional(v.number()),
+    modeId: v.optional(v.string()),
     happenedAt: v.number(),
     createdAt: v.number(),
   })

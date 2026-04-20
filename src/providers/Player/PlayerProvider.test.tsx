@@ -213,8 +213,28 @@ describe("PlayerProvider", () => {
       expect.objectContaining({
         kind: "win",
         pointsDelta: 5,
+        modeId: "classic",
         happenedAt: 1234,
         version: 2,
+      }),
+    );
+  });
+
+  it("commitVictory tags events with the provided scoreboard mode", async () => {
+    const queueRoundEvent = vi.fn();
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ queueRoundEvent }),
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(7, 1234, undefined, "lightning");
+    });
+
+    expect(queueRoundEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "win",
+        pointsDelta: 7,
+        modeId: "lightning",
       }),
     );
   });
@@ -300,6 +320,7 @@ describe("PlayerProvider", () => {
     expect(queueRoundEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: "loss",
+        modeId: "classic",
         version: 2,
       }),
     );

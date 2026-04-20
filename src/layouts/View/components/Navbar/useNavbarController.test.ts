@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 
 const mockListTopScores = vi.fn();
-const mockPlayer = { score: 0, code: "", name: "Player" };
+const mockPlayer = { score: 0, code: "", name: "Player", language: "en" };
 
 vi.mock("react-router", () => ({
   useLocation: () => ({ pathname: "/" }),
@@ -22,6 +22,7 @@ describe("useNavbarController", () => {
     mockPlayer.score = 0;
     mockPlayer.code = "";
     mockPlayer.name = "Player";
+    mockPlayer.language = "en";
     mockListTopScores.mockResolvedValue({
       scores: [],
       source: "local",

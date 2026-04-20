@@ -6,6 +6,10 @@ export type BoardRoundConfig = {
 };
 
 export type WordleModeId = "classic" | "lightning" | "zen" | "daily";
+export type ScoreboardModeId = Extract<
+  WordleModeId,
+  "classic" | "lightning" | "zen" | "daily"
+>;
 
 export type GuessResult = {
   word: string;
@@ -50,12 +54,14 @@ export type RoundSyncEvent =
       id: string;
       kind: "win";
       pointsDelta: number;
+      modeId: ScoreboardModeId;
       happenedAt: number;
       version: 2;
     }
   | {
       id: string;
       kind: "loss";
+      modeId: ScoreboardModeId;
       happenedAt: number;
       version: 2;
     };

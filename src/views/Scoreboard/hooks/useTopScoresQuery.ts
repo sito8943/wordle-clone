@@ -1,25 +1,28 @@
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { env } from "@config";
-import type { PlayerLanguage } from "@domain/wordle";
+import { SCOREBOARD_MODE_IDS } from "@domain/wordle";
+import type { PlayerLanguage, ScoreboardModeId } from "@domain/wordle";
 import { useApi } from "@providers";
 import { queryKeys } from "@hooks";
 
 const useTopScoresQuery = (
   limit = env.scoreLimit,
   language: PlayerLanguage = "en",
+  modeId: ScoreboardModeId = SCOREBOARD_MODE_IDS.CLASSIC,
 ) => {
   const { scoreClient } = useApi();
   const queryClient = useQueryClient();
   const queryKey = useMemo(
-    () => queryKeys.topScoresByLimitAndLanguage(limit, language),
-    [language, limit],
+    () => queryKeys.topScoresByLimitLanguageAndMode(limit, language, modeId),
+    [language, limit, modeId],
   );
 
   const query = useQuery({
     queryKey,
-    placeholderData: () => scoreClient.getCachedTopScores(limit, language),
-    queryFn: () => scoreClient.listTopScores(limit, language),
+    placeholderData: () =>
+      scoreClient.getCachedTopScores(limit, language, modeId),
+    queryFn: () => scoreClient.listTopScores(limit, language, modeId),
   });
 
   useEffect(() => {

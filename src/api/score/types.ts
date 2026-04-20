@@ -2,6 +2,7 @@ import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
   PlayerLanguage,
+  ScoreboardModeId,
   RoundSyncEvent,
 } from "@domain/wordle";
 
@@ -11,6 +12,7 @@ export type ScoreEntry = {
   id: string;
   nick: string;
   language: PlayerLanguage;
+  modeId: ScoreboardModeId;
   score: number;
   streak: number;
   createdAt: number;
@@ -21,6 +23,7 @@ export type ScoreEntry = {
 export type RecordScoreInput = {
   nick: string;
   language?: PlayerLanguage;
+  modeId?: ScoreboardModeId;
   score: number;
   streak?: number;
   createdAt?: number;
@@ -52,6 +55,7 @@ export type StoredScore = {
   clientId?: string;
   nick: string;
   language: PlayerLanguage;
+  modeId: ScoreboardModeId;
   score: number;
   streak: number;
   createdAt: number;
@@ -62,6 +66,7 @@ export type RemoteScore = {
   id: string;
   nick: string;
   language?: PlayerLanguage;
+  modeId?: ScoreboardModeId;
   score: number;
   streak?: number;
   createdAt: number;

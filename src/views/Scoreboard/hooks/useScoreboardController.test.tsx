@@ -81,6 +81,7 @@ describe("useScoreboardController", () => {
         {
           id: "1",
           nick: "Ana",
+          modeId: "classic",
           score: 120,
           streak: 4,
           createdAt: Date.UTC(2026, 2, 1),
@@ -93,6 +94,7 @@ describe("useScoreboardController", () => {
       currentClientEntry: {
         id: "me",
         nick: "Player",
+        modeId: "classic",
         score: 98,
         streak: 3,
         createdAt: Date.UTC(2026, 2, 2),
@@ -124,6 +126,35 @@ describe("useScoreboardController", () => {
     expect(result.current.scores).toHaveLength(2);
     expect(result.current.scores[0].displayRank).toBe(1);
     expect(result.current.scores[1].isPinnedCurrentClient).toBe(true);
+  });
+
+  it("requests top scores for the selected mode", async () => {
+    const listTopScores = vi.fn().mockResolvedValue({
+      scores: [],
+      source: "local",
+      currentClientRank: null,
+      currentClientEntry: null,
+    });
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        scoreClient: createMockScoreClient(listTopScores),
+      }),
+    );
+    const scoreboardWrapper = createScoreboardWrapper(wrapper);
+
+    renderHook(() => useScoreboardController("lightning"), {
+      wrapper: scoreboardWrapper,
+    });
+
+    await waitFor(() => {
+      expect(listTopScores).toHaveBeenCalledWith(
+        expect.any(Number),
+        "en",
+        "lightning",
+      );
+    });
   });
 
   it("surfaces query error messages", async () => {

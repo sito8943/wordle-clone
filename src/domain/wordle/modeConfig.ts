@@ -1,11 +1,16 @@
 import { CLASSIC_ROUND_CONFIG, resolveBoardRoundConfig } from "./roundConfig";
-import type { BoardRoundConfig, WordleModeId } from "./types";
+import type { BoardRoundConfig, ScoreboardModeId, WordleModeId } from "./types";
 
 export const WORDLE_MODE_IDS = {
   CLASSIC: "classic",
   LIGHTNING: "lightning",
   ZEN: "zen",
   DAILY: "daily",
+} as const;
+
+export const SCOREBOARD_MODE_IDS = {
+  CLASSIC: WORDLE_MODE_IDS.CLASSIC,
+  LIGHTNING: WORDLE_MODE_IDS.LIGHTNING,
 } as const;
 
 const ROUND_CONFIG_BY_MODE: Record<WordleModeId, Partial<BoardRoundConfig>> = {
@@ -28,8 +33,17 @@ const isWordleModeId = (value: unknown): value is WordleModeId =>
   value === WORDLE_MODE_IDS.ZEN ||
   value === WORDLE_MODE_IDS.DAILY;
 
+const isScoreboardModeId = (value: unknown): value is ScoreboardModeId =>
+  value === SCOREBOARD_MODE_IDS.CLASSIC ||
+  value === SCOREBOARD_MODE_IDS.LIGHTNING;
+
 export const resolveWordleModeId = (value?: string | null): WordleModeId =>
   isWordleModeId(value) ? value : WORDLE_MODE_IDS.CLASSIC;
+
+export const resolveScoreboardModeId = (
+  value?: string | null,
+): ScoreboardModeId =>
+  isScoreboardModeId(value) ? value : SCOREBOARD_MODE_IDS.CLASSIC;
 
 export const isWordleModeEnabled = (modeId: WordleModeId): boolean =>
   MODE_RULES_ENABLED_BY_ID[modeId];

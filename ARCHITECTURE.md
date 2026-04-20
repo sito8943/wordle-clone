@@ -170,10 +170,11 @@ This is an evolution of the current layered architecture, not a replacement for 
   - It also stores the selected `language` (`en` or `es`) used by i18n and scoreboard segmentation.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - The gameplay dictionary language is fixed to Spanish (`es`) in frontend game flow.
-- `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp) for offline remote synchronization.
+- `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp), each event scoped to a scoreboard mode (`classic` or `lightning`) for offline remote synchronization.
 - `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions to store completed rounds count, won rounds count, and consecutive wins count for the current UTC date.
 - `wordle:weekly-challenges:round-tracker:<playerCode>`: per-player weekly round tracker used by weekly challenge conditions to store completed rounds count, won rounds count, and lost rounds count for the current UTC week (Monday-start, UTC).
 - `wordle:dictionary:es`: cached dictionary words.
+- `wordle:scoreboard:cache` and `wordle:scoreboard:pending`: local scoreboard caches segmented by `language` and `modeId` (`classic` or `lightning`).
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.
 - `wordle:app-version`: last frontend app version seen by this browser, used to detect newer releases and show changelog/version-history dialog from the shared `View` layout (available on any route).
@@ -190,7 +191,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations, keeps local score as cache, and syncs confirmed victories through the offline event queue
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
-4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible, scoped to the active player language.
+4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible, scoped to the active player language and scoreboard mode (`classic` / `lightning`).
 5. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
 
 ## Testing Layout

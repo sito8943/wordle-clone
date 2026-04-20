@@ -217,6 +217,7 @@ describe("usePlayController", () => {
       getTotalPointsForWin(3, 2, 2),
       undefined,
       1_000,
+      WORDLE_MODE_IDS.CLASSIC,
     );
   });
 
@@ -666,6 +667,7 @@ describe("usePlayController", () => {
       getTotalPointsForWin(4, 3.2, 2),
       undefined,
       1_000,
+      WORDLE_MODE_IDS.CLASSIC,
     );
   });
 
@@ -757,6 +759,7 @@ describe("usePlayController", () => {
       getTotalPointsForWin(3, 7, 2, 2),
       undefined,
       1_000,
+      WORDLE_MODE_IDS.CLASSIC,
     );
     expect(result.current.victoryScoreSummary?.total).toBe(
       getTotalPointsForWin(3, 7, 2, 2),
@@ -802,6 +805,7 @@ describe("usePlayController", () => {
       getTotalPointsForWin(3, 2, 2, 2),
       undefined,
       1_000,
+      WORDLE_MODE_IDS.LIGHTNING,
     );
     expect(result.current.victoryScoreSummary?.items).toEqual(
       expect.arrayContaining([{ key: "time", value: 2 }]),

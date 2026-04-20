@@ -28,9 +28,13 @@ const normalizeStreak = (value: number | undefined): number =>
   Math.max(0, Math.floor(value ?? 0));
 
 type SupportedLanguage = "en" | "es";
+type SupportedMode = "classic" | "lightning";
 
 const normalizeLanguage = (value?: string): SupportedLanguage =>
   value === "es" ? "es" : "en";
+
+const normalizeModeId = (value?: string): SupportedMode =>
+  value === "lightning" ? "lightning" : "classic";
 
 const normalizeDifficulty = (value?: string): string =>
   value === "easy" ||
@@ -93,6 +97,15 @@ type ScoreRecord = {
   scoreByLanguage?: Partial<Record<SupportedLanguage, number>>;
   streakByLanguage?: Partial<Record<SupportedLanguage, number>>;
   createdAtByLanguage?: Partial<Record<SupportedLanguage, number>>;
+  scoreByLanguageAndMode?: Partial<
+    Record<SupportedLanguage, Partial<Record<SupportedMode, number>>>
+  >;
+  streakByLanguageAndMode?: Partial<
+    Record<SupportedLanguage, Partial<Record<SupportedMode, number>>>
+  >;
+  createdAtByLanguageAndMode?: Partial<
+    Record<SupportedLanguage, Partial<Record<SupportedMode, number>>>
+  >;
   difficulty?: string;
   keyboardPreference?: string;
   createdAt: number;
@@ -104,6 +117,7 @@ type ScoreEventRecord = {
   eventId: string;
   kind: string;
   pointsDelta?: number;
+  modeId?: string;
   happenedAt: number;
   createdAt: number;
 };
@@ -205,6 +219,112 @@ const withLanguageStats = (
   };
 };
 
+const getModeStats = (
+  record: ScoreRecord,
+  language: SupportedLanguage,
+  modeId: SupportedMode,
+): LanguageStats => {
+  const languageStats = getLanguageStats(record, language);
+  const scoreByMode = record.scoreByLanguageAndMode?.[language];
+  const streakByMode = record.streakByLanguageAndMode?.[language];
+  const createdAtByMode = record.createdAtByLanguageAndMode?.[language];
+
+  return {
+    score:
+      typeof scoreByMode?.[modeId] === "number"
+        ? normalizeScore(scoreByMode[modeId] as number)
+        : modeId === "classic"
+          ? languageStats.score
+          : 0,
+    streak:
+      typeof streakByMode?.[modeId] === "number"
+        ? normalizeStreak(streakByMode[modeId] as number)
+        : modeId === "classic"
+          ? languageStats.streak
+          : 0,
+    createdAt:
+      typeof createdAtByMode?.[modeId] === "number"
+        ? Math.floor(createdAtByMode[modeId] as number)
+        : modeId === "classic"
+          ? languageStats.createdAt
+          : 0,
+  };
+};
+
+const hasModeStats = (
+  record: ScoreRecord,
+  language: SupportedLanguage,
+  modeId: SupportedMode,
+): boolean => {
+  if (modeId === "classic") {
+    return true;
+  }
+
+  return (
+    typeof record.scoreByLanguageAndMode?.[language]?.[modeId] === "number" ||
+    typeof record.streakByLanguageAndMode?.[language]?.[modeId] === "number" ||
+    typeof record.createdAtByLanguageAndMode?.[language]?.[modeId] === "number"
+  );
+};
+
+const withModeStats = (
+  record: ScoreRecord,
+  language: SupportedLanguage,
+  modeId: SupportedMode,
+  stats: LanguageStats,
+) => {
+  const nextScoreByLanguageAndMode = {
+    ...(record.scoreByLanguageAndMode ?? {}),
+  } as Partial<
+    Record<SupportedLanguage, Partial<Record<SupportedMode, number>>>
+  >;
+  const nextStreakByLanguageAndMode = {
+    ...(record.streakByLanguageAndMode ?? {}),
+  } as Partial<
+    Record<SupportedLanguage, Partial<Record<SupportedMode, number>>>
+  >;
+  const nextCreatedAtByLanguageAndMode = {
+    ...(record.createdAtByLanguageAndMode ?? {}),
+  } as Partial<
+    Record<SupportedLanguage, Partial<Record<SupportedMode, number>>>
+  >;
+
+  const currentLanguageScores = {
+    ...(nextScoreByLanguageAndMode[language] ?? {}),
+  };
+  const currentLanguageStreaks = {
+    ...(nextStreakByLanguageAndMode[language] ?? {}),
+  };
+  const currentLanguageCreatedAt = {
+    ...(nextCreatedAtByLanguageAndMode[language] ?? {}),
+  };
+  const languageStats = getLanguageStats(record, language);
+
+  if (currentLanguageScores.classic === undefined) {
+    currentLanguageScores.classic = languageStats.score;
+  }
+  if (currentLanguageStreaks.classic === undefined) {
+    currentLanguageStreaks.classic = languageStats.streak;
+  }
+  if (currentLanguageCreatedAt.classic === undefined) {
+    currentLanguageCreatedAt.classic = languageStats.createdAt;
+  }
+
+  currentLanguageScores[modeId] = normalizeScore(stats.score);
+  currentLanguageStreaks[modeId] = normalizeStreak(stats.streak);
+  currentLanguageCreatedAt[modeId] = Math.floor(stats.createdAt);
+
+  nextScoreByLanguageAndMode[language] = currentLanguageScores;
+  nextStreakByLanguageAndMode[language] = currentLanguageStreaks;
+  nextCreatedAtByLanguageAndMode[language] = currentLanguageCreatedAt;
+
+  return {
+    scoreByLanguageAndMode: nextScoreByLanguageAndMode,
+    streakByLanguageAndMode: nextStreakByLanguageAndMode,
+    createdAtByLanguageAndMode: nextCreatedAtByLanguageAndMode,
+  };
+};
+
 const hasNickConflict = (
   scores: ScoreRecord[],
   normalizedNick: string,
@@ -267,12 +387,14 @@ const roundSyncEventValidator = v.union(
     id: v.string(),
     kind: v.literal("win"),
     pointsDelta: v.number(),
+    modeId: v.optional(v.string()),
     happenedAt: v.number(),
     version: v.number(),
   }),
   v.object({
     id: v.string(),
     kind: v.literal("loss"),
+    modeId: v.optional(v.string()),
     happenedAt: v.number(),
     version: v.number(),
   }),
@@ -444,6 +566,7 @@ const upsertScoreRecord = async (
     clientRecordId?: string;
     nick: string;
     language?: string;
+    modeId?: string;
     score: number;
     streak?: number;
     createdAt?: number;
@@ -452,6 +575,7 @@ const upsertScoreRecord = async (
 ) => {
   const nick = normalizeNick(args.nick);
   const language = normalizeLanguage(args.language);
+  const modeId = normalizeModeId(args.modeId);
   const score = normalizeScore(args.score);
   const streak = normalizeStreak(args.streak);
   const createdAt = args.createdAt ?? Date.now();
@@ -471,22 +595,36 @@ const upsertScoreRecord = async (
 
   if (existing) {
     const existingLanguageStats = getLanguageStats(existing, language);
-    const nextScore = overwriteExisting
+    const existingModeStats = getModeStats(existing, language, modeId);
+    const nextLanguageScore = overwriteExisting
       ? score
       : Math.max(existingLanguageStats.score, score);
-    const nextCreatedAt = overwriteExisting
+    const nextLanguageCreatedAt = overwriteExisting
       ? createdAt
-      : nextScore > existingLanguageStats.score
+      : nextLanguageScore > existingLanguageStats.score
         ? createdAt
         : existingLanguageStats.createdAt;
+    const nextModeScore = overwriteExisting
+      ? score
+      : Math.max(existingModeStats.score, score);
+    const nextModeCreatedAt = overwriteExisting
+      ? createdAt
+      : nextModeScore > existingModeStats.score
+        ? createdAt
+        : existingModeStats.createdAt;
     const nextPatch = {
       clientId: args.clientId ?? existing.clientId,
       clientRecordId: args.clientRecordId ?? existing.clientRecordId,
       nick,
       ...withLanguageStats(existing, language, {
-        score: nextScore,
+        score: nextLanguageScore,
         streak,
-        createdAt: nextCreatedAt,
+        createdAt: nextLanguageCreatedAt,
+      }),
+      ...withModeStats(existing, language, modeId, {
+        score: nextModeScore,
+        streak,
+        createdAt: nextModeCreatedAt,
       }),
     };
 
@@ -496,7 +634,13 @@ const upsertScoreRecord = async (
       existing.nick !== nextPatch.nick ||
       existing.score !== nextPatch.score ||
       (existing.streak ?? 0) !== nextPatch.streak ||
-      existing.createdAt !== nextPatch.createdAt
+      existing.createdAt !== nextPatch.createdAt ||
+      existing.scoreByLanguageAndMode?.[language]?.[modeId] !==
+        nextPatch.scoreByLanguageAndMode?.[language]?.[modeId] ||
+      existing.streakByLanguageAndMode?.[language]?.[modeId] !==
+        nextPatch.streakByLanguageAndMode?.[language]?.[modeId] ||
+      existing.createdAtByLanguageAndMode?.[language]?.[modeId] !==
+        nextPatch.createdAtByLanguageAndMode?.[language]?.[modeId]
     ) {
       await ctx.db.patch(existing._id, nextPatch);
     }
@@ -519,6 +663,18 @@ const upsertScoreRecord = async (
       language,
       { score, streak, createdAt },
     ),
+    ...withModeStats(
+      {
+        _id: "",
+        nick,
+        score: 0,
+        streak: 0,
+        createdAt,
+      },
+      language,
+      modeId,
+      { score, streak, createdAt },
+    ),
     difficulty: DEFAULT_DIFFICULTY,
     keyboardPreference: DEFAULT_KEYBOARD_PREFERENCE,
   });
@@ -530,6 +686,7 @@ export const addScore = mutation({
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
     language: v.optional(v.string()),
+    modeId: v.optional(v.string()),
     score: v.number(),
     streak: v.optional(v.number()),
     createdAt: v.optional(v.number()),
@@ -543,6 +700,7 @@ export const updateScore = mutation({
     clientRecordId: v.optional(v.string()),
     nick: v.string(),
     language: v.optional(v.string()),
+    modeId: v.optional(v.string()),
     score: v.number(),
     streak: v.optional(v.number()),
     createdAt: v.optional(v.number()),
@@ -629,6 +787,7 @@ export const syncRoundEvents = mutation({
   },
   handler: async (ctx, args) => {
     const language = normalizeLanguage(args.language);
+    const modeIds: SupportedMode[] = ["classic", "lightning"];
     const orderedEvents = [...args.events]
       .filter((event) => event.version === 2)
       .sort((left, right) => left.happenedAt - right.happenedAt);
@@ -646,6 +805,17 @@ export const syncRoundEvents = mutation({
     let nextScore = normalizeScore(profileLanguageStats.score);
     let nextStreak = normalizeStreak(profileLanguageStats.streak);
     let nextCreatedAt = profileLanguageStats.createdAt;
+    const modeStatsById = modeIds.reduce<Record<SupportedMode, LanguageStats>>(
+      (accumulator, modeId) => {
+        accumulator[modeId] = getModeStats(profile, language, modeId);
+        return accumulator;
+      },
+      {
+        classic: { score: 0, streak: 0, createdAt: profile.createdAt },
+        lightning: { score: 0, streak: 0, createdAt: profile.createdAt },
+      },
+    );
+    const touchedModeIds = new Set<SupportedMode>();
     let hasChanges = false;
 
     for (const event of orderedEvents) {
@@ -658,22 +828,30 @@ export const syncRoundEvents = mutation({
         continue;
       }
 
+      const modeId = normalizeModeId(event.modeId);
+      const modeStats = modeStatsById[modeId];
+
       if (event.kind === "win") {
-        nextScore = normalizeScore(
-          nextScore + normalizeScore(event.pointsDelta),
-        );
+        const pointsDelta = normalizeScore(event.pointsDelta);
+        nextScore = normalizeScore(nextScore + pointsDelta);
         nextStreak += 1;
+        modeStats.score = normalizeScore(modeStats.score + pointsDelta);
+        modeStats.streak += 1;
       } else {
         nextStreak = 0;
+        modeStats.streak = 0;
       }
 
       nextCreatedAt = Math.max(nextCreatedAt, event.happenedAt);
+      modeStats.createdAt = Math.max(modeStats.createdAt, event.happenedAt);
+      touchedModeIds.add(modeId);
       hasChanges = true;
 
       await ctx.db.insert("scoreEvents", {
         profileId: profile._id,
         eventId: event.id,
         kind: event.kind,
+        modeId,
         pointsDelta:
           event.kind === "win" ? normalizeScore(event.pointsDelta) : undefined,
         happenedAt: event.happenedAt,
@@ -681,25 +859,46 @@ export const syncRoundEvents = mutation({
       });
     }
 
-    if (hasChanges) {
-      const nextStats = withLanguageStats(profile, language, {
+    let nextPatch: Partial<ScoreRecord> = {
+      ...withLanguageStats(profile, language, {
         score: nextScore,
         streak: nextStreak,
         createdAt: nextCreatedAt,
-      });
-      await ctx.db.patch(profile._id, {
-        ...nextStats,
-      });
+      }),
+    };
+
+    let patchSource: ScoreRecord = {
+      ...profile,
+      ...nextPatch,
+    } as ScoreRecord;
+
+    const modeIdsToPatch = hasChanges ? [...touchedModeIds] : modeIds;
+
+    for (const modeId of modeIdsToPatch) {
+      const modePatch = withModeStats(
+        patchSource,
+        language,
+        modeId,
+        modeStatsById[modeId],
+      );
+      nextPatch = {
+        ...nextPatch,
+        ...modePatch,
+      };
+      patchSource = {
+        ...patchSource,
+        ...modePatch,
+      };
+    }
+
+    if (hasChanges) {
+      await ctx.db.patch(profile._id, nextPatch);
     }
 
     return buildPlayerProfile(
       {
         ...profile,
-        ...withLanguageStats(profile, language, {
-          score: nextScore,
-          streak: nextStreak,
-          createdAt: nextCreatedAt,
-        }),
+        ...nextPatch,
       },
       language,
     );
@@ -763,11 +962,13 @@ export const listTopScores = query({
   args: {
     limit: v.optional(v.number()),
     language: v.optional(v.string()),
+    modeId: v.optional(v.string()),
     clientId: v.optional(v.string()),
     clientRecordId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const language = normalizeLanguage(args.language);
+    const modeId = normalizeModeId(args.modeId);
     const limit = Math.max(
       1,
       Math.min(MAX_LIMIT, Math.floor(args.limit ?? DEFAULT_LIMIT)),
@@ -777,10 +978,16 @@ export const listTopScores = query({
     const byNick = new Map<string, ScoreRecord>();
 
     for (const entry of scores) {
+      if (!hasModeStats(entry, language, modeId)) {
+        continue;
+      }
+
       const key = nickKey(entry.nick);
       const current = byNick.get(key);
-      const entryStats = getLanguageStats(entry, language);
-      const currentStats = current ? getLanguageStats(current, language) : null;
+      const entryStats = getModeStats(entry, language, modeId);
+      const currentStats = current
+        ? getModeStats(current, language, modeId)
+        : null;
 
       if (
         !current ||
@@ -797,8 +1004,8 @@ export const listTopScores = query({
     }
 
     const sortedScores = [...byNick.values()].sort((left, right) => {
-      const leftStats = getLanguageStats(left, language);
-      const rightStats = getLanguageStats(right, language);
+      const leftStats = getModeStats(left, language, modeId);
+      const rightStats = getModeStats(right, language, modeId);
       return scoreSorter(
         { score: leftStats.score, createdAt: leftStats.createdAt },
         { score: rightStats.score, createdAt: rightStats.createdAt },
@@ -820,11 +1027,12 @@ export const listTopScores = query({
       currentClientIndex >= 0 ? sortedScores[currentClientIndex] : null;
 
     const mappedTopScores = sortedScores.slice(0, limit).map((score) => {
-      const stats = getLanguageStats(score, language);
+      const stats = getModeStats(score, language, modeId);
       return {
         id: score._id,
         nick: score.nick,
         language,
+        modeId,
         score: stats.score,
         streak: normalizeStreak(stats.streak),
         createdAt: stats.createdAt,
@@ -841,11 +1049,12 @@ export const listTopScores = query({
         currentClientIndex >= 0 ? currentClientIndex + 1 : null,
       currentClientEntry: currentClientScore
         ? (() => {
-            const stats = getLanguageStats(currentClientScore, language);
+            const stats = getModeStats(currentClientScore, language, modeId);
             return {
               id: currentClientScore._id,
               nick: currentClientScore.nick,
               language,
+              modeId,
               score: stats.score,
               streak: normalizeStreak(stats.streak),
               createdAt: stats.createdAt,
