@@ -16,13 +16,8 @@ import {
   HOME_NAV_ITEMS_ENTRY_STAGGER_DELAY_MS,
 } from "./constants";
 import { env } from "@config/env";
-import { getModeRoute, ROUTES } from "@config/routes";
+import { ROUTES } from "@config/routes";
 import { faPaypal } from "@fortawesome/free-brands-svg-icons";
-import {
-  readCurrentWordleModeId,
-  resolvePlayableWordleModeId,
-  WORDLE_MODE_IDS,
-} from "@domain/wordle";
 import {
   hasSeenEntryAnimationInSession,
   markEntryAnimationAsSeenInSession,
@@ -56,19 +51,13 @@ const Home = () => {
     };
   }, [shouldAnimateEntry]);
 
-  const playModeId = resolvePlayableWordleModeId(readCurrentWordleModeId());
-  const resolvedPlayModeId =
-    playModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled
-      ? WORDLE_MODE_IDS.CLASSIC
-      : playModeId;
-  const playRoute = getModeRoute(resolvedPlayModeId);
   const links = useMemo(
     (): HomeNavigationLink[] => [
-      { to: playRoute, label: t("nav.play"), icon: faPlayCircle },
+      { to: ROUTES.PLAY, label: t("nav.play"), icon: faPlayCircle },
       { to: ROUTES.SETTINGS, label: t("profile.settingsTitle"), icon: faGear },
       { to: ROUTES.SCOREBOARD, label: t("nav.scoreboard"), icon: faTrophy },
     ],
-    [playRoute, t],
+    [t],
   );
 
   const getItemTransitionDelay = (index: number) =>
