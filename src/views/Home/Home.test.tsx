@@ -2,11 +2,6 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
-import { ROUTES } from "@config/routes";
-import {
-  CURRENT_WORDLE_MODE_STORAGE_KEY,
-  WORDLE_MODE_IDS,
-} from "@domain/wordle";
 import Home from "./Home";
 import {
   HOME_ENTRY_ANIMATION_SESSION_KEY,
