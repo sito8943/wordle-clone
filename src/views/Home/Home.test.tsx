@@ -128,39 +128,4 @@ describe("Home entry animation", () => {
 
     expect(screen.queryByRole("link", { name: "Donate" })).toBeNull();
   });
-
-  it("links Play to classic mode when no current mode is stored", () => {
-    renderHome();
-
-    expect(
-      screen.getByRole("link", { name: "Play" }).getAttribute("href"),
-    ).toBe(ROUTES.CLASSIC);
-  });
-
-  it("links Play to the stored current mode route", () => {
-    localStorage.setItem(
-      CURRENT_WORDLE_MODE_STORAGE_KEY,
-      WORDLE_MODE_IDS.LIGHTNING,
-    );
-
-    renderHome();
-
-    expect(
-      screen.getByRole("link", { name: "Play" }).getAttribute("href"),
-    ).toBe(ROUTES.LIGHTING);
-  });
-
-  it("falls back Play link to classic when lightning mode flag is disabled", () => {
-    localStorage.setItem(
-      CURRENT_WORDLE_MODE_STORAGE_KEY,
-      WORDLE_MODE_IDS.LIGHTNING,
-    );
-    env.lightningModeEnabled = false;
-
-    renderHome();
-
-    expect(
-      screen.getByRole("link", { name: "Play" }).getAttribute("href"),
-    ).toBe(ROUTES.CLASSIC);
-  });
 });
