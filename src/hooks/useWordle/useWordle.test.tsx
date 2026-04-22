@@ -6,10 +6,12 @@ import {
   WORDS_DEFAULT_LANGUAGE,
 } from "@api/words";
 import { env } from "@config";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { i18n } from "@i18n";
 import useWordle from "./useWordle";
 import {
   createHookWrapper,
+  createMockDailyWordClient,
   createMockWordDictionaryClient,
   createTestApiContextValue,
   createTestQueryClient,
@@ -512,5 +514,72 @@ describe("useWordle dictionary query integration", () => {
     });
 
     expect(result.current.showDictionaryChecksumDialog).toBe(false);
+  });
+
+  it("uses daily word client in daily mode and adapts row length", async () => {
+    const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "puente"]);
+    const getDailyWord = vi.fn().mockResolvedValue("PUENTE");
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+        dailyWordClient: createMockDailyWordClient(getDailyWord),
+      }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useWordle({
+          modeId: WORDLE_MODE_IDS.DAILY,
+        }),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.dictionaryLoading).toBe(false);
+    });
+
+    await waitFor(() => {
+      expect(result.current.roundConfig.lettersPerRow).toBe(6);
+    });
+
+    expect(result.current.answer).toBe("PUENTE");
+    expect(getDailyWord).toHaveBeenCalledOnce();
+  });
+
+  it("falls back to deterministic dictionary word when remote daily word is invalid", async () => {
+    const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "mar"]);
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+        dailyWordClient: createMockDailyWordClient(
+          vi.fn().mockResolvedValue("INEXISTENTE"),
+        ),
+      }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useWordle({
+          modeId: WORDLE_MODE_IDS.DAILY,
+        }),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.dictionaryLoading).toBe(false);
+    });
+
+    await waitFor(() => {
+      expect(["CASA", "LUZ", "MAR"]).toContain(result.current.answer);
+    });
+
+    expect(result.current.answer).not.toBe("INEXISTENTE");
+    expect(result.current.roundConfig.lettersPerRow).toBe(
+      result.current.answer.length,
+    );
   });
 });

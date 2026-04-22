@@ -65,3 +65,9 @@ export type RoundSyncEvent =
       happenedAt: number;
       version: 2;
     };
+
+export type ResolveDailyAnswerInput = {
+  words: string[];
+  date?: string | null;
+  remoteDailyWord?: string | null;
+};

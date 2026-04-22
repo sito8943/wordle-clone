@@ -184,3 +184,5 @@ Estado: [~] En progreso
 
 1. Cerrar reglas de `zen` (no-lose, infinite rows, infinite green hints, score neutral).
 2. Cerrar reglas de `daily` (palabra diaria, longitud variable).
+   - Fuente remota acordada: RAE API (`https://rae-api.com/api/daily`), con cache local por fecha UTC.
+   - Fallback obligatorio: palabra determinista derivada del diccionario local cuando falle la API o la palabra remota no exista en el diccionario de juego.

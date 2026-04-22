@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { ApiProvider } from "./index";
 import { useApi } from "./useApi";
+import { DailyWordClient } from "@api/dailyWord";
 import { ScoreClient } from "@api/score";
 import { WordDictionaryClient } from "@api/words";
 
@@ -21,6 +22,11 @@ describe("ApiProvider", () => {
     expect(result.current.wordDictionaryClient).toBeInstanceOf(
       WordDictionaryClient,
     );
+  });
+
+  it("provides a DailyWordClient instance", () => {
+    const { result } = renderHook(() => useApi(), { wrapper });
+    expect(result.current.dailyWordClient).toBeInstanceOf(DailyWordClient);
   });
 
   it("exposes convexEnabled as a boolean", () => {
@@ -44,6 +50,7 @@ describe("ApiProvider", () => {
     expect(result.current.wordDictionaryClient).toBe(
       first.wordDictionaryClient,
     );
+    expect(result.current.dailyWordClient).toBe(first.dailyWordClient);
   });
 });
 

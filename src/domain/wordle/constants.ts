@@ -39,3 +39,6 @@ export const KEY_STATUS_PRIORITY: TileStatus[] = [
   "present",
   "absent",
 ];
+
+export const DAILY_WORD_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+export const DAILY_WORD_FALLBACK = "PERRO";

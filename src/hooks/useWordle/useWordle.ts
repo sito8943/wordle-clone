@@ -3,6 +3,7 @@ import {
   addLetter,
   applyGuess,
   createInitialGameState,
+  getTodayDateUTC,
   getOrCreateSessionId,
   hasInProgressGame,
   isLetterKey,
@@ -12,10 +13,12 @@ import {
   readPersistedGameState,
   removeLetterAt,
   resolveAnswerFromGameReference,
+  resolveDailyAnswer,
   removeLetter,
   setLetterAt,
   shouldAskToResume,
   resolveBoardRoundConfig,
+  WORDLE_MODE_IDS,
   type PersistedGameState,
   validateGuessInput,
 } from "@domain/wordle";
@@ -27,6 +30,7 @@ import {
   loadWordDictionaryFromCache,
   setWordDictionary,
 } from "@utils/words";
+import { useApi } from "@providers";
 import { useSound } from "@providers/Sound";
 import { useAnimationsPreference } from "../useAnimationsPreference";
 import {
@@ -57,7 +61,11 @@ export default function useWordle(options: UseWordleOptions = {}) {
     roundConfig,
     modeId,
   } = options;
-  const resolvedRoundConfig = useMemo(
+  const { dailyWordClient } = useApi();
+  const dailyModeActive = modeId === WORDLE_MODE_IDS.DAILY;
+  const dailyDate = useMemo(getTodayDateUTC, []);
+  const [remoteDailyWord, setRemoteDailyWord] = useState<string | null>(null);
+  const baseRoundConfig = useMemo(
     () => resolveBoardRoundConfig(roundConfig),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [roundConfig?.lettersPerRow, roundConfig?.maxGuesses],
@@ -68,7 +76,29 @@ export default function useWordle(options: UseWordleOptions = {}) {
   );
   const { playSound } = useSound();
   const currentSessionId = useMemo(getOrCreateSessionId, []);
-  const initialAnswer = useMemo(getRandomWord, []);
+  const initialAnswer = useMemo(
+    () =>
+      dailyModeActive
+        ? resolveDailyAnswer({
+            words: cachedWords,
+            date: dailyDate,
+          })
+        : getRandomWord(),
+    [cachedWords, dailyDate, dailyModeActive],
+  );
+  const [dailyLettersPerRow, setDailyLettersPerRow] = useState(
+    () => initialAnswer.length,
+  );
+  const resolvedRoundConfig = useMemo(
+    () =>
+      dailyModeActive
+        ? resolveBoardRoundConfig({
+            ...baseRoundConfig,
+            lettersPerRow: dailyLettersPerRow,
+          })
+        : baseRoundConfig,
+    [baseRoundConfig, dailyLettersPerRow, dailyModeActive],
+  );
   const initialGameState = useMemo(
     () =>
       normalizePersistedGameState(
@@ -116,6 +146,17 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const previousLanguageRef = useRef(language);
   const previousRoundConfigRef = useRef(resolvedRoundConfig);
 
+  useEffect(() => {
+    if (!dailyModeActive) {
+      return;
+    }
+
+    const initialLettersPerRow = Math.max(1, initialAnswer.length);
+    setDailyLettersPerRow((previous) =>
+      previous === initialLettersPerRow ? previous : initialLettersPerRow,
+    );
+  }, [dailyModeActive, initialAnswer.length]);
+
   const handleDictionaryChecksumMismatch = useCallback(() => {
     const latestState = latestGameStateRef.current;
     const activeGame = !latestState.gameOver && hasInProgressGame(latestState);
@@ -143,6 +184,40 @@ export default function useWordle(options: UseWordleOptions = {}) {
         : null,
     [dictionaryLoading, dictionaryWords.length],
   );
+  const resolvedDailyAnswer = useMemo(() => {
+    if (!dailyModeActive) {
+      return null;
+    }
+
+    return resolveDailyAnswer({
+      words: dictionaryWords,
+      date: dailyDate,
+      remoteDailyWord,
+    });
+  }, [dailyDate, dailyModeActive, dictionaryWords, remoteDailyWord]);
+
+  useEffect(() => {
+    if (!dailyModeActive) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void dailyWordClient
+      .getDailyWord(dailyDate)
+      .then((dailyWord) => {
+        if (cancelled || !dailyWord) {
+          return;
+        }
+
+        setRemoteDailyWord(dailyWord);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dailyDate, dailyModeActive, dailyWordClient]);
 
   const { sessionId, gameId, answer, startedAt, guesses, current, gameOver } =
     gameState;
@@ -219,6 +294,43 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [gameState]);
 
   useEffect(() => {
+    if (!dailyModeActive || !resolvedDailyAnswer) {
+      return;
+    }
+
+    const nextLettersPerRow = Math.max(1, resolvedDailyAnswer.length);
+    setDailyLettersPerRow((previous) =>
+      previous === nextLettersPerRow ? previous : nextLettersPerRow,
+    );
+  }, [dailyModeActive, resolvedDailyAnswer]);
+
+  useEffect(() => {
+    if (!dailyModeActive || !resolvedDailyAnswer) {
+      return;
+    }
+
+    setGameStateWithPersistence(
+      (previous) => {
+        if (hasInProgressGame(previous) || previous.gameOver) {
+          return previous;
+        }
+
+        if (previous.answer === resolvedDailyAnswer) {
+          return previous;
+        }
+
+        return createInitialGameState(currentSessionId, resolvedDailyAnswer);
+      },
+      "immediate",
+    );
+  }, [
+    currentSessionId,
+    dailyModeActive,
+    resolvedDailyAnswer,
+    setGameStateWithPersistence,
+  ]);
+
+  useEffect(() => {
     if (dictionaryWords.length === 0) {
       return;
     }
@@ -260,9 +372,24 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return previous;
       }
 
-      return createInitialGameState(currentSessionId, getRandomWord());
+      const nextAnswer = dailyModeActive
+        ? resolveDailyAnswer({
+            words: dictionaryWords,
+            date: dailyDate,
+            remoteDailyWord,
+          })
+        : getRandomWord();
+
+      return createInitialGameState(currentSessionId, nextAnswer);
     });
-  }, [currentSessionId, dictionaryLoading, dictionaryWords]);
+  }, [
+    currentSessionId,
+    dailyDate,
+    dailyModeActive,
+    dictionaryLoading,
+    dictionaryWords,
+    remoteDailyWord,
+  ]);
 
   useEffect(() => {
     if (shouldAskToResume(gameState, currentSessionId)) {
@@ -598,9 +725,21 @@ export default function useWordle(options: UseWordleOptions = {}) {
     setShowDictionaryChecksumDialog(false);
   }, []);
 
+  const resolveNextBoardAnswer = useCallback(() => {
+    if (!dailyModeActive) {
+      return getRandomWord();
+    }
+
+    return resolveDailyAnswer({
+      words: dictionaryWords,
+      date: dailyDate,
+      remoteDailyWord,
+    });
+  }, [dailyDate, dailyModeActive, dictionaryWords, remoteDailyWord]);
+
   const resetBoard = useCallback(() => {
     setGameStateWithPersistence(
-      () => createInitialGameState(currentSessionId, getRandomWord()),
+      () => createInitialGameState(currentSessionId, resolveNextBoardAnswer()),
       "immediate",
     );
     setBoardVersion((previous) => previous + 1);
@@ -613,6 +752,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
   }, [
     currentSessionId,
     resetActiveHints,
+    resolveNextBoardAnswer,
     setGameStateWithPersistence,
     triggerStartAnimation,
   ]);

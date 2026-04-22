@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ChallengeClient } from "@api/challenges";
 import { ConvexGateway } from "@api/convex/ConvexGateway";
+import { DailyWordClient } from "@api/dailyWord";
 import { ScoreClient } from "@api/score";
 import { WordDictionaryClient } from "@api/words";
 import { env } from "@config";
@@ -16,6 +17,7 @@ const ApiProvider = ({ children }: ProviderProps) => {
     () => new WordDictionaryClient(gateway),
     [gateway],
   );
+  const dailyWordClient = useMemo(() => new DailyWordClient(), []);
   const challengeClient = useMemo(
     () => new ChallengeClient(gateway),
     [gateway],
@@ -25,10 +27,17 @@ const ApiProvider = ({ children }: ProviderProps) => {
     () => ({
       scoreClient,
       wordDictionaryClient,
+      dailyWordClient,
       challengeClient,
       convexEnabled: gateway.isConfigured,
     }),
-    [scoreClient, wordDictionaryClient, challengeClient, gateway],
+    [
+      scoreClient,
+      wordDictionaryClient,
+      dailyWordClient,
+      challengeClient,
+      gateway,
+    ],
   );
 
   return (
