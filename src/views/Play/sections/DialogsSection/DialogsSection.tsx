@@ -83,6 +83,7 @@ const DialogsSection = (): JSX.Element => {
     continuePreviousBoard,
     startNewBoard,
     closeEndOfGameDialog,
+    goToPlayRoute,
     openSettingsPanel,
     cancelRefreshBoard,
     acceptTutorialPrompt,
@@ -113,6 +114,9 @@ const DialogsSection = (): JSX.Element => {
     controller.activeModeId !== WORDLE_MODE_IDS.DAILY;
   const showDefeatReplayActions =
     controller.activeModeId !== WORDLE_MODE_IDS.DAILY;
+  const closeEndOfGameDialogAction = showDefeatReplayActions
+    ? closeEndOfGameDialog
+    : goToPlayRoute;
 
   const resumeDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.RESUME,
@@ -253,7 +257,7 @@ const DialogsSection = (): JSX.Element => {
               isSharing={isSharingVictoryBoard}
               shareErrorMessage={victoryBoardShareError}
               showPlayAgainAction={showVictoryPlayAgainAction}
-              onClose={closeEndOfGameDialog}
+              onClose={closeEndOfGameDialogAction}
               onPlayAgain={startNewBoard}
               onShare={shareVictoryBoard}
             />
@@ -268,7 +272,7 @@ const DialogsSection = (): JSX.Element => {
               showChangeDifficultyAction={
                 settingsDrawerEnabled && showDefeatReplayActions
               }
-              onClose={closeEndOfGameDialog}
+              onClose={closeEndOfGameDialogAction}
               onPlayAgain={startNewBoard}
               onChangeDifficulty={changeDifficulty}
             />

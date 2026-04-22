@@ -36,6 +36,7 @@ const controllerMock = vi.hoisted(() => ({
   continuePreviousBoard: vi.fn(),
   startNewBoard: vi.fn(),
   closeEndOfGameDialog: vi.fn(),
+  goToPlayRoute: vi.fn(),
   openSettingsPanel: vi.fn(),
   cancelRefreshBoard: vi.fn(),
   acceptTutorialPrompt: vi.fn(),
