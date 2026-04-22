@@ -162,6 +162,7 @@ Feature flags (all default `true` unless noted):
 - `VITE_SETTINGS_DRAWER_ENABLED`: enables the in-game settings drawer.
 - `VITE_PLAY_OFFLINE_STATE_ENABLED` (default `false`): shows the offline state in Play view.
 - `VITE_LIGHTNING_MODE_ENABLED`: enables the lightning/insane timer mode.
+- `VITE_TIMER_AUTO_PAUSE_ENABLED` (default `false`): pauses the hard-mode timer when Play dialogs are open or the browser tab is hidden.
 - `VITE_DIFFICULTY_EASY_ENABLED` / `VITE_DIFFICULTY_NORMAL_ENABLED` / `VITE_DIFFICULTY_HARD_ENABLED` / `VITE_DIFFICULTY_INSANE_ENABLED`: individual difficulty toggles.
 
 Notes:

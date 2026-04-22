@@ -30,6 +30,7 @@ const mockUseHintController = vi.fn();
 const mockUseHardModeTimer = vi.fn();
 const mockUseSound = vi.fn();
 const mockNavigate = vi.fn();
+const defaultTimerAutoPauseEnabled = env.timerAutoPauseEnabled;
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -180,6 +181,7 @@ describe("usePlayController", () => {
       configurable: true,
       writable: true,
     });
+    env.timerAutoPauseEnabled = defaultTimerAutoPauseEnabled;
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -916,6 +918,39 @@ describe("usePlayController", () => {
     expect(mockUseHardModeTimer).toHaveBeenCalledWith(
       expect.objectContaining({
         hardModeEnabled: true,
+      }),
+    );
+  });
+
+  it("pauses hard-mode timer while play dialogs are open", () => {
+    env.timerAutoPauseEnabled = true;
+    wordleState = {
+      ...wordleState,
+      showDictionaryChecksumDialog: true,
+    };
+
+    renderHook(() => usePlayController());
+
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pauseTimer: true,
+      }),
+    );
+  });
+
+  it("keeps hard-mode timer running while dialogs are open when auto pause flag is disabled", () => {
+    env.timerAutoPauseEnabled = false;
+    wordleState = {
+      ...wordleState,
+      showDictionaryChecksumDialog: true,
+    };
+
+    renderHook(() => usePlayController());
+
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pauseTimer: false,
+        pauseWhenHidden: false,
       }),
     );
   });

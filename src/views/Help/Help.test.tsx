@@ -33,6 +33,7 @@ const featureFlagsMock: FeatureFlags = {
   challengesEnabled: true,
   settingsDrawerEnabled: true,
   lightningModeEnabled: true,
+  timerAutoPauseEnabled: true,
   difficultyEasyEnabled: true,
   difficultyNormalEnabled: true,
   difficultyHardEnabled: true,

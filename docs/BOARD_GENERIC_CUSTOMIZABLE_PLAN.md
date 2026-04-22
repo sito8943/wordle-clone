@@ -160,7 +160,7 @@ Estado: [~] En progreso
 
 ### 4.4 Diferido para 0.0.18
 
-- Pausa del timer al ocultar tab/dialogos (no implementado en 0.0.17; el timer solo se pausa por `showResumeDialog`/`gameOver` como antes).
+- Pausa del timer al ocultar tab/dialogos: [x] Implementada en 0.0.18 con `Page Visibility API` + pausa por dialogs de Play (gated por `VITE_TIMER_AUTO_PAUSE_ENABLED`, default `false`).
 - Cierre de reglas de `zen` y `daily` (siguen en placeholder).
 
 ## Definition of Done (alcance de este plan)
@@ -182,6 +182,5 @@ Estado: [~] En progreso
 
 ## Siguiente bloque recomendado (0.0.18)
 
-1. Pausa real del timer al abrir dialogos o ocultar la pestana (Page Visibility API).
-2. Cerrar reglas de `zen` (no-lose, infinite rows, infinite green hints, score neutral).
-3. Cerrar reglas de `daily` (palabra diaria, longitud variable).
+1. Cerrar reglas de `zen` (no-lose, infinite rows, infinite green hints, score neutral).
+2. Cerrar reglas de `daily` (palabra diaria, longitud variable).

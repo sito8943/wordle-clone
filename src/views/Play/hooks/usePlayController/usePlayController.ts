@@ -79,7 +79,8 @@ export default function usePlayController(
     updatePlayerDifficulty,
     updatePlayerManualTileSelection,
   } = usePlayer();
-  const { hintsEnabled, challengesEnabled } = useFeatureFlags();
+  const { hintsEnabled, challengesEnabled, timerAutoPauseEnabled } =
+    useFeatureFlags();
   const { playSound } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
   const modeId = useMemo(
@@ -188,6 +189,14 @@ export default function usePlayController(
     () => isVictoryBoardShareSupported(),
     [],
   );
+  const pauseHardModeTimerForDialogs =
+    timerAutoPauseEnabled &&
+    (showDictionaryChecksumDialog ||
+      showRefreshDialog ||
+      showWordsDialog ||
+      showDeveloperConsoleDialog ||
+      showTutorialPromptDialog ||
+      pendingDifficulty !== null);
 
   const hasActiveGame = useMemo(
     () => !gameOver && (guesses.length > 0 || current.length > 0),
@@ -222,6 +231,8 @@ export default function usePlayController(
     hasInProgressGameAtMount,
     boardVersion,
     showResumeDialog,
+    pauseTimer: pauseHardModeTimerForDialogs,
+    pauseWhenHidden: timerAutoPauseEnabled,
     gameOver,
     guessesLength: guesses.length,
     currentLength: current.length,

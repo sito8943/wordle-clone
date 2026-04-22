@@ -66,6 +66,11 @@ const env: RuntimeEnv = {
       rawEnv.LIGHTNING_MODE_ENABLED,
     true,
   ),
+  timerAutoPauseEnabled: readBoolean(
+    import.meta.env.VITE_TIMER_AUTO_PAUSE_ENABLED ??
+      rawEnv.TIMER_AUTO_PAUSE_ENABLED,
+    false,
+  ),
   difficultyEasyEnabled: readBoolean(
     import.meta.env.VITE_DIFFICULTY_EASY_ENABLED ??
       rawEnv.DIFFICULTY_EASY_ENABLED,

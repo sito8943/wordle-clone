@@ -50,6 +50,8 @@ export type UseHardModeTimerParams = {
   hasInProgressGameAtMount: boolean;
   boardVersion: number;
   showResumeDialog: boolean;
+  pauseTimer?: boolean;
+  pauseWhenHidden?: boolean;
   gameOver: boolean;
   guessesLength: number;
   currentLength: number;

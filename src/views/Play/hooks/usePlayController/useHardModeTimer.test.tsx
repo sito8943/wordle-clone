@@ -5,10 +5,18 @@ import { clearHardModeTimerSnapshot, setHardModeTimerSnapshot } from "./utils";
 import { useHardModeTimer } from "./useHardModeTimer";
 
 const TEST_MODE_ID = WORDLE_MODE_IDS.CLASSIC;
+const setDocumentVisibilityState = (state: DocumentVisibilityState): void => {
+  Object.defineProperty(document, "visibilityState", {
+    configurable: true,
+    value: state,
+  });
+  document.dispatchEvent(new Event("visibilitychange"));
+};
 
 describe("useHardModeTimer", () => {
   beforeEach(() => {
     clearHardModeTimerSnapshot(TEST_MODE_ID);
+    setDocumentVisibilityState("visible");
     vi.useFakeTimers();
   });
 
@@ -151,5 +159,115 @@ describe("useHardModeTimer", () => {
 
     expect(result.current.hardModeSecondsLeft).toBe(60);
     expect(result.current.hardModeTimerStarted).toBe(true);
+  });
+
+  it("pauses countdown while an overlay requests timer pause", () => {
+    const { result, rerender } = renderHook(
+      ({ pauseTimer }: { pauseTimer: boolean }) =>
+        useHardModeTimer({
+          sessionId: "session-1",
+          hardModeEnabled: true,
+          hasInProgressGameAtMount: false,
+          boardVersion: 1,
+          showResumeDialog: false,
+          pauseTimer,
+          gameOver: false,
+          guessesLength: 0,
+          currentLength: 1,
+          forceLoss: vi.fn(),
+          modeId: TEST_MODE_ID,
+        }),
+      {
+        initialProps: { pauseTimer: false },
+      },
+    );
+
+    expect(result.current.hardModeTimerStarted).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(59);
+
+    rerender({ pauseTimer: true });
+
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(59);
+
+    rerender({ pauseTimer: false });
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(58);
+  });
+
+  it("pauses countdown while the page is hidden and resumes when visible", () => {
+    const { result } = renderHook(() =>
+      useHardModeTimer({
+        sessionId: "session-1",
+        hardModeEnabled: true,
+        hasInProgressGameAtMount: false,
+        boardVersion: 1,
+        showResumeDialog: false,
+        pauseWhenHidden: true,
+        gameOver: false,
+        guessesLength: 0,
+        currentLength: 1,
+        forceLoss: vi.fn(),
+        modeId: TEST_MODE_ID,
+      }),
+    );
+
+    expect(result.current.hardModeTimerStarted).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(59);
+
+    act(() => {
+      setDocumentVisibilityState("hidden");
+      vi.advanceTimersByTime(3000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(59);
+
+    act(() => {
+      setDocumentVisibilityState("visible");
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(58);
+  });
+
+  it("keeps countdown running on hidden page when visibility pause is disabled", () => {
+    const { result } = renderHook(() =>
+      useHardModeTimer({
+        sessionId: "session-1",
+        hardModeEnabled: true,
+        hasInProgressGameAtMount: false,
+        boardVersion: 1,
+        showResumeDialog: false,
+        gameOver: false,
+        guessesLength: 0,
+        currentLength: 1,
+        forceLoss: vi.fn(),
+        modeId: TEST_MODE_ID,
+      }),
+    );
+
+    expect(result.current.hardModeTimerStarted).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(59);
+
+    act(() => {
+      setDocumentVisibilityState("hidden");
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.hardModeSecondsLeft).toBe(58);
   });
 });
