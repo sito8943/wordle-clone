@@ -429,6 +429,7 @@ export const resources = {
         gameModes: {
           classic: "Classic",
           lightning: "Lightning",
+          daily: "Daily",
         },
         tutorialPromptDialog: {
           title: "Welcome to {{gameMode}}",
@@ -1033,6 +1034,7 @@ export const resources = {
         gameModes: {
           classic: "Clásico",
           lightning: "Relámpago",
+          daily: "Diario",
         },
         tutorialPromptDialog: {
           title: "Bienvenido a {{gameMode}}",

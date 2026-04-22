@@ -24,7 +24,7 @@ const MODE_RULES_ENABLED_BY_ID: Record<WordleModeId, boolean> = {
   classic: true,
   lightning: true,
   zen: false,
-  daily: false,
+  daily: true,
 };
 
 const isWordleModeId = (value: unknown): value is WordleModeId =>
