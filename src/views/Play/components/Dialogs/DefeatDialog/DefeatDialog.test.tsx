@@ -100,4 +100,29 @@ describe("DefeatDialog", () => {
       screen.queryByRole("button", { name: "Change difficulty" }),
     ).toBeNull();
   });
+
+  it("hides play again action when disabled and Enter does not trigger replay", () => {
+    const onPlayAgain = vi.fn();
+
+    render(
+      <DefeatDialog
+        visible
+        answer="APPLE"
+        bestStreak={4}
+        showPlayAgainAction={false}
+        onClose={() => undefined}
+        onPlayAgain={onPlayAgain}
+        onChangeDifficulty={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Play again" })).toBeNull();
+
+    fireEvent.keyDown(document, { key: "Enter" });
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(onPlayAgain).not.toHaveBeenCalled();
+  });
 });

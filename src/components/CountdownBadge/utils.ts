@@ -3,5 +3,8 @@ export const formatCountdown = (ms: number): string => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${seconds.toString().padStart(2, "0")}s`;
+
+  return `${hours.toString().padStart(2, "0")}h ${minutes
+    .toString()
+    .padStart(2, "0")}m ${seconds.toString().padStart(2, "0")}s`;
 };

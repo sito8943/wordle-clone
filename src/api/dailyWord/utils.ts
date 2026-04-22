@@ -1,4 +1,7 @@
-import { ACCENTED_LETTER_REPLACEMENTS, DAILY_WORD_DATE_PATTERN } from "./constants";
+import {
+  ACCENTED_LETTER_REPLACEMENTS,
+  DAILY_WORD_DATE_PATTERN,
+} from "./constants";
 import type { DailyWordResponse } from "./types";
 
 const normalizeCharacter = (character: string): string => {

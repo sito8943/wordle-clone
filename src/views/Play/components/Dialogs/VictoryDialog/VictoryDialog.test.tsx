@@ -188,4 +188,32 @@ describe("VictoryDialog", () => {
         .getAttribute("disabled"),
     ).not.toBeNull();
   });
+
+  it("hides play again action when disabled and Enter does not trigger replay", () => {
+    const onPlayAgain = vi.fn();
+
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={{
+          items: [{ key: "base", value: 4 }],
+          total: 4,
+        }}
+        showPlayAgainAction={false}
+        onClose={() => undefined}
+        onPlayAgain={onPlayAgain}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Play again" })).toBeNull();
+
+    fireEvent.keyDown(document, { key: "Enter" });
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(onPlayAgain).not.toHaveBeenCalled();
+  });
 });

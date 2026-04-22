@@ -42,3 +42,4 @@ export const KEY_STATUS_PRIORITY: TileStatus[] = [
 
 export const DAILY_WORD_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 export const DAILY_WORD_FALLBACK = "PERRO";
+export const DAILY_MODE_STATUS_STORAGE_KEY_PREFIX = "wordle:daily-mode-status";

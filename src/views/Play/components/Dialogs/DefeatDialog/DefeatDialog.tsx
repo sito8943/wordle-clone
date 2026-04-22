@@ -14,6 +14,7 @@ const DefeatDialog = ({
   answer,
   bestStreak,
   showSettingsHint = false,
+  showPlayAgainAction = true,
   showChangeDifficultyAction = true,
   onClose,
   onPlayAgain,
@@ -32,6 +33,10 @@ const DefeatDialog = ({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!showPlayAgainAction) {
+        return;
+      }
+
       if (event.key !== "Enter") {
         return;
       }
@@ -44,7 +49,7 @@ const DefeatDialog = ({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [closeWithAction, onPlayAgain, visible]);
+  }, [closeWithAction, onPlayAgain, showPlayAgainAction, visible]);
 
   return (
     <Dialog
@@ -75,12 +80,14 @@ const DefeatDialog = ({
         {showSettingsHint ? <SettingsHint /> : null}
 
         <div className="flex flex-wrap justify-end gap-3">
-          <Button
-            onClick={() => closeWithAction(onPlayAgain)}
-            disabled={isClosing}
-          >
-            {t("play.endOfGame.playAgain")}
-          </Button>
+          {showPlayAgainAction ? (
+            <Button
+              onClick={() => closeWithAction(onPlayAgain)}
+              disabled={isClosing}
+            >
+              {t("play.endOfGame.playAgain")}
+            </Button>
+          ) : null}
           {showChangeDifficultyAction ? (
             <Button
               onClick={() => closeWithAction(onChangeDifficulty)}

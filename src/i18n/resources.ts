@@ -546,6 +546,13 @@ export const resources = {
           challengesChanged:
             "Challenges changed and reset: {{simple}} / {{complex}}. Cleared {{count}} completions (-{{points}} pts).",
           challengesActionError: "Could not update daily challenges.",
+          dailyDescription:
+            "Developer tools for daily mode. Reset current player unlocks only this profile; reset all unlocks all local profiles in this browser.",
+          resetDailyForCurrentPlayer: "Reset daily for current player",
+          resetDailyForAllPlayers: "Reset daily for all local players",
+          dailyCurrentPlayerResetSuccess: "Daily reset for current player.",
+          dailyAllPlayersResetSuccess: "Daily reset for all local players.",
+          dailyResetError: "Could not reset daily mode.",
           refreshing: "Refreshing...",
           checksumUpdated: "Remote checksum updated to {{checksum}}.",
           checksumRefreshError: "Could not refresh remote dictionary checksum.",
@@ -1163,6 +1170,17 @@ export const resources = {
             "Retos cambiados y reiniciados: {{simple}} / {{complex}}. Se limpiaron {{count}} completados (-{{points}} pts).",
           challengesActionError:
             "No se han podido actualizar los retos diarios.",
+          dailyDescription:
+            "Herramientas de desarrollo para modo daily. Reiniciar jugador actual desbloquea solo este perfil; reiniciar todos desbloquea todos los perfiles locales de este navegador.",
+          resetDailyForCurrentPlayer:
+            "Reiniciar daily del jugador actual",
+          resetDailyForAllPlayers:
+            "Reiniciar daily de todos los jugadores locales",
+          dailyCurrentPlayerResetSuccess:
+            "Daily reiniciado para el jugador actual.",
+          dailyAllPlayersResetSuccess:
+            "Daily reiniciado para todos los jugadores locales.",
+          dailyResetError: "No se ha podido reiniciar el modo daily.",
           refreshing: "Actualizando...",
           checksumUpdated: "Checksum remoto actualizado a {{checksum}}.",
           checksumRefreshError:

@@ -17,6 +17,8 @@ const controllerMock = vi.hoisted(() => ({
   showTutorialPromptDialog: false,
   showWordsDialog: false,
   showDeveloperConsoleDialog: false,
+  showDeveloperChallengesSection: true,
+  showDeveloperDailySection: false,
   isDifficultyChangeConfirmationOpen: false,
   showVictoryDialog: false,
   showDefeatDialog: false,
@@ -55,6 +57,10 @@ const controllerMock = vi.hoisted(() => ({
   isChangingDailyChallengesForDeveloper: false,
   dailyChallengesDeveloperMessage: null as string | null,
   dailyChallengesDeveloperMessageKind: null as "success" | "error" | null,
+  resetDailyForCurrentPlayerForDeveloper: vi.fn(),
+  resetDailyForAllPlayersForDeveloper: vi.fn(),
+  dailyModeDeveloperMessage: null as string | null,
+  dailyModeDeveloperMessageKind: null as "success" | "error" | null,
 }));
 
 const playViewMock = vi.hoisted(() => ({

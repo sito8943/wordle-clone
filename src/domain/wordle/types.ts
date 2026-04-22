@@ -71,3 +71,10 @@ export type ResolveDailyAnswerInput = {
   date?: string | null;
   remoteDailyWord?: string | null;
 };
+
+export type DailyModeOutcome = "won" | "lost";
+
+export type StoredDailyModeStatus = {
+  date: string;
+  outcome: DailyModeOutcome;
+};

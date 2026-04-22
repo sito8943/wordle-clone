@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
+  clearAllDailyModeOutcomes,
   clearAllPersistedGameStates,
+  clearDailyModeOutcome,
+  getTodayDateUTC,
   getGuessCombo,
   getNormalDictionaryBonusRowFlags,
   isWordleModeEnabled,
+  readDailyModeOutcomeForDate,
   resolvePlayableWordleModeId,
   getRoundDurationMs,
   resolveRoundConfigForMode,
   resolveWordleModeId,
+  writeDailyModeOutcomeForDate,
   WORDLE_MODE_IDS,
   type Player,
   type PlayerDifficulty,
@@ -28,7 +33,6 @@ import type { RemoteChallenge } from "@api/challenges";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
-import { getTodayDateUTC } from "@hooks/useChallenges";
 import { useHintController } from "../useHintController";
 import { getHintsUsedForGame } from "../useHintController/utils";
 import type {
@@ -57,7 +61,7 @@ import {
   TILE_STATUS_SOUND_INITIAL_DELAY_MS,
   TILE_STATUS_SOUND_STEP_DELAY_MS,
 } from "@providers/Sound/constants";
-import { getHelpRoute } from "@config/routes";
+import { ROUTES, getHelpRoute } from "@config/routes";
 import {
   resolveVictoryOutcomeForMode,
   shouldCompleteChallengesForMode,
@@ -122,6 +126,10 @@ export default function usePlayController(
     invalidGuessShakePulse = 0,
   } = wordle;
   const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
+  const dailyModeActive = activeModeId === WORDLE_MODE_IDS.DAILY;
+  const showDeveloperChallengesSection =
+    activeModeId === WORDLE_MODE_IDS.CLASSIC;
+  const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
   const hardModeEnabled = lightningModeActive || player.difficulty === "insane";
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
 
@@ -164,6 +172,11 @@ export default function usePlayController(
     dailyChallengesDeveloperMessageKind,
     setDailyChallengesDeveloperMessageKind,
   ] = useState<"success" | "error" | null>(null);
+  const [dailyModeDeveloperMessage, setDailyModeDeveloperMessage] = useState<
+    string | null
+  >(null);
+  const [dailyModeDeveloperMessageKind, setDailyModeDeveloperMessageKind] =
+    useState<"success" | "error" | null>(null);
   const [endOfGameSnapshot, setEndOfGameSnapshot] =
     useState<EndOfGameSnapshot | null>(null);
   const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
@@ -406,6 +419,13 @@ export default function usePlayController(
     setEndOfGameDialogDismissed(false);
 
     if (won) {
+      if (dailyModeActive) {
+        writeDailyModeOutcomeForDate({
+          outcome: "won",
+          playerCode: player.code,
+        });
+      }
+
       const victoryOutcome = resolveVictoryOutcomeForMode({
         modeId: activeModeId,
         answer,
@@ -425,6 +445,13 @@ export default function usePlayController(
         activeModeId,
       );
     } else {
+      if (dailyModeActive) {
+        writeDailyModeOutcomeForDate({
+          outcome: "lost",
+          playerCode: player.code,
+        });
+      }
+
       setEndOfGameSnapshot({
         answer,
         currentStreak: player.streak,
@@ -449,6 +476,8 @@ export default function usePlayController(
     guessWords,
     hardModeEnabled,
     hardModeSecondsLeft,
+    dailyModeActive,
+    player.code,
     player.difficulty,
     player.streak,
     roundStartedAt,
@@ -605,7 +634,25 @@ export default function usePlayController(
     };
   }, [challengeCompletionMessage]);
 
+  const isDailyModeLockedForToday = useCallback((): boolean => {
+    if (!dailyModeActive) {
+      return false;
+    }
+
+    const currentPlayerOutcome = readDailyModeOutcomeForDate(player.code);
+
+    if (currentPlayerOutcome !== null) {
+      return true;
+    }
+
+    return readDailyModeOutcomeForDate() !== null;
+  }, [dailyModeActive, player.code]);
+
   const refreshBoardNow = useCallback(() => {
+    if (isDailyModeLockedForToday()) {
+      return;
+    }
+
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setEndOfGameDialogDismissed(false);
@@ -621,12 +668,17 @@ export default function usePlayController(
     refresh();
   }, [
     acknowledgeDictionaryChecksumChange,
+    isDailyModeLockedForToday,
     refresh,
     resetHardModeTimer,
     resetHints,
   ]);
 
   const startNewBoard = useCallback(() => {
+    if (isDailyModeLockedForToday()) {
+      return;
+    }
+
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setEndOfGameDialogDismissed(false);
@@ -639,7 +691,12 @@ export default function usePlayController(
     resetHints();
     resetHardModeTimer();
     startNewWordleBoard();
-  }, [resetHardModeTimer, resetHints, startNewWordleBoard]);
+  }, [
+    isDailyModeLockedForToday,
+    resetHardModeTimer,
+    resetHints,
+    startNewWordleBoard,
+  ]);
 
   const closeEndOfGameDialog = useCallback(() => {
     setShowLegacyEndOfGameFeedback(true);
@@ -684,6 +741,9 @@ export default function usePlayController(
   const closeSettingsPanel = useCallback(() => {
     setShowSettingsPanel(false);
   }, []);
+  const goToPlayRoute = useCallback(() => {
+    navigate(ROUTES.PLAY);
+  }, [navigate]);
 
   const acceptTutorialPrompt = useCallback(() => {
     markTutorialPromptAsSeenForMode(activeModeId);
@@ -766,6 +826,8 @@ export default function usePlayController(
     setDictionaryChecksumMessageKind(null);
     setDailyChallengesDeveloperMessage(null);
     setDailyChallengesDeveloperMessageKind(null);
+    setDailyModeDeveloperMessage(null);
+    setDailyModeDeveloperMessageKind(null);
     setShowDeveloperConsoleDialog(true);
   }, []);
 
@@ -928,6 +990,49 @@ export default function usePlayController(
     player.code,
   ]);
 
+  const resetDailyForCurrentPlayerForDeveloper = useCallback(() => {
+    try {
+      clearDailyModeOutcome(player.code);
+      clearDailyModeOutcome();
+      setDailyModeDeveloperMessage(
+        i18n.t("play.developerConsole.dailyCurrentPlayerResetSuccess"),
+      );
+      setDailyModeDeveloperMessageKind("success");
+
+      if (dailyModeActive) {
+        startNewBoard();
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : i18n.t("play.developerConsole.dailyResetError");
+      setDailyModeDeveloperMessage(message);
+      setDailyModeDeveloperMessageKind("error");
+    }
+  }, [dailyModeActive, player.code, startNewBoard]);
+
+  const resetDailyForAllPlayersForDeveloper = useCallback(() => {
+    try {
+      clearAllDailyModeOutcomes();
+      setDailyModeDeveloperMessage(
+        i18n.t("play.developerConsole.dailyAllPlayersResetSuccess"),
+      );
+      setDailyModeDeveloperMessageKind("success");
+
+      if (dailyModeActive) {
+        startNewBoard();
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : i18n.t("play.developerConsole.dailyResetError");
+      setDailyModeDeveloperMessage(message);
+      setDailyModeDeveloperMessageKind("error");
+    }
+  }, [dailyModeActive, startNewBoard]);
+
   const submitDeveloperPlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
       const nextNick =
@@ -981,6 +1086,8 @@ export default function usePlayController(
       setChallengeCompletionMessage(null);
       setDailyChallengesDeveloperMessage(null);
       setDailyChallengesDeveloperMessageKind(null);
+      setDailyModeDeveloperMessage(null);
+      setDailyModeDeveloperMessageKind(null);
     }
   }, [showResumeDialog]);
 
@@ -1014,7 +1121,7 @@ export default function usePlayController(
     !won &&
     endOfGameSnapshot !== null &&
     !endOfGameDialogDismissed;
-  const showRefreshAttention = gameOver;
+  const showRefreshAttention = gameOver && !isDailyModeLockedForToday();
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
   const canReopenEndOfGameDialog =
     showEndOfGameDialogs &&
@@ -1140,6 +1247,7 @@ export default function usePlayController(
     showTutorialPromptDialog,
     acceptTutorialPrompt,
     declineTutorialPrompt,
+    goToPlayRoute,
     showSettingsPanel,
     openSettingsPanel,
     closeSettingsPanel,
@@ -1195,6 +1303,8 @@ export default function usePlayController(
     closeWordsDialog,
     openDeveloperConsoleDialog,
     closeDeveloperConsoleDialog,
+    showDeveloperChallengesSection,
+    showDeveloperDailySection,
     submitDeveloperPlayer,
     refreshRemoteDictionaryChecksum,
     isRefreshingDictionaryChecksum,
@@ -1206,6 +1316,10 @@ export default function usePlayController(
     isChangingDailyChallengesForDeveloper,
     dailyChallengesDeveloperMessage,
     dailyChallengesDeveloperMessageKind,
+    resetDailyForCurrentPlayerForDeveloper,
+    resetDailyForAllPlayersForDeveloper,
+    dailyModeDeveloperMessage,
+    dailyModeDeveloperMessageKind,
     challengeCompletionMessage,
     confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,

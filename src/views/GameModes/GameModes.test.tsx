@@ -6,11 +6,28 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { ROUTES } from "@config/routes";
+import { writeDailyModeOutcomeForDate } from "@domain/wordle";
 import { i18n, initI18n } from "@i18n";
 import { GAME_MODE_TRANSLATION_VALUES } from "./constants";
 import GameModes from "./GameModes";
+
+vi.mock("@providers", () => ({
+  usePlayer: () => ({
+    player: {
+      code: "AB12",
+    },
+  }),
+}));
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -33,6 +50,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await i18n.changeLanguage("en");
+  localStorage.clear();
 });
 
 describe("GameModes", () => {
@@ -99,5 +117,37 @@ describe("GameModes", () => {
     expect(
       screen.getByRole("heading", { name: modeName, level: 2 }),
     ).toBeTruthy();
+  });
+
+  it("shows completed-daily icon and reset countdown when today was won", () => {
+    writeDailyModeOutcomeForDate({ outcome: "won", playerCode: "AB12" });
+
+    renderGameModes();
+
+    const dailyLink = screen.getByRole("link", {
+      name: new RegExp(i18n.t("gameModes.modes.daily.name"), "i"),
+    });
+    const dailyIcon = dailyLink.querySelector(
+      'svg[data-icon="calendar-check"]',
+    );
+
+    expect(dailyIcon).toBeTruthy();
+    expect(screen.getByText("Daily reset in")).toBeTruthy();
+  });
+
+  it("shows failed-daily icon and reset countdown when today was lost", () => {
+    writeDailyModeOutcomeForDate({ outcome: "lost", playerCode: "AB12" });
+
+    renderGameModes();
+
+    const dailyLink = screen.getByRole("link", {
+      name: new RegExp(i18n.t("gameModes.modes.daily.name"), "i"),
+    });
+    const dailyIcon = dailyLink.querySelector(
+      'svg[data-icon="calendar-xmark"]',
+    );
+
+    expect(dailyIcon).toBeTruthy();
+    expect(screen.getByText("Daily reset in")).toBeTruthy();
   });
 });

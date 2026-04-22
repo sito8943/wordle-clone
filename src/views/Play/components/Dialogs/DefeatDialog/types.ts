@@ -3,6 +3,7 @@ export type DefeatDialogProps = {
   answer: string;
   bestStreak: number;
   showSettingsHint?: boolean;
+  showPlayAgainAction?: boolean;
   showChangeDifficultyAction?: boolean;
   onClose: () => void;
   onPlayAgain: () => void;

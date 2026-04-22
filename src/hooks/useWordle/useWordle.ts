@@ -309,20 +309,17 @@ export default function useWordle(options: UseWordleOptions = {}) {
       return;
     }
 
-    setGameStateWithPersistence(
-      (previous) => {
-        if (hasInProgressGame(previous) || previous.gameOver) {
-          return previous;
-        }
+    setGameStateWithPersistence((previous) => {
+      if (hasInProgressGame(previous) || previous.gameOver) {
+        return previous;
+      }
 
-        if (previous.answer === resolvedDailyAnswer) {
-          return previous;
-        }
+      if (previous.answer === resolvedDailyAnswer) {
+        return previous;
+      }
 
-        return createInitialGameState(currentSessionId, resolvedDailyAnswer);
-      },
-      "immediate",
-    );
+      return createInitialGameState(currentSessionId, resolvedDailyAnswer);
+    }, "immediate");
   }, [
     currentSessionId,
     dailyModeActive,

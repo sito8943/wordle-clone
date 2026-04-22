@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CLASSIC_ROUND_CONFIG,
   getTotalPointsForWin,
+  readDailyModeOutcomeForDate,
+  writeDailyModeOutcomeForDate,
   WORDLE_MODE_IDS,
 } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
@@ -1474,6 +1476,88 @@ describe("usePlayController", () => {
     expect(resetHints).toHaveBeenCalledTimes(1);
     expect(resetHardModeTimer).toHaveBeenCalledTimes(1);
     expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("blocks daily refresh when the daily mode is already resolved today", () => {
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "AB12",
+    });
+
+    const refresh = vi.fn();
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      refresh,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    act(() => {
+      result.current.refreshBoard();
+    });
+
+    expect(refresh).not.toHaveBeenCalled();
+    expect(result.current.showRefreshAttention).toBe(false);
+  });
+
+  it("resets daily for current player from developer actions", () => {
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "AB12",
+    });
+
+    const startNewBoard = vi.fn();
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      startNewBoard,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    act(() => {
+      result.current.resetDailyForCurrentPlayerForDeveloper();
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBeNull();
+    expect(startNewBoard).toHaveBeenCalledTimes(1);
+    expect(result.current.dailyModeDeveloperMessageKind).toBe("success");
+  });
+
+  it("resets daily for all local players from developer actions", () => {
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "CD34",
+    });
+
+    const startNewBoard = vi.fn();
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      startNewBoard,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    act(() => {
+      result.current.resetDailyForAllPlayersForDeveloper();
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBeNull();
+    expect(readDailyModeOutcomeForDate("CD34")).toBeNull();
+    expect(startNewBoard).toHaveBeenCalledTimes(1);
+    expect(result.current.dailyModeDeveloperMessageKind).toBe("success");
   });
 
   it("shows a checksum dialog and restarts the board after accepting it", () => {

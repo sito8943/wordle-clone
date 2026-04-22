@@ -1,8 +1,25 @@
-import { DAILY_WORD_DATE_PATTERN, DAILY_WORD_FALLBACK } from "./constants";
+import {
+  DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
+  DAILY_WORD_DATE_PATTERN,
+  DAILY_WORD_FALLBACK,
+} from "./constants";
 import { hashGameId } from "./reference";
-import type { ResolveDailyAnswerInput } from "./types";
+import type {
+  DailyModeOutcome,
+  ResolveDailyAnswerInput,
+  StoredDailyModeStatus,
+} from "./types";
 
 const normalizeWord = (value: string): string => value.trim().toUpperCase();
+
+const normalizePlayerCode = (playerCode?: string | null): string | null => {
+  if (typeof playerCode !== "string") {
+    return null;
+  }
+
+  const normalized = playerCode.trim().toUpperCase();
+  return normalized.length > 0 ? normalized : null;
+};
 
 const normalizeDailyWordDate = (value?: string | null): string => {
   if (typeof value === "string") {
@@ -15,6 +32,20 @@ const normalizeDailyWordDate = (value?: string | null): string => {
   return getTodayDateUTC();
 };
 
+const resolveDailyModeStatusStorageKey = (
+  playerCode?: string | null,
+): string => {
+  const normalizedPlayerCode = normalizePlayerCode(playerCode);
+  if (!normalizedPlayerCode) {
+    return DAILY_MODE_STATUS_STORAGE_KEY_PREFIX;
+  }
+
+  return `${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:${normalizedPlayerCode}`;
+};
+
+const isDailyModeOutcome = (value: unknown): value is DailyModeOutcome =>
+  value === "won" || value === "lost";
+
 const hasDictionaryWord = (words: string[], word: string): boolean => {
   const normalizedWord = normalizeWord(word).toLowerCase();
 
@@ -24,6 +55,118 @@ const hasDictionaryWord = (words: string[], word: string): boolean => {
 export const getTodayDateUTC = (): string => {
   const now = new Date();
   return now.toISOString().slice(0, 10);
+};
+
+export const getMillisUntilEndOfDayUTC = (): number => {
+  const now = new Date();
+  const endOfDay = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
+  );
+
+  return Math.max(0, endOfDay.getTime() - now.getTime());
+};
+
+export const readDailyModeOutcomeForDate = (
+  playerCode?: string | null,
+  date: string = getTodayDateUTC(),
+): DailyModeOutcome | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(
+      resolveDailyModeStatusStorageKey(playerCode),
+    );
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<StoredDailyModeStatus>;
+    if (
+      !parsed ||
+      parsed.date !== date ||
+      !isDailyModeOutcome(parsed.outcome)
+    ) {
+      return null;
+    }
+
+    return parsed.outcome;
+  } catch {
+    return null;
+  }
+};
+
+export const writeDailyModeOutcomeForDate = ({
+  outcome,
+  playerCode,
+  date = getTodayDateUTC(),
+}: {
+  outcome: DailyModeOutcome;
+  playerCode?: string | null;
+  date?: string;
+}): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const payload: StoredDailyModeStatus = {
+      date,
+      outcome,
+    };
+    window.localStorage.setItem(
+      resolveDailyModeStatusStorageKey(playerCode),
+      JSON.stringify(payload),
+    );
+  } catch {
+    // Ignore storage write errors.
+  }
+};
+
+export const clearDailyModeOutcome = (playerCode?: string | null): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(
+      resolveDailyModeStatusStorageKey(playerCode),
+    );
+  } catch {
+    // Ignore storage clear errors.
+  }
+};
+
+export const clearAllDailyModeOutcomes = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const storage = window.localStorage;
+    const keysToClear: string[] = [];
+
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (!key) {
+        continue;
+      }
+
+      if (
+        key === DAILY_MODE_STATUS_STORAGE_KEY_PREFIX ||
+        key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)
+      ) {
+        keysToClear.push(key);
+      }
+    }
+
+    for (const key of keysToClear) {
+      storage.removeItem(key);
+    }
+  } catch {
+    // Ignore storage clear errors.
+  }
 };
 
 export const resolveDeterministicDailyWord = (

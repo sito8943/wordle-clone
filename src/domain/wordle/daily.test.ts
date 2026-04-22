@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  clearAllDailyModeOutcomes,
+  clearDailyModeOutcome,
+  getMillisUntilEndOfDayUTC,
   getTodayDateUTC,
+  readDailyModeOutcomeForDate,
   resolveDailyAnswer,
   resolveDeterministicDailyWord,
+  writeDailyModeOutcomeForDate,
 } from "./daily";
 
 describe("daily word helpers", () => {
@@ -39,5 +44,79 @@ describe("daily word helpers", () => {
 
     expect(["CASA", "PUENTE", "LUZ"]).toContain(answer);
     expect(answer).not.toBe("INEXISTENTE");
+  });
+
+  it("returns positive millis until next UTC day", () => {
+    const millis = getMillisUntilEndOfDayUTC();
+
+    expect(millis).toBeGreaterThan(0);
+    expect(millis).toBeLessThanOrEqual(24 * 60 * 60 * 1000);
+  });
+
+  it("stores and reads daily mode outcome by player code and date", () => {
+    localStorage.clear();
+    const date = "2026-04-22";
+
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "ab12",
+      date,
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12", date)).toBe("won");
+    expect(readDailyModeOutcomeForDate("CD34", date)).toBeNull();
+  });
+
+  it("ignores stored outcome when date does not match", () => {
+    localStorage.clear();
+
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "AB12",
+      date: "2026-04-21",
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12", "2026-04-22")).toBeNull();
+  });
+
+  it("clears stored daily mode outcome", () => {
+    localStorage.clear();
+    const date = "2026-04-22";
+
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "AB12",
+      date,
+    });
+    expect(readDailyModeOutcomeForDate("AB12", date)).toBe("lost");
+
+    clearDailyModeOutcome("AB12");
+    expect(readDailyModeOutcomeForDate("AB12", date)).toBeNull();
+  });
+
+  it("clears daily mode outcomes for all local players", () => {
+    localStorage.clear();
+    const date = "2026-04-22";
+
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+      date,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "CD34",
+      date,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      date,
+    });
+
+    clearAllDailyModeOutcomes();
+
+    expect(readDailyModeOutcomeForDate("AB12", date)).toBeNull();
+    expect(readDailyModeOutcomeForDate("CD34", date)).toBeNull();
+    expect(readDailyModeOutcomeForDate(undefined, date)).toBeNull();
   });
 });

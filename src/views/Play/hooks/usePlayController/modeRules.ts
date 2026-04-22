@@ -60,9 +60,8 @@ export const resolveVictoryOutcomeForMode = ({
   }
 
   const basePoints = getPointsForWin(guessesLength);
-  const baseDifficultyMultiplier = getDifficultyScoreMultiplier(
-    playerDifficulty,
-  );
+  const baseDifficultyMultiplier =
+    getDifficultyScoreMultiplier(playerDifficulty);
   const timeBonus = hardModeEnabled
     ? getInsaneTimeBonus(hardModeSecondsLeft)
     : 0;

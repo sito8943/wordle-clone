@@ -1,6 +1,7 @@
 import { lazy, memo, Suspense, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { DIALOG_QUEUE_PRIORITIES, useDialogQueueItem } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { PLAY_DIALOG_IDS } from "@views/Play/constants";
@@ -63,6 +64,8 @@ const DialogsSection = (): JSX.Element => {
     showTutorialPromptDialog,
     showWordsDialog,
     showDeveloperConsoleDialog,
+    showDeveloperChallengesSection,
+    showDeveloperDailySection,
     isDifficultyChangeConfirmationOpen,
     showVictoryDialog,
     showDefeatDialog,
@@ -101,7 +104,15 @@ const DialogsSection = (): JSX.Element => {
     isChangingDailyChallengesForDeveloper,
     dailyChallengesDeveloperMessage,
     dailyChallengesDeveloperMessageKind,
+    resetDailyForCurrentPlayerForDeveloper,
+    resetDailyForAllPlayersForDeveloper,
+    dailyModeDeveloperMessage,
+    dailyModeDeveloperMessageKind,
   } = controller;
+  const showVictoryPlayAgainAction =
+    controller.activeModeId !== WORDLE_MODE_IDS.DAILY;
+  const showDefeatReplayActions =
+    controller.activeModeId !== WORDLE_MODE_IDS.DAILY;
 
   const resumeDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.RESUME,
@@ -241,6 +252,7 @@ const DialogsSection = (): JSX.Element => {
               shareEnabled={shareButtonEnabled && victoryBoardShareSupported}
               isSharing={isSharingVictoryBoard}
               shareErrorMessage={victoryBoardShareError}
+              showPlayAgainAction={showVictoryPlayAgainAction}
               onClose={closeEndOfGameDialog}
               onPlayAgain={startNewBoard}
               onShare={shareVictoryBoard}
@@ -252,7 +264,10 @@ const DialogsSection = (): JSX.Element => {
               answer={endOfGameAnswer}
               bestStreak={endOfGameBestStreak}
               showSettingsHint={showEndOfGameSettingsHint}
-              showChangeDifficultyAction={settingsDrawerEnabled}
+              showPlayAgainAction={showDefeatReplayActions}
+              showChangeDifficultyAction={
+                settingsDrawerEnabled && showDefeatReplayActions
+              }
               onClose={closeEndOfGameDialog}
               onPlayAgain={startNewBoard}
               onChangeDifficulty={changeDifficulty}
@@ -275,6 +290,8 @@ const DialogsSection = (): JSX.Element => {
               answer={answer}
               player={player}
               showResumeDialog={showResumeDialog}
+              showChallengesSection={showDeveloperChallengesSection}
+              showDailySection={showDeveloperDailySection}
               submitDeveloperPlayer={submitDeveloperPlayer}
               refreshRemoteDictionaryChecksum={refreshRemoteDictionaryChecksum}
               isRefreshingDictionaryChecksum={isRefreshingDictionaryChecksum}
@@ -296,6 +313,14 @@ const DialogsSection = (): JSX.Element => {
               dailyChallengesDeveloperMessageKind={
                 dailyChallengesDeveloperMessageKind
               }
+              resetDailyForCurrentPlayerForDeveloper={
+                resetDailyForCurrentPlayerForDeveloper
+              }
+              resetDailyForAllPlayersForDeveloper={
+                resetDailyForAllPlayersForDeveloper
+              }
+              dailyModeDeveloperMessage={dailyModeDeveloperMessage}
+              dailyModeDeveloperMessageKind={dailyModeDeveloperMessageKind}
             />
           ) : null}
           {tutorialPromptDialogVisible ? (

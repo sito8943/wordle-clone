@@ -48,8 +48,7 @@ export const useHardModeTimer = ({
   const [pageVisible, setPageVisible] = useState(isDocumentVisible);
 
   const showHardModeTimer = hardModeEnabled && !showResumeDialog && !gameOver;
-  const hardModeTimerPaused =
-    pauseTimer || (pauseWhenHidden && !pageVisible);
+  const hardModeTimerPaused = pauseTimer || (pauseWhenHidden && !pageVisible);
   const hardModeTimerActive = showHardModeTimer && !hardModeTimerPaused;
   const hardModeTimerRunning = hardModeTimerActive && hardModeTimerStarted;
   const showHardModeFinalStretchBar =
