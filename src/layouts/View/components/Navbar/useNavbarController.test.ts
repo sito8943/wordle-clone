@@ -9,7 +9,10 @@ import {
 
 const mockListTopScores = vi.fn();
 const mockPlayer = { score: 0, code: "", name: "Player", language: "en" };
-const mockLocation: { pathname: string } = { pathname: ROUTES.HOME };
+const mockLocation: { pathname: string; search: string } = {
+  pathname: ROUTES.HOME,
+  search: "",
+};
 const defaultLightningModeEnabled = env.lightningModeEnabled;
 
 vi.mock("react-router", () => ({
@@ -30,6 +33,7 @@ describe("useNavbarController", () => {
     localStorage.clear();
     env.lightningModeEnabled = defaultLightningModeEnabled;
     mockLocation.pathname = ROUTES.HOME;
+    mockLocation.search = "";
     mockPlayer.score = 0;
     mockPlayer.code = "";
     mockPlayer.name = "Player";
@@ -116,6 +120,29 @@ describe("useNavbarController", () => {
     const { result } = renderHook(() => useNavbarController());
 
     expect(result.current.helpRoute).toBe(getHelpRoute("lightning"));
+  });
+
+  it("exposes activeModeId for game mode routes", () => {
+    mockLocation.pathname = ROUTES.DAILY;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.DAILY);
+  });
+
+  it("exposes activeModeId from help route query mode", () => {
+    mockLocation.pathname = ROUTES.HELP;
+    mockLocation.search = "?mode=lightning";
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
+  });
+
+  it("returns null activeModeId on routes without game mode context", () => {
+    mockLocation.pathname = ROUTES.SCOREBOARD;
+    mockLocation.search = "";
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.activeModeId).toBeNull();
   });
 
   it("builds Play route from stored current mode", () => {

@@ -24,8 +24,14 @@ const Navbar = () => {
     isCurrentClientRankLoading,
     rankTone,
     helpRoute,
+    activeModeId,
     playRoute,
   } = useNavbarController();
+  const navbarTitle = useMemo(
+    () =>
+      activeModeId ? t(`gameModes.modes.${activeModeId}.name`) : t("app.title"),
+    [activeModeId, t],
+  );
 
   const positionLabel = useMemo(
     () =>
@@ -77,7 +83,7 @@ const Navbar = () => {
     <header className="w-full items-center justify-between border-b border-neutral-300 dark:border-neutral-700 py-2 sm:py-3 sm:px-4 flex">
       <Link to={ROUTES.HOME}>
         <h1 className="pointer-events-none text-center text-3xl max-sm:text-xl font-black tracking-[0.28em] text-black dark:text-neutral-100">
-          {t("app.title").toUpperCase()}
+          {navbarTitle.toUpperCase()}
         </h1>
       </Link>
       <nav>
