@@ -3,16 +3,10 @@ import { useNavigate } from "react-router";
 import {
   clearAllPersistedGameStates,
   getGuessCombo,
-  getStreakScoreMultiplier,
-  getDifficultyScoreMultiplier,
-  getInsaneTimeBonus,
   getNormalDictionaryBonusRowFlags,
-  getNormalDictionaryRowsBonusPoints,
   isWordleModeEnabled,
-  getPointsForWin,
   resolvePlayableWordleModeId,
   getRoundDurationMs,
-  getTotalPointsForWin,
   resolveRoundConfigForMode,
   resolveWordleModeId,
   WORDLE_MODE_IDS,
@@ -40,7 +34,6 @@ import { getHintsUsedForGame } from "../useHintController/utils";
 import type {
   ComboFlash,
   EndOfGameSnapshot,
-  EndOfGameScoreSummaryItem,
   UsePlayControllerOptions,
 } from "./types";
 import {
@@ -65,6 +58,10 @@ import {
   TILE_STATUS_SOUND_STEP_DELAY_MS,
 } from "@providers/Sound/constants";
 import { getHelpRoute } from "@config/routes";
+import {
+  resolveVictoryOutcomeForMode,
+  shouldCompleteChallengesForMode,
+} from "./modeRules";
 
 export default function usePlayController(
   options: UsePlayControllerOptions = {},
@@ -250,7 +247,7 @@ export default function usePlayController(
   const completeEligibleChallenges = useCallback(async () => {
     if (
       !challengesEnabled ||
-      lightningModeActive ||
+      !shouldCompleteChallengesForMode(activeModeId) ||
       !challengeClient?.isConfigured ||
       !gameOver
     ) {
@@ -375,7 +372,7 @@ export default function usePlayController(
     gameId,
     gameOver,
     guesses,
-    lightningModeActive,
+    activeModeId,
     player.code,
     player.difficulty,
     roundConfig?.maxGuesses,
@@ -409,61 +406,24 @@ export default function usePlayController(
     setEndOfGameDialogDismissed(false);
 
     if (won) {
-      const basePoints = getPointsForWin(guesses.length);
-      const baseDifficultyMultiplier = getDifficultyScoreMultiplier(
-        player.difficulty,
-      );
-      const timeBonus = hardModeEnabled
-        ? getInsaneTimeBonus(hardModeSecondsLeft)
-        : 0;
-      const normalDictionaryRowsBonusMultiplier =
-        player.difficulty === "normal"
-          ? getNormalDictionaryRowsBonusPoints(guessWords, answer)
-          : 0;
-      const difficultyMultiplier =
-        baseDifficultyMultiplier + normalDictionaryRowsBonusMultiplier;
-      const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
-        { key: "base", value: basePoints },
-        { key: "difficulty", value: difficultyMultiplier },
-      ];
-
-      if (normalDictionaryRowsBonusMultiplier > 0) {
-        scoreSummaryItems.push({
-          key: "dictionary",
-          value: normalDictionaryRowsBonusMultiplier,
-        });
-      }
-
-      if (getStreakScoreMultiplier(player.streak)) {
-        scoreSummaryItems.push({
-          key: "streak",
-          value: getStreakScoreMultiplier(player.streak),
-        });
-      }
-
-      if (hardModeEnabled) {
-        scoreSummaryItems.push({ key: "time", value: timeBonus });
-      }
-
-      const totalPoints = getTotalPointsForWin(
-        guesses.length,
-        difficultyMultiplier,
-        player.streak,
-        timeBonus,
-      );
-
-      setEndOfGameSnapshot({
+      const victoryOutcome = resolveVictoryOutcomeForMode({
+        modeId: activeModeId,
         answer,
-        currentStreak: player.streak + 1,
-        bestStreak: player.streak,
-        challengeBonusPoints: 0,
-        scoreSummary: {
-          items: scoreSummaryItems,
-          total: totalPoints,
-        },
+        guessesLength: guesses.length,
+        guessWords,
+        playerDifficulty: player.difficulty,
+        playerStreak: player.streak,
+        hardModeEnabled,
+        hardModeSecondsLeft,
       });
 
-      void commitVictory(totalPoints, undefined, roundStartedAt, activeModeId);
+      setEndOfGameSnapshot(victoryOutcome.snapshot);
+      void commitVictory(
+        victoryOutcome.awardedPoints,
+        undefined,
+        roundStartedAt,
+        activeModeId,
+      );
     } else {
       setEndOfGameSnapshot({
         answer,

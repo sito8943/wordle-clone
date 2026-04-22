@@ -304,6 +304,81 @@ describe("usePlayController", () => {
     expect(result.current.endOfGameChallengeBonusPoints).toBe(20);
   });
 
+  it("does not evaluate challenges when a daily-mode round ends", async () => {
+    const date = new Date().toISOString().slice(0, 10);
+    const completeChallenge = vi.fn();
+
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum: vi
+          .fn()
+          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+      challengeClient: {
+        isConfigured: true,
+        listAllChallenges: vi.fn().mockResolvedValue([]),
+        getTodayChallenges: vi.fn().mockResolvedValue({
+          date,
+          simple: {
+            id: "simple-1",
+            name: "Steady Player",
+            description: "",
+            type: "simple",
+            conditionKey: "steady_player",
+          },
+          complex: {
+            id: "complex-1",
+            name: "Speedster",
+            description: "",
+            type: "complex",
+            conditionKey: "speedster",
+          },
+        }),
+        generateDailyChallenges: vi.fn(),
+        regenerateDailyChallenges: vi.fn(),
+        getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
+        completeChallenge,
+        resetPlayerChallengeProgressForDate: vi
+          .fn()
+          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+        seedChallenges: vi
+          .fn()
+          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+    });
+
+    const { rerender, result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: [
+        {
+          word: "APPLE",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+      won: true,
+      gameOver: true,
+      roundStartedAt: Date.now() - 5_000,
+    };
+
+    await act(async () => {
+      rerender();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(completeChallenge).not.toHaveBeenCalled();
+    expect(result.current.challengeCompletionMessage).toBeNull();
+    expect(result.current.endOfGameChallengeBonusPoints).toBe(0);
+  });
+
   it("does not complete persistent challenge on the first daily win", async () => {
     const date = new Date().toISOString().slice(0, 10);
     const completeChallenge = vi.fn();
@@ -910,6 +985,48 @@ describe("usePlayController", () => {
     expect(result.current.victoryScoreSummary?.items).toEqual(
       expect.arrayContaining([{ key: "time", value: 2 }]),
     );
+  });
+
+  it("awards one point per win in daily mode", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+
+    const { rerender, result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(
+      1,
+      undefined,
+      1_000,
+      WORDLE_MODE_IDS.DAILY,
+    );
+    expect(result.current.victoryScoreSummary).toEqual({
+      items: [{ key: "base", value: 1 }],
+      total: 1,
+    });
   });
 
   it("activates hard-mode timer in lightning mode regardless of player difficulty", () => {
