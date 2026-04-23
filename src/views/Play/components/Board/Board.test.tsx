@@ -89,7 +89,7 @@ describe("Board", () => {
     ).toBeNull();
   });
 
-  it("renders revealed colors as gray when the player loses", () => {
+  it("keeps revealed status colors after the game ends", () => {
     const mixed: TileStatus[] = [
       "correct",
       "present",
@@ -103,7 +103,6 @@ describe("Board", () => {
         guesses={[{ word: "HOUSE", statuses: mixed }]}
         current=""
         gameOver={true}
-        isLoss
       />,
     );
 
@@ -111,12 +110,12 @@ describe("Board", () => {
       screen.getByRole("gridcell", {
         name: `H, ${i18n.t("play.gameplay.tile.statuses.correct")}`,
       }).className,
-    ).toContain("bg-neutral-700");
+    ).toContain("bg-green-700");
     expect(
       screen.getByRole("gridcell", {
         name: `O, ${i18n.t("play.gameplay.tile.statuses.present")}`,
       }).className,
-    ).toContain("bg-neutral-700");
+    ).toContain("bg-yellow-500");
   });
 
   it("adds the entry animation class when enabled", () => {

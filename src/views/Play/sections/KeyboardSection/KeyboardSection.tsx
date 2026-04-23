@@ -49,7 +49,6 @@ const KeyboardSection = (): JSX.Element => {
           guesses={guesses}
           onKey={handleKey}
           language={controller.currentLanguage}
-          isLoss={gameOver && !won}
           animateEntry={keyboardEntryAnimationEnabled}
         />
       ) : (
@@ -84,7 +83,6 @@ const KeyboardSection = (): JSX.Element => {
               guesses={guesses}
               onKey={handleKey}
               language={controller.currentLanguage}
-              isLoss={gameOver && !won}
               animateEntry={keyboardEntryAnimationEnabled}
             />
           </div>

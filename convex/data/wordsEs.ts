@@ -927,4 +927,12 @@ export const ES_WORDS = [
   "cuido",
   "manta",
   "suero",
+  "pasta",
+  "tarta",
+  "marca",
+  "salon",
+  "talco",
+  "hueco",
+  "torpe",
+  "hurto",
 ];

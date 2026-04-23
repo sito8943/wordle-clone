@@ -9,7 +9,6 @@ const useBoardController = ({
   gameOver,
   roundConfig,
   animateTileEntry = false,
-  isLoss = false,
   shakePulse = 0,
   hintRevealPulse = 0,
   activeRowHintStatuses = {},
@@ -65,7 +64,6 @@ const useBoardController = ({
         animateEntry: animateTileEntry,
         isActive: resolvedActiveTileIndex === cellIndex,
         onClick: index === activeRowIndex ? onTileSelect : undefined,
-        isLoss,
         isHintReveal: rowHintRevealTileIndex === cellIndex,
         hintRevealPulse,
       }));
@@ -89,7 +87,6 @@ const useBoardController = ({
     roundConfig,
     hintRevealPulse,
     hintRevealTileIndex,
-    isLoss,
     normalDictionaryBonusRowFlags,
     activeTileIndex,
     onTileSelect,

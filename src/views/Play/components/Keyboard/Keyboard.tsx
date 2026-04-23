@@ -11,12 +11,10 @@ export function Keyboard({
   language = WORDS_DEFAULT_LANGUAGE,
   animateEntry = false,
   onEntryAnimationEnd,
-  isLoss = false,
 }: KeyboardProps) {
   const { t } = useTranslation();
   const { rows, keyStyleMap } = useKeyboardController({
     guesses,
-    isLoss,
     language,
   });
   const deleteHoldTimeoutRef = useRef<number | null>(null);

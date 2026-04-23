@@ -11,7 +11,6 @@ export type BoardPropsType = {
   roundConfig?: Partial<BoardRoundConfig>;
   animateEntry?: boolean;
   animateTileEntry?: boolean;
-  isLoss?: boolean;
   shakePulse?: number;
   activeRowHintStatuses?: Partial<Record<number, HintTileStatus>>;
   hintRevealPulse?: number;
@@ -57,7 +56,6 @@ export type TileViewModel = {
   animateEntry: boolean;
   isActive: boolean;
   onClick?: (key: number) => void;
-  isLoss: boolean;
   isHintReveal: boolean;
   hintRevealPulse: number;
 };
@@ -69,7 +67,6 @@ export type UseBoardControllerParams = Pick<
   | "gameOver"
   | "roundConfig"
   | "animateTileEntry"
-  | "isLoss"
   | "shakePulse"
   | "hintRevealPulse"
   | "activeRowHintStatuses"
