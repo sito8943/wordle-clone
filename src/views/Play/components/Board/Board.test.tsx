@@ -126,6 +126,14 @@ describe("Board", () => {
     );
   });
 
+  it("renders the board inside a horizontal scroll container", () => {
+    render(<Board guesses={[]} current="" gameOver={false} />);
+
+    const scrollContainer = screen.getByTestId("board-scroll-container");
+    expect(scrollContainer.className).toContain("overflow-x-auto");
+    expect(scrollContainer.className).toContain("max-w-full");
+  });
+
   it("adds staggered tile entry animation when enabled", () => {
     render(<Board guesses={[]} current="" gameOver={false} animateTileEntry />);
 

@@ -114,26 +114,27 @@ const DeveloperConsoleDialog = ({
           </p>
         </div>
 
-        <label
-          htmlFor={DEVELOPER_CONSOLE_NAME_INPUT_ID}
-          className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
-        >
-          {t("play.developerConsole.nameLabel")}
-        </label>
-        <input
-          id={DEVELOPER_CONSOLE_NAME_INPUT_ID}
-          type="text"
-          value={name}
-          maxLength={30}
-          disabled={isClosing}
-          onChange={(event: ChangeEvent<HTMLInputElement>) =>
-            setName(event.target.value)
-          }
-          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
-        />
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
+        <div className="flex gap-2 flex-wrap">
+          <div className="w-full max-w-36">
+            <label
+              htmlFor={DEVELOPER_CONSOLE_NAME_INPUT_ID}
+              className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
+            >
+              {t("play.developerConsole.nameLabel")}
+            </label>
+            <input
+              id={DEVELOPER_CONSOLE_NAME_INPUT_ID}
+              type="text"
+              value={name}
+              maxLength={30}
+              disabled={isClosing}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                setName(event.target.value)
+              }
+              className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            />
+          </div>
+          <div className="w-full max-w-28">
             <label
               htmlFor={DEVELOPER_CONSOLE_SCORE_INPUT_ID}
               className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"
@@ -153,7 +154,7 @@ const DeveloperConsoleDialog = ({
               className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
             />
           </div>
-          <div>
+          <div className="w-full max-w-28">
             <label
               htmlFor={DEVELOPER_CONSOLE_STREAK_INPUT_ID}
               className="block text-sm font-semibold text-neutral-900 dark:text-neutral-200"

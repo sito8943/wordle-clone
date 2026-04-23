@@ -46,12 +46,6 @@ const resolveDailyModeStatusStorageKey = (
 const isDailyModeOutcome = (value: unknown): value is DailyModeOutcome =>
   value === "won" || value === "lost";
 
-const hasDictionaryWord = (words: string[], word: string): boolean => {
-  const normalizedWord = normalizeWord(word).toLowerCase();
-
-  return words.some((candidate) => candidate === normalizedWord);
-};
-
 export const getTodayDateUTC = (): string => {
   const now = new Date();
   return now.toISOString().slice(0, 10);
@@ -192,10 +186,7 @@ export const resolveDailyAnswer = ({
   const normalizedRemoteWord =
     typeof remoteDailyWord === "string" ? normalizeWord(remoteDailyWord) : "";
 
-  if (
-    normalizedRemoteWord.length > 0 &&
-    (words.length === 0 || hasDictionaryWord(words, normalizedRemoteWord))
-  ) {
+  if (normalizedRemoteWord.length > 0) {
     return normalizedRemoteWord;
   }
 

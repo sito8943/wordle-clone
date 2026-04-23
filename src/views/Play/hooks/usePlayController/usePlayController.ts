@@ -122,7 +122,9 @@ export default function usePlayController(
   }, [activeScoreboardModeId, player.language, player.streak, scoreClient]);
   const wordle = useWordle({
     allowUnknownWords:
-      player.difficulty === "easy" || player.difficulty === "normal",
+      player.difficulty === "easy" ||
+      player.difficulty === "normal" ||
+      activeModeId === WORDLE_MODE_IDS.DAILY,
     language: gameplayLanguage,
     manualTileSelection: player.manualTileSelection === true,
     roundConfig: modeRoundConfig,

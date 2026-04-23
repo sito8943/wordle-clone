@@ -34,11 +34,21 @@ npm run convex:dev
 
 ```bash
 VITE_CONVEX_URL=https://YOUR-DEPLOYMENT.convex.cloud
+DAILY_PROXY_TARGET=http://localhost:8787
+VITE_DAILY_WORD_API_URL=/api/daily
 VITE_WORD_LIST_BUTTON_ENABLED=true
 VITE_SETTINGS_DRAWER_ENABLED=true
 ```
 
-4. Run the app:
+4. (Recommended for Daily mode in local dev) start the sibling daily backend:
+
+```bash
+cd ../wordle-daily-backend
+npm install
+npm run dev
+```
+
+5. Run the app:
 
 ```bash
 npm run dev
@@ -145,8 +155,10 @@ All flags are read from `src/config/env.ts`.
 
 - `VITE_APP_VERSION` (default `"0.0.0"`): app version.
 - `VITE_CONVEX_URL` (optional): Convex deployment URL.
+- `VITE_DAILY_WORD_API_URL` (default `"/api/daily"`): endpoint used by `DailyWordClient`.
 - `VITE_WORD_REPORT_PHONE_NUMBER` (optional): WhatsApp target for the invalid-word report link.
 - `VITE_PAYPAL_DONATION_BUTTON_URL` (optional): PayPal donation URL.
+- `DAILY_PROXY_TARGET` (default `"http://localhost:8787"`): dev proxy target for `/api/daily` in Vite.
 
 Feature flags (all default `true` unless noted):
 

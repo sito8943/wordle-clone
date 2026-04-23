@@ -3,6 +3,7 @@ export type RuntimeEnv = {
   mode: string;
   baseUrl: string;
   convexUrl?: string;
+  dailyWordApiUrl: string;
   wordReportPhoneNumber?: string;
   wordListButtonEnabled: boolean;
   wordReportButtonEnabled: boolean;

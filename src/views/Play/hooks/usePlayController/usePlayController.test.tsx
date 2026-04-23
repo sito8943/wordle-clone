@@ -495,6 +495,27 @@ describe("usePlayController", () => {
     );
   });
 
+  it("allows unknown words in daily mode regardless of difficulty", () => {
+    const basePlayerState = mockUsePlayer();
+
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      player: {
+        ...basePlayerState.player,
+        difficulty: "hard",
+      },
+    });
+
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }));
+
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowUnknownWords: true,
+        modeId: WORDLE_MODE_IDS.DAILY,
+      }),
+    );
+  });
+
   it("resolves and exposes modeId from controller options", () => {
     const { result } = renderHook(() =>
       usePlayController({ modeId: WORDLE_MODE_IDS.ZEN }),

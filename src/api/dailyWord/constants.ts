@@ -1,5 +1,7 @@
+import { env } from "@config";
+
 export const DAILY_WORD_STORAGE_KEY_PREFIX = "wordle:daily-word";
-export const RAE_DAILY_WORD_API_URL = "https://rae-api.com/api/daily";
+export const RAE_DAILY_WORD_API_URL = env.dailyWordApiUrl;
 
 export const DAILY_WORD_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 

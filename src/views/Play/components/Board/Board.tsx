@@ -39,7 +39,7 @@ export function Board({
   const boardClassName = `space-y-1.5 sm:space-y-2 mt-4 ${
     animateEntry ? "board-entry-animation" : ""
   }`;
-  const boardWrapperClassName = `mx-auto w-fit ${
+  const boardWrapperClassName = `w-fit ${
     isShaking ? "board-shake-pulse-animation" : ""
   }`;
   const comboFlashStyleClass =
@@ -54,36 +54,43 @@ export function Board({
   );
 
   return (
-    <div id={PLAY_BOARD_SHARE_CAPTURE_ID} className={boardWrapperClassName}>
-      <div className="relative">
-        <div
-          role="grid"
-          aria-label={t("play.gameplay.boardAriaLabel")}
-          className={boardClassName}
-        >
-          {rows.map((row) => {
-            return (
-              <Row
-                key={row.key}
-                row={row}
-                normalDictionaryBonusTooltip={normalDictionaryBonusTooltip}
-              />
-            );
-          })}
-        </div>
-        {comboFlash ? (
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 sm:ml-4"
-          >
-            <span
-              key={`combo-${comboFlash.pulse}`}
-              className={`combo-flash-animation block rounded-full border px-2.5 py-1 text-sm font-black tracking-wide shadow-lg ${comboFlashStyleClass}`}
+    <div
+      data-testid="board-scroll-container"
+      className="w-full max-w-full overflow-x-auto overscroll-x-contain"
+    >
+      <div className="mx-auto w-fit min-w-max px-4 sm:px-6">
+        <div id={PLAY_BOARD_SHARE_CAPTURE_ID} className={boardWrapperClassName}>
+          <div className="relative">
+            <div
+              role="grid"
+              aria-label={t("play.gameplay.boardAriaLabel")}
+              className={boardClassName}
             >
-              {t("play.gameplay.comboFlashValue", { count: comboFlash.count })}
-            </span>
-          </span>
-        ) : null}
+              {rows.map((row) => {
+                return (
+                  <Row
+                    key={row.key}
+                    row={row}
+                    normalDictionaryBonusTooltip={normalDictionaryBonusTooltip}
+                  />
+                );
+              })}
+            </div>
+            {comboFlash ? (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 sm:ml-4"
+              >
+                <span
+                  key={`combo-${comboFlash.pulse}`}
+                  className={`combo-flash-animation block rounded-full border px-2.5 py-1 text-sm font-black tracking-wide shadow-lg ${comboFlashStyleClass}`}
+                >
+                  {t("play.gameplay.comboFlashValue", { count: comboFlash.count })}
+                </span>
+              </span>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );

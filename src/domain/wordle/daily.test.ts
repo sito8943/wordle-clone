@@ -25,9 +25,9 @@ describe("daily word helpers", () => {
     expect(["CASA", "PERRO", "LUZ", "AMOR"]).toContain(first);
   });
 
-  it("prefers remote daily word when it exists in dictionary", () => {
+  it("prefers remote daily word when available", () => {
     const answer = resolveDailyAnswer({
-      words: ["casa", "puente", "luz"],
+      words: ["casa", "luz"],
       date: "2026-04-22",
       remoteDailyWord: "PUENTE",
     });
@@ -39,11 +39,10 @@ describe("daily word helpers", () => {
     const answer = resolveDailyAnswer({
       words: ["casa", "puente", "luz"],
       date: "2026-04-22",
-      remoteDailyWord: "INEXISTENTE",
+      remoteDailyWord: undefined,
     });
 
     expect(["CASA", "PUENTE", "LUZ"]).toContain(answer);
-    expect(answer).not.toBe("INEXISTENTE");
   });
 
   it("returns positive millis until next UTC day", () => {

@@ -548,7 +548,7 @@ describe("useWordle dictionary query integration", () => {
     expect(getDailyWord).toHaveBeenCalledOnce();
   });
 
-  it("falls back to deterministic dictionary word when remote daily word is invalid", async () => {
+  it("uses remote daily word even when it is not present in dictionary", async () => {
     const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "mar"]);
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
@@ -574,10 +574,9 @@ describe("useWordle dictionary query integration", () => {
     });
 
     await waitFor(() => {
-      expect(["CASA", "LUZ", "MAR"]).toContain(result.current.answer);
+      expect(result.current.answer).toBe("INEXISTENTE");
     });
 
-    expect(result.current.answer).not.toBe("INEXISTENTE");
     expect(result.current.roundConfig.lettersPerRow).toBe(
       result.current.answer.length,
     );

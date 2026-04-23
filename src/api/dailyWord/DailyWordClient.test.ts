@@ -61,6 +61,23 @@ describe("DailyWordClient", () => {
     expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify("PUENTE"));
   });
 
+  it("uses local daily proxy endpoint by default", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, data: { word: "PUENTE" } }),
+    });
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    await client.getDailyWord(DATE);
+
+    expect(fetchFn).toHaveBeenCalledWith("/api/daily", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+  });
+
   it("returns null when remote payload does not contain a playable word", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
