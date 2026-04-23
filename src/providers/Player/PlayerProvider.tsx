@@ -16,6 +16,7 @@ import {
 } from "./utils";
 import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  SCOREBOARD_MODE_IDS,
   clearAllPersistedGameStates,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
@@ -300,7 +301,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const nextPlayer = normalizePlayer({
         ...current,
         score: current.score + safePoints,
-        streak: current.streak + 1,
+        streak:
+          safeModeId === SCOREBOARD_MODE_IDS.CLASSIC
+            ? current.streak + 1
+            : current.streak,
       });
       const currentModeScore = scoreClient.getCurrentClientScoreSnapshot(
         current.language,
@@ -349,16 +353,20 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         current.language,
         safeModeId,
       );
+      const shouldResetDefaultModeStreak =
+        safeModeId === SCOREBOARD_MODE_IDS.CLASSIC && current.streak > 0;
 
       if (current.hackingBan !== null) {
         return;
       }
 
-      if (current.streak === 0 && currentModeScore.streak === 0) {
+      if (!shouldResetDefaultModeStreak && currentModeScore.streak === 0) {
         return;
       }
 
-      const nextPlayer = { ...current, streak: 0 };
+      const nextPlayer = shouldResetDefaultModeStreak
+        ? { ...current, streak: 0 }
+        : current;
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,

@@ -10,6 +10,7 @@ import {
   isWordleModeEnabled,
   readDailyModeOutcomeForDate,
   resolvePlayableWordleModeId,
+  resolveScoreboardModeId,
   getRoundDurationMs,
   resolveRoundConfigForMode,
   resolveWordleModeId,
@@ -93,10 +94,32 @@ export default function usePlayController(
     () => resolvePlayableWordleModeId(modeId),
     [modeId],
   );
+  const activeScoreboardModeId = useMemo(
+    () => resolveScoreboardModeId(activeModeId),
+    [activeModeId],
+  );
   const modeRoundConfig = useMemo(
     () => resolveRoundConfigForMode(activeModeId),
     [activeModeId],
   );
+  const activeModeStreak = useMemo(() => {
+    const snapshotStreak = scoreClient.getCurrentClientScoreSnapshot(
+      player.language,
+      activeScoreboardModeId,
+    ).streak;
+
+    if (
+      activeScoreboardModeId === WORDLE_MODE_IDS.CLASSIC &&
+      snapshotStreak === 0 &&
+      player.streak > 0
+    ) {
+      // Backward-compat fallback for clients that still have legacy player streak
+      // but no classic score snapshot cached yet.
+      return player.streak;
+    }
+
+    return snapshotStreak;
+  }, [activeScoreboardModeId, player.language, player.streak, scoreClient]);
   const wordle = useWordle({
     allowUnknownWords:
       player.difficulty === "easy" || player.difficulty === "normal",
@@ -432,7 +455,7 @@ export default function usePlayController(
         guessesLength: guesses.length,
         guessWords,
         playerDifficulty: player.difficulty,
-        playerStreak: player.streak,
+        playerStreak: activeModeStreak,
         hardModeEnabled,
         hardModeSecondsLeft,
       });
@@ -454,8 +477,8 @@ export default function usePlayController(
 
       setEndOfGameSnapshot({
         answer,
-        currentStreak: player.streak,
-        bestStreak: player.streak,
+        currentStreak: activeModeStreak,
+        bestStreak: activeModeStreak,
         challengeBonusPoints: 0,
         scoreSummary: null,
       });
@@ -479,7 +502,7 @@ export default function usePlayController(
     dailyModeActive,
     player.code,
     player.difficulty,
-    player.streak,
+    activeModeStreak,
     roundStartedAt,
     won,
   ]);
@@ -1042,7 +1065,7 @@ export default function usePlayController(
       const nextStreak =
         typeof nextPlayer.streak === "number"
           ? nextPlayer.streak
-          : player.streak;
+          : activeModeStreak;
 
       void scoreClient.recordScore(
         {
@@ -1064,7 +1087,7 @@ export default function usePlayController(
       player.language,
       player.name,
       player.score,
-      player.streak,
+      activeModeStreak,
       replacePlayer,
       scoreClient,
     ],
@@ -1258,7 +1281,7 @@ export default function usePlayController(
     cancelDifficultyChange,
     changeManualTileSelection,
     currentLanguage: gameplayLanguage,
-    currentWinStreak: player.streak,
+    currentWinStreak: activeModeStreak,
     showLegacyEndOfGameMessage:
       !showEndOfGameDialogs || showLegacyEndOfGameFeedback,
     canReopenEndOfGameDialog,
@@ -1275,8 +1298,8 @@ export default function usePlayController(
     endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
     victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,
     endOfGameChallengeBonusPoints: endOfGameSnapshot?.challengeBonusPoints ?? 0,
-    endOfGameCurrentStreak: endOfGameSnapshot?.currentStreak ?? player.streak,
-    endOfGameBestStreak: endOfGameSnapshot?.bestStreak ?? player.streak,
+    endOfGameCurrentStreak: endOfGameSnapshot?.currentStreak ?? activeModeStreak,
+    endOfGameBestStreak: endOfGameSnapshot?.bestStreak ?? activeModeStreak,
     closeEndOfGameDialog,
     reopenEndOfGameDialog,
     wordListEnabledForDifficulty,

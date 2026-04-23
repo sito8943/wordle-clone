@@ -52,12 +52,17 @@ const makeWrapper =
     getCurrentPlayerProfile = vi.fn().mockResolvedValue(null),
     queueRoundEvent = vi.fn(),
     syncRoundEvents = vi.fn().mockResolvedValue(null),
+    getCurrentClientScoreSnapshot = vi.fn().mockReturnValue({
+      score: 0,
+      streak: 0,
+    }),
   }: {
     upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
     recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
     getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
     queueRoundEvent?: ApiContextType["scoreClient"]["queueRoundEvent"];
     syncRoundEvents?: ApiContextType["scoreClient"]["syncRoundEvents"];
+    getCurrentClientScoreSnapshot?: ApiContextType["scoreClient"]["getCurrentClientScoreSnapshot"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
     const apiValue = createTestApiContextValue({
@@ -74,6 +79,7 @@ const makeWrapper =
           getCurrentPlayerProfile,
           queueRoundEvent,
           syncRoundEvents,
+          getCurrentClientScoreSnapshot,
         },
       ) as never,
     });
@@ -226,10 +232,15 @@ describe("PlayerProvider", () => {
       wrapper: makeWrapper({ queueRoundEvent }),
     });
 
+    act(() => {
+      result.current.replacePlayer({ streak: 4 });
+    });
+
     await act(async () => {
       await result.current.commitVictory(7, 1234, undefined, "lightning");
     });
 
+    expect(result.current.player.streak).toBe(4);
     expect(queueRoundEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: "win",
@@ -321,6 +332,41 @@ describe("PlayerProvider", () => {
       expect.objectContaining({
         kind: "loss",
         modeId: "classic",
+        version: 2,
+      }),
+    );
+  });
+
+  it("commitLoss in lightning keeps the classic streak unchanged", async () => {
+    const queueRoundEvent = vi.fn();
+    const getCurrentClientScoreSnapshot = vi
+      .fn()
+      .mockImplementation((_language: string, modeId?: string) => ({
+        score: modeId === "lightning" ? 40 : 42,
+        streak: modeId === "lightning" ? 2 : 3,
+      }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ queueRoundEvent, getCurrentClientScoreSnapshot }),
+    });
+
+    act(() => {
+      result.current.replacePlayer({
+        name: "Ana",
+        code: "AB12",
+        score: 42,
+        streak: 3,
+      });
+    });
+
+    await act(async () => {
+      await result.current.commitLoss("lightning");
+    });
+
+    expect(result.current.player.streak).toBe(3);
+    expect(queueRoundEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "loss",
+        modeId: "lightning",
         version: 2,
       }),
     );

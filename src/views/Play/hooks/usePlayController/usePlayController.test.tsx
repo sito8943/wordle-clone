@@ -104,6 +104,12 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi
+          .fn()
+          .mockImplementation((_language: string, modeId?: string) => ({
+            score: 0,
+            streak: modeId === WORDLE_MODE_IDS.LIGHTNING ? 0 : 2,
+          })),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum: vi
@@ -236,6 +242,10 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum: vi
@@ -313,6 +323,10 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum: vi
@@ -402,6 +416,10 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum: vi
@@ -500,6 +518,63 @@ describe("usePlayController", () => {
     expect(result.current.modeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
     expect(result.current.modeEnabled).toBe(true);
     expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
+  });
+
+  it("uses a separate streak value for lightning mode", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 5,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+    });
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi
+          .fn()
+          .mockImplementation((_language: string, modeId?: string) => ({
+            score: 0,
+            streak: modeId === WORDLE_MODE_IDS.LIGHTNING ? 1 : 5,
+          })),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum: vi
+          .fn()
+          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+      challengeClient: {
+        isConfigured: false,
+        listAllChallenges: vi.fn().mockResolvedValue([]),
+        getTodayChallenges: vi.fn(),
+        generateDailyChallenges: vi.fn(),
+        regenerateDailyChallenges: vi.fn(),
+        getPlayerChallengeProgress: vi.fn(),
+        completeChallenge: vi.fn(),
+        resetPlayerChallengeProgressForDate: vi
+          .fn()
+          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+        seedChallenges: vi
+          .fn()
+          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+    });
+
+    const { result: classicResult } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.CLASSIC }),
+    );
+    const { result: lightningResult } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(classicResult.current.currentWinStreak).toBe(5);
+    expect(lightningResult.current.currentWinStreak).toBe(1);
   });
 
   it("falls back to classic mode when an unknown mode is provided", () => {
@@ -979,7 +1054,7 @@ describe("usePlayController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 2, 2, 2),
+      getTotalPointsForWin(3, 2, 0, 2),
       undefined,
       1_000,
       WORDLE_MODE_IDS.LIGHTNING,
@@ -1638,6 +1713,10 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum,
