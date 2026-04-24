@@ -64,7 +64,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const { dailyWordClient } = useApi();
   const dailyModeActive = modeId === WORDLE_MODE_IDS.DAILY;
   const dailyDate = useMemo(getTodayDateUTC, []);
-  const [remoteDailyWord, setRemoteDailyWord] = useState<string | null>(null);
+  const initialCachedDailyWord = useMemo(
+    () => (dailyModeActive ? dailyWordClient.getCachedWord(dailyDate) : null),
+    [dailyDate, dailyModeActive, dailyWordClient],
+  );
+  const [remoteDailyWord, setRemoteDailyWord] = useState<string | null>(
+    initialCachedDailyWord,
+  );
   const baseRoundConfig = useMemo(
     () => resolveBoardRoundConfig(roundConfig),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,9 +88,10 @@ export default function useWordle(options: UseWordleOptions = {}) {
         ? resolveDailyAnswer({
             words: cachedWords,
             date: dailyDate,
+            remoteDailyWord: initialCachedDailyWord,
           })
         : getRandomWord(),
-    [cachedWords, dailyDate, dailyModeActive],
+    [cachedWords, dailyDate, dailyModeActive, initialCachedDailyWord],
   );
   const [dailyLettersPerRow, setDailyLettersPerRow] = useState(
     () => initialAnswer.length,

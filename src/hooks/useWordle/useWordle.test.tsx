@@ -548,6 +548,47 @@ describe("useWordle dictionary query integration", () => {
     expect(getDailyWord).toHaveBeenCalledOnce();
   });
 
+  it("boots daily mode from cached daily word without resetting board version", async () => {
+    const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "mar"]);
+    const cachedDailyWord = "PUENTE";
+    const getDailyWord = vi.fn().mockResolvedValue(cachedDailyWord);
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+        dailyWordClient: createMockDailyWordClient(
+          getDailyWord,
+          vi.fn().mockResolvedValue("Meaning"),
+          {
+            getCachedWord: vi.fn().mockReturnValue(cachedDailyWord),
+          },
+        ),
+      }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useWordle({
+          modeId: WORDLE_MODE_IDS.DAILY,
+        }),
+      { wrapper },
+    );
+
+    expect(result.current.answer).toBe(cachedDailyWord);
+    expect(result.current.roundConfig.lettersPerRow).toBe(
+      cachedDailyWord.length,
+    );
+    expect(result.current.boardVersion).toBe(0);
+
+    await waitFor(() => {
+      expect(result.current.dictionaryLoading).toBe(false);
+    });
+
+    expect(result.current.boardVersion).toBe(0);
+    expect(getDailyWord).toHaveBeenCalledOnce();
+  });
+
   it("uses remote daily word even when it is not present in dictionary", async () => {
     const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "mar"]);
     const queryClient = createTestQueryClient();
