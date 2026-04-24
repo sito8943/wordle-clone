@@ -41,6 +41,42 @@ describe("resolveVictoryOutcomeForMode", () => {
     expect(outcome.snapshot.bestStreak).toBe(2);
   });
 
+  it("keeps daily points fixed regardless of streak and other modifiers", () => {
+    const lowStreakOutcome = resolveVictoryOutcomeForMode({
+      modeId: WORDLE_MODE_IDS.DAILY,
+      answer: "APPLE",
+      guessesLength: 6,
+      guessWords: ["SLATE", "CRANE", "ALERT", "STONE", "PLANT", "APPLE"],
+      playerDifficulty: "easy",
+      playerStreak: 0,
+      hardModeEnabled: false,
+      hardModeSecondsLeft: 0,
+    });
+    const highStreakOutcome = resolveVictoryOutcomeForMode({
+      modeId: WORDLE_MODE_IDS.DAILY,
+      answer: "APPLE",
+      guessesLength: 1,
+      guessWords: ["APPLE"],
+      playerDifficulty: "insane",
+      playerStreak: 99,
+      hardModeEnabled: true,
+      hardModeSecondsLeft: 45,
+    });
+
+    expect(lowStreakOutcome.awardedPoints).toBe(1);
+    expect(highStreakOutcome.awardedPoints).toBe(1);
+    expect(lowStreakOutcome.snapshot.scoreSummary).toEqual({
+      items: [{ key: "base", value: 1 }],
+      total: 1,
+    });
+    expect(highStreakOutcome.snapshot.scoreSummary).toEqual({
+      items: [{ key: "base", value: 1 }],
+      total: 1,
+    });
+    expect(lowStreakOutcome.snapshot.currentStreak).toBe(1);
+    expect(highStreakOutcome.snapshot.currentStreak).toBe(100);
+  });
+
   it("uses regular scoring for non-daily modes", () => {
     const outcome = resolveVictoryOutcomeForMode({
       modeId: WORDLE_MODE_IDS.CLASSIC,

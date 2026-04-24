@@ -405,4 +405,48 @@ describe("Scoreboard", () => {
     const { container } = render(<Scoreboard />);
     expect(container.querySelector("svg")).toBeTruthy();
   });
+
+  it("shows shield icon for players who won daily today in any scoreboard", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Sito",
+          score: 1,
+          streak: 0,
+          hasWonDailyToday: true,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    const { container } = render(<Scoreboard />);
+
+    expect(container.querySelector('svg[data-icon="shield"]')).toBeTruthy();
+  });
+
+  it("does not show shield icon when the player has not won daily today", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Sito",
+          score: 0,
+          streak: 0,
+          hasWonDailyToday: false,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    const { container } = render(<Scoreboard />);
+
+    expect(container.querySelector('svg[data-icon="shield"]')).toBeNull();
+  });
 });

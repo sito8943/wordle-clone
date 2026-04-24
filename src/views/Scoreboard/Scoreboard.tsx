@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import { faRotateRight, faShield } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "@i18n";
 import {
   Alert,
@@ -443,6 +444,8 @@ const Scoreboard = (): JSX.Element => {
                   scores.map((entry, index) => {
                     const rowKey = `${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`;
                     const isExpanded = expandedEntryId === entry.id;
+                    const showWinnerShield = entry.hasWonDailyToday === true;
+                    console.log(entry)
                     const isClosing =
                       closingEntryId === entry.id && !isExpanded;
                     const shouldRenderDropdown = isExpanded || isClosing;
@@ -509,7 +512,16 @@ const Scoreboard = (): JSX.Element => {
                             aria-controls={`scoreboard-date-dropdown-${entry.id}`}
                             className="w-full cursor-pointer rounded-sm text-left outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/40"
                           >
-                            {entry.nick}
+                            <span className="inline-flex items-center gap-1.5">
+                              <span>{entry.nick}</span>
+                              {showWinnerShield && (
+                                <FontAwesomeIcon
+                                  icon={faShield}
+                                  aria-hidden="true"
+                                  className="text-xs text-sky-500 dark:text-sky-300"
+                                />
+                              )}
+                            </span>
                           </button>
                         </td>
                         <td className="scoreboard-cell">

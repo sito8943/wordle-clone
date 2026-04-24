@@ -15,6 +15,7 @@ export type ScoreEntry = {
   modeId: ScoreboardModeId;
   score: number;
   streak: number;
+  hasWonDailyToday?: boolean;
   createdAt: number;
   source: ScoreSource;
   isCurrentClient: boolean;
@@ -69,6 +70,7 @@ export type RemoteScore = {
   modeId?: ScoreboardModeId;
   score: number;
   streak?: number;
+  hasWonDailyToday?: boolean;
   createdAt: number;
   isCurrentClient?: boolean;
 };

@@ -16,7 +16,11 @@ import {
   UPSERT_PLAYER_PROFILE_MUTATION,
   WORDLE_SYNC_EVENTS_KEY,
 } from "./constants";
-import { SCOREBOARD_MODE_IDS, resolveScoreboardModeId } from "@domain/wordle";
+import {
+  DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
+  SCOREBOARD_MODE_IDS,
+  resolveScoreboardModeId,
+} from "@domain/wordle";
 import type { PlayerLanguage, ScoreboardModeId } from "@domain/wordle";
 import type {
   RecordScoreInput,
@@ -631,6 +635,8 @@ class ScoreClient {
   }
 
   private toLocalScoreEntry(entry: StoredScore): ScoreEntry {
+    const isCurrentBrowserEntry = this.isCurrentBrowserEntryForAnyMode(entry);
+
     return {
       id: entry.localId,
       nick: entry.nick,
@@ -638,6 +644,8 @@ class ScoreClient {
       modeId: this.normalizeModeId(entry.modeId),
       score: entry.score,
       streak: entry.streak,
+      hasWonDailyToday:
+        isCurrentBrowserEntry && this.hasCurrentBrowserWonDailyTodayLocally(),
       createdAt: entry.createdAt,
       source: "local",
       isCurrentClient: !entry.clientId || entry.clientId === this.clientId,
@@ -647,7 +655,14 @@ class ScoreClient {
   private toScoreEntry(
     entry: Pick<RemoteScore, "id" | "nick" | "score" | "createdAt"> &
       Partial<
-        Pick<RemoteScore, "isCurrentClient" | "streak" | "language" | "modeId">
+        Pick<
+          RemoteScore,
+          | "isCurrentClient"
+          | "streak"
+          | "language"
+          | "modeId"
+          | "hasWonDailyToday"
+        >
       >,
     source: ScoreSource,
     defaultLanguage: PlayerLanguage,
@@ -660,6 +675,7 @@ class ScoreClient {
       modeId: this.normalizeModeId(entry.modeId ?? defaultModeId),
       score: entry.score,
       streak: this.normalizeStreak(entry.streak ?? 0),
+      hasWonDailyToday: Boolean(entry.hasWonDailyToday),
       createdAt: entry.createdAt,
       source,
       isCurrentClient: Boolean(entry.isCurrentClient),
@@ -1076,9 +1092,23 @@ class ScoreClient {
         entry.modeId,
       );
       const current = byNick.get(key);
+      const mergeDailyWinToday = (
+        preferred: ScoreEntry,
+        candidate: ScoreEntry,
+      ): ScoreEntry => ({
+        ...preferred,
+        hasWonDailyToday:
+          Boolean(preferred.hasWonDailyToday) ||
+          Boolean(candidate.hasWonDailyToday),
+      });
 
-      if (!current || scoreSorter(entry, current) < 0) {
+      if (!current) {
         byNick.set(key, entry);
+        continue;
+      }
+
+      if (scoreSorter(entry, current) < 0) {
+        byNick.set(key, mergeDailyWinToday(entry, current));
         continue;
       }
 
@@ -1088,7 +1118,7 @@ class ScoreClient {
         (!current.isCurrentClient ||
           (entry.source === "local" && current.source !== "local"))
       ) {
-        byNick.set(key, entry);
+        byNick.set(key, mergeDailyWinToday(entry, current));
         continue;
       }
 
@@ -1097,7 +1127,18 @@ class ScoreClient {
         entry.source === "convex" &&
         current.source !== "convex"
       ) {
-        byNick.set(key, entry);
+        byNick.set(key, mergeDailyWinToday(entry, current));
+        continue;
+      }
+
+      if (
+        entry.hasWonDailyToday === true &&
+        current.hasWonDailyToday !== true
+      ) {
+        byNick.set(key, {
+          ...current,
+          hasWonDailyToday: true,
+        });
       }
     }
 
@@ -1144,9 +1185,20 @@ class ScoreClient {
       preferred = candidate;
     }
 
-    return entries.filter(
-      (entry) => !entry.isCurrentClient || entry === preferred,
+    const hasAnyDailyWinToday = currentClientEntries.some(
+      (entry) => entry.hasWonDailyToday === true,
     );
+
+    return entries
+      .filter((entry) => !entry.isCurrentClient || entry === preferred)
+      .map((entry) =>
+        entry === preferred && hasAnyDailyWinToday
+          ? {
+              ...entry,
+              hasWonDailyToday: true,
+            }
+          : entry,
+      );
   }
 
   private isNickAvailableInLocalData(nick: string): boolean {
@@ -1170,6 +1222,49 @@ class ScoreClient {
     }
 
     return navigator.onLine;
+  }
+
+  private hasCurrentBrowserWonDailyTodayLocally(): boolean {
+    const today = new Date().toISOString().slice(0, 10);
+
+    try {
+      const keysToCheck: string[] = [DAILY_MODE_STATUS_STORAGE_KEY_PREFIX];
+
+      for (let index = 0; index < this.storage.length; index += 1) {
+        const key = this.storage.key(index);
+        if (
+          key &&
+          key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)
+        ) {
+          keysToCheck.push(key);
+        }
+      }
+
+      for (const key of keysToCheck) {
+        const raw = this.storage.getItem(key);
+        if (!raw) {
+          continue;
+        }
+
+        let parsed: { date?: unknown; outcome?: unknown } | null = null;
+        try {
+          parsed = JSON.parse(raw) as {
+            date?: unknown;
+            outcome?: unknown;
+          };
+        } catch {
+          parsed = null;
+        }
+
+        if (parsed?.date === today && parsed?.outcome === "won") {
+          return true;
+        }
+      }
+    } catch {
+      return false;
+    }
+
+    return false;
   }
 
   private normalizeRecoveryCode(code: string): string {

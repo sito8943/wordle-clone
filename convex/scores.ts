@@ -382,6 +382,56 @@ const buildPlayerProfile = (
   };
 };
 
+const getCurrentUTCDayRange = (): { startAt: number; endAt: number } => {
+  const now = new Date();
+  const startAt = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
+
+  return {
+    startAt,
+    endAt: startAt + 24 * 60 * 60 * 1000,
+  };
+};
+
+const hasWonDailyTodayFromEvents = (
+  events: ScoreEventRecord[],
+  range: { startAt: number; endAt: number },
+): boolean =>
+  events.some(
+    (event) =>
+      event.kind === "win" &&
+      normalizeModeId(event.modeId) === "daily" &&
+      event.happenedAt >= range.startAt &&
+      event.happenedAt < range.endAt,
+  );
+
+const getDailyWinnersTodayByProfileId = async (
+  ctx: ScoresCtx,
+  profileIds: string[],
+): Promise<Map<string, boolean>> => {
+  const dailyWinsByProfileId = new Map<string, boolean>();
+  const range = getCurrentUTCDayRange();
+  const uniqueProfileIds = [...new Set(profileIds.filter(Boolean))];
+
+  await Promise.all(
+    uniqueProfileIds.map(async (profileId) => {
+      const profileEvents = (await ctx.db
+        .query("scoreEvents")
+        .withIndex("by_profile_id", (query) => query.eq("profileId", profileId))
+        .collect()) as ScoreEventRecord[];
+      dailyWinsByProfileId.set(
+        profileId,
+        hasWonDailyTodayFromEvents(profileEvents, range),
+      );
+    }),
+  );
+
+  return dailyWinsByProfileId;
+};
+
 const roundSyncEventValidator = v.union(
   v.object({
     id: v.string(),
@@ -1026,6 +1076,14 @@ export const listTopScores = query({
       : -1;
     const currentClientScore =
       currentClientIndex >= 0 ? sortedScores[currentClientIndex] : null;
+    const profilesToResolveDailyWinFor = [
+      ...sortedScores.slice(0, limit).map((score) => score._id),
+      ...(currentClientScore ? [currentClientScore._id] : []),
+    ];
+    const dailyWinnersTodayByProfileId = await getDailyWinnersTodayByProfileId(
+      ctx,
+      profilesToResolveDailyWinFor,
+    );
 
     const mappedTopScores = sortedScores.slice(0, limit).map((score) => {
       const stats = getModeStats(score, language, modeId);
@@ -1036,6 +1094,8 @@ export const listTopScores = query({
         modeId,
         score: stats.score,
         streak: normalizeStreak(stats.streak),
+        hasWonDailyToday:
+          dailyWinnersTodayByProfileId.get(score._id) === true,
         createdAt: stats.createdAt,
         isCurrentClient:
           currentProfile !== null &&
@@ -1058,6 +1118,9 @@ export const listTopScores = query({
               modeId,
               score: stats.score,
               streak: normalizeStreak(stats.streak),
+              hasWonDailyToday:
+                dailyWinnersTodayByProfileId.get(currentClientScore._id) ===
+                true,
               createdAt: stats.createdAt,
               isCurrentClient: true,
             };
