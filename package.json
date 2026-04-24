@@ -19,6 +19,7 @@
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
     "convex:seed-es": "node scripts/seed-spanish-words.mjs",
+    "convex:export-json": "node scripts/export-convex-data.mjs",
     "firebase:deploy": "firebase deploy --only hosting:sito-wordle"
   },
   "dependencies": {
