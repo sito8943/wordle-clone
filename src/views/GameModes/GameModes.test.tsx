@@ -21,12 +21,30 @@ import { i18n, initI18n } from "@i18n";
 import { GAME_MODE_TRANSLATION_VALUES } from "./constants";
 import GameModes from "./GameModes";
 
+const createReadyDailyRequirementsState = () => ({
+  status: "ready" as const,
+  isLoading: false,
+  isReady: true,
+  isUnavailable: false,
+  dailyWord: "APPLE",
+  dailyMeaning: "A fruit.",
+  reload: vi.fn(),
+});
+
+const mockUseDailyModePrerequisites = vi
+  .fn()
+  .mockReturnValue(createReadyDailyRequirementsState());
+
 vi.mock("@providers", () => ({
   usePlayer: () => ({
     player: {
       code: "AB12",
     },
   }),
+}));
+
+vi.mock("@hooks/useDailyModePrerequisites", () => ({
+  useDailyModePrerequisites: () => mockUseDailyModePrerequisites(),
 }));
 
 const LocationProbe = () => {
@@ -51,6 +69,9 @@ beforeAll(async () => {
 beforeEach(async () => {
   await i18n.changeLanguage("en");
   localStorage.clear();
+  mockUseDailyModePrerequisites.mockReturnValue(
+    createReadyDailyRequirementsState(),
+  );
 });
 
 describe("GameModes", () => {
@@ -133,6 +154,34 @@ describe("GameModes", () => {
 
     expect(dailyIcon).toBeTruthy();
     expect(screen.getByText("Daily reset in")).toBeTruthy();
+  });
+
+  it("disables daily mode access when daily requirements are unavailable", () => {
+    mockUseDailyModePrerequisites.mockReturnValue({
+      status: "unavailable",
+      isLoading: false,
+      isReady: false,
+      isUnavailable: true,
+      dailyWord: null,
+      dailyMeaning: null,
+      reload: vi.fn(),
+    });
+
+    renderGameModes();
+
+    const dailyModeName = i18n.t("gameModes.modes.daily.name");
+    const dailyModeButtons = screen.getAllByRole("button", {
+      name: new RegExp(dailyModeName, "i"),
+    });
+    const disabledDailyButton = dailyModeButtons.find((button) =>
+      button.hasAttribute("disabled"),
+    );
+
+    expect(disabledDailyButton).toBeTruthy();
+    expect(screen.queryByRole("link", { name: dailyModeName })).toBeNull();
+    expect(
+      screen.getByText(i18n.t("gameModes.modes.daily.access.unavailable")),
+    ).toBeTruthy();
   });
 
   it("shows failed-daily icon and reset countdown when today was lost", () => {

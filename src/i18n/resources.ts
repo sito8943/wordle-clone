@@ -106,6 +106,10 @@ export const resources = {
               baseRules:
                 "{{rows}} rows and N letters, where N is the daily word length.",
             },
+            access: {
+              loading: "Loading daily requirements...",
+              unavailable: "Requires daily word and meaning to unlock.",
+            },
           },
         },
       },
@@ -331,6 +335,11 @@ export const resources = {
           description:
             "This mode is still in preparation. You can keep playing in Classic meanwhile.",
           classicAction: "Play Classic",
+          dailyRequirementsTitle: "{{mode}} requires daily data",
+          dailyRequirementsLoading:
+            "Loading daily word and meaning before entering this mode.",
+          dailyRequirementsDescription:
+            "This mode requires loading the daily word and meaning. Daily stays disabled if either cannot be loaded.",
         },
         sections: {
           boardError: {
@@ -724,6 +733,11 @@ export const resources = {
               baseRules:
                 "{{rows}} filas y N letras, donde N es la longitud de la palabra del día.",
             },
+            access: {
+              loading: "Cargando requisitos del modo diario...",
+              unavailable:
+                "Requiere palabra y significado diarios para desbloquearse.",
+            },
           },
         },
       },
@@ -950,6 +964,11 @@ export const resources = {
           description:
             "Este modo sigue en preparación. Mientras tanto puedes seguir jugando en Clásico.",
           classicAction: "Jugar Clásico",
+          dailyRequirementsTitle: "{{mode}} requiere datos diarios",
+          dailyRequirementsLoading:
+            "Cargando palabra y significado diarios antes de entrar en este modo.",
+          dailyRequirementsDescription:
+            "Este modo requiere cargar la palabra del día y su significado. Si alguno no se puede cargar, Daily queda deshabilitado.",
         },
         sections: {
           boardError: {

@@ -7,6 +7,7 @@ import {
   faCircleInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { CountdownBadge, Dialog } from "@components";
+import { useDailyModePrerequisites } from "@hooks/useDailyModePrerequisites";
 import { useTranslation } from "@i18n";
 import { usePlayer } from "@providers";
 import {
@@ -30,6 +31,7 @@ import type { GameModeId } from "./types";
 const GameModes = () => {
   const { t } = useTranslation();
   const { player } = usePlayer();
+  const { status: dailyModeRequirementsStatus } = useDailyModePrerequisites();
   const readDailyModeOutcome = useCallback(
     () =>
       readDailyModeOutcomeForDate(player.code) ?? readDailyModeOutcomeForDate(),
@@ -140,6 +142,13 @@ const GameModes = () => {
         <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {GAME_MODE_CARDS.map((mode, index) => {
             const modeName = t(`gameModes.modes.${mode.id}.name`);
+            const dailyModeDisabled =
+              mode.id === "daily" && dailyModeRequirementsStatus !== "ready";
+            const dailyModeStatusMessage = dailyModeDisabled
+              ? dailyModeRequirementsStatus === "loading"
+                ? t("gameModes.modes.daily.access.loading")
+                : t("gameModes.modes.daily.access.unavailable")
+              : null;
             const dailyOutcomeKnown =
               mode.id === "daily" && dailyModeOutcome !== null;
             const modeIcon =
@@ -158,6 +167,11 @@ const GameModes = () => {
                     ? "text-red-600 dark:text-red-300"
                     : mode.iconClassName
                 : mode.iconClassName;
+            const cardClassName = `group flex min-h-40 w-full flex-col items-center justify-center gap-3 rounded-2xl border border-neutral-300 bg-white/80 px-4 py-6 text-center transition-all dark:border-neutral-700 dark:bg-neutral-800/60 ${
+              dailyModeDisabled
+                ? "cursor-not-allowed opacity-60"
+                : "hover:-translate-y-0.5 hover:border-primary dark:hover:border-primary"
+            }`;
 
             return (
               <li
@@ -169,28 +183,62 @@ const GameModes = () => {
                 }`}
                 style={{ transitionDelay: getItemTransitionDelay(index) }}
               >
-                <Link
-                  to={mode.to}
-                  className="group flex min-h-40 w-full flex-col items-center justify-center gap-3 rounded-2xl border border-neutral-300 bg-white/80 px-4 py-6 text-center transition-all hover:-translate-y-0.5 hover:border-primary dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:border-primary"
-                >
-                  <FontAwesomeIcon
-                    icon={modeIcon}
-                    aria-hidden="true"
-                    className={`text-3xl transition-[scale] group-hover:scale-110 ${modeIconClassName}`}
-                  />
-                  <span className="slab text-xl text-neutral-800 dark:text-neutral-100">
-                    {modeName}
-                  </span>
-                  {dailyOutcomeKnown ? (
-                    <CountdownBadge
-                      millisUntilTarget={millisUntilDailyReset}
-                      label={t("challenges.dailyResetsIn")}
-                      className="mt-1 w-full text-[11px] px-2 py-1"
-                      labelClassName="text-[10px]"
-                      countdownClassName="text-[11px]"
+                {dailyModeDisabled ? (
+                  <button
+                    type="button"
+                    disabled
+                    className={cardClassName}
+                    aria-label={modeName}
+                  >
+                    <FontAwesomeIcon
+                      icon={modeIcon}
+                      aria-hidden="true"
+                      className={`text-3xl ${modeIconClassName}`}
                     />
-                  ) : null}
-                </Link>
+                    <span className="slab text-xl text-neutral-800 dark:text-neutral-100">
+                      {modeName}
+                    </span>
+                    {dailyModeStatusMessage ? (
+                      <span className="text-xs text-neutral-600 dark:text-neutral-300">
+                        {dailyModeStatusMessage}
+                      </span>
+                    ) : null}
+                    {dailyOutcomeKnown ? (
+                      <CountdownBadge
+                        millisUntilTarget={millisUntilDailyReset}
+                        label={t("challenges.dailyResetsIn")}
+                        className="mt-1 w-full text-[11px] px-2 py-1"
+                        labelClassName="text-[10px]"
+                        countdownClassName="text-[11px]"
+                      />
+                    ) : null}
+                  </button>
+                ) : (
+                  <Link to={mode.to} className={cardClassName}>
+                    <FontAwesomeIcon
+                      icon={modeIcon}
+                      aria-hidden="true"
+                      className={`text-3xl transition-[scale] group-hover:scale-110 ${modeIconClassName}`}
+                    />
+                    <span className="slab text-xl text-neutral-800 dark:text-neutral-100">
+                      {modeName}
+                    </span>
+                    {dailyModeStatusMessage ? (
+                      <span className="text-xs text-neutral-600 dark:text-neutral-300">
+                        {dailyModeStatusMessage}
+                      </span>
+                    ) : null}
+                    {dailyOutcomeKnown ? (
+                      <CountdownBadge
+                        millisUntilTarget={millisUntilDailyReset}
+                        label={t("challenges.dailyResetsIn")}
+                        className="mt-1 w-full text-[11px] px-2 py-1"
+                        labelClassName="text-[10px]"
+                        countdownClassName="text-[11px]"
+                      />
+                    ) : null}
+                  </Link>
+                )}
 
                 <button
                   type="button"
