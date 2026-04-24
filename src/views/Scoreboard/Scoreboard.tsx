@@ -445,7 +445,7 @@ const Scoreboard = (): JSX.Element => {
                     const rowKey = `${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`;
                     const isExpanded = expandedEntryId === entry.id;
                     const showWinnerShield = entry.hasWonDailyToday === true;
-                    console.log(entry)
+
                     const isClosing =
                       closingEntryId === entry.id && !isExpanded;
                     const shouldRenderDropdown = isExpanded || isClosing;

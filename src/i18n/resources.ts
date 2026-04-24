@@ -198,7 +198,7 @@ export const resources = {
         refreshAriaLabel: "Refresh scores",
         modeSelectorAriaLabel: "Select scoreboard mode",
         convexNotConfigured:
-          "Convex is not configured (`VITE_CONVEX_URL`). Using local storage only.",
+          "Backend is not configured (`VITE_BACKEND_URL` or `VITE_CONVEX_URL`). Using local storage only.",
         offlineFallback:
           "Offline fallback active. Showing cached local scores.",
         currentPosition:
@@ -826,7 +826,7 @@ export const resources = {
         refreshAriaLabel: "Actualizar puntuaciones",
         modeSelectorAriaLabel: "Seleccionar modo del marcador",
         convexNotConfigured:
-          "Convex no está configurado (`VITE_CONVEX_URL`). Se usará solo almacenamiento local.",
+          "El backend no está configurado (`VITE_BACKEND_URL` o `VITE_CONVEX_URL`). Se usará solo almacenamiento local.",
         offlineFallback:
           "Modo sin conexión activo. Mostrando puntuaciones locales en caché.",
         currentPosition:

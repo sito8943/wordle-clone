@@ -34,9 +34,9 @@ describe("ApiProvider", () => {
     expect(typeof result.current.convexEnabled).toBe("boolean");
   });
 
-  it("convexEnabled is false in test mode (no convex URL configured)", () => {
+  it("convexEnabled is false in test mode (remote backend disabled)", () => {
     const { result } = renderHook(() => useApi(), { wrapper });
-    // In test env, env.convexUrl is undefined → gateway.isConfigured = false
+    // In test env, ApiProvider disables backendUrl/convexUrl.
     expect(result.current.convexEnabled).toBe(false);
   });
 

@@ -96,10 +96,10 @@ describe("Scoreboard", () => {
     expect(screen.getByText("Loading scores...")).toBeTruthy();
   });
 
-  it("shows convex not configured notice when convexEnabled is false", () => {
+  it("shows backend not configured notice when convexEnabled is false", () => {
     mockController({ convexEnabled: false });
     render(<Scoreboard />);
-    expect(screen.getByText(/Convex is not configured/)).toBeTruthy();
+    expect(screen.getByText(/Backend is not configured/)).toBeTruthy();
   });
 
   it("shows offline fallback notice when convexEnabled but source is local", () => {

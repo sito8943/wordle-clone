@@ -9,9 +9,17 @@ import { ApiContext } from "./ApiContext";
 import type { ProviderProps } from "../types";
 
 const ApiProvider = ({ children }: ProviderProps) => {
+  const backendUrl = env.mode === "test" ? undefined : env.backendUrl;
   const convexUrl = env.mode === "test" ? undefined : env.convexUrl;
 
-  const gateway = useMemo(() => new ConvexGateway(convexUrl), [convexUrl]);
+  const gateway = useMemo(
+    () =>
+      new ConvexGateway({
+        backendUrl,
+        convexUrl,
+      }),
+    [backendUrl, convexUrl],
+  );
   const scoreClient = useMemo(() => new ScoreClient(gateway), [gateway]);
   const wordDictionaryClient = useMemo(
     () => new WordDictionaryClient(gateway),

@@ -2,6 +2,7 @@ export type RuntimeEnv = {
   appVersion: string;
   mode: string;
   baseUrl: string;
+  backendUrl?: string;
   convexUrl?: string;
   dailyWordApiUrl: string;
   wordReportPhoneNumber?: string;

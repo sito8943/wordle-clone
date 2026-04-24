@@ -11,6 +11,7 @@ const env: RuntimeEnv = {
   appVersion: readString(import.meta.env.VITE_APP_VERSION, "0.0.0"),
   mode: runtimeMode,
   baseUrl: readString(import.meta.env.BASE_URL, "/"),
+  backendUrl: readOptionalString(import.meta.env.VITE_BACKEND_URL),
   convexUrl: readOptionalString(import.meta.env.VITE_CONVEX_URL),
   dailyWordApiUrl: readString(import.meta.env.VITE_DAILY_WORD_API_URL, "/api/daily"),
   wordReportPhoneNumber: readOptionalString(
