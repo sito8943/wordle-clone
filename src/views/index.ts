@@ -5,7 +5,6 @@ import Scoreboard from "./Scoreboard";
 import Profile from "./Profile";
 import NotFound from "./NotFound";
 import GameModes from "./GameModes";
-import Classic from "./GameModes/Classic";
 import Lighting from "./GameModes/Lightning";
 import Zen from "./GameModes/Zen";
 import Daily from "./GameModes/Daily";
@@ -17,7 +16,6 @@ export {
   Profile,
   NotFound,
   GameModes,
-  Classic,
   Lighting,
   Zen,
   Daily,
