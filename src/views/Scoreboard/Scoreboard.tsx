@@ -341,6 +341,21 @@ const Scoreboard = (): JSX.Element => {
           >
             {t("gameModes.modes.lightning.name")}
           </Button>
+          <Button
+            variant={
+              selectedModeId === SCOREBOARD_MODE_IDS.DAILY ? "solid" : "ghost"
+            }
+            color={
+              selectedModeId === SCOREBOARD_MODE_IDS.DAILY
+                ? "primary"
+                : "neutral"
+            }
+            className="px-3 py-1.5 text-xs"
+            onClick={() => setSelectedModeId(SCOREBOARD_MODE_IDS.DAILY)}
+            aria-pressed={selectedModeId === SCOREBOARD_MODE_IDS.DAILY}
+          >
+            {t("gameModes.modes.daily.name")}
+          </Button>
         </div>
       </div>
 

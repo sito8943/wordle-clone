@@ -4,6 +4,7 @@ import {
   isWordleModeEnabled,
   resolvePlayableWordleModeId,
   resolveRoundConfigForMode,
+  resolveScoreboardModeId,
   resolveWordleModeId,
   WORDLE_MODE_IDS,
 } from "./modeConfig";
@@ -25,6 +26,24 @@ describe("modeConfig", () => {
     );
     expect(resolveWordleModeId(WORDLE_MODE_IDS.DAILY)).toBe(
       WORDLE_MODE_IDS.DAILY,
+    );
+  });
+
+  it("keeps supported scoreboard mode ids and falls back to classic", () => {
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.CLASSIC)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.LIGHTNING)).toBe(
+      WORDLE_MODE_IDS.LIGHTNING,
+    );
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.DAILY)).toBe(
+      WORDLE_MODE_IDS.DAILY,
+    );
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.ZEN)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    expect(resolveScoreboardModeId("unsupported")).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
     );
   });
 

@@ -89,7 +89,7 @@ describe("ScoreClient", () => {
     expect(cito?.streak).toBe(2);
   });
 
-  it("keeps separate local scoreboards for classic and lightning modes", async () => {
+  it("keeps separate local scoreboards for classic, lightning and daily modes", async () => {
     const client = new ScoreClient(createGateway(), storage);
 
     await client.recordScore({
@@ -106,9 +106,17 @@ describe("ScoreClient", () => {
       modeId: "lightning",
       createdAt: 2000,
     });
+    await client.recordScore({
+      nick: "CITO",
+      score: 4,
+      streak: 5,
+      modeId: "daily",
+      createdAt: 3000,
+    });
 
     const classic = await client.listTopScores(10, "en", "classic");
     const lightning = await client.listTopScores(10, "en", "lightning");
+    const daily = await client.listTopScores(10, "en", "daily");
 
     expect(classic.scores).toHaveLength(1);
     expect(classic.scores[0].score).toBe(12);
@@ -116,6 +124,150 @@ describe("ScoreClient", () => {
     expect(lightning.scores).toHaveLength(1);
     expect(lightning.scores[0].score).toBe(6);
     expect(lightning.scores[0].modeId).toBe("lightning");
+    expect(daily.scores).toHaveLength(1);
+    expect(daily.scores[0].score).toBe(4);
+    expect(daily.scores[0].modeId).toBe("daily");
+  });
+
+  it("syncs and fetches daily scores remotely when gateway is configured", async () => {
+    const query = vi.fn().mockResolvedValue({
+      scores: [
+        {
+          id: "remote-daily",
+          nick: "CITO",
+          modeId: "daily",
+          score: 3,
+          streak: 1,
+          createdAt: 1000,
+        },
+      ],
+      currentClientRank: null,
+      currentClientEntry: null,
+    });
+    const mutation = vi.fn().mockResolvedValue(undefined);
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation,
+      }),
+      storage,
+    );
+
+    await client.recordScore({
+      nick: "CITO",
+      score: 3,
+      streak: 1,
+      modeId: "daily",
+      createdAt: 1000,
+    });
+    const result = await client.listTopScores(10, "en", "daily");
+    await client.syncPendingScores();
+
+    expect(result.source).toBe("convex");
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].modeId).toBe("daily");
+    expect(query).toHaveBeenCalledWith(
+      "scores:listTopScores",
+      expect.objectContaining({
+        modeId: "daily",
+      }),
+    );
+    expect(mutation).toHaveBeenCalledWith(
+      "scores:addScore",
+      expect.objectContaining({
+        modeId: "daily",
+      }),
+    );
+  });
+
+  it("keeps local cached daily score visible while remote response is stale", async () => {
+    const query = vi.fn().mockResolvedValue({
+      scores: [],
+      currentClientRank: null,
+      currentClientEntry: null,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    client.cachePlayerScore({
+      nick: "Player",
+      language: "en",
+      modeId: "daily",
+      score: 1,
+      streak: 1,
+      createdAt: 1000,
+      overwriteExisting: true,
+    });
+
+    const result = await client.listTopScores(10, "en", "daily");
+
+    expect(result.source).toBe("convex");
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0]).toMatchObject({
+      nick: "Player",
+      modeId: "daily",
+      score: 1,
+      streak: 1,
+      isCurrentClient: true,
+    });
+    expect(result.currentClientEntry?.nick).toBe("Player");
+  });
+
+  it("falls back to local scores when remote mode does not match the requested mode", async () => {
+    const query = vi.fn().mockResolvedValue({
+      scores: [
+        {
+          id: "remote-classic",
+          nick: "CITO",
+          modeId: "classic",
+          score: 90,
+          streak: 3,
+          createdAt: 1000,
+        },
+      ],
+      currentClientRank: 1,
+      currentClientEntry: {
+        id: "remote-classic-me",
+        nick: "CITO",
+        modeId: "classic",
+        score: 90,
+        streak: 3,
+        createdAt: 1000,
+        isCurrentClient: true,
+      },
+    });
+
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    await client.recordScore({
+      nick: "CITO",
+      score: 3,
+      streak: 1,
+      modeId: "daily",
+      createdAt: 2000,
+    });
+
+    const result = await client.listTopScores(10, "en", "daily");
+
+    expect(result.source).toBe("local");
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].modeId).toBe("daily");
+    expect(result.scores[0].score).toBe(3);
+    expect(result.currentClientRank).toBe(1);
   });
 
   it("merges remote and pending rows without duplicating the same nick", async () => {
@@ -664,6 +816,61 @@ describe("ScoreClient", () => {
             kind: "loss",
             modeId: "classic",
             happenedAt: 2000,
+            version: 2,
+          },
+        ],
+      }),
+    );
+    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
+  });
+
+  it("queues daily round events for remote sync", async () => {
+    const mutation = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "remote-client",
+      clientRecordId: "remote-record",
+      nick: "Ana",
+      playerCode: "AB12",
+      score: 1,
+      streak: 1,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        mutation,
+      }),
+      storage,
+    );
+
+    client.queueRoundEvent({
+      id: "daily-win-1",
+      kind: "win",
+      pointsDelta: 1,
+      modeId: "daily",
+      happenedAt: 1000,
+      version: 2,
+    });
+
+    await client.syncRoundEvents({
+      nick: "Ana",
+      language: "en",
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+    });
+
+    expect(mutation).toHaveBeenCalledWith(
+      SYNC_ROUND_EVENTS_MUTATION,
+      expect.objectContaining({
+        events: [
+          {
+            id: "daily-win-1",
+            kind: "win",
+            pointsDelta: 1,
+            modeId: "daily",
+            happenedAt: 1000,
             version: 2,
           },
         ],

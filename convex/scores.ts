@@ -28,13 +28,13 @@ const normalizeStreak = (value: number | undefined): number =>
   Math.max(0, Math.floor(value ?? 0));
 
 type SupportedLanguage = "en" | "es";
-type SupportedMode = "classic" | "lightning";
+type SupportedMode = "classic" | "lightning" | "daily";
 
 const normalizeLanguage = (value?: string): SupportedLanguage =>
   value === "es" ? "es" : "en";
 
 const normalizeModeId = (value?: string): SupportedMode =>
-  value === "lightning" ? "lightning" : "classic";
+  value === "lightning" || value === "daily" ? value : "classic";
 
 const normalizeDifficulty = (value?: string): string =>
   value === "easy" ||
@@ -787,7 +787,7 @@ export const syncRoundEvents = mutation({
   },
   handler: async (ctx, args) => {
     const language = normalizeLanguage(args.language);
-    const modeIds: SupportedMode[] = ["classic", "lightning"];
+    const modeIds: SupportedMode[] = ["classic", "lightning", "daily"];
     const orderedEvents = [...args.events]
       .filter((event) => event.version === 2)
       .sort((left, right) => left.happenedAt - right.happenedAt);
@@ -813,6 +813,7 @@ export const syncRoundEvents = mutation({
       {
         classic: { score: 0, streak: 0, createdAt: profile.createdAt },
         lightning: { score: 0, streak: 0, createdAt: profile.createdAt },
+        daily: { score: 0, streak: 0, createdAt: profile.createdAt },
       },
     );
     const touchedModeIds = new Set<SupportedMode>();

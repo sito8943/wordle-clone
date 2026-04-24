@@ -164,13 +164,18 @@ class ScoreClient {
   }
 
   queueRoundEvent(event: StoredRoundSyncEvent): void {
+    const safeModeId = this.normalizeModeId(event.modeId);
+    if (!this.isRemoteSupportedMode(safeModeId)) {
+      return;
+    }
+
     const pending = this.readRoundEvents();
     const next = pending.filter((entry) => entry.id !== event.id);
     if (event.kind === "win") {
       next.push({
         ...event,
         pointsDelta: this.normalizeScore(event.pointsDelta),
-        modeId: this.normalizeModeId(event.modeId),
+        modeId: safeModeId,
         happenedAt:
           Number.isFinite(event.happenedAt) && event.happenedAt > 0
             ? Math.floor(event.happenedAt)
@@ -180,7 +185,7 @@ class ScoreClient {
     } else {
       next.push({
         ...event,
-        modeId: this.normalizeModeId(event.modeId),
+        modeId: safeModeId,
         happenedAt:
           Number.isFinite(event.happenedAt) && event.happenedAt > 0
             ? Math.floor(event.happenedAt)
@@ -195,13 +200,24 @@ class ScoreClient {
     input: SyncRoundEventsInput,
   ): Promise<RemotePlayerProfile | null> {
     const events = this.readRoundEvents();
+    const supportedEvents = events.filter((event) =>
+      this.isRemoteSupportedMode(event.modeId),
+    );
+    if (supportedEvents.length !== events.length) {
+      this.writeRoundEvents(supportedEvents);
+    }
+
     const identity = this.readProfileIdentity();
 
-    if (events.length === 0 || !this.gateway.isConfigured || !this.isOnline()) {
+    if (
+      supportedEvents.length === 0 ||
+      !this.gateway.isConfigured ||
+      !this.isOnline()
+    ) {
       return null;
     }
 
-    const orderedEvents = [...events].sort(
+    const orderedEvents = [...supportedEvents].sort(
       (left, right) => left.happenedAt - right.happenedAt,
     );
 
@@ -334,6 +350,10 @@ class ScoreClient {
 
     this.addToCache(record, overwriteExisting);
 
+    if (!this.isRemoteSupportedMode(modeId)) {
+      return;
+    }
+
     if (!this.gateway.isConfigured || !this.isOnline()) {
       this.addToPending(record, overwriteExisting, mutation);
       return;
@@ -408,6 +428,10 @@ class ScoreClient {
     const safeLimit = this.normalizeLimit(limit);
     const identity = this.readProfileIdentity();
 
+    if (!this.isRemoteSupportedMode(safeModeId)) {
+      return this.getCachedTopScores(safeLimit, safeLanguage, safeModeId);
+    }
+
     if (!this.gateway.isConfigured || !this.isOnline()) {
       return this.getCachedTopScores(safeLimit, safeLanguage, safeModeId);
     }
@@ -423,6 +447,20 @@ class ScoreClient {
         clientRecordId: identity?.clientRecordId,
       });
       const parsedResponse = this.parseRemoteScoresResponse(remoteResponse);
+      const remoteModeMismatch = parsedResponse.scores.some(
+        (entry) =>
+          this.normalizeModeId(entry.modeId ?? safeModeId) !== safeModeId,
+      );
+      const remoteCurrentClientEntryModeMismatch =
+        parsedResponse.currentClientEntry !== null &&
+        this.normalizeModeId(
+          parsedResponse.currentClientEntry.modeId ?? safeModeId,
+        ) !== safeModeId;
+
+      if (remoteModeMismatch || remoteCurrentClientEntryModeMismatch) {
+        return this.getCachedTopScores(safeLimit, safeLanguage, safeModeId);
+      }
+
       const mergedScores = this.mergeRemoteAndPending(
         parsedResponse.scores,
         safeLimit,
@@ -477,9 +515,15 @@ class ScoreClient {
     const pending = this.dedupeStoredByNick(
       this.readScores(SCOREBOARD_PENDING_KEY),
     );
+    const supportedPending = pending.filter((entry) =>
+      this.isRemoteSupportedMode(entry.modeId),
+    );
+    if (supportedPending.length !== pending.length) {
+      this.writeScores(SCOREBOARD_PENDING_KEY, supportedPending);
+    }
 
     if (
-      pending.length === 0 ||
+      supportedPending.length === 0 ||
       !this.gateway.isConfigured ||
       !this.isOnline()
     ) {
@@ -489,7 +533,7 @@ class ScoreClient {
     const stillPending: StoredScore[] = [];
     let networkDown = false;
 
-    for (const entry of pending) {
+    for (const entry of supportedPending) {
       if (networkDown) {
         stillPending.push(entry);
         continue;
@@ -527,7 +571,7 @@ class ScoreClient {
       this.dedupeStoredByNick(stillPending),
     );
 
-    return { flushed: stillPending.length !== pending.length };
+    return { flushed: stillPending.length !== supportedPending.length };
   }
 
   private localScoresRanked(
@@ -556,6 +600,14 @@ class ScoreClient {
         (entry) => entry.language === language && entry.modeId === modeId,
       ),
     );
+    const cachedCurrentClientScores = this.dedupeStoredByNick(
+      this.readScores(SCOREBOARD_CACHE_KEY).filter(
+        (entry) =>
+          entry.language === language &&
+          entry.modeId === modeId &&
+          this.isCurrentBrowserEntryForAnyMode(entry),
+      ),
+    );
 
     const remoteEntries: ScoreEntry[] = remoteScores.map((entry) =>
       this.toScoreEntry(entry, "convex", language, modeId),
@@ -564,9 +616,15 @@ class ScoreClient {
     const pendingEntries: ScoreEntry[] = pending.map((entry) =>
       this.toLocalScoreEntry(entry),
     );
+    const cachedCurrentClientEntries: ScoreEntry[] =
+      cachedCurrentClientScores.map((entry) => this.toLocalScoreEntry(entry));
 
     return this.dedupeCurrentClientEntries(
-      this.dedupeScoreEntriesByNick([...remoteEntries, ...pendingEntries]),
+      this.dedupeScoreEntriesByNick([
+        ...remoteEntries,
+        ...pendingEntries,
+        ...cachedCurrentClientEntries,
+      ]),
     )
       .sort((a, b) => scoreSorter(a, b))
       .slice(0, limit);
@@ -798,6 +856,14 @@ class ScoreClient {
     );
   }
 
+  private isRemoteSupportedMode(modeId: ScoreboardModeId): boolean {
+    return (
+      modeId === SCOREBOARD_MODE_IDS.CLASSIC ||
+      modeId === SCOREBOARD_MODE_IDS.LIGHTNING ||
+      modeId === SCOREBOARD_MODE_IDS.DAILY
+    );
+  }
+
   private nickLanguageModeKey(
     nick: string,
     language: PlayerLanguage,
@@ -874,21 +940,31 @@ class ScoreClient {
       typeof candidate.pointsDelta === "number" &&
       typeof candidate.happenedAt === "number"
     ) {
+      const modeId = this.normalizeModeId(candidate.modeId);
+      if (!this.isRemoteSupportedMode(modeId)) {
+        return null;
+      }
+
       return {
         id: candidate.id,
         kind: "win",
         pointsDelta: this.normalizeScore(candidate.pointsDelta),
-        modeId: this.normalizeModeId(candidate.modeId),
+        modeId,
         happenedAt: Math.floor(candidate.happenedAt),
         version: 2,
       };
     }
 
     if (candidate.kind === "loss" && typeof candidate.happenedAt === "number") {
+      const modeId = this.normalizeModeId(candidate.modeId);
+      if (!this.isRemoteSupportedMode(modeId)) {
+        return null;
+      }
+
       return {
         id: candidate.id,
         kind: "loss",
-        modeId: this.normalizeModeId(candidate.modeId),
+        modeId,
         happenedAt: Math.floor(candidate.happenedAt),
         version: 2,
       };

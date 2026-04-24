@@ -63,7 +63,7 @@ describe("Scoreboard", () => {
     expect(screen.getByRole("button", { name: "Refresh scores" })).toBeTruthy();
   });
 
-  it("lets the player switch between Classic and Lightning scoreboards", () => {
+  it("lets the player switch between Classic, Lightning and Daily scoreboards", () => {
     mockController();
     render(<Scoreboard />);
 
@@ -72,6 +72,15 @@ describe("Scoreboard", () => {
 
     expect(vi.mocked(useScoreboardController)).toHaveBeenLastCalledWith(
       "lightning",
+    );
+
+    const dailyButton = screen.getByRole("button", {
+      name: i18n.t("gameModes.modes.daily.name"),
+    });
+    fireEvent.click(dailyButton);
+
+    expect(vi.mocked(useScoreboardController)).toHaveBeenLastCalledWith(
+      "daily",
     );
   });
 
