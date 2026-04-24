@@ -155,10 +155,10 @@ All flags are read from `src/config/env.ts`.
 
 - `VITE_APP_VERSION` (default `"0.0.0"`): app version.
 - `VITE_CONVEX_URL` (optional): Convex deployment URL.
-- `VITE_DAILY_WORD_API_URL` (default `"/api/daily"`): endpoint used by `DailyWordClient`.
+- `VITE_DAILY_WORD_API_URL` (default `"/api/daily"`): base endpoint used by `DailyWordClient` to fetch the daily word and derive dictionary meaning requests (`/api/words/:word`).
 - `VITE_WORD_REPORT_PHONE_NUMBER` (optional): WhatsApp target for the invalid-word report link.
 - `VITE_PAYPAL_DONATION_BUTTON_URL` (optional): PayPal donation URL.
-- `DAILY_PROXY_TARGET` (default `"http://localhost:8787"`): dev proxy target for `/api/daily` in Vite.
+- `DAILY_PROXY_TARGET` (default `"http://localhost:8787"`): dev proxy target for `/api/daily` and `/api/words` in Vite.
 
 Feature flags (all default `true` unless noted):
 
@@ -212,6 +212,8 @@ Notes:
   - `wordle:hint-usage`: hint usage snapshot keyed by game reference, without storing `answer` in clear.
   - `wordle:sync-events`: pending offline victory events used to sync score/streak to Convex in order.
   - `wordle:dictionary:es`: cached dictionary.
+  - `wordle:daily-word:<YYYY-MM-DD>`: cached remote daily word.
+  - `wordle:daily-meaning:<YYYY-MM-DD>:<WORD>`: cached meaning for the daily word fetched on demand.
   - `player`: player profile and score/streak metadata, including recovery `code`.
     - local `score`/`streak` act as UI cache; confirmed remote values take precedence after sync.
   - `wordle:scoreboard:*`: scoreboard cache/pending/client metadata.

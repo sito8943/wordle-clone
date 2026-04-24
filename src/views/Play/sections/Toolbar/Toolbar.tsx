@@ -1,5 +1,6 @@
 import { memo, useState, type JSX } from "react";
 import {
+  faCircleInfo,
   faCode,
   faLightbulb,
   faList,
@@ -8,6 +9,7 @@ import {
   faTrophy,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak, Alert } from "@components";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useSound } from "@providers/Sound";
@@ -31,10 +33,12 @@ const Toolbar = (): JSX.Element => {
     challenges,
   } = usePlayView();
   const {
+    activeModeId,
     currentWinStreak,
     dictionaryLoading,
     dictionaryWords,
     openWordsDialog,
+    openDailyMeaningDialog,
     hintsEnabledForDifficulty,
     useHint,
     hintButtonDisabled,
@@ -53,6 +57,7 @@ const Toolbar = (): JSX.Element => {
     hardModeTickPulse,
     hardModeClockBoostScale,
   } = controller;
+  const showDailyMeaningButton = activeModeId === WORDLE_MODE_IDS.DAILY;
 
   return (
     <>
@@ -88,6 +93,19 @@ const Toolbar = (): JSX.Element => {
               {t("play.toolbar.hintButton", { count: hintsRemaining })}
             </Button>
           )}
+          {showDailyMeaningButton ? (
+            <Button
+              onClick={openDailyMeaningDialog}
+              aria-label={t("play.toolbar.dailyMeaningAriaLabel")}
+              variant="ghost"
+              icon={faCircleInfo}
+              iconClassName={toolbarIconClassName}
+              className="mobile-compact-button"
+              hideLabelOnMobile
+            >
+              {t("play.toolbar.dailyMeaningButton")}
+            </Button>
+          ) : null}
           {challengesEnabled &&
             challenges.challenges &&
             (() => {

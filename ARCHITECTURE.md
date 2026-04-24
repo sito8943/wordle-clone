@@ -177,6 +177,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:weekly-challenges:round-tracker:<playerCode>`: per-player weekly round tracker used by weekly challenge conditions to store completed rounds count, won rounds count, and lost rounds count for the current UTC week (Monday-start, UTC).
 - `wordle:dictionary:es`: cached dictionary words.
 - `wordle:daily-word:<YYYY-MM-DD>`: cached daily word fetched from the RAE daily endpoint for UTC date `<YYYY-MM-DD>`, with local deterministic fallback only when remote fetch fails or returns no usable word.
+- `wordle:daily-meaning:<YYYY-MM-DD>:<WORD>`: cached daily word meaning fetched lazily from the RAE words endpoint (`/api/words/<word>`) when the Daily meaning dialog is opened.
 - `wordle:daily-mode-status` (or `wordle:daily-mode-status:<PLAYER_CODE>` when player-scoped): stores today's daily mode resolution (`won` / `lost`) and UTC date to prevent replaying Daily after the round is resolved until the next UTC day.
 - `wordle:scoreboard:cache` and `wordle:scoreboard:pending`: local scoreboard caches segmented by `language` and `modeId` (`classic` or `lightning`).
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.

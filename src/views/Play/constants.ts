@@ -10,6 +10,7 @@ export const PLAY_DIALOG_IDS = {
   REFRESH_CONFIRMATION: "play:refresh-confirmation",
   DIFFICULTY_CHANGE: "play:difficulty-change",
   WORD_LIST: "play:word-list",
+  DAILY_MEANING: "play:daily-meaning",
   CHALLENGES: "play:challenges",
   DEVELOPER_CONSOLE: "play:developer-console",
   TUTORIAL_PROMPT: "play:tutorial-prompt",

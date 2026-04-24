@@ -131,6 +131,9 @@ describe("usePlayController", () => {
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
+      },
     });
     mockUsePlayer.mockReturnValue({
       player: {
@@ -283,6 +286,9 @@ describe("usePlayController", () => {
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
+      },
     });
 
     const { rerender, result } = renderHook(() => usePlayController());
@@ -363,6 +369,9 @@ describe("usePlayController", () => {
         seedChallenges: vi
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
 
@@ -457,6 +466,9 @@ describe("usePlayController", () => {
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
+      },
     });
 
     const { rerender } = renderHook(() => usePlayController());
@@ -514,6 +526,65 @@ describe("usePlayController", () => {
         modeId: WORDLE_MODE_IDS.DAILY,
       }),
     );
+  });
+
+  it("overrides daily hints to one present hint every three letters", () => {
+    wordleState = {
+      ...wordleState,
+      answer: "LECTURA",
+    };
+
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }));
+
+    expect(mockUseHintController).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hintsLimitOverride: 2,
+        hintStatusOverride: "present",
+      }),
+    );
+  });
+
+  it("fetches daily meaning lazily when opening the info dialog", async () => {
+    const getDailyMeaning = vi.fn().mockResolvedValue("Acción de leer");
+    const baseApiState = mockUseApi();
+    mockUseApi.mockReturnValue({
+      ...baseApiState,
+      dailyWordClient: {
+        getDailyMeaning,
+      },
+    });
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    expect(getDailyMeaning).not.toHaveBeenCalled();
+    expect(result.current.showDailyMeaningDialog).toBe(false);
+
+    act(() => {
+      result.current.openDailyMeaningDialog();
+    });
+
+    expect(result.current.showDailyMeaningDialog).toBe(true);
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getDailyMeaning).toHaveBeenCalledWith("APPLE", expect.any(String));
+    expect(result.current.dailyMeaning).toBe("Acción de leer");
+
+    act(() => {
+      result.current.closeDailyMeaningDialog();
+      result.current.openDailyMeaningDialog();
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(getDailyMeaning).toHaveBeenCalledTimes(1);
   });
 
   it("resolves and exposes modeId from controller options", () => {
@@ -584,6 +655,9 @@ describe("usePlayController", () => {
         seedChallenges: vi
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
 
@@ -1741,6 +1815,12 @@ describe("usePlayController", () => {
       },
       wordDictionaryClient: {
         refreshRemoteChecksum,
+      },
+      challengeClient: {
+        isConfigured: false,
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
 

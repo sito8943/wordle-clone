@@ -15,6 +15,8 @@ export const useHintController = ({
   answer,
   gameId,
   difficulty,
+  hintsLimitOverride,
+  hintStatusOverride,
   roundConfig,
   hasInProgressGameAtMount,
   showResumeDialog,
@@ -23,7 +25,11 @@ export const useHintController = ({
   revealHint,
 }: UseHintControllerParams): UseHintControllerResult => {
   const { lettersPerRow } = resolveBoardRoundConfig(roundConfig);
-  const hintsLimit = getHintsLimitByDifficulty(difficulty);
+  const hintsLimit =
+    typeof hintsLimitOverride === "number" && Number.isFinite(hintsLimitOverride)
+      ? Math.max(0, Math.floor(hintsLimitOverride))
+      : getHintsLimitByDifficulty(difficulty);
+  const hintStatus = hintStatusOverride ?? getHintStatusByDifficulty(difficulty);
   const initialGameIdRef = useRef(gameId);
   const hasInProgressGameAtMountRef = useRef(hasInProgressGameAtMount);
   const [hintsUsed, setHintsUsed] = useState(0);
@@ -79,7 +85,6 @@ export const useHintController = ({
       return false;
     }
 
-    const hintStatus = getHintStatusByDifficulty(difficulty);
     if (!hintStatus) {
       return false;
     }
@@ -100,7 +105,7 @@ export const useHintController = ({
       return next;
     });
     return true;
-  }, [answer, difficulty, gameId, hintButtonDisabled, revealHint]);
+  }, [answer, gameId, hintButtonDisabled, hintStatus, revealHint]);
 
   return {
     hintsRemaining,

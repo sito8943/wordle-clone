@@ -11,6 +11,8 @@ export type UseHintControllerParams = {
   answer: string;
   gameId: string;
   difficulty: PlayerDifficulty;
+  hintsLimitOverride?: number;
+  hintStatusOverride?: HintTileStatus | null;
   roundConfig?: Partial<BoardRoundConfig>;
   hasInProgressGameAtMount: boolean;
   showResumeDialog: boolean;

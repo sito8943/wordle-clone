@@ -59,12 +59,18 @@ const createMockDailyWordClient = (
   getDailyWord: ApiContextType["dailyWordClient"]["getDailyWord"] = vi
     .fn()
     .mockResolvedValue(null),
+  getDailyMeaning: ApiContextType["dailyWordClient"]["getDailyMeaning"] = vi
+    .fn()
+    .mockResolvedValue(null),
   overrides: Partial<ApiContextType["dailyWordClient"]> = {},
 ) =>
   ({
     getDailyWord,
+    getDailyMeaning,
     getCachedWord: vi.fn().mockReturnValue(null),
     cacheWord: vi.fn(),
+    getCachedMeaning: vi.fn().mockReturnValue(null),
+    cacheMeaning: vi.fn(),
     ...overrides,
   }) as unknown as ApiContextType["dailyWordClient"];
 

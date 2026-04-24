@@ -1,4 +1,5 @@
 import { DictionaryChecksumDialog } from "./DictionaryChecksumDialog";
+import { DailyMeaningDialog } from "./DailyMeaningDialog";
 import { RefreshConfirmationDialog } from "./RefreshConfirmationDialog";
 import { SessionResumeDialog } from "./SessionResumeDialog";
 import { TutorialPromptDialog } from "./TutorialPromptDialog";
@@ -8,6 +9,7 @@ import { DefeatDialog } from "./DefeatDialog";
 import DeveloperConsoleDialog from "./DeveloperConsoleDialog";
 import { VolumeDialog } from "./VolumeDialog";
 export {
+  DailyMeaningDialog,
   DictionaryChecksumDialog,
   DefeatDialog,
   RefreshConfirmationDialog,

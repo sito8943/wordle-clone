@@ -26,6 +26,10 @@ const TutorialPromptDialog = lazy(
 const WordListDialog = lazy(
   () => import("../../components/Dialogs/WordListDialog/WordListDialog"),
 );
+const DailyMeaningDialog = lazy(
+  () =>
+    import("../../components/Dialogs/DailyMeaningDialog/DailyMeaningDialog"),
+);
 const PlayDeveloperConsoleDialog = lazy(
   () => import("../../components/Dialogs/DeveloperConsoleDialog"),
 );
@@ -63,6 +67,10 @@ const DialogsSection = (): JSX.Element => {
     showRefreshDialog,
     showTutorialPromptDialog,
     showWordsDialog,
+    showDailyMeaningDialog,
+    isLoadingDailyMeaning,
+    dailyMeaning,
+    dailyMeaningError,
     showDeveloperConsoleDialog,
     showDeveloperChallengesSection,
     showDeveloperDailySection,
@@ -93,6 +101,8 @@ const DialogsSection = (): JSX.Element => {
     dictionaryWords,
     currentLanguage,
     closeWordsDialog,
+    closeDailyMeaningDialog,
+    retryDailyMeaningFetch,
     closeDeveloperConsoleDialog,
     submitDeveloperPlayer,
     refreshRemoteDictionaryChecksum,
@@ -153,6 +163,11 @@ const DialogsSection = (): JSX.Element => {
     wordListButtonEnabled && showWordsDialog,
     DIALOG_QUEUE_PRIORITIES.PLAY,
   );
+  const dailyMeaningDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.DAILY_MEANING,
+    showDailyMeaningDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
+  );
   const challengesDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.CHALLENGES,
     challengesEnabled &&
@@ -189,6 +204,7 @@ const DialogsSection = (): JSX.Element => {
         showRefreshDialog,
         showTutorialPromptDialog,
         showWordsDialog,
+        showDailyMeaningDialog,
         showDeveloperConsoleDialog,
         isDifficultyChangeConfirmationOpen,
         showVictoryDialog,
@@ -243,6 +259,16 @@ const DialogsSection = (): JSX.Element => {
               language={currentLanguage}
               words={dictionaryWords}
               onClose={closeWordsDialog}
+            />
+          ) : null}
+          {dailyMeaningDialogVisible ? (
+            <DailyMeaningDialog
+              visible
+              meaning={dailyMeaning}
+              loading={isLoadingDailyMeaning}
+              errorMessage={dailyMeaningError}
+              onClose={closeDailyMeaningDialog}
+              onRetry={retryDailyMeaningFetch}
             />
           ) : null}
           {victoryDialogVisible && victoryScoreSummary ? (

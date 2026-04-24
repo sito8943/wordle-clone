@@ -72,7 +72,8 @@ export default function usePlayController(
   options: UsePlayControllerOptions = {},
 ) {
   const navigate = useNavigate();
-  const { scoreClient, wordDictionaryClient, challengeClient } = useApi();
+  const { scoreClient, wordDictionaryClient, challengeClient, dailyWordClient } =
+    useApi();
   const {
     player,
     replacePlayer,
@@ -168,6 +169,12 @@ export default function usePlayController(
   const previousGuessesLengthRef = useRef(guesses.length);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
   const [showWordsDialog, setShowWordsDialog] = useState(false);
+  const [showDailyMeaningDialog, setShowDailyMeaningDialog] = useState(false);
+  const [isLoadingDailyMeaning, setIsLoadingDailyMeaning] = useState(false);
+  const [dailyMeaning, setDailyMeaning] = useState<string | null>(null);
+  const [dailyMeaningError, setDailyMeaningError] = useState<string | null>(
+    null,
+  );
   const [showDeveloperConsoleDialog, setShowDeveloperConsoleDialog] =
     useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
@@ -229,6 +236,7 @@ export default function usePlayController(
     (showDictionaryChecksumDialog ||
       showRefreshDialog ||
       showWordsDialog ||
+      showDailyMeaningDialog ||
       showDeveloperConsoleDialog ||
       showTutorialPromptDialog ||
       pendingDifficulty !== null);
@@ -250,6 +258,13 @@ export default function usePlayController(
   );
   const hasInProgressGameAtMount = hasActiveGame;
   const wordListEnabledForDifficulty = player.difficulty === "easy";
+  const dailyHintsLimitOverride = useMemo(() => {
+    if (!dailyModeActive) {
+      return undefined;
+    }
+
+    return Math.floor(answer.length / 3);
+  }, [answer.length, dailyModeActive]);
   const {
     showHardModeTimer,
     showHardModeFinalStretchBar,
@@ -519,6 +534,8 @@ export default function usePlayController(
     answer,
     gameId,
     difficulty: player.difficulty,
+    hintsLimitOverride: dailyHintsLimitOverride,
+    hintStatusOverride: dailyModeActive ? "present" : undefined,
     roundConfig,
     hasInProgressGameAtMount,
     showResumeDialog,
@@ -846,6 +863,60 @@ export default function usePlayController(
     setShowWordsDialog(false);
   }, []);
 
+  const fetchDailyMeaning = useCallback(async () => {
+    if (!dailyModeActive || isLoadingDailyMeaning) {
+      return;
+    }
+
+    setIsLoadingDailyMeaning(true);
+    setDailyMeaningError(null);
+
+    try {
+      const meaning = await dailyWordClient.getDailyMeaning(
+        answer,
+        getTodayDateUTC(),
+      );
+
+      if (!meaning) {
+        setDailyMeaningError(i18n.t("play.dailyMeaningDialog.unavailable"));
+        return;
+      }
+
+      setDailyMeaning(meaning);
+    } catch {
+      setDailyMeaningError(i18n.t("play.dailyMeaningDialog.unavailable"));
+    } finally {
+      setIsLoadingDailyMeaning(false);
+    }
+  }, [answer, dailyModeActive, dailyWordClient, isLoadingDailyMeaning]);
+
+  const openDailyMeaningDialog = useCallback(() => {
+    if (!dailyModeActive) {
+      return;
+    }
+
+    setShowDailyMeaningDialog(true);
+
+    if (dailyMeaning || isLoadingDailyMeaning) {
+      return;
+    }
+
+    void fetchDailyMeaning();
+  }, [
+    dailyModeActive,
+    dailyMeaning,
+    fetchDailyMeaning,
+    isLoadingDailyMeaning,
+  ]);
+
+  const closeDailyMeaningDialog = useCallback(() => {
+    setShowDailyMeaningDialog(false);
+  }, []);
+
+  const retryDailyMeaningFetch = useCallback(() => {
+    void fetchDailyMeaning();
+  }, [fetchDailyMeaning]);
+
   const openDeveloperConsoleDialog = useCallback(() => {
     setDictionaryChecksumMessage(null);
     setDictionaryChecksumMessageKind(null);
@@ -1103,6 +1174,7 @@ export default function usePlayController(
       setComboFlash(null);
       setShowRefreshDialog(false);
       setShowWordsDialog(false);
+      setShowDailyMeaningDialog(false);
       setShowDeveloperConsoleDialog(false);
       setShowSettingsPanel(false);
       setPendingDifficulty(null);
@@ -1123,6 +1195,7 @@ export default function usePlayController(
 
     setShowRefreshDialog(false);
     setShowWordsDialog(false);
+    setShowDailyMeaningDialog(false);
     setShowDeveloperConsoleDialog(false);
     setShowSettingsPanel(false);
     setPendingDifficulty(null);
@@ -1133,6 +1206,13 @@ export default function usePlayController(
       setShowWordsDialog(false);
     }
   }, [wordListEnabledForDifficulty]);
+
+  useEffect(() => {
+    setShowDailyMeaningDialog(false);
+    setIsLoadingDailyMeaning(false);
+    setDailyMeaning(null);
+    setDailyMeaningError(null);
+  }, [activeModeId, answer]);
 
   const showVictoryDialog =
     showEndOfGameDialogs &&
@@ -1323,9 +1403,16 @@ export default function usePlayController(
     refreshBoard,
     showRefreshDialog,
     showWordsDialog,
+    showDailyMeaningDialog,
+    isLoadingDailyMeaning,
+    dailyMeaning,
+    dailyMeaningError,
     showDeveloperConsoleDialog,
     openWordsDialog,
     closeWordsDialog,
+    openDailyMeaningDialog,
+    closeDailyMeaningDialog,
+    retryDailyMeaningFetch,
     openDeveloperConsoleDialog,
     closeDeveloperConsoleDialog,
     showDeveloperChallengesSection,

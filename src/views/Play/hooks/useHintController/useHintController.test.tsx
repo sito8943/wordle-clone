@@ -190,4 +190,31 @@ describe("useHintController", () => {
 
     expect(result.current.hintButtonDisabled).toBe(true);
   });
+
+  it("supports daily hint overrides regardless of difficulty", () => {
+    const revealHint = vi.fn().mockReturnValue(true);
+    const { result } = renderHook(() =>
+      useHintController({
+        answer: "LECTURA",
+        gameId: "game-1",
+        difficulty: "hard",
+        hintsLimitOverride: 2,
+        hintStatusOverride: "present",
+        hasInProgressGameAtMount: false,
+        showResumeDialog: false,
+        gameOver: false,
+        current: "",
+        revealHint,
+      }),
+    );
+
+    let hintUsed = false;
+    act(() => {
+      hintUsed = result.current.useHint();
+    });
+
+    expect(hintUsed).toBe(true);
+    expect(revealHint).toHaveBeenCalledWith("present");
+    expect(result.current.hintsRemaining).toBe(1);
+  });
 });

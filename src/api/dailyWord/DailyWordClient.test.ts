@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DailyWordClient } from "./DailyWordClient";
-import { DAILY_WORD_STORAGE_KEY_PREFIX } from "./constants";
+import {
+  DAILY_MEANING_STORAGE_KEY_PREFIX,
+  DAILY_WORD_STORAGE_KEY_PREFIX,
+} from "./constants";
 
 const DATE = "2026-04-22";
+const WORD = "LECTURA";
 const STORAGE_KEY = `${DAILY_WORD_STORAGE_KEY_PREFIX}:${DATE}`;
+const MEANING_STORAGE_KEY = `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${DATE}:${WORD}`;
 
 const createStorage = (): Storage => {
   const values = new Map<string, string>();
@@ -98,5 +103,66 @@ describe("DailyWordClient", () => {
     const word = await client.getDailyWord(DATE);
 
     expect(word).toBeNull();
+  });
+
+  it("fetches daily meaning, normalizes it and caches by day + word", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        data: {
+          meanings: [
+            {
+              senses: [{ description: "   Acción de leer   " }],
+            },
+          ],
+        },
+      }),
+    });
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    const meaning = await client.getDailyMeaning(WORD, DATE);
+
+    expect(meaning).toBe("Acción de leer");
+    expect(storage.getItem(MEANING_STORAGE_KEY)).toBe(
+      JSON.stringify("Acción de leer"),
+    );
+  });
+
+  it("returns cached daily meaning without calling network", async () => {
+    storage.setItem(MEANING_STORAGE_KEY, JSON.stringify("Acción de leer"));
+    const fetchFn = vi.fn();
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    const meaning = await client.getDailyMeaning(WORD, DATE);
+
+    expect(meaning).toBe("Acción de leer");
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it("resolves /api/words endpoint from /api/daily for meaning requests", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        data: {
+          meanings: [
+            {
+              senses: [{ description: "Descripción" }],
+            },
+          ],
+        },
+      }),
+    });
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    await client.getDailyMeaning(WORD, DATE);
+
+    expect(fetchFn).toHaveBeenCalledWith("/api/words/lectura", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
   });
 });

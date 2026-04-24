@@ -388,6 +388,8 @@ export const resources = {
           wordListUnavailable: "Word list unavailable.",
           hintAriaLabel: "Hint",
           hintButton: "Hint ({{count}})",
+          dailyMeaningAriaLabel: "Daily word meaning",
+          dailyMeaningButton: "Meaning",
           helpAriaLabel: "Help",
           helpButton: "Help",
           resultsAriaLabel: "Results",
@@ -412,6 +414,11 @@ export const resources = {
           muteAriaLabel: "Mute",
           unmuteAriaLabel: "Unmute",
           volumeSliderAriaLabel: "Volume level",
+        },
+        dailyMeaningDialog: {
+          title: "Daily word meaning",
+          loading: "Loading meaning...",
+          unavailable: "Could not load the meaning right now.",
         },
         dictionaryChecksumDialog: {
           title: "Dictionary updated",
@@ -1000,6 +1007,8 @@ export const resources = {
           wordListUnavailable: "La lista de palabras no está disponible.",
           hintAriaLabel: "Pista",
           hintButton: "Pista ({{count}})",
+          dailyMeaningAriaLabel: "Significado de la palabra del día",
+          dailyMeaningButton: "Significado",
           helpAriaLabel: "Ayuda",
           helpButton: "Ayuda",
           resultsAriaLabel: "Resultados",
@@ -1024,6 +1033,12 @@ export const resources = {
           muteAriaLabel: "Silenciar",
           unmuteAriaLabel: "Activar sonido",
           volumeSliderAriaLabel: "Nivel de volumen",
+        },
+        dailyMeaningDialog: {
+          title: "Significado de la palabra del día",
+          description: "Definición",
+          loading: "Cargando significado...",
+          unavailable: "No se pudo cargar el significado ahora mismo.",
         },
         dictionaryChecksumDialog: {
           title: "Diccionario actualizado",
