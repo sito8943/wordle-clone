@@ -58,6 +58,7 @@ const Toolbar = (): JSX.Element => {
     hardModeClockBoostScale,
   } = controller;
   const showDailyMeaningButton = activeModeId === WORDLE_MODE_IDS.DAILY;
+  const showRefreshButton = activeModeId !== WORDLE_MODE_IDS.DAILY;
 
   return (
     <>
@@ -183,38 +184,40 @@ const Toolbar = (): JSX.Element => {
             hardModeTickPulse={hardModeTickPulse}
             hardModeClockBoostScale={hardModeClockBoostScale}
           />
-          <span
-            key={showRefreshAttention ? refreshAttentionPulse : "idle"}
-            className={
-              showRefreshAttention
-                ? "boost-animation inline-flex"
-                : "inline-flex"
-            }
-            style={
-              showRefreshAttention
-                ? ({
-                    "--boost-scale": refreshAttentionScale.toString(),
-                  } as NativeKeyboardClockStyle)
-                : undefined
-            }
-          >
-            <Button
-              onClick={refreshBoard}
-              aria-label={t("play.toolbar.refreshAriaLabel")}
-              data-wordle-refresh="true"
-              icon={faRotateRight}
-              variant="ghost"
-              iconClassName={toolbarIconClassName}
+          {showRefreshButton ? (
+            <span
+              key={showRefreshAttention ? refreshAttentionPulse : "idle"}
               className={
                 showRefreshAttention
-                  ? "mobile-compact-button text-amber-700 dark:text-amber-300"
-                  : "mobile-compact-button"
+                  ? "boost-animation inline-flex"
+                  : "inline-flex"
               }
-              hideLabelOnMobile
+              style={
+                showRefreshAttention
+                  ? ({
+                      "--boost-scale": refreshAttentionScale.toString(),
+                    } as NativeKeyboardClockStyle)
+                  : undefined
+              }
             >
-              {t("common.refresh")}
-            </Button>
-          </span>
+              <Button
+                onClick={refreshBoard}
+                aria-label={t("play.toolbar.refreshAriaLabel")}
+                data-wordle-refresh="true"
+                icon={faRotateRight}
+                variant="ghost"
+                iconClassName={toolbarIconClassName}
+                className={
+                  showRefreshAttention
+                    ? "mobile-compact-button text-amber-700 dark:text-amber-300"
+                    : "mobile-compact-button"
+                }
+                hideLabelOnMobile
+              >
+                {t("common.refresh")}
+              </Button>
+            </span>
+          ) : null}
         </div>
       </div>
 
