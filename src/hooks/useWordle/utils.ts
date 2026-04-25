@@ -88,6 +88,16 @@ export const isDirectGameKeyboardKey = (key: string): boolean =>
   key === "ArrowRight" ||
   /^[a-zA-ZñÑ]$/.test(key);
 
+export const hasVisibleModalDialog = (): boolean => {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return (
+    document.querySelector('[role="dialog"][aria-modal="true"]') !== null
+  );
+};
+
 export const blurRefreshButtonIfFocused = (): void => {
   const activeElement = document.activeElement;
   if (!(activeElement instanceof HTMLButtonElement)) {

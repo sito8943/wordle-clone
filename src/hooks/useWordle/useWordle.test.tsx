@@ -164,6 +164,37 @@ describe("useWordle dictionary query integration", () => {
     );
   });
 
+  it("ignores board keyboard input while a modal dialog is visible", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    document.body.appendChild(dialog);
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(result.current.current).toBe("");
+
+    dialog.remove();
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(result.current.current).toBe("A");
+  });
+
   it("supports manual tile selection without automatic cursor advance", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();

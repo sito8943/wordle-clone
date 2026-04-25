@@ -47,6 +47,7 @@ import {
   getPresentHintLetter,
   isDirectGameKeyboardKey,
   isEditableKeyboardTarget,
+  hasVisibleModalDialog,
   markStartAnimationAsSeen,
   shiftHintStatusesLeftFromIndex,
   shouldAnimateKeyboardEntryOnSession,
@@ -664,7 +665,12 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
   const handleKey = useCallback(
     (key: string) => {
-      if (gameOver || showResumeDialog || showDictionaryChecksumDialog) {
+      if (
+        gameOver ||
+        showResumeDialog ||
+        showDictionaryChecksumDialog ||
+        hasVisibleModalDialog()
+      ) {
         return;
       }
 
