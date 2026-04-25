@@ -8,36 +8,32 @@ const featureFlagsMock = vi.hoisted(() => ({
   soundEnabled: false,
 }));
 
-const value: Record<string, unknown> = {
-  activeModeId: WORDLE_MODE_IDS.DAILY,
-  currentWinStreak: 0,
-  dictionaryLoading: false,
-  dictionaryWords: [],
-  openWordsDialog: vi.fn(),
-  openDailyMeaningDialog: vi.fn(),
-  hintsEnabledForDifficulty: false,
-  useHint: vi.fn(),
-  hintButtonDisabled: true,
-  hintsRemaining: 0,
-  canReopenEndOfGameDialog: false,
-  reopenEndOfGameDialog: vi.fn(),
-  openDeveloperConsoleDialog: vi.fn(),
-  showRefreshAttention: false,
-  refreshAttentionPulse: 0,
-  refreshAttentionScale: 0,
-  refreshBoard: vi.fn(),
-  dictionaryError: null as string | null,
-  challengeCompletionMessage: null as string | null,
-  showHardModeTimer: false,
-  hardModeSecondsLeft: 0,
-  hardModeTickPulse: 0,
-  hardModeClockBoostScale: 1,
-};
-
-const controllerMock = vi.hoisted(() => value);
-
 const playViewMock = vi.hoisted(() => ({
-  controller: controllerMock,
+  controller: {
+    activeModeId: "daily",
+    currentWinStreak: 0,
+    dictionaryLoading: false,
+    dictionaryWords: [],
+    openWordsDialog: vi.fn(),
+    openDailyMeaningDialog: vi.fn(),
+    hintsEnabledForDifficulty: false,
+    useHint: vi.fn(),
+    hintButtonDisabled: true,
+    hintsRemaining: 0,
+    canReopenEndOfGameDialog: false,
+    reopenEndOfGameDialog: vi.fn(),
+    openDeveloperConsoleDialog: vi.fn(),
+    showRefreshAttention: false,
+    refreshAttentionPulse: 0,
+    refreshAttentionScale: 0,
+    refreshBoard: vi.fn(),
+    dictionaryError: null as string | null,
+    challengeCompletionMessage: null as string | null,
+    showHardModeTimer: false,
+    hardModeSecondsLeft: 0,
+    hardModeTickPulse: 0,
+    hardModeClockBoostScale: 1,
+  },
   wordListButtonEnabled: false,
   developerConsoleEnabled: false,
   challengesEnabled: false,
@@ -80,7 +76,7 @@ vi.mock("./HardModeTimerIndicator", () => ({
 
 describe("Toolbar", () => {
   beforeEach(() => {
-    controllerMock.activeModeId = WORDLE_MODE_IDS.CLASSIC;
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.CLASSIC;
   });
 
   afterEach(() => {
@@ -96,7 +92,7 @@ describe("Toolbar", () => {
   });
 
   it("hides refresh button in daily mode", () => {
-    controllerMock.activeModeId = WORDLE_MODE_IDS.DAILY;
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.DAILY;
 
     render(<Toolbar />);
 

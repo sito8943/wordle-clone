@@ -16,19 +16,15 @@ const featureFlagsMock = vi.hoisted(() => ({
   settingsDrawerEnabled: true,
 }));
 
-const mockFunction = vi.fn();
-
-const value: Record<string, unknown> = {
-  activeModeId: WORDLE_MODE_IDS.CLASSIC,
-  showSettingsPanel: true,
-  openSettingsPanel: mockFunction,
-  closeSettingsPanel: mockFunction,
-  changeDifficulty: mockFunction,
-  changeManualTileSelection: mockFunction,
-};
-
 const playViewMock = vi.hoisted(() => ({
-  controller: { ...value },
+  controller: {
+    activeModeId: "classic",
+    showSettingsPanel: true,
+    openSettingsPanel: vi.fn(),
+    closeSettingsPanel: vi.fn(),
+    changeDifficulty: vi.fn(),
+    changeManualTileSelection: vi.fn(),
+  },
   player: {
     difficulty: "normal",
     manualTileSelection: false,
