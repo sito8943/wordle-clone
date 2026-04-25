@@ -20,6 +20,7 @@ resetBrowserStorageOnAppUpdate(env.appVersion);
 
 const root = createRoot(document.getElementById("root")!);
 
+// render
 root.render(
   <div className="splash-screen" role="status" aria-live="polite">
     <h1 className="slab splash-word">{i18n.t("app.title")}</h1>
