@@ -309,7 +309,6 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
       const safeModeId = resolveScoreboardModeId(modeId);
 
-      console.log("safePoints", safePoints);
       if (safePoints === 0) {
         return;
       }
@@ -318,11 +317,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const safeWonAt = toSafeTimestamp(wonAt) ?? now;
       const safeRoundStartedAt = toSafeTimestamp(roundStartedAt);
       const current = normalizePlayer(storedPlayer);
-      console.log("current", current);
       if (current.hackingBan !== null) {
         return;
       }
-      console.log("safeRoundStartedAt", safeRoundStartedAt);
       if (safeRoundStartedAt !== null) {
         const roundDurationMs = getRoundDurationMs(
           safeRoundStartedAt,
@@ -360,15 +357,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         current.language,
         safeModeId,
       );
-      console.log({
-        nick: nextPlayer.name,
-        language: nextPlayer.language,
-        modeId: safeModeId,
-        score: currentModeScore.score + safePoints,
-        streak: currentModeScore.streak + 1,
-        createdAt: safeWonAt,
-        overwriteExisting: true,
-      });
+
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,

@@ -1785,10 +1785,14 @@ describe("App", () => {
     }
     fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
 
-    const victoryDialog = await screen.findByRole("dialog", { name: "Victory" });
+    const victoryDialog = await screen.findByRole("dialog", {
+      name: "Victory",
+    });
     expect(within(victoryDialog).getByLabelText("Streak: 4")).toBeTruthy();
 
-    fireEvent.click(within(victoryDialog).getByRole("button", { name: "Close" }));
+    fireEvent.click(
+      within(victoryDialog).getByRole("button", { name: "Close" }),
+    );
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: "Victory" })).toBeNull();

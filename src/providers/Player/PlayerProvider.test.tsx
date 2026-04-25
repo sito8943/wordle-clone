@@ -297,8 +297,10 @@ describe("PlayerProvider", () => {
   it("commitVictory bans the player when score submission is too fast", async () => {
     const queueRoundEvent = vi.fn();
     const wonAt = 10_000;
-    const detectedRoundDurationMs =
-      MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS - 500;
+    const detectedRoundDurationMs = Math.max(
+      0,
+      MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS - 1,
+    );
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper({ queueRoundEvent }),
     });
