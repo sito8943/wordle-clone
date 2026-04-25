@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-04-25
+
+### Branch `0.0.19`
+
+- Added full Daily mode support with per-profile daily lock persistence by UTC date, so each player can resolve Daily once per day.
+- Added daily shield mechanics: winning Daily grants one shield that can be consumed on a later non-Daily defeat to protect streak progression.
+- Integrated daily word + meaning loading from a single backend payload (`/api/daily`), with local cache hydration and deterministic fallback behavior.
+- Added a dedicated Daily meaning dialog and toolbar shortcut in Play to review the definition of the current daily word.
+- Extended Scoreboard mode selection and score-sync contracts to include Daily rankings across local cache, pending events, and remote operations.
+- Polished mode-aware navigation and score commit protection checks to reduce false streak resets while preserving anti-fraud safeguards.
+
 ## 2026-04-20
 
 ### Branch `0.0.18-beta`

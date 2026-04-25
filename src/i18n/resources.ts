@@ -128,6 +128,14 @@ export const resources = {
             "No detailed changelog entries were found for this update range.",
           closeAction: "Got it",
           changes: {
+            v0019: [
+              "Added full Daily mode support: one daily round lock per profile and UTC day, with per-player persistence.",
+              "Added a daily shield flow: winning Daily grants one shield that can be consumed to avoid a streak reset after a non-daily defeat.",
+              "Integrated daily word + meaning loading from a single backend payload (`/api/daily`) with cached hydration and deterministic fallback.",
+              "Added a dedicated daily meaning dialog and toolbar shortcut so players can review the word definition from the Play screen.",
+              "Extended Scoreboard mode selection and score synchronization contracts to include Daily rankings end-to-end.",
+              "Polished mode-aware navigation and anti-fraud score-commit checks to reduce false streak resets while preserving protection rules.",
+            ],
             v0018beta: [
               "Split Scoreboard data by game mode so Classic and Lightning keep independent rankings.",
               "Added a mode switcher in Scoreboard to toggle between Classic and Lightning tables.",
@@ -759,6 +767,14 @@ export const resources = {
             "No se han encontrado entradas detalladas para este rango de actualización.",
           closeAction: "Entendido",
           changes: {
+            v0019: [
+              "Se añadió soporte completo del modo Diario: bloqueo de una ronda diaria por perfil y día UTC, con persistencia por jugador.",
+              "Se añadió el flujo de escudo diario: ganar en Diario otorga un escudo que puede consumirse para evitar el reinicio de racha tras una derrota fuera de Diario.",
+              "Se integró la carga de palabra + significado diarios desde un único payload backend (`/api/daily`), con hidratación en caché y fallback determinista.",
+              "Se añadió un diálogo dedicado al significado diario y un acceso directo en la barra de herramientas para consultarlo desde Play.",
+              "Se amplió la selección de modos en la Clasificación y el contrato de sincronización de puntuación para incluir rankings de Diario de extremo a extremo.",
+              "Se pulieron la navegación contextual por modo y las validaciones anti-fraude al confirmar puntuaciones para reducir falsos reinicios de racha manteniendo las reglas de protección.",
+            ],
             v0018beta: [
               "Se separó la clasificación por modo de juego para que Clásico y Relámpago tengan rankings independientes.",
               "Se añadió un selector de modo en Clasificación para alternar entre las tablas de Clásico y Relámpago.",
