@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DailyWordClient } from "./DailyWordClient";
 import {
   DAILY_MEANING_STORAGE_KEY_PREFIX,
+  RAE_DAILY_WORD_API_URL,
   DAILY_WORD_STORAGE_KEY_PREFIX,
 } from "./constants";
 
@@ -66,7 +67,7 @@ describe("DailyWordClient", () => {
     expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify("PUENTE"));
   });
 
-  it("uses local daily proxy endpoint by default", async () => {
+  it("uses configured daily endpoint by default", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true, data: { word: "PUENTE" } }),
@@ -75,7 +76,7 @@ describe("DailyWordClient", () => {
 
     await client.getDailyWord(DATE);
 
-    expect(fetchFn).toHaveBeenCalledWith("/api/daily", {
+    expect(fetchFn).toHaveBeenCalledWith(RAE_DAILY_WORD_API_URL, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -121,7 +122,7 @@ describe("DailyWordClient", () => {
     const meaning = await client.getDailyMeaning(WORD, DATE);
 
     expect(meaning).toBe("Acción de leer");
-    expect(fetchFn).toHaveBeenCalledWith("/api/daily", {
+    expect(fetchFn).toHaveBeenCalledWith(RAE_DAILY_WORD_API_URL, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -180,7 +181,7 @@ describe("DailyWordClient", () => {
 
     await client.getDailyMeaning(WORD, DATE);
 
-    expect(fetchFn).toHaveBeenCalledWith("/api/daily", {
+    expect(fetchFn).toHaveBeenCalledWith(RAE_DAILY_WORD_API_URL, {
       method: "GET",
       headers: {
         Accept: "application/json",

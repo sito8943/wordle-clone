@@ -6,16 +6,68 @@ const runtimeMode = import.meta.env.MODE;
 const rawEnv = import.meta.env as Record<string, string | undefined>;
 const defaultDevConsoleEnabled =
   runtimeMode === "development" || runtimeMode === "develpment";
+const DEFAULT_DAILY_WORD_API_PATH = "/api/daily";
+
+const ABSOLUTE_URL_PATTERN = /^[a-z][a-z\d+\-.]*:\/\//i;
+
+const normalizeBaseUrl = (value?: string): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+
+  return trimmed.replace(/\/+$/, "");
+};
+
+const resolveDailyWordApiUrl = (
+  dailyWordApiUrl: string,
+  backendUrl?: string,
+): string => {
+  const normalizedPath = dailyWordApiUrl.trim();
+
+  if (
+    ABSOLUTE_URL_PATTERN.test(normalizedPath) ||
+    normalizedPath.startsWith("//")
+  ) {
+    return normalizedPath;
+  }
+
+  const normalizedBaseUrl = normalizeBaseUrl(backendUrl);
+  if (!normalizedBaseUrl) {
+    return normalizedPath.startsWith("/")
+      ? normalizedPath
+      : `/${normalizedPath}`;
+  }
+
+  const normalizedRelativePath = normalizedPath.startsWith("/")
+    ? normalizedPath
+    : `/${normalizedPath}`;
+
+  return `${normalizedBaseUrl}${normalizedRelativePath}`;
+};
+
+const backendUrl = readOptionalString(import.meta.env.VITE_BACKEND_URL);
+const convexUrl = readOptionalString(import.meta.env.VITE_CONVEX_URL);
+const configuredDailyWordApiUrl = readString(
+  import.meta.env.VITE_DAILY_WORD_API_URL,
+  DEFAULT_DAILY_WORD_API_PATH,
+);
+
+console.log(resolveDailyWordApiUrl(configuredDailyWordApiUrl, backendUrl));
 
 const env: RuntimeEnv = {
   appVersion: readString(import.meta.env.VITE_APP_VERSION, "0.0.0"),
   mode: runtimeMode,
   baseUrl: readString(import.meta.env.BASE_URL, "/"),
-  backendUrl: readOptionalString(import.meta.env.VITE_BACKEND_URL),
-  convexUrl: readOptionalString(import.meta.env.VITE_CONVEX_URL),
-  dailyWordApiUrl: readString(
-    import.meta.env.VITE_DAILY_WORD_API_URL,
-    "/api/daily",
+  backendUrl,
+  convexUrl,
+  dailyWordApiUrl: resolveDailyWordApiUrl(
+    configuredDailyWordApiUrl,
+    backendUrl,
   ),
   wordReportPhoneNumber: readOptionalString(
     import.meta.env.VITE_WORD_REPORT_PHONE_NUMBER,
