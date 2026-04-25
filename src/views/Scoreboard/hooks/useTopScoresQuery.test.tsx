@@ -1,5 +1,6 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
 import useTopScoresQuery from "./useTopScoresQuery";
 import {
@@ -36,7 +37,11 @@ describe("useTopScoresQuery", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(listTopScores).toHaveBeenCalledWith(env.scoreLimit, "en", "classic");
+    expect(listTopScores).toHaveBeenCalledWith(
+      env.scoreLimit,
+      WORDS_DEFAULT_LANGUAGE,
+      "classic",
+    );
   });
 
   it("uses the provided limit and exposes returned data", async () => {
@@ -71,7 +76,11 @@ describe("useTopScoresQuery", () => {
       expect(result.current.data?.currentClientRank).toBe(7);
     });
 
-    expect(listTopScores).toHaveBeenCalledWith(3, "en", "classic");
+    expect(listTopScores).toHaveBeenCalledWith(
+      3,
+      WORDS_DEFAULT_LANGUAGE,
+      "classic",
+    );
     expect(result.current.data?.scores).toHaveLength(1);
     expect(result.current.data?.currentClientRank).toBe(7);
   });

@@ -32,6 +32,9 @@ import {
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import type { RemotePlayerProfile } from "@api/score";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
+
+const GAMEPLAY_LANGUAGE: PlayerLanguage = WORDS_DEFAULT_LANGUAGE;
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
@@ -198,7 +201,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
       const syncedProfile = await scoreClient.syncRoundEvents({
         nick: currentPlayer.name,
-        language: currentPlayer.language,
+        language: GAMEPLAY_LANGUAGE,
         difficulty: currentPlayer.difficulty,
         keyboardPreference: currentPlayer.keyboardPreference,
       });
@@ -268,7 +271,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const refreshCurrentPlayerProfile = useCallback(async () => {
     const remoteProfile = await scoreClient.getCurrentPlayerProfile(
-      player.language,
+      GAMEPLAY_LANGUAGE,
     );
 
     if (!remoteProfile) {
@@ -282,7 +285,6 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   }, [
     applyRemoteProfile,
     hydrateDailyModeOutcomeFromProfile,
-    player.language,
     scoreClient,
   ]);
 
@@ -354,14 +356,14 @@ const PlayerProvider = ({ children }: ProviderProps) => {
             : current.streak,
       });
       const currentModeScore = scoreClient.getCurrentClientScoreSnapshot(
-        current.language,
+        GAMEPLAY_LANGUAGE,
         safeModeId,
       );
 
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,
-        language: nextPlayer.language,
+        language: GAMEPLAY_LANGUAGE,
         modeId: safeModeId,
         score: currentModeScore.score + safePoints,
         streak: currentModeScore.streak + 1,
@@ -397,7 +399,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const safeModeId = resolveScoreboardModeId(modeId);
       const current = normalizePlayer(storedPlayer);
       const currentModeScore = scoreClient.getCurrentClientScoreSnapshot(
-        current.language,
+        GAMEPLAY_LANGUAGE,
         safeModeId,
       );
       const shouldResetDefaultModeStreak =
@@ -417,7 +419,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,
-        language: nextPlayer.language,
+        language: GAMEPLAY_LANGUAGE,
         modeId: safeModeId,
         score: currentModeScore.score,
         streak: 0,
@@ -589,7 +591,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         }
 
         const remoteProfile = await scoreClient.getCurrentPlayerProfile(
-          player.language,
+          GAMEPLAY_LANGUAGE,
         );
         if (remoteProfile) {
           await applyRemoteProfile(remoteProfile, {

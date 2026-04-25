@@ -1,6 +1,7 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import useScoreboardController from "./useScoreboardController";
 import { queryKeys } from "../../../hooks/queryKeys";
 import { DEFAULT_PLAYER } from "../../../providers/Player/constants";
@@ -151,7 +152,7 @@ describe("useScoreboardController", () => {
     await waitFor(() => {
       expect(listTopScores).toHaveBeenCalledWith(
         expect.any(Number),
-        "en",
+        WORDS_DEFAULT_LANGUAGE,
         "lightning",
       );
     });
@@ -180,7 +181,7 @@ describe("useScoreboardController", () => {
     await waitFor(() => {
       expect(listTopScores).toHaveBeenCalledWith(
         expect.any(Number),
-        "en",
+        WORDS_DEFAULT_LANGUAGE,
         "daily",
       );
     });

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
 import {
   getHelpRoute,
@@ -86,7 +87,7 @@ const useNavbarController = () => {
       try {
         const result = await scoreClient.listTopScores(
           Math.max(env.scoreLimit, NAVBAR_TOP_TEN_LIMIT),
-          player.language,
+          WORDS_DEFAULT_LANGUAGE,
           scoreboardModeId,
         );
         if (!cancelled) {
@@ -111,7 +112,6 @@ const useNavbarController = () => {
   }, [
     location.pathname,
     player.code,
-    player.language,
     player.name,
     player.score,
     scoreboardModeId,

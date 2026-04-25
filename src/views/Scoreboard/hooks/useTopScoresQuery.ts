@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { env } from "@config";
 import { SCOREBOARD_MODE_IDS } from "@domain/wordle";
 import type { PlayerLanguage, ScoreboardModeId } from "@domain/wordle";
@@ -8,7 +9,7 @@ import { queryKeys } from "@hooks";
 
 const useTopScoresQuery = (
   limit = env.scoreLimit,
-  language: PlayerLanguage = "en",
+  language: PlayerLanguage = WORDS_DEFAULT_LANGUAGE,
   modeId: ScoreboardModeId = SCOREBOARD_MODE_IDS.CLASSIC,
 ) => {
   const { scoreClient } = useApi();

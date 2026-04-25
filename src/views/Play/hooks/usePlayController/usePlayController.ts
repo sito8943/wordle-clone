@@ -144,7 +144,7 @@ export default function usePlayController(
   } = wordle;
 
   const snapshotStreak = scoreClient.getCurrentClientScoreSnapshot(
-    player.language,
+    gameplayLanguage,
     activeScoreboardModeId,
   ).streak;
   const activeModeStreak =
@@ -1201,7 +1201,7 @@ export default function usePlayController(
       void scoreClient.recordScore(
         {
           nick: nextNick,
-          language: player.language,
+          language: gameplayLanguage,
           modeId: activeModeId,
           score: nextScore,
           streak: nextStreak,
@@ -1215,10 +1215,10 @@ export default function usePlayController(
     },
     [
       activeModeId,
-      player.language,
       player.name,
       player.score,
       activeModeStreak,
+      gameplayLanguage,
       replacePlayer,
       scoreClient,
     ],

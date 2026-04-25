@@ -84,7 +84,7 @@ export const ensureLanguageSeeded = mutation({
     language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
+    const language = assertLanguageSupported(args.language ?? ES_LANGUAGE);
     const existingWords = await getLanguageRows(ctx, language);
     const existingTotal = countNormalizedRows(existingWords);
 
@@ -182,7 +182,7 @@ export const listByLanguage = query({
     language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
+    const language = assertLanguageSupported(args.language ?? ES_LANGUAGE);
     const rows = await ctx.db
       .query("words")
       .withIndex("by_language", (q) => q.eq("language", language))
@@ -197,7 +197,7 @@ export const getLanguageChecksum = query({
     language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
+    const language = assertLanguageSupported(args.language ?? ES_LANGUAGE);
     const meta = await ctx.db
       .query("wordsMeta")
       .withIndex("by_language", (q) => q.eq("language", language))
@@ -213,7 +213,7 @@ export const refreshLanguageChecksum = mutation({
     language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const language = assertLanguageSupported(args.language ?? EN_LANGUAGE);
+    const language = assertLanguageSupported(args.language ?? ES_LANGUAGE);
     const rows = await getLanguageRows(ctx, language);
     const words = normalizeRows(rows);
     const checksum = djb2Hash(words);

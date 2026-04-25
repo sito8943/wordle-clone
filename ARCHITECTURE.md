@@ -168,7 +168,7 @@ This is an evolution of the current layered architecture, not a replacement for 
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, `showEndOfGameDialogs`, and `manualTileSelection`.
   - It may include legacy `declinedTutorial` (`false` accepted, `true` declined) from older tutorial-prompt behavior.
   - It also stores local anti-fraud status (`hackingBan`) when a round is flagged as too short to be legitimate.
-  - It also stores the selected `language` (`en` or `es`) used by i18n and scoreboard segmentation.
+  - It also stores the selected `language` (`en` or `es`) used by i18n/UI localization.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - `wordle:tutorial-prompt-seen-modes`: tutorial prompt state by mode (`classic`, `lightning`, `zen`, `daily`) so each mode can show its first-run welcome independently.
 - The gameplay dictionary language is fixed to Spanish (`es`) in frontend game flow.
@@ -198,7 +198,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations, keeps local score as cache, and syncs confirmed victories through the offline event queue
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
-4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible, scoped to the active player language and scoreboard mode (`classic`, `lightning`, `daily`).
+4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible, scoped to the fixed gameplay language (`es`) and scoreboard mode (`classic`, `lightning`, `daily`).
 5. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
 
 ## Testing Layout
