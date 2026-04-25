@@ -88,7 +88,6 @@ export const mutation = async (name: string, args: Record<string, unknown> = {})
 - `words:ensureLanguageSeeded`
 - `words:seedLanguageWords`
 - `words:refreshLanguageChecksum`
-- `challenges:seedChallenges`
 - `challenges:generateDailyChallenges`
 - `challenges:regenerateDailyChallenges`
 - `challenges:completeChallenge`
@@ -113,11 +112,12 @@ export const mutation = async (name: string, args: Record<string, unknown> = {})
 
 ### Challenges
 
-- `seedChallenges` -> `POST /api/mutation` con `name: "challenges:seedChallenges"`
 - `getTodayChallenges` -> `POST /api/query` con `name: "challenges:getTodayChallenges"`
 - `generateDailyChallenges` -> `POST /api/mutation` con `name: "challenges:generateDailyChallenges"`
 - `getPlayerChallengeProgress` -> `POST /api/query` con `name: "challenges:getPlayerChallengeProgress"`
 - `completeChallenge` -> `POST /api/mutation` con `name: "challenges:completeChallenge"`
+
+`generateDailyChallenges` y `regenerateDailyChallenges` ahora ejecutan el seeding de catálogo internamente en backend.
 
 ### Dev tools (si las usabas)
 

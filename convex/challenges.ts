@@ -116,6 +116,149 @@ const formatChallenge = (doc: {
 const toStoredChallengeType = (type: string): "simple" | "complex" =>
   type as "simple" | "complex";
 
+const getReferencedChallengeIds = async (ctx: MutationCtx): Promise<Set<string>> => {
+  const [dailyEntries, progressEntries] = await Promise.all([
+    ctx.db.query("dailyChallenges").collect(),
+    ctx.db.query("playerChallengeProgress").collect(),
+  ]);
+  const referencedIds = new Set<string>();
+
+  for (const dailyEntry of dailyEntries) {
+    referencedIds.add(dailyEntry.simpleChallengeId);
+    referencedIds.add(dailyEntry.complexChallengeId);
+  }
+
+  for (const progressEntry of progressEntries) {
+    referencedIds.add(progressEntry.challengeId);
+  }
+
+  return referencedIds;
+};
+
+const seedChallengesCatalog = async (ctx: MutationCtx) => {
+  const existing = await ctx.db.query("challenges").collect();
+  let inserted = 0;
+  let updated = 0;
+  let deleted = 0;
+
+  // Validate parity: equal number of simple and complex
+  const simpleCount = CHALLENGE_SEEDS.filter((c) => c.type === "simple").length;
+  const complexCount = CHALLENGE_SEEDS.filter(
+    (c) => c.type === "complex",
+  ).length;
+
+  if (simpleCount !== complexCount) {
+    throw new Error(
+      `Challenge seeds must have equal simple and complex counts. Got ${simpleCount} simple, ${complexCount} complex.`,
+    );
+  }
+
+  const seededConditionKeys = new Set(
+    CHALLENGE_SEEDS.map((seed) => seed.conditionKey),
+  );
+  const existingByConditionKey = new Map<string, (typeof existing)[number]>();
+  const referencedChallengeIds = await getReferencedChallengeIds(ctx);
+  const deleteIfUnreferenced = async (
+    challengeId: (typeof existing)[number]["_id"],
+  ): Promise<boolean> => {
+    if (referencedChallengeIds.has(challengeId)) {
+      return false;
+    }
+
+    await ctx.db.delete(challengeId);
+    deleted += 1;
+    return true;
+  };
+
+  for (const challenge of existing) {
+    const canonicalConditionKey = toCanonicalConditionKey(challenge.conditionKey);
+
+    if (!isChallengeConditionKey(canonicalConditionKey)) {
+      await deleteIfUnreferenced(challenge._id);
+      continue;
+    }
+
+    if (!seededConditionKeys.has(canonicalConditionKey)) {
+      await deleteIfUnreferenced(challenge._id);
+      continue;
+    }
+
+    const canonicalSeed = CHALLENGE_SEED_BY_CONDITION_KEY.get(
+      canonicalConditionKey,
+    );
+    if (!canonicalSeed) {
+      await deleteIfUnreferenced(challenge._id);
+      continue;
+    }
+
+    if (existingByConditionKey.has(canonicalConditionKey)) {
+      await deleteIfUnreferenced(challenge._id);
+      continue;
+    }
+
+    const metadataMismatch =
+      challenge.name !== canonicalSeed.name ||
+      challenge.description !== canonicalSeed.description ||
+      challenge.type !== canonicalSeed.type;
+    const keyMismatch = challenge.conditionKey !== canonicalConditionKey;
+
+    if (metadataMismatch || keyMismatch) {
+      await ctx.db.patch(challenge._id, {
+        conditionKey: canonicalConditionKey,
+        name: canonicalSeed.name,
+        description: canonicalSeed.description,
+        type: toStoredChallengeType(canonicalSeed.type),
+      });
+      updated += 1;
+      existingByConditionKey.set(canonicalConditionKey, {
+        ...challenge,
+        ...canonicalSeed,
+        conditionKey: canonicalConditionKey,
+      });
+      continue;
+    }
+
+    existingByConditionKey.set(canonicalConditionKey, challenge);
+  }
+
+  for (const seed of CHALLENGE_SEEDS) {
+    const current = existingByConditionKey.get(seed.conditionKey);
+
+    if (!current) {
+      await ctx.db.insert("challenges", {
+        name: seed.name,
+        description: seed.description,
+        type: toStoredChallengeType(seed.type),
+        conditionKey: seed.conditionKey,
+        used: false,
+      });
+      inserted += 1;
+      continue;
+    }
+
+    if (
+      current.name === seed.name &&
+      current.description === seed.description &&
+      current.type === seed.type
+    ) {
+      continue;
+    }
+
+    await ctx.db.patch(current._id, {
+      name: seed.name,
+      description: seed.description,
+      type: toStoredChallengeType(seed.type),
+    });
+    updated += 1;
+  }
+
+  return {
+    inserted,
+    total: CHALLENGE_SEEDS.length,
+    alreadySeeded: inserted === 0 && updated === 0 && deleted === 0,
+  };
+};
+
 // --- Queries ---
 
 export const getTodayChallenges = query({
@@ -217,6 +360,8 @@ export const generateDailyChallenges = mutation({
       }
     }
 
+    await seedChallengesCatalog(ctx);
+
     // Find unused challenges of each type
     let unusedSimple = await getUnusedByType(ctx, "simple");
     let unusedComplex = await getUnusedByType(ctx, "complex");
@@ -279,6 +424,8 @@ export const regenerateDailyChallenges = mutation({
 
       await ctx.db.delete(existing._id);
     }
+
+    await seedChallengesCatalog(ctx);
 
     let unusedSimple = await getUnusedByType(ctx, "simple");
     let unusedComplex = await getUnusedByType(ctx, "complex");
@@ -438,123 +585,5 @@ export const resetPlayerChallengeProgressForDate = mutation({
 
 export const seedChallenges = mutation({
   args: {},
-  handler: async (ctx) => {
-    const existing = await ctx.db.query("challenges").collect();
-    let inserted = 0;
-    let updated = 0;
-    let deleted = 0;
-
-    // Validate parity: equal number of simple and complex
-    const simpleCount = CHALLENGE_SEEDS.filter(
-      (c) => c.type === "simple",
-    ).length;
-    const complexCount = CHALLENGE_SEEDS.filter(
-      (c) => c.type === "complex",
-    ).length;
-
-    if (simpleCount !== complexCount) {
-      throw new Error(
-        `Challenge seeds must have equal simple and complex counts. Got ${simpleCount} simple, ${complexCount} complex.`,
-      );
-    }
-
-    const seededConditionKeys = new Set(
-      CHALLENGE_SEEDS.map((seed) => seed.conditionKey),
-    );
-    const existingByConditionKey = new Map<string, (typeof existing)[number]>();
-
-    for (const challenge of existing) {
-      const canonicalConditionKey = toCanonicalConditionKey(
-        challenge.conditionKey,
-      );
-
-      if (!isChallengeConditionKey(canonicalConditionKey)) {
-        await ctx.db.delete(challenge._id);
-        deleted += 1;
-        continue;
-      }
-
-      if (!seededConditionKeys.has(canonicalConditionKey)) {
-        await ctx.db.delete(challenge._id);
-        deleted += 1;
-        continue;
-      }
-
-      const canonicalSeed = CHALLENGE_SEED_BY_CONDITION_KEY.get(
-        canonicalConditionKey,
-      );
-      if (!canonicalSeed) {
-        await ctx.db.delete(challenge._id);
-        deleted += 1;
-        continue;
-      }
-
-      if (existingByConditionKey.has(canonicalConditionKey)) {
-        await ctx.db.delete(challenge._id);
-        deleted += 1;
-        continue;
-      }
-
-      const metadataMismatch =
-        challenge.name !== canonicalSeed.name ||
-        challenge.description !== canonicalSeed.description ||
-        challenge.type !== canonicalSeed.type;
-      const keyMismatch = challenge.conditionKey !== canonicalConditionKey;
-
-      if (metadataMismatch || keyMismatch) {
-        await ctx.db.patch(challenge._id, {
-          conditionKey: canonicalConditionKey,
-          name: canonicalSeed.name,
-          description: canonicalSeed.description,
-          type: toStoredChallengeType(canonicalSeed.type),
-        });
-        updated += 1;
-        existingByConditionKey.set(canonicalConditionKey, {
-          ...challenge,
-          ...canonicalSeed,
-          conditionKey: canonicalConditionKey,
-        });
-        continue;
-      }
-
-      existingByConditionKey.set(canonicalConditionKey, challenge);
-    }
-
-    for (const seed of CHALLENGE_SEEDS) {
-      const current = existingByConditionKey.get(seed.conditionKey);
-
-      if (!current) {
-        await ctx.db.insert("challenges", {
-          name: seed.name,
-          description: seed.description,
-          type: toStoredChallengeType(seed.type),
-          conditionKey: seed.conditionKey,
-          used: false,
-        });
-        inserted += 1;
-        continue;
-      }
-
-      if (
-        current.name === seed.name &&
-        current.description === seed.description &&
-        current.type === seed.type
-      ) {
-        continue;
-      }
-
-      await ctx.db.patch(current._id, {
-        name: seed.name,
-        description: seed.description,
-        type: toStoredChallengeType(seed.type),
-      });
-      updated += 1;
-    }
-
-    return {
-      inserted,
-      total: CHALLENGE_SEEDS.length,
-      alreadySeeded: inserted === 0 && updated === 0 && deleted === 0,
-    };
-  },
+  handler: async (ctx) => seedChallengesCatalog(ctx),
 });

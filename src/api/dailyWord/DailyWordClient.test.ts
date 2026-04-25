@@ -105,17 +105,14 @@ describe("DailyWordClient", () => {
     expect(word).toBeNull();
   });
 
-  it("fetches daily meaning, normalizes it and caches by day + word", async () => {
+  it("fetches daily meaning from daily payload, normalizes it and caches by day + word", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
         ok: true,
         data: {
-          meanings: [
-            {
-              senses: [{ description: "   Acción de leer   " }],
-            },
-          ],
+          word: "LECTURA",
+          meaning: "   Acción de leer   ",
         },
       }),
     });
@@ -124,6 +121,12 @@ describe("DailyWordClient", () => {
     const meaning = await client.getDailyMeaning(WORD, DATE);
 
     expect(meaning).toBe("Acción de leer");
+    expect(fetchFn).toHaveBeenCalledWith("/api/daily", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
     expect(storage.getItem(MEANING_STORAGE_KEY)).toBe(
       JSON.stringify("Acción de leer"),
     );
@@ -140,15 +143,16 @@ describe("DailyWordClient", () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  it("resolves /api/words endpoint from /api/daily for meaning requests", async () => {
+  it("supports daily payloads that provide meaning as data.meanings", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
         ok: true,
         data: {
+          word: "LECTURA",
           meanings: [
             {
-              senses: [{ description: "Descripción" }],
+              senses: [{ description: "Descripción desde senses" }],
             },
           ],
         },
@@ -156,13 +160,52 @@ describe("DailyWordClient", () => {
     });
     const client = new DailyWordClient({ storage, fetchFn });
 
+    const meaning = await client.getDailyMeaning(WORD, DATE);
+
+    expect(meaning).toBe("Descripción desde senses");
+  });
+
+  it("does not expose the word in URL when fetching meaning", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        data: {
+          word: "LECTURA",
+          meaning: "Descripción",
+        },
+      }),
+    });
+    const client = new DailyWordClient({ storage, fetchFn });
+
     await client.getDailyMeaning(WORD, DATE);
 
-    expect(fetchFn).toHaveBeenCalledWith("/api/words/lectura", {
+    expect(fetchFn).toHaveBeenCalledWith("/api/daily", {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
     });
+  });
+
+  it("uses a single network call for daily word and meaning when both are requested", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        data: {
+          word: "LECTURA",
+          meaning: "Descripción",
+        },
+      }),
+    });
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    const word = await client.getDailyWord(DATE);
+    const meaning = await client.getDailyMeaning("LECTURA", DATE);
+
+    expect(word).toBe("LECTURA");
+    expect(meaning).toBe("Descripción");
+    expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 });

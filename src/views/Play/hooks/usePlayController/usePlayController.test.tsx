@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CLASSIC_ROUND_CONFIG,
   getTotalPointsForWin,
+  hasDailyShieldAvailableForDate,
   readDailyModeOutcomeForDate,
   writeDailyModeOutcomeForDate,
   WORDLE_MODE_IDS,
@@ -1486,6 +1487,108 @@ describe("usePlayController", () => {
 
     expect(result.current.showDefeatDialog).toBe(true);
     expect(result.current.canReopenEndOfGameDialog).toBe(false);
+  });
+
+  it("waits for shield decision before committing a loss when daily shield is available", () => {
+    const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const basePlayerState = mockUsePlayer();
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      commitLoss,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      guesses: ["SLATE", "CRANE", "MANGO", "TRUCK", "LEMON", "CANDY"],
+      won: false,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showDefeatDialog).toBe(true);
+    expect(result.current.showDefeatShieldActions).toBe(true);
+    expect(commitLoss).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.closeEndOfGameDialog();
+    });
+
+    expect(result.current.showDefeatDialog).toBe(true);
+  });
+
+  it("consumes daily shield and preserves streak loss handling when selected", () => {
+    const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const basePlayerState = mockUsePlayer();
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      commitLoss,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      guesses: ["SLATE", "CRANE", "MANGO", "TRUCK", "LEMON", "CANDY"],
+      won: false,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(hasDailyShieldAvailableForDate("AB12")).toBe(true);
+
+    act(() => {
+      result.current.useDailyShieldForCurrentDefeat();
+    });
+
+    expect(commitLoss).not.toHaveBeenCalled();
+    expect(result.current.showDefeatShieldActions).toBe(false);
+    expect(hasDailyShieldAvailableForDate("AB12")).toBe(false);
+  });
+
+  it("commits loss when shield is skipped from defeat dialog", () => {
+    const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const basePlayerState = mockUsePlayer();
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      commitLoss,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      guesses: ["SLATE", "CRANE", "MANGO", "TRUCK", "LEMON", "CANDY"],
+      won: false,
+      gameOver: true,
+    };
+
+    rerender();
+
+    act(() => {
+      result.current.skipDailyShieldForCurrentDefeat();
+    });
+
+    expect(commitLoss).toHaveBeenCalledWith(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.showDefeatShieldActions).toBe(false);
   });
 
   it("shows the end-of-game settings hint only once per tab session", () => {

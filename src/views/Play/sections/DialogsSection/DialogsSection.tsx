@@ -77,6 +77,7 @@ const DialogsSection = (): JSX.Element => {
     isDifficultyChangeConfirmationOpen,
     showVictoryDialog,
     showDefeatDialog,
+    showDefeatShieldActions,
     answer,
     victoryBoardShareSupported,
     isSharingVictoryBoard,
@@ -91,6 +92,8 @@ const DialogsSection = (): JSX.Element => {
     continuePreviousBoard,
     startNewBoard,
     closeEndOfGameDialog,
+    useDailyShieldForCurrentDefeat,
+    skipDailyShieldForCurrentDefeat,
     goToPlayRoute,
     openSettingsPanel,
     cancelRefreshBoard,
@@ -123,8 +126,10 @@ const DialogsSection = (): JSX.Element => {
   const showVictoryPlayAgainAction =
     controller.activeModeId !== WORDLE_MODE_IDS.DAILY;
   const showDefeatReplayActions =
-    controller.activeModeId !== WORDLE_MODE_IDS.DAILY;
-  const closeEndOfGameDialogAction = showDefeatReplayActions
+    controller.activeModeId !== WORDLE_MODE_IDS.DAILY &&
+    !showDefeatShieldActions;
+  const closeEndOfGameDialogAction =
+    controller.activeModeId !== WORDLE_MODE_IDS.DAILY
     ? closeEndOfGameDialog
     : goToPlayRoute;
 
@@ -293,12 +298,15 @@ const DialogsSection = (): JSX.Element => {
               visible
               answer={endOfGameAnswer}
               bestStreak={endOfGameBestStreak}
+              showShieldActions={showDefeatShieldActions}
               showSettingsHint={showEndOfGameSettingsHint}
               showPlayAgainAction={showDefeatReplayActions}
               showChangeDifficultyAction={
                 settingsDrawerEnabled && showDefeatReplayActions
               }
               onClose={closeEndOfGameDialogAction}
+              onUseShield={useDailyShieldForCurrentDefeat}
+              onSkipShield={skipDailyShieldForCurrentDefeat}
               onPlayAgain={startNewBoard}
               onChangeDifficulty={changeDifficulty}
             />

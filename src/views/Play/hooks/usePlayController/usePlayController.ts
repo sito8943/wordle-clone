@@ -2,11 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   clearAllDailyModeOutcomes,
+  clearAllDailyShieldUsages,
   clearAllPersistedGameStates,
+  clearDailyShieldUsage,
   clearDailyModeOutcome,
+  consumeDailyShieldForDate,
   getTodayDateUTC,
   getGuessCombo,
   getNormalDictionaryBonusRowFlags,
+  hasDailyShieldAvailableForDate,
   isWordleModeEnabled,
   readDailyModeOutcomeForDate,
   resolvePlayableWordleModeId,
@@ -214,6 +218,8 @@ export default function usePlayController(
   const [showLegacyEndOfGameFeedback, setShowLegacyEndOfGameFeedback] =
     useState(false);
   const [endOfGameDialogDismissed, setEndOfGameDialogDismissed] =
+    useState(false);
+  const [defeatShieldDecisionPending, setDefeatShieldDecisionPending] =
     useState(false);
   const [comboFlash, setComboFlash] = useState<ComboFlash | null>(null);
   const [challengeCompletionMessage, setChallengeCompletionMessage] = useState<
@@ -438,7 +444,24 @@ export default function usePlayController(
       hydrated.current = true;
 
       if (gameOver && !won) {
-        void commitLoss(activeModeId);
+        setShowLegacyEndOfGameFeedback(false);
+        setEndOfGameDialogDismissed(false);
+        setEndOfGameSnapshot({
+          answer,
+          currentStreak: activeModeStreak,
+          bestStreak: activeModeStreak,
+          challengeBonusPoints: 0,
+          scoreSummary: null,
+        });
+
+        const canUseDailyShield =
+          activeModeId !== WORDLE_MODE_IDS.DAILY &&
+          hasDailyShieldAvailableForDate(player.code);
+        setDefeatShieldDecisionPending(canUseDailyShield);
+
+        if (!canUseDailyShield) {
+          void commitLoss(activeModeId);
+        }
       }
 
       roundSettled.current = gameOver;
@@ -448,6 +471,7 @@ export default function usePlayController(
     if (!gameOver) {
       roundSettled.current = false;
       setEndOfGameDialogDismissed(false);
+      setDefeatShieldDecisionPending(false);
       return;
     }
 
@@ -459,6 +483,7 @@ export default function usePlayController(
     setEndOfGameDialogDismissed(false);
 
     if (won) {
+      setDefeatShieldDecisionPending(false);
       if (dailyModeActive) {
         writeDailyModeOutcomeForDate({
           outcome: "won",
@@ -499,7 +524,15 @@ export default function usePlayController(
         challengeBonusPoints: 0,
         scoreSummary: null,
       });
-      void commitLoss(activeModeId);
+
+      const canUseDailyShield =
+        activeModeId !== WORDLE_MODE_IDS.DAILY &&
+        hasDailyShieldAvailableForDate(player.code);
+      setDefeatShieldDecisionPending(canUseDailyShield);
+
+      if (!canUseDailyShield) {
+        void commitLoss(activeModeId);
+      }
     }
 
     void completeEligibleChallenges();
@@ -691,13 +724,14 @@ export default function usePlayController(
   }, [dailyModeActive, player.code]);
 
   const refreshBoardNow = useCallback(() => {
-    if (isDailyModeLockedForToday()) {
+    if (isDailyModeLockedForToday() || defeatShieldDecisionPending) {
       return;
     }
 
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setEndOfGameDialogDismissed(false);
+    setDefeatShieldDecisionPending(false);
     setComboFlash(null);
     setShowSettingsPanel(false);
     setPendingDifficulty(null);
@@ -710,6 +744,7 @@ export default function usePlayController(
     refresh();
   }, [
     acknowledgeDictionaryChecksumChange,
+    defeatShieldDecisionPending,
     isDailyModeLockedForToday,
     refresh,
     resetHardModeTimer,
@@ -717,13 +752,14 @@ export default function usePlayController(
   ]);
 
   const startNewBoard = useCallback(() => {
-    if (isDailyModeLockedForToday()) {
+    if (isDailyModeLockedForToday() || defeatShieldDecisionPending) {
       return;
     }
 
     setEndOfGameSnapshot(null);
     setShowLegacyEndOfGameFeedback(false);
     setEndOfGameDialogDismissed(false);
+    setDefeatShieldDecisionPending(false);
     setComboFlash(null);
     setShowSettingsPanel(false);
     setPendingDifficulty(null);
@@ -734,6 +770,7 @@ export default function usePlayController(
     resetHardModeTimer();
     startNewWordleBoard();
   }, [
+    defeatShieldDecisionPending,
     isDailyModeLockedForToday,
     resetHardModeTimer,
     resetHints,
@@ -741,11 +778,35 @@ export default function usePlayController(
   ]);
 
   const closeEndOfGameDialog = useCallback(() => {
+    if (defeatShieldDecisionPending) {
+      return;
+    }
+
     setShowLegacyEndOfGameFeedback(true);
     setEndOfGameDialogDismissed(true);
     setIsSharingVictoryBoard(false);
     setVictoryBoardShareError(null);
-  }, []);
+  }, [defeatShieldDecisionPending]);
+
+  const useDailyShieldForCurrentDefeat = useCallback(() => {
+    if (!defeatShieldDecisionPending) {
+      return;
+    }
+
+    consumeDailyShieldForDate({
+      playerCode: player.code,
+    });
+    setDefeatShieldDecisionPending(false);
+  }, [defeatShieldDecisionPending, player.code]);
+
+  const skipDailyShieldForCurrentDefeat = useCallback(() => {
+    if (!defeatShieldDecisionPending) {
+      return;
+    }
+
+    setDefeatShieldDecisionPending(false);
+    void commitLoss(activeModeId);
+  }, [activeModeId, commitLoss, defeatShieldDecisionPending]);
 
   const reopenEndOfGameDialog = useCallback(() => {
     if (!showEndOfGameDialogs || !gameOver || endOfGameSnapshot === null) {
@@ -983,7 +1044,6 @@ export default function usePlayController(
     }
 
     try {
-      await challengeClient.seedChallenges();
       const date = getTodayDateUTC();
       let todayChallenges = await challengeClient.getTodayChallenges(date);
 
@@ -1047,7 +1107,6 @@ export default function usePlayController(
     }
 
     try {
-      await challengeClient.seedChallenges();
       const date = getTodayDateUTC();
       const todayChallenges =
         await challengeClient.regenerateDailyChallenges(date);
@@ -1090,6 +1149,8 @@ export default function usePlayController(
     try {
       clearDailyModeOutcome(player.code);
       clearDailyModeOutcome();
+      clearDailyShieldUsage(player.code);
+      clearDailyShieldUsage();
       setDailyModeDeveloperMessage(
         i18n.t("play.developerConsole.dailyCurrentPlayerResetSuccess"),
       );
@@ -1111,6 +1172,7 @@ export default function usePlayController(
   const resetDailyForAllPlayersForDeveloper = useCallback(() => {
     try {
       clearAllDailyModeOutcomes();
+      clearAllDailyShieldUsages();
       setDailyModeDeveloperMessage(
         i18n.t("play.developerConsole.dailyAllPlayersResetSuccess"),
       );
@@ -1178,6 +1240,7 @@ export default function usePlayController(
       setShowDeveloperConsoleDialog(false);
       setShowSettingsPanel(false);
       setPendingDifficulty(null);
+      setDefeatShieldDecisionPending(false);
       setIsSharingVictoryBoard(false);
       setVictoryBoardShareError(null);
       setChallengeCompletionMessage(null);
@@ -1220,13 +1283,17 @@ export default function usePlayController(
     won &&
     endOfGameSnapshot !== null &&
     !endOfGameDialogDismissed;
+  const forceDefeatDialogForShield = defeatShieldDecisionPending;
   const showDefeatDialog =
-    showEndOfGameDialogs &&
     gameOver &&
     !won &&
     endOfGameSnapshot !== null &&
+    (showEndOfGameDialogs || forceDefeatDialogForShield) &&
     !endOfGameDialogDismissed;
-  const showRefreshAttention = gameOver && !isDailyModeLockedForToday();
+  const showRefreshAttention =
+    gameOver &&
+    !isDailyModeLockedForToday() &&
+    !defeatShieldDecisionPending;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
   const canReopenEndOfGameDialog =
     showEndOfGameDialogs &&
@@ -1365,13 +1432,17 @@ export default function usePlayController(
     currentLanguage: gameplayLanguage,
     currentWinStreak: activeModeStreak,
     showLegacyEndOfGameMessage:
-      !showEndOfGameDialogs || showLegacyEndOfGameFeedback,
+      (!showEndOfGameDialogs && !defeatShieldDecisionPending) ||
+      showLegacyEndOfGameFeedback,
     canReopenEndOfGameDialog,
     showRefreshAttention,
     refreshAttentionPulse,
     refreshAttentionScale: 0.14,
     showVictoryDialog,
     showDefeatDialog,
+    showDefeatShieldActions: defeatShieldDecisionPending,
+    useDailyShieldForCurrentDefeat,
+    skipDailyShieldForCurrentDefeat,
     victoryBoardShareSupported,
     isSharingVictoryBoard,
     victoryBoardShareError,

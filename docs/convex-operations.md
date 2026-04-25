@@ -21,7 +21,6 @@
 - `words:ensureLanguageSeeded`
 - `words:listByLanguage`
 - `words:getLanguageChecksum`
-- `challenges:seedChallenges`
 - `challenges:getTodayChallenges`
 - `challenges:generateDailyChallenges`
 - `challenges:getPlayerChallengeProgress`
@@ -40,6 +39,7 @@
 
 ### Funciones expuestas pero sin uso detectado en runtime actual de frontend
 - `challenges:listAllChallenges`
+- `challenges:seedChallenges` (queda disponible para mantenimiento manual)
 - `scores:addScore` (se mantiene para compatibilidad y colas legacy/offline)
 
 ## 1) Módulo `scores`
@@ -65,11 +65,11 @@ Fuente: [convex/challenges.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Front
 | `getTodayChallenges` | query | Lee `dailyChallenges` por `by_date`, luego `get` de `challenges` (simple/complex) | Sin escritura |
 | `getPlayerChallengeProgress` | query | Lee perfil en `scores.by_client_id`, luego `playerChallengeProgress.by_profile_and_date` | Sin escritura |
 | `listAllChallenges` | query | Lee todos los `challenges` | Sin escritura |
-| `generateDailyChallenges` | mutation | Lee `dailyChallenges.by_date`, lee `challenges` disponibles por `by_type_and_used` | `patch` `challenges.used`, `delete` daily inválido, `insert` en `dailyChallenges` |
-| `regenerateDailyChallenges` | mutation | Lee `dailyChallenges.by_date`, lee `challenges` previos y disponibles | `patch` `challenges.used`, `delete` daily previo, `insert` nuevo daily |
+| `generateDailyChallenges` | mutation | Lee `dailyChallenges.by_date`, catálogo `challenges` y referencias activas para seeding seguro, luego `challenges` disponibles por `by_type_and_used` | `patch`/`insert` de catálogo (seed interno), `patch` `challenges.used`, `delete` daily inválido, `insert` en `dailyChallenges` |
+| `regenerateDailyChallenges` | mutation | Lee `dailyChallenges.by_date`, catálogo `challenges` y referencias activas para seeding seguro, lee `challenges` previos y disponibles | `patch`/`insert` de catálogo (seed interno), `patch` `challenges.used`, `delete` daily previo, `insert` nuevo daily |
 | `completeChallenge` | mutation | Lee perfil en `scores`, `get` challenge, valida daily por `dailyChallenges.by_date`, consulta `playerChallengeProgress.by_profile_and_challenge` | `insert` en `playerChallengeProgress`, `patch` score del perfil en `scores` |
 | `resetPlayerChallengeProgressForDate` | mutation | Lee perfil en `scores`, consulta `playerChallengeProgress.by_profile_and_date` | `delete` entradas de progreso, `patch` score revertido en `scores` |
-| `seedChallenges` | mutation | Lee todos los `challenges` | Limpieza y sincronización: `delete` inválidos/duplicados, `patch` descripciones/tipos/keys, `insert` faltantes |
+| `seedChallenges` | mutation | Lee `challenges`, `dailyChallenges`, `playerChallengeProgress` | Sincronización de catálogo: `patch` descripciones/tipos/keys, `insert` faltantes, y `delete` solo de inválidos/duplicados no referenciados |
 
 ## 3) Módulo `words`
 Fuente: [convex/words.ts](/Users/sito8943/Documents/HSCode/HS%20Ecole/Frontend%20Frameworks/wordle-clone/convex/words.ts)

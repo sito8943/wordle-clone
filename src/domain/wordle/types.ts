@@ -78,3 +78,8 @@ export type StoredDailyModeStatus = {
   date: string;
   outcome: DailyModeOutcome;
 };
+
+export type StoredDailyShieldUsage = {
+  date: string;
+  used: boolean;
+};

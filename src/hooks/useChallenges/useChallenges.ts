@@ -46,9 +46,6 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
     const init = async () => {
       setLoading(true);
       try {
-        // Seed challenges if needed
-        await challengeClient.seedChallenges();
-
         // Try to get today's challenges
         let todayChallenges = await challengeClient.getTodayChallenges(date);
 

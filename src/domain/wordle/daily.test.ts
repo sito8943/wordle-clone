@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  clearAllDailyShieldUsages,
+  clearDailyShieldUsage,
   clearAllDailyModeOutcomes,
   clearDailyModeOutcome,
+  consumeDailyShieldForDate,
   getMillisUntilEndOfDayUTC,
   getTodayDateUTC,
+  hasDailyShieldAvailableForDate,
   readDailyModeOutcomeForDate,
   resolveDailyAnswer,
   resolveDeterministicDailyWord,
@@ -117,5 +121,84 @@ describe("daily word helpers", () => {
     expect(readDailyModeOutcomeForDate("AB12", date)).toBeNull();
     expect(readDailyModeOutcomeForDate("CD34", date)).toBeNull();
     expect(readDailyModeOutcomeForDate(undefined, date)).toBeNull();
+  });
+
+  it("exposes daily shield as available after winning today's daily", () => {
+    localStorage.clear();
+    const date = "2026-04-22";
+
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+      date,
+    });
+
+    expect(hasDailyShieldAvailableForDate("AB12", date)).toBe(true);
+  });
+
+  it("consumes daily shield for the current date", () => {
+    localStorage.clear();
+    const date = "2026-04-22";
+
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+      date,
+    });
+    consumeDailyShieldForDate({
+      playerCode: "AB12",
+      date,
+    });
+
+    expect(hasDailyShieldAvailableForDate("AB12", date)).toBe(false);
+  });
+
+  it("clears consumed daily shield usage for a specific player", () => {
+    localStorage.clear();
+    const date = "2026-04-22";
+
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+      date,
+    });
+    consumeDailyShieldForDate({
+      playerCode: "AB12",
+      date,
+    });
+    expect(hasDailyShieldAvailableForDate("AB12", date)).toBe(false);
+
+    clearDailyShieldUsage("AB12");
+
+    expect(hasDailyShieldAvailableForDate("AB12", date)).toBe(true);
+  });
+
+  it("clears consumed daily shield usage for all players", () => {
+    localStorage.clear();
+    const date = "2026-04-22";
+
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+      date,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "CD34",
+      date,
+    });
+    consumeDailyShieldForDate({
+      playerCode: "AB12",
+      date,
+    });
+    consumeDailyShieldForDate({
+      playerCode: "CD34",
+      date,
+    });
+
+    clearAllDailyShieldUsages();
+
+    expect(hasDailyShieldAvailableForDate("AB12", date)).toBe(true);
+    expect(hasDailyShieldAvailableForDate("CD34", date)).toBe(true);
   });
 });

@@ -2,7 +2,11 @@ import {
   ACCENTED_LETTER_REPLACEMENTS,
   DAILY_WORD_DATE_PATTERN,
 } from "./constants";
-import type { DailyWordMeaningResponse, DailyWordResponse } from "./types";
+import type {
+  DailyWordMeaningEntry,
+  DailyWordMeaningResponse,
+  DailyWordResponse,
+} from "./types";
 
 const normalizeCharacter = (character: string): string => {
   if (character === "Ñ") {
@@ -67,20 +71,14 @@ export const normalizeDailyMeaningCandidate = (value: unknown): string | null =>
   return normalized.length > 0 ? normalized : null;
 };
 
-export const extractDailyMeaningFromResponse = (
-  payload: unknown,
+const extractMeaningFromMeanings = (
+  meanings?: DailyWordMeaningEntry[],
 ): string | null => {
-  if (!payload || typeof payload !== "object") {
+  if (!Array.isArray(meanings)) {
     return null;
   }
 
-  const maybeResponse = payload as DailyWordMeaningResponse;
-
-  if (!Array.isArray(maybeResponse.data?.meanings)) {
-    return null;
-  }
-
-  for (const meaning of maybeResponse.data.meanings) {
+  for (const meaning of meanings) {
     if (!meaning || typeof meaning !== "object" || !Array.isArray(meaning.senses)) {
       continue;
     }
@@ -100,40 +98,21 @@ export const extractDailyMeaningFromResponse = (
   return null;
 };
 
-const DAILY_PATH_SUFFIX = "/daily";
-
-const toWordsPath = (path: string, normalizedWord: string): string => {
-  const sanitizedPath = path.replace(/\/+$/, "");
-  const basePath = sanitizedPath.endsWith(DAILY_PATH_SUFFIX)
-    ? sanitizedPath.slice(0, -DAILY_PATH_SUFFIX.length)
-    : sanitizedPath;
-
-  return `${basePath}/words/${encodeURIComponent(normalizedWord.toLowerCase())}`;
-};
-
-export const resolveDailyMeaningEndpoint = (
-  endpoint: string,
-  word: string,
-): string => {
-  const normalizedWord = normalizeDailyWordCandidate(word);
-
-  if (!normalizedWord) {
-    return endpoint;
+export const extractDailyMeaningFromResponse = (
+  payload: unknown,
+): string | null => {
+  if (!payload || typeof payload !== "object") {
+    return null;
   }
 
-  try {
-    const sentinelBase = "https://wordle-local.invalid";
-    const parsedEndpoint = new URL(endpoint, sentinelBase);
-    parsedEndpoint.pathname = toWordsPath(parsedEndpoint.pathname, normalizedWord);
-    parsedEndpoint.search = "";
-    parsedEndpoint.hash = "";
+  const maybeResponse = payload as DailyWordResponse & DailyWordMeaningResponse;
+  const directMeaning = normalizeDailyMeaningCandidate(maybeResponse.data?.meaning);
 
-    return parsedEndpoint.origin === sentinelBase
-      ? parsedEndpoint.pathname
-      : parsedEndpoint.toString();
-  } catch {
-    return toWordsPath(endpoint, normalizedWord);
+  if (directMeaning) {
+    return directMeaning;
   }
+
+  return extractMeaningFromMeanings(maybeResponse.data?.meanings);
 };
 
 export const createMemoryStorage = (): Storage => {

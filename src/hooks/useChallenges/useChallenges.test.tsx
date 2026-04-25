@@ -41,7 +41,6 @@ describe("useChallenges", () => {
   it("does not initialize when disabled", () => {
     const challengeClient = {
       isConfigured: true,
-      seedChallenges: vi.fn(),
       getTodayChallenges: vi.fn(),
       generateDailyChallenges: vi.fn(),
       getPlayerChallengeProgress: vi.fn(),
@@ -50,7 +49,7 @@ describe("useChallenges", () => {
 
     const { result } = renderHook(() => useChallenges(false));
 
-    expect(challengeClient.seedChallenges).not.toHaveBeenCalled();
+    expect(challengeClient.getTodayChallenges).not.toHaveBeenCalled();
     expect(result.current.challenges).toBeNull();
     expect(result.current.progress).toEqual([]);
     expect(result.current.showDialog).toBe(false);
@@ -60,9 +59,6 @@ describe("useChallenges", () => {
     const todayChallenges = createTodayChallenges();
     const challengeClient = {
       isConfigured: true,
-      seedChallenges: vi
-        .fn()
-        .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
       generateDailyChallenges: vi.fn(),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
@@ -72,7 +68,7 @@ describe("useChallenges", () => {
     const { result } = renderHook(() => useChallenges(true));
 
     await waitFor(() => {
-      expect(challengeClient.seedChallenges).toHaveBeenCalledTimes(1);
+      expect(challengeClient.getTodayChallenges).toHaveBeenCalledTimes(1);
     });
 
     await waitFor(() => {
@@ -93,9 +89,6 @@ describe("useChallenges", () => {
     const todayChallenges = createTodayChallenges();
     const challengeClient = {
       isConfigured: true,
-      seedChallenges: vi
-        .fn()
-        .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(null),
       generateDailyChallenges: vi.fn().mockResolvedValue(todayChallenges),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([
@@ -132,9 +125,6 @@ describe("useChallenges", () => {
     const todayChallenges = createTodayChallenges();
     const challengeClient = {
       isConfigured: true,
-      seedChallenges: vi
-        .fn()
-        .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
       generateDailyChallenges: vi.fn(),
       getPlayerChallengeProgress: vi

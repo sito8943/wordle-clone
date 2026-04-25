@@ -10,7 +10,6 @@ import {
   normalizeDailyWordDate,
   normalizeDailyWordCandidate,
   normalizeDailyMeaningCandidate,
-  resolveDailyMeaningEndpoint,
   resolveStorage,
 } from "./utils";
 
@@ -72,34 +71,17 @@ class DailyWordClient {
       return cachedWord;
     }
 
-    if (!this.isOnline()) {
+    const dailyPayload = await this.fetchDailyPayload();
+    if (!dailyPayload) {
       return null;
     }
 
-    try {
-      const response = await this.fetchFn(this.endpoint, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        return null;
-      }
-
-      const payload = (await response.json()) as unknown;
-      const remoteWord = extractDailyWordFromResponse(payload);
-
-      if (!remoteWord) {
-        return null;
-      }
-
-      this.cacheWord(remoteWord, normalizedDate);
-      return remoteWord;
-    } catch {
-      return null;
+    this.cacheWord(dailyPayload.word, normalizedDate);
+    if (dailyPayload.meaning) {
+      this.cacheMeaning(dailyPayload.word, dailyPayload.meaning, normalizedDate);
     }
+
+    return dailyPayload.word;
   }
 
   getCachedMeaning(word: string, date?: string): string | null {
@@ -156,34 +138,54 @@ class DailyWordClient {
       return cachedMeaning;
     }
 
+    const dailyPayload = await this.fetchDailyPayload();
+    if (!dailyPayload) {
+      return null;
+    }
+
+    this.cacheWord(dailyPayload.word, normalizedDate);
+    if (!dailyPayload.meaning) {
+      return null;
+    }
+
+    this.cacheMeaning(dailyPayload.word, dailyPayload.meaning, normalizedDate);
+
+    return dailyPayload.word === normalizedWord ? dailyPayload.meaning : null;
+  }
+
+  private async fetchDailyPayload(): Promise<{
+    word: string;
+    meaning: string | null;
+  } | null> {
     if (!this.isOnline()) {
       return null;
     }
 
     try {
-      const response = await this.fetchFn(
-        resolveDailyMeaningEndpoint(this.endpoint, normalizedWord),
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
+      const response = await this.fetchFn(this.endpoint, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
         },
-      );
+      });
 
       if (!response.ok) {
         return null;
       }
 
       const payload = (await response.json()) as unknown;
-      const remoteMeaning = extractDailyMeaningFromResponse(payload);
+      const remoteWord = extractDailyWordFromResponse(payload);
 
-      if (!remoteMeaning) {
+      if (!remoteWord) {
         return null;
       }
 
-      this.cacheMeaning(normalizedWord, remoteMeaning, normalizedDate);
-      return remoteMeaning;
+      const remoteMeaning = extractDailyMeaningFromResponse(payload);
+
+      return {
+        word: remoteWord,
+        meaning: remoteMeaning,
+      };
     } catch {
       return null;
     }

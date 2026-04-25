@@ -125,4 +125,37 @@ describe("DefeatDialog", () => {
 
     expect(onPlayAgain).not.toHaveBeenCalled();
   });
+
+  it("renders shield decision actions and triggers callbacks", () => {
+    const onUseShield = vi.fn();
+    const onSkipShield = vi.fn();
+
+    render(
+      <DefeatDialog
+        visible
+        answer="APPLE"
+        bestStreak={4}
+        showShieldActions
+        showPlayAgainAction={false}
+        showChangeDifficultyAction={false}
+        onClose={() => undefined}
+        onUseShield={onUseShield}
+        onSkipShield={onSkipShield}
+        onPlayAgain={() => undefined}
+        onChangeDifficulty={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Use shield" }));
+    act(() => {
+      vi.runAllTimers();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Don't use shield" }));
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(onUseShield).toHaveBeenCalledTimes(1);
+    expect(onSkipShield).toHaveBeenCalledTimes(1);
+  });
 });

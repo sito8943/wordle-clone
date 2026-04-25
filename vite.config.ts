@@ -18,10 +18,6 @@ export default defineConfig(({ mode }) => {
           target: dailyProxyTarget,
           changeOrigin: true,
         },
-        "/api/words": {
-          target: dailyProxyTarget,
-          changeOrigin: true,
-        },
       },
     },
     build: {
