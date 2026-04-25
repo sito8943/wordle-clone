@@ -1,5 +1,13 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type Mock,
+} from "vitest";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
 import SettingsDrawer from "./SettingsDrawer";
 
@@ -8,15 +16,19 @@ const featureFlagsMock = vi.hoisted(() => ({
   settingsDrawerEnabled: true,
 }));
 
+const mockFunction = vi.fn();
+
+const value: Record<string, unknown> = {
+  activeModeId: WORDLE_MODE_IDS.CLASSIC,
+  showSettingsPanel: true,
+  openSettingsPanel: mockFunction,
+  closeSettingsPanel: mockFunction,
+  changeDifficulty: mockFunction,
+  changeManualTileSelection: mockFunction,
+};
+
 const playViewMock = vi.hoisted(() => ({
-  controller: {
-    activeModeId: WORDLE_MODE_IDS.CLASSIC,
-    showSettingsPanel: true,
-    openSettingsPanel: vi.fn(),
-    closeSettingsPanel: vi.fn(),
-    changeDifficulty: vi.fn(),
-    changeManualTileSelection: vi.fn(),
-  },
+  controller: { ...value },
   player: {
     difficulty: "normal",
     manualTileSelection: false,
@@ -42,7 +54,8 @@ describe("SettingsDrawer", () => {
     featureFlagsMock.settingsDrawerEnabled = true;
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.CLASSIC;
     playViewMock.controller.showSettingsPanel = true;
-    playViewMock.controller.closeSettingsPanel.mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (playViewMock.controller.closeSettingsPanel as Mock<any>).mockClear();
   });
 
   afterEach(() => {

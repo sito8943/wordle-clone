@@ -3,7 +3,10 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { queryKeys } from "@hooks";
-import { MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS } from "@domain/wordle";
+import {
+  MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  readDailyModeOutcomeForDate,
+} from "@domain/wordle";
 import { ApiContext } from "@providers/Api/ApiContext";
 import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
@@ -170,6 +173,32 @@ describe("PlayerProvider", () => {
 
     expect(result.current.player.name).toBe("Carlos");
     expect(result.current.player.code).toBe("AB12");
+  });
+
+  it("updatePlayer restores the daily lock from backend profile data", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      language: input.language,
+      playerCode: "AB12",
+      score: input.score ?? 0,
+      streak: input.streak ?? 0,
+      hasWonDailyToday: true,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ upsertPlayerProfile }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Carlos");
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBe("won");
   });
 
   it("updatePlayer trims and normalizes the name", async () => {
@@ -558,6 +587,32 @@ describe("PlayerProvider", () => {
     expect(recoveredHook.result.current.player.name).toBe("Recovered");
     expect(recoveredHook.result.current.player.score).toBe(27);
     expect(recoveredHook.result.current.player.difficulty).toBe("hard");
+  });
+
+  it("recoverPlayer restores the daily lock from backend profile data", async () => {
+    const recoverPlayerByCode = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "recovered-record",
+      nick: "Recovered",
+      language: "en",
+      playerCode: "RCV1",
+      score: 27,
+      streak: 4,
+      hasWonDailyToday: true,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+    const recoveredHook = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ recoverPlayerByCode }),
+    });
+
+    await act(async () => {
+      await recoveredHook.result.current.recoverPlayer("rcv1");
+    });
+
+    expect(readDailyModeOutcomeForDate("RCV1")).toBe("won");
   });
 
   it("invalidates top scores after recovering a player", async () => {

@@ -22,6 +22,7 @@ import {
   isScoreCommitDurationSuspicious,
   resolveScoreboardModeId,
   resolveEnabledDifficulty,
+  writeDailyModeOutcomeForDate,
   type Player,
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
@@ -52,6 +53,23 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     difficulty: player.difficulty,
     keyboardPreference: player.keyboardPreference,
   });
+
+  const hydrateDailyModeOutcomeFromProfile = useCallback(
+    (remoteProfile: { playerCode: string; hasWonDailyToday?: boolean }) => {
+      if (
+        remoteProfile.playerCode.trim().length === 0 ||
+        remoteProfile.hasWonDailyToday !== true
+      ) {
+        return;
+      }
+
+      writeDailyModeOutcomeForDate({
+        outcome: "won",
+        playerCode: remoteProfile.playerCode,
+      });
+    },
+    [],
+  );
 
   const applyRemoteProfile = useCallback(
     async (
@@ -192,7 +210,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const current = normalizePlayer(storedPlayer);
 
       if (normalizedName === current.name && current.code.length > 0) {
-        await syncQueuedRoundEvents(current);
+        const syncedProfile = await syncQueuedRoundEvents(current);
+        if (syncedProfile) {
+          hydrateDailyModeOutcomeFromProfile(syncedProfile);
+        }
         return;
       }
 
@@ -204,14 +225,24 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       });
 
       await applyRemoteProfile(remoteProfile);
-      await syncQueuedRoundEvents({
+      hydrateDailyModeOutcomeFromProfile(remoteProfile);
+      const syncedProfile = await syncQueuedRoundEvents({
         ...current,
         name: remoteProfile.nick,
         code: remoteProfile.playerCode,
         language: remoteProfile.language,
       });
+      if (syncedProfile) {
+        hydrateDailyModeOutcomeFromProfile(syncedProfile);
+      }
     },
-    [applyRemoteProfile, scoreClient, storedPlayer, syncQueuedRoundEvents],
+    [
+      applyRemoteProfile,
+      hydrateDailyModeOutcomeFromProfile,
+      scoreClient,
+      storedPlayer,
+      syncQueuedRoundEvents,
+    ],
   );
 
   const recoverPlayer = useCallback(
@@ -219,8 +250,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const remoteProfile = await scoreClient.recoverPlayerByCode(code);
       scoreClient.adoptRecoveredIdentity(remoteProfile);
       await applyRemoteProfile(remoteProfile);
+      hydrateDailyModeOutcomeFromProfile(remoteProfile);
     },
-    [applyRemoteProfile, scoreClient],
+    [applyRemoteProfile, hydrateDailyModeOutcomeFromProfile, scoreClient],
   );
 
   const refreshCurrentPlayerProfile = useCallback(async () => {
@@ -235,7 +267,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     await applyRemoteProfile(remoteProfile, {
       preserveLocalPreferences: true,
     });
-  }, [applyRemoteProfile, player.language, scoreClient]);
+    hydrateDailyModeOutcomeFromProfile(remoteProfile);
+  }, [
+    applyRemoteProfile,
+    hydrateDailyModeOutcomeFromProfile,
+    player.language,
+    scoreClient,
+  ]);
 
   const replacePlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -537,6 +575,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     void syncQueuedRoundEvents(player)
       .then(async (syncedProfile) => {
         if (syncedProfile) {
+          hydrateDailyModeOutcomeFromProfile(syncedProfile);
           return;
         }
 
@@ -547,11 +586,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           await applyRemoteProfile(remoteProfile, {
             preserveLocalPreferences: true,
           });
+          hydrateDailyModeOutcomeFromProfile(remoteProfile);
         }
       })
       .catch(() => undefined);
   }, [
     applyRemoteProfile,
+    hydrateDailyModeOutcomeFromProfile,
     player,
     player.name,
     scoreClient,

@@ -12,7 +12,10 @@ const useDailyModePrerequisites = (): UseDailyModePrerequisitesResult => {
       return null;
     }
 
-    const cachedMeaning = dailyWordClient.getCachedMeaning(cachedWord, dailyDate);
+    const cachedMeaning = dailyWordClient.getCachedMeaning(
+      cachedWord,
+      dailyDate,
+    );
     if (!cachedMeaning) {
       return null;
     }

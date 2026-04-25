@@ -1232,10 +1232,7 @@ class ScoreClient {
 
       for (let index = 0; index < this.storage.length; index += 1) {
         const key = this.storage.key(index);
-        if (
-          key &&
-          key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)
-        ) {
+        if (key && key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)) {
           keysToCheck.push(key);
         }
       }
@@ -1320,6 +1317,10 @@ class ScoreClient {
           ? candidate.streak
           : fallback.streak,
       ),
+      hasWonDailyToday:
+        typeof candidate.hasWonDailyToday === "boolean"
+          ? candidate.hasWonDailyToday
+          : Boolean(fallback.hasWonDailyToday),
       difficulty:
         candidate.difficulty === "easy" ||
         candidate.difficulty === "normal" ||

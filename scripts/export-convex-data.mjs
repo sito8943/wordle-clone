@@ -7,7 +7,11 @@ const DEFAULT_EXPORTS_DIR = "exports";
 
 const getDefaultOutputPath = () => {
   const iso = new Date().toISOString().replace(/[:.]/g, "-");
-  return resolve(process.cwd(), DEFAULT_EXPORTS_DIR, `convex-export-${iso}.json`);
+  return resolve(
+    process.cwd(),
+    DEFAULT_EXPORTS_DIR,
+    `convex-export-${iso}.json`,
+  );
 };
 
 const printHelp = () => {

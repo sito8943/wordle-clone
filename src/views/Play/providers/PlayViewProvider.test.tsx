@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
 
@@ -73,6 +73,10 @@ describe("PlayViewProvider", () => {
       closeDialog: vi.fn(),
       refreshProgress: vi.fn(),
     });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it("enables challenges in classic mode", () => {

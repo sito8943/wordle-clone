@@ -1175,7 +1175,6 @@ describe("App", () => {
   });
 
   it("shows an insane mode timer and decreases it on each tick", async () => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1189,6 +1188,7 @@ describe("App", () => {
     try {
       renderApp();
       await waitForPlayReady();
+      vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
 
       expect(screen.getByLabelText("Insane timer: 60 seconds")).toBeTruthy();
 
@@ -1210,7 +1210,6 @@ describe("App", () => {
   });
 
   it("pauses and restores insane mode timer when navigating away and back", async () => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1240,6 +1239,7 @@ describe("App", () => {
     try {
       renderApp();
       await waitForPlayReady();
+      vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
 
       act(() => {
         vi.advanceTimersByTime(3000);

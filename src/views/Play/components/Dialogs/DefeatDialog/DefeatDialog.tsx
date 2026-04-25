@@ -78,7 +78,9 @@ const DefeatDialog = ({
 
         {showShieldActions ? (
           <div className="rounded-2xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-900 dark:border-sky-700 dark:bg-sky-950/40 dark:text-sky-100">
-            <p className="font-semibold">{t("play.defeatDialog.shieldPrompt")}</p>
+            <p className="font-semibold">
+              {t("play.defeatDialog.shieldPrompt")}
+            </p>
             <div className="mt-3 flex flex-wrap justify-end gap-3">
               <Button
                 onClick={() => {

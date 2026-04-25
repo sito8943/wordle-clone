@@ -116,7 +116,9 @@ const formatChallenge = (doc: {
 const toStoredChallengeType = (type: string): "simple" | "complex" =>
   type as "simple" | "complex";
 
-const getReferencedChallengeIds = async (ctx: MutationCtx): Promise<Set<string>> => {
+const getReferencedChallengeIds = async (
+  ctx: MutationCtx,
+): Promise<Set<string>> => {
   const [dailyEntries, progressEntries] = await Promise.all([
     ctx.db.query("dailyChallenges").collect(),
     ctx.db.query("playerChallengeProgress").collect(),
@@ -171,7 +173,9 @@ const seedChallengesCatalog = async (ctx: MutationCtx) => {
   };
 
   for (const challenge of existing) {
-    const canonicalConditionKey = toCanonicalConditionKey(challenge.conditionKey);
+    const canonicalConditionKey = toCanonicalConditionKey(
+      challenge.conditionKey,
+    );
 
     if (!isChallengeConditionKey(canonicalConditionKey)) {
       await deleteIfUnreferenced(challenge._id);

@@ -12,7 +12,7 @@ class ConvexGateway {
 
   constructor(options?: string | ConvexGatewayOptions) {
     const normalizedOptions =
-      typeof options === "string" ? { convexUrl: options } : options ?? {};
+      typeof options === "string" ? { convexUrl: options } : (options ?? {});
 
     this.backendBaseUrl = this.normalizeBaseUrl(normalizedOptions.backendUrl);
     this.client =

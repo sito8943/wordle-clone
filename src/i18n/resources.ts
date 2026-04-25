@@ -1213,8 +1213,7 @@ export const resources = {
             "No se han podido actualizar los retos diarios.",
           dailyDescription:
             "Herramientas de desarrollo para modo daily. Reiniciar jugador actual desbloquea solo este perfil; reiniciar todos desbloquea todos los perfiles locales de este navegador.",
-          resetDailyForCurrentPlayer:
-            "Reiniciar daily del jugador actual",
+          resetDailyForCurrentPlayer: "Reiniciar daily del jugador actual",
           resetDailyForAllPlayers:
             "Reiniciar daily de todos los jugadores locales",
           dailyCurrentPlayerResetSuccess:

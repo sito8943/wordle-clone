@@ -26,10 +26,12 @@ export const useHintController = ({
 }: UseHintControllerParams): UseHintControllerResult => {
   const { lettersPerRow } = resolveBoardRoundConfig(roundConfig);
   const hintsLimit =
-    typeof hintsLimitOverride === "number" && Number.isFinite(hintsLimitOverride)
+    typeof hintsLimitOverride === "number" &&
+    Number.isFinite(hintsLimitOverride)
       ? Math.max(0, Math.floor(hintsLimitOverride))
       : getHintsLimitByDifficulty(difficulty);
-  const hintStatus = hintStatusOverride ?? getHintStatusByDifficulty(difficulty);
+  const hintStatus =
+    hintStatusOverride ?? getHintStatusByDifficulty(difficulty);
   const initialGameIdRef = useRef(gameId);
   const hasInProgressGameAtMountRef = useRef(hasInProgressGameAtMount);
   const [hintsUsed, setHintsUsed] = useState(0);

@@ -39,10 +39,7 @@ describe("useDailyModePrerequisites", () => {
     expect(result.current.dailyWord).toBe("APPLE");
     expect(result.current.dailyMeaning).toBe("A fruit.");
     expect(getDailyWord).toHaveBeenCalledWith(expect.any(String));
-    expect(getDailyMeaning).toHaveBeenCalledWith(
-      "APPLE",
-      expect.any(String),
-    );
+    expect(getDailyMeaning).toHaveBeenCalledWith("APPLE", expect.any(String));
   });
 
   it("uses cached daily requirements without refetching", async () => {

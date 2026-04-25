@@ -230,12 +230,18 @@ describe("useHardModeTimer", () => {
 
     act(() => {
       setDocumentVisibilityState("hidden");
+    });
+
+    act(() => {
       vi.advanceTimersByTime(3000);
     });
     expect(result.current.hardModeSecondsLeft).toBe(59);
 
     act(() => {
       setDocumentVisibilityState("visible");
+    });
+
+    act(() => {
       vi.advanceTimersByTime(1000);
     });
     expect(result.current.hardModeSecondsLeft).toBe(58);

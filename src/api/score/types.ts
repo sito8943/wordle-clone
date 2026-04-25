@@ -90,6 +90,7 @@ export type RemotePlayerProfile = {
   language: PlayerLanguage;
   score: number;
   streak: number;
+  hasWonDailyToday?: boolean;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
   createdAt: number;

@@ -13,7 +13,10 @@ const env: RuntimeEnv = {
   baseUrl: readString(import.meta.env.BASE_URL, "/"),
   backendUrl: readOptionalString(import.meta.env.VITE_BACKEND_URL),
   convexUrl: readOptionalString(import.meta.env.VITE_CONVEX_URL),
-  dailyWordApiUrl: readString(import.meta.env.VITE_DAILY_WORD_API_URL, "/api/daily"),
+  dailyWordApiUrl: readString(
+    import.meta.env.VITE_DAILY_WORD_API_URL,
+    "/api/daily",
+  ),
   wordReportPhoneNumber: readOptionalString(
     import.meta.env.VITE_WORD_REPORT_PHONE_NUMBER,
   ),

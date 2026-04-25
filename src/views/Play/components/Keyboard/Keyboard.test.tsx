@@ -158,10 +158,7 @@ describe("Keyboard", () => {
     ];
 
     render(
-      <Keyboard
-        guesses={[{ word: "ALERT", statuses }]}
-        onKey={vi.fn()}
-      />,
+      <Keyboard guesses={[{ word: "ALERT", statuses }]} onKey={vi.fn()} />,
     );
 
     const aKey = screen.getByRole("button", {

@@ -656,6 +656,7 @@ describe("ScoreClient", () => {
         playerCode: "AB12",
         score: 14,
         streak: 3,
+        hasWonDailyToday: true,
         difficulty: "hard",
         keyboardPreference: "native",
         createdAt: 1000,
@@ -679,6 +680,7 @@ describe("ScoreClient", () => {
     });
 
     expect(profile.playerCode).toBe("AB12");
+    expect(profile.hasWonDailyToday).toBe(true);
     expect(
       JSON.parse(storage.getItem(SCOREBOARD_PROFILE_IDENTITY_KEY) || "{}"),
     ).toEqual({
@@ -793,6 +795,7 @@ describe("ScoreClient", () => {
       playerCode: "AB12",
       score: 14,
       streak: 3,
+      hasWonDailyToday: true,
       difficulty: "hard",
       keyboardPreference: "native",
       createdAt: 1000,
@@ -814,6 +817,7 @@ describe("ScoreClient", () => {
       language: "es",
     });
     expect(profile?.language).toBe("es");
+    expect(profile?.hasWonDailyToday).toBe(true);
   });
 
   it("queues round events locally and syncs them as deltas", async () => {

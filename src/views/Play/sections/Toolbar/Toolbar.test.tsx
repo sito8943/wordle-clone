@@ -8,8 +8,8 @@ const featureFlagsMock = vi.hoisted(() => ({
   soundEnabled: false,
 }));
 
-const controllerMock = vi.hoisted(() => ({
-  activeModeId: WORDLE_MODE_IDS.CLASSIC,
+const value: Record<string, unknown> = {
+  activeModeId: WORDLE_MODE_IDS.DAILY,
   currentWinStreak: 0,
   dictionaryLoading: false,
   dictionaryWords: [],
@@ -32,7 +32,9 @@ const controllerMock = vi.hoisted(() => ({
   hardModeSecondsLeft: 0,
   hardModeTickPulse: 0,
   hardModeClockBoostScale: 1,
-}));
+};
+
+const controllerMock = vi.hoisted(() => value);
 
 const playViewMock = vi.hoisted(() => ({
   controller: controllerMock,

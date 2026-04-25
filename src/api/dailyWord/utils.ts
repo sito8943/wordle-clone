@@ -61,7 +61,9 @@ export const extractDailyWordFromResponse = (
   return normalizeDailyWordCandidate(maybeResponse.data?.word);
 };
 
-export const normalizeDailyMeaningCandidate = (value: unknown): string | null => {
+export const normalizeDailyMeaningCandidate = (
+  value: unknown,
+): string | null => {
   if (typeof value !== "string") {
     return null;
   }
@@ -79,7 +81,11 @@ const extractMeaningFromMeanings = (
   }
 
   for (const meaning of meanings) {
-    if (!meaning || typeof meaning !== "object" || !Array.isArray(meaning.senses)) {
+    if (
+      !meaning ||
+      typeof meaning !== "object" ||
+      !Array.isArray(meaning.senses)
+    ) {
       continue;
     }
 
@@ -88,7 +94,9 @@ const extractMeaningFromMeanings = (
         continue;
       }
 
-      const normalizedMeaning = normalizeDailyMeaningCandidate(sense.description);
+      const normalizedMeaning = normalizeDailyMeaningCandidate(
+        sense.description,
+      );
       if (normalizedMeaning) {
         return normalizedMeaning;
       }
@@ -106,7 +114,9 @@ export const extractDailyMeaningFromResponse = (
   }
 
   const maybeResponse = payload as DailyWordResponse & DailyWordMeaningResponse;
-  const directMeaning = normalizeDailyMeaningCandidate(maybeResponse.data?.meaning);
+  const directMeaning = normalizeDailyMeaningCandidate(
+    maybeResponse.data?.meaning,
+  );
 
   if (directMeaning) {
     return directMeaning;

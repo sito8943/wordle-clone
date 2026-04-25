@@ -78,7 +78,11 @@ class DailyWordClient {
 
     this.cacheWord(dailyPayload.word, normalizedDate);
     if (dailyPayload.meaning) {
-      this.cacheMeaning(dailyPayload.word, dailyPayload.meaning, normalizedDate);
+      this.cacheMeaning(
+        dailyPayload.word,
+        dailyPayload.meaning,
+        normalizedDate,
+      );
     }
 
     return dailyPayload.word;

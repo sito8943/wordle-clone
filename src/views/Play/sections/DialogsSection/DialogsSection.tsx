@@ -130,8 +130,8 @@ const DialogsSection = (): JSX.Element => {
     !showDefeatShieldActions;
   const closeEndOfGameDialogAction =
     controller.activeModeId !== WORDLE_MODE_IDS.DAILY
-    ? closeEndOfGameDialog
-    : goToPlayRoute;
+      ? closeEndOfGameDialog
+      : goToPlayRoute;
 
   const resumeDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.RESUME,

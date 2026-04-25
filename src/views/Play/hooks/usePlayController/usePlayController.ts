@@ -76,8 +76,12 @@ export default function usePlayController(
   options: UsePlayControllerOptions = {},
 ) {
   const navigate = useNavigate();
-  const { scoreClient, wordDictionaryClient, challengeClient, dailyWordClient } =
-    useApi();
+  const {
+    scoreClient,
+    wordDictionaryClient,
+    challengeClient,
+    dailyWordClient,
+  } = useApi();
   const {
     player,
     replacePlayer,
@@ -963,12 +967,7 @@ export default function usePlayController(
     }
 
     void fetchDailyMeaning();
-  }, [
-    dailyModeActive,
-    dailyMeaning,
-    fetchDailyMeaning,
-    isLoadingDailyMeaning,
-  ]);
+  }, [dailyModeActive, dailyMeaning, fetchDailyMeaning, isLoadingDailyMeaning]);
 
   const closeDailyMeaningDialog = useCallback(() => {
     setShowDailyMeaningDialog(false);
@@ -1291,9 +1290,7 @@ export default function usePlayController(
     (showEndOfGameDialogs || forceDefeatDialogForShield) &&
     !endOfGameDialogDismissed;
   const showRefreshAttention =
-    gameOver &&
-    !isDailyModeLockedForToday() &&
-    !defeatShieldDecisionPending;
+    gameOver && !isDailyModeLockedForToday() && !defeatShieldDecisionPending;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
   const canReopenEndOfGameDialog =
     showEndOfGameDialogs &&
@@ -1451,7 +1448,8 @@ export default function usePlayController(
     endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
     victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,
     endOfGameChallengeBonusPoints: endOfGameSnapshot?.challengeBonusPoints ?? 0,
-    endOfGameCurrentStreak: endOfGameSnapshot?.currentStreak ?? activeModeStreak,
+    endOfGameCurrentStreak:
+      endOfGameSnapshot?.currentStreak ?? activeModeStreak,
     endOfGameBestStreak: endOfGameSnapshot?.bestStreak ?? activeModeStreak,
     closeEndOfGameDialog,
     reopenEndOfGameDialog,

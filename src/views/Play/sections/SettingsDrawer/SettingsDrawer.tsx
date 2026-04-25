@@ -5,10 +5,7 @@ import {
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  WORDLE_MODE_IDS,
-  type PlayerDifficulty,
-} from "@domain/wordle";
+import { WORDLE_MODE_IDS, type PlayerDifficulty } from "@domain/wordle";
 import { Button } from "@components";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";

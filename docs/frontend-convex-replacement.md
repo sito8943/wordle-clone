@@ -43,7 +43,10 @@ Notas:
 ```ts
 const API_BASE = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8787";
 
-export const query = async (name: string, args: Record<string, unknown> = {}) => {
+export const query = async (
+  name: string,
+  args: Record<string, unknown> = {},
+) => {
   const response = await fetch(`${API_BASE}/api/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -53,7 +56,10 @@ export const query = async (name: string, args: Record<string, unknown> = {}) =>
   return response.json();
 };
 
-export const mutation = async (name: string, args: Record<string, unknown> = {}) => {
+export const mutation = async (
+  name: string,
+  args: Record<string, unknown> = {},
+) => {
   const response = await fetch(`${API_BASE}/api/mutation`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
