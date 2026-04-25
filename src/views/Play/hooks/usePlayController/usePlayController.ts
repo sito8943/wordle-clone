@@ -20,6 +20,7 @@ import {
   resolveWordleModeId,
   writeDailyModeOutcomeForDate,
   WORDLE_MODE_IDS,
+  type DailyModeOutcome,
   type Player,
   type PlayerDifficulty,
 } from "@domain/wordle";
@@ -158,6 +159,21 @@ export default function usePlayController(
 
   const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
   const dailyModeActive = activeModeId === WORDLE_MODE_IDS.DAILY;
+  const resolveDailyModeOutcomeForToday = useCallback(
+    (): DailyModeOutcome | null => {
+      if (!dailyModeActive) {
+        return null;
+      }
+
+      const currentPlayerOutcome = readDailyModeOutcomeForDate(player.code);
+      if (currentPlayerOutcome !== null) {
+        return currentPlayerOutcome;
+      }
+
+      return readDailyModeOutcomeForDate();
+    },
+    [dailyModeActive, player.code],
+  );
   const showDeveloperChallengesSection =
     activeModeId === WORDLE_MODE_IDS.CLASSIC;
   const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
@@ -174,6 +190,8 @@ export default function usePlayController(
   const previousGuessesLengthRef = useRef(guesses.length);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
   const [showWordsDialog, setShowWordsDialog] = useState(false);
+  const [dailyModeOutcomeAtEntry, setDailyModeOutcomeAtEntry] =
+    useState<DailyModeOutcome | null>(resolveDailyModeOutcomeForToday);
   const [showDailyMeaningDialog, setShowDailyMeaningDialog] = useState(false);
   const [isLoadingDailyMeaning, setIsLoadingDailyMeaning] = useState(false);
   const [dailyMeaning, setDailyMeaning] = useState<string | null>(null);
@@ -297,6 +315,10 @@ export default function usePlayController(
     modeId: activeModeId,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
+
+  useEffect(() => {
+    setDailyModeOutcomeAtEntry(resolveDailyModeOutcomeForToday());
+  }, [resolveDailyModeOutcomeForToday]);
 
   useEffect(() => {
     setShowTutorialPromptDialog(
@@ -441,8 +463,17 @@ export default function usePlayController(
   ]);
 
   useEffect(() => {
+    const dailyModeWasAlreadyResolvedAtEntry =
+      dailyModeActive && dailyModeOutcomeAtEntry !== null;
+
     if (!hydrated.current) {
       hydrated.current = true;
+
+      if (dailyModeWasAlreadyResolvedAtEntry) {
+        setDefeatShieldDecisionPending(false);
+        roundSettled.current = gameOver;
+        return;
+      }
 
       if (gameOver && !won) {
         setShowLegacyEndOfGameFeedback(false);
@@ -551,6 +582,7 @@ export default function usePlayController(
     hardModeEnabled,
     hardModeSecondsLeft,
     dailyModeActive,
+    dailyModeOutcomeAtEntry,
     player.code,
     player.difficulty,
     activeModeStreak,
@@ -715,14 +747,8 @@ export default function usePlayController(
       return false;
     }
 
-    const currentPlayerOutcome = readDailyModeOutcomeForDate(player.code);
-
-    if (currentPlayerOutcome !== null) {
-      return true;
-    }
-
-    return readDailyModeOutcomeForDate() !== null;
-  }, [dailyModeActive, player.code]);
+    return resolveDailyModeOutcomeForToday() !== null;
+  }, [dailyModeActive, resolveDailyModeOutcomeForToday]);
 
   const refreshBoardNow = useCallback(() => {
     if (isDailyModeLockedForToday() || defeatShieldDecisionPending) {
@@ -1147,6 +1173,7 @@ export default function usePlayController(
       clearDailyModeOutcome();
       clearDailyShieldUsage(player.code);
       clearDailyShieldUsage();
+      setDailyModeOutcomeAtEntry(null);
       setDailyModeDeveloperMessage(
         i18n.t("play.developerConsole.dailyCurrentPlayerResetSuccess"),
       );
@@ -1169,6 +1196,7 @@ export default function usePlayController(
     try {
       clearAllDailyModeOutcomes();
       clearAllDailyShieldUsages();
+      setDailyModeOutcomeAtEntry(null);
       setDailyModeDeveloperMessage(
         i18n.t("play.developerConsole.dailyAllPlayersResetSuccess"),
       );
@@ -1273,19 +1301,34 @@ export default function usePlayController(
     setDailyMeaningError(null);
   }, [activeModeId, answer]);
 
+  const showDailyCompletedDialog =
+    dailyModeActive && dailyModeOutcomeAtEntry !== null;
   const showVictoryDialog =
     showEndOfGameDialogs &&
     gameOver &&
     won &&
     endOfGameSnapshot !== null &&
+    !showDailyCompletedDialog &&
     !endOfGameDialogDismissed;
   const forceDefeatDialogForShield = defeatShieldDecisionPending;
   const showDefeatDialog =
     gameOver &&
     !won &&
     endOfGameSnapshot !== null &&
+    !showDailyCompletedDialog &&
     (showEndOfGameDialogs || forceDefeatDialogForShield) &&
     !endOfGameDialogDismissed;
+  const dailyCompletedAnswer = useMemo(() => {
+    if (!showDailyCompletedDialog) {
+      return null;
+    }
+
+    return dailyWordClient.getCachedWord(getTodayDateUTC());
+  }, [dailyWordClient, showDailyCompletedDialog]);
+  const endOfGameAnswer =
+    showDailyCompletedDialog && dailyCompletedAnswer
+      ? dailyCompletedAnswer
+      : endOfGameSnapshot?.answer ?? answer;
   const showRefreshAttention =
     gameOver && !isDailyModeLockedForToday() && !defeatShieldDecisionPending;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
@@ -1434,6 +1477,7 @@ export default function usePlayController(
     refreshAttentionScale: 0.14,
     showVictoryDialog,
     showDefeatDialog,
+    showDailyCompletedDialog,
     showDefeatShieldActions: defeatShieldDecisionPending,
     useDailyShieldForCurrentDefeat,
     skipDailyShieldForCurrentDefeat,
@@ -1442,7 +1486,7 @@ export default function usePlayController(
     victoryBoardShareError,
     shareVictoryBoard,
     showEndOfGameSettingsHint,
-    endOfGameAnswer: endOfGameSnapshot?.answer ?? answer,
+    endOfGameAnswer,
     victoryScoreSummary: endOfGameSnapshot?.scoreSummary ?? null,
     endOfGameChallengeBonusPoints: endOfGameSnapshot?.challengeBonusPoints ?? 0,
     endOfGameCurrentStreak:

@@ -26,6 +26,7 @@ const controllerMock = vi.hoisted(() => ({
   isDifficultyChangeConfirmationOpen: false,
   showVictoryDialog: false,
   showDefeatDialog: false,
+  showDailyCompletedDialog: false,
   answer: "",
   victoryBoardShareSupported: false,
   isSharingVictoryBoard: false,
@@ -118,10 +119,19 @@ vi.mock(
   }),
 );
 
+vi.mock(
+  "../../components/Dialogs/DailyCompletedDialog/DailyCompletedDialog",
+  () => ({
+    default: ({ visible }: { visible: boolean }) =>
+      visible ? <div>Daily Completed Dialog</div> : null,
+  }),
+);
+
 describe("DialogsSection", () => {
   beforeEach(() => {
     controllerMock.showResumeDialog = false;
     controllerMock.showRefreshDialog = false;
+    controllerMock.showDailyCompletedDialog = false;
   });
 
   afterEach(() => {
@@ -152,6 +162,20 @@ describe("DialogsSection", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Refresh Dialog")).toBeTruthy();
+    });
+  });
+
+  it("renders the daily-completed dialog when enabled", async () => {
+    controllerMock.showDailyCompletedDialog = true;
+
+    render(
+      <DialogQueueProvider>
+        <DialogsSection />
+      </DialogQueueProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Daily Completed Dialog")).toBeTruthy();
     });
   });
 });

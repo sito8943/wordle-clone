@@ -30,6 +30,12 @@ const DailyMeaningDialog = lazy(
   () =>
     import("../../components/Dialogs/DailyMeaningDialog/DailyMeaningDialog"),
 );
+const DailyCompletedDialog = lazy(
+  () =>
+    import(
+      "../../components/Dialogs/DailyCompletedDialog/DailyCompletedDialog"
+    ),
+);
 const PlayDeveloperConsoleDialog = lazy(
   () => import("../../components/Dialogs/DeveloperConsoleDialog"),
 );
@@ -77,6 +83,7 @@ const DialogsSection = (): JSX.Element => {
     isDifficultyChangeConfirmationOpen,
     showVictoryDialog,
     showDefeatDialog,
+    showDailyCompletedDialog,
     showDefeatShieldActions,
     answer,
     victoryBoardShareSupported,
@@ -148,6 +155,11 @@ const DialogsSection = (): JSX.Element => {
     showDefeatDialog,
     DIALOG_QUEUE_PRIORITIES.PLAY,
   );
+  const dailyCompletedDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.DAILY_COMPLETED,
+    showDailyCompletedDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
+  );
   const dictionaryChecksumDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.DICTIONARY_CHECKSUM,
     showDictionaryChecksumDialog,
@@ -214,6 +226,7 @@ const DialogsSection = (): JSX.Element => {
         isDifficultyChangeConfirmationOpen,
         showVictoryDialog,
         showDefeatDialog,
+        showDailyCompletedDialog,
         challenges.showDialog,
       ]}
       fallback={() => (
@@ -309,6 +322,14 @@ const DialogsSection = (): JSX.Element => {
               onSkipShield={skipDailyShieldForCurrentDefeat}
               onPlayAgain={startNewBoard}
               onChangeDifficulty={changeDifficulty}
+            />
+          ) : null}
+          {dailyCompletedDialogVisible ? (
+            <DailyCompletedDialog
+              visible
+              answer={endOfGameAnswer}
+              onClose={goToPlayRoute}
+              onGoToGameModes={goToPlayRoute}
             />
           ) : null}
           {challengesDialogVisible && challenges.challenges ? (

@@ -133,6 +133,7 @@ describe("usePlayController", () => {
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
       dailyWordClient: {
+        getCachedWord: vi.fn().mockReturnValue(null),
         getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
@@ -288,6 +289,7 @@ describe("usePlayController", () => {
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
       dailyWordClient: {
+        getCachedWord: vi.fn().mockReturnValue(null),
         getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
@@ -372,6 +374,7 @@ describe("usePlayController", () => {
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
       dailyWordClient: {
+        getCachedWord: vi.fn().mockReturnValue(null),
         getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
@@ -468,6 +471,7 @@ describe("usePlayController", () => {
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
       dailyWordClient: {
+        getCachedWord: vi.fn().mockReturnValue(null),
         getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
@@ -551,6 +555,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       ...baseApiState,
       dailyWordClient: {
+        getCachedWord: vi.fn().mockReturnValue(null),
         getDailyMeaning,
       },
     });
@@ -658,6 +663,7 @@ describe("usePlayController", () => {
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
       dailyWordClient: {
+        getCachedWord: vi.fn().mockReturnValue(null),
         getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
@@ -1776,6 +1782,74 @@ describe("usePlayController", () => {
     expect(result.current.showRefreshAttention).toBe(false);
   });
 
+  it("shows a daily-completed dialog instead of defeat when daily was already resolved before entering", () => {
+    const commitLoss = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      commitLoss,
+    });
+    const baseApiState = mockUseApi();
+    mockUseApi.mockReturnValue({
+      ...baseApiState,
+      dailyWordClient: {
+        ...baseApiState.dailyWordClient,
+        getCachedWord: vi.fn().mockReturnValue("PUENTE"),
+      },
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      won: false,
+      answer: "GUISA",
+      guesses: [
+        {
+          word: "GUISA",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    expect(result.current.showDailyCompletedDialog).toBe(true);
+    expect(result.current.showDefeatDialog).toBe(false);
+    expect(result.current.endOfGameAnswer).toBe("PUENTE");
+    expect(commitLoss).not.toHaveBeenCalled();
+  });
+
+  it("hides the daily-completed dialog after resetting daily from developer actions", () => {
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    const startNewBoard = vi.fn();
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      startNewBoard,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    expect(result.current.showDailyCompletedDialog).toBe(true);
+
+    act(() => {
+      result.current.resetDailyForCurrentPlayerForDeveloper();
+    });
+
+    expect(result.current.showDailyCompletedDialog).toBe(false);
+  });
+
   it("resets daily for current player from developer actions", () => {
     writeDailyModeOutcomeForDate({
       outcome: "lost",
@@ -1923,6 +1997,7 @@ describe("usePlayController", () => {
         isConfigured: false,
       },
       dailyWordClient: {
+        getCachedWord: vi.fn().mockReturnValue(null),
         getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });

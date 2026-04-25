@@ -6,6 +6,7 @@ export const PLAY_DIALOG_IDS = {
   RESUME: "play:resume",
   VICTORY: "play:victory",
   DEFEAT: "play:defeat",
+  DAILY_COMPLETED: "play:daily-completed",
   DICTIONARY_CHECKSUM: "play:dictionary-checksum",
   REFRESH_CONFIRMATION: "play:refresh-confirmation",
   DIFFICULTY_CHANGE: "play:difficulty-change",

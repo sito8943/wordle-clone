@@ -510,6 +510,13 @@ export const resources = {
           settingsHintLink: "Settings",
           settingsHintSuffix: "if you prefer.",
         },
+        dailyCompletedDialog: {
+          title: "Daily game completed",
+          description: "You already completed today's daily word.",
+          message:
+            "Daily mode can only be completed once per day. You can choose another mode from the game modes screen.",
+          goToGameModesAction: "Go to game modes",
+        },
         victoryDialog: {
           title: "Victory",
           description: "Board cleared. Here is your score breakdown.",
@@ -1158,6 +1165,13 @@ export const resources = {
           settingsHintPrefix: "Puedes desactivar estos diálogos en",
           settingsHintLink: "Ajustes",
           settingsHintSuffix: "si lo prefieres.",
+        },
+        dailyCompletedDialog: {
+          title: "Juego diario completado",
+          description: "Ya completaste la palabra diaria de hoy.",
+          message:
+            "El modo diario solo se puede completar una vez al día. Puedes elegir otro modo desde la pantalla de modos de juego.",
+          goToGameModesAction: "Ir a modos de juego",
         },
         victoryDialog: {
           title: "Victoria",
