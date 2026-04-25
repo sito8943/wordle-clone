@@ -114,6 +114,7 @@ const waitForInitialPlayerDialog = async () => {
 };
 
 const defaultEnvMode = env.mode;
+const defaultEnvBackendUrl = env.backendUrl;
 const defaultEnvConvexUrl = env.convexUrl;
 const defaultEnvWordListButtonEnabled = env.wordListButtonEnabled;
 const defaultEnvDifficultyEasyEnabled = env.difficultyEasyEnabled;
@@ -171,6 +172,7 @@ describe("App", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    env.backendUrl = defaultEnvBackendUrl;
     env.wordListButtonEnabled = defaultEnvWordListButtonEnabled;
     env.difficultyEasyEnabled = defaultEnvDifficultyEasyEnabled;
     env.difficultyNormalEnabled = defaultEnvDifficultyNormalEnabled;
@@ -186,6 +188,7 @@ describe("App", () => {
     mockNavigatorLanguage("en-US");
     await i18n.changeLanguage("en");
     env.mode = defaultEnvMode;
+    env.backendUrl = defaultEnvBackendUrl;
     env.convexUrl = defaultEnvConvexUrl;
     env.wordListButtonEnabled = true;
     env.difficultyEasyEnabled = true;
@@ -672,6 +675,8 @@ describe("App", () => {
       }),
     );
     env.mode = "develpment";
+    env.backendUrl = undefined;
+    env.convexUrl = undefined;
     const recordScoreSpy = vi
       .spyOn(ScoreClient.prototype, "recordScore")
       .mockResolvedValue();
@@ -755,6 +760,7 @@ describe("App", () => {
       ]),
     );
     env.mode = "develpment";
+    env.backendUrl = undefined;
     env.convexUrl = undefined;
     const recordScoreSpy = vi
       .spyOn(ScoreClient.prototype, "recordScore")
@@ -844,6 +850,8 @@ describe("App", () => {
       }),
     );
     env.mode = "develpment";
+    env.backendUrl = undefined;
+    env.convexUrl = undefined;
     const refreshRemoteChecksumSpy = vi
       .spyOn(WordDictionaryClient.prototype, "refreshRemoteChecksum")
       .mockResolvedValue({ checksum: 10101, updatedAt: 123 });
