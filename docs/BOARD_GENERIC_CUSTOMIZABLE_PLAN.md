@@ -146,8 +146,8 @@ Estado: [~] En progreso
 ### 4.3 Activacion progresiva de modos
 
 - Arrancar con `classic` conectado al resolver (sin cambios funcionales).
-- Dejar `zen` y `daily` feature-gated hasta cerrar sus reglas de score/hints/timer.
-- Estado: [x] Cerrada para `lightning` en 0.0.17. `zen/daily` siguen feature-gated con placeholder.
+- Dejar `zen` feature-gated hasta cerrar sus reglas de score/hints/timer.
+- Estado: [x] Cerrada para `lightning` en 0.0.17 y para `daily` en 0.0.18-beta. `zen` sigue feature-gated con placeholder.
 - Reglas `lightning` (cerradas en 0.0.17):
 - Timer fijo de `HARD_MODE_TOTAL_SECONDS` (60s) aunque la dificultad del perfil no sea `insane`. Timeout fuerza derrota.
 - Bonus de tiempo aplicado cuando hay timer activo (misma formula de insane).
@@ -160,8 +160,9 @@ Estado: [~] En progreso
 
 ### 4.4 Diferido para 0.0.18
 
-- Pausa del timer al ocultar tab/dialogos (no implementado en 0.0.17; el timer solo se pausa por `showResumeDialog`/`gameOver` como antes).
-- Cierre de reglas de `zen` y `daily` (siguen en placeholder).
+- Pausa del timer al ocultar tab/dialogos: [x] Implementada en 0.0.18 con `Page Visibility API` + pausa por dialogs de Play (gated por `VITE_TIMER_AUTO_PAUSE_ENABLED`, default `false`).
+- Cierre de reglas de `daily`: [x] Integrado en 0.0.18-beta (`/palabra-diaria` enruta a `Play` cuando hay requisitos diarios, y muestra `ModeGatePlaceholder` cuando no hay palabra/significado disponible).
+- Cierre de reglas de `zen`: [ ] pendiente (continua feature-gated con placeholder).
 
 ## Definition of Done (alcance de este plan)
 
@@ -180,8 +181,7 @@ Estado: [~] En progreso
 6. Tests de regresion + configurabilidad.
 7. Recien ahi empezar implementacion de modos extra.
 
-## Siguiente bloque recomendado (0.0.18)
+## Siguiente bloque recomendado (post-0.0.18)
 
-1. Pausa real del timer al abrir dialogos o ocultar la pestana (Page Visibility API).
-2. Cerrar reglas de `zen` (no-lose, infinite rows, infinite green hints, score neutral).
-3. Cerrar reglas de `daily` (palabra diaria, longitud variable).
+1. Cerrar reglas de `zen` (no-lose, infinite rows, infinite green hints, score neutral).
+2. Re-auditar y actualizar documentos de estado de modos para evitar desalineaciones entre plan y comportamiento real.

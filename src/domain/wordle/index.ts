@@ -13,3 +13,4 @@ export * from "./reference";
 export * from "./roundConfig";
 export * from "./modeConfig";
 export * from "./currentModeStorage";
+export * from "./daily";

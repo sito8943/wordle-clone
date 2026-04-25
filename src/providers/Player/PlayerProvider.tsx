@@ -16,11 +16,13 @@ import {
 } from "./utils";
 import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  SCOREBOARD_MODE_IDS,
   clearAllPersistedGameStates,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
   resolveScoreboardModeId,
   resolveEnabledDifficulty,
+  writeDailyModeOutcomeForDate,
   type Player,
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
@@ -29,6 +31,7 @@ import {
   type ScoreboardModeId,
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import type { RemotePlayerProfile } from "@api/score";
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
@@ -52,22 +55,44 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     keyboardPreference: player.keyboardPreference,
   });
 
+  const hydrateDailyModeOutcomeFromProfile = useCallback(
+    (
+      remoteProfile: Pick<
+        RemotePlayerProfile,
+        "playerCode" | "hasWonDailyToday"
+      >,
+    ) => {
+      if (
+        remoteProfile.playerCode.trim().length === 0 ||
+        remoteProfile.hasWonDailyToday !== true
+      ) {
+        return;
+      }
+
+      writeDailyModeOutcomeForDate({
+        outcome: "won",
+        playerCode: remoteProfile.playerCode,
+      });
+    },
+    [],
+  );
+
   const applyRemoteProfile = useCallback(
     async (
-      remoteProfile: {
-        nick: string;
-        playerCode: string;
-        score: number;
-        streak: number;
-        language: PlayerLanguage;
-        difficulty: PlayerDifficulty;
-        keyboardPreference: PlayerKeyboardPreference;
+      remoteProfile: RemotePlayerProfile,
+      options?: {
+        preserveLocalPreferences?: boolean;
+        preserveLocalProgress?: boolean;
       },
-      options?: { preserveLocalPreferences?: boolean },
     ) => {
       const preserveLocalPreferences =
         options?.preserveLocalPreferences === true;
+      const preserveLocalProgress = options?.preserveLocalProgress === true;
       let shouldInvalidateTopScores = false;
+      const classicProgress = remoteProfile.progressByMode?.classic;
+      const resolvedRemoteScore = classicProgress?.score ?? remoteProfile.score;
+      const resolvedRemoteStreak =
+        classicProgress?.streak ?? remoteProfile.streak;
 
       setStoredPlayer((previous) => {
         const normalizedPrevious = normalizePlayer(previous);
@@ -83,8 +108,12 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         const nextPlayer = {
           name: remoteProfile.nick,
           code: remoteProfile.playerCode,
-          score: remoteProfile.score,
-          streak: remoteProfile.streak,
+          score: preserveLocalProgress
+            ? normalizedPrevious.score
+            : resolvedRemoteScore,
+          streak: preserveLocalProgress
+            ? normalizedPrevious.streak
+            : resolvedRemoteStreak,
           language,
           difficulty,
           keyboardPreference,
@@ -177,6 +206,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       if (syncedProfile) {
         await applyRemoteProfile(syncedProfile, {
           preserveLocalPreferences: true,
+          preserveLocalProgress: true,
         });
       }
 
@@ -191,7 +221,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const current = normalizePlayer(storedPlayer);
 
       if (normalizedName === current.name && current.code.length > 0) {
-        await syncQueuedRoundEvents(current);
+        const syncedProfile = await syncQueuedRoundEvents(current);
+        if (syncedProfile) {
+          hydrateDailyModeOutcomeFromProfile(syncedProfile);
+        }
         return;
       }
 
@@ -203,14 +236,24 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       });
 
       await applyRemoteProfile(remoteProfile);
-      await syncQueuedRoundEvents({
+      hydrateDailyModeOutcomeFromProfile(remoteProfile);
+      const syncedProfile = await syncQueuedRoundEvents({
         ...current,
         name: remoteProfile.nick,
         code: remoteProfile.playerCode,
         language: remoteProfile.language,
       });
+      if (syncedProfile) {
+        hydrateDailyModeOutcomeFromProfile(syncedProfile);
+      }
     },
-    [applyRemoteProfile, scoreClient, storedPlayer, syncQueuedRoundEvents],
+    [
+      applyRemoteProfile,
+      hydrateDailyModeOutcomeFromProfile,
+      scoreClient,
+      storedPlayer,
+      syncQueuedRoundEvents,
+    ],
   );
 
   const recoverPlayer = useCallback(
@@ -218,8 +261,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const remoteProfile = await scoreClient.recoverPlayerByCode(code);
       scoreClient.adoptRecoveredIdentity(remoteProfile);
       await applyRemoteProfile(remoteProfile);
+      hydrateDailyModeOutcomeFromProfile(remoteProfile);
     },
-    [applyRemoteProfile, scoreClient],
+    [applyRemoteProfile, hydrateDailyModeOutcomeFromProfile, scoreClient],
   );
 
   const refreshCurrentPlayerProfile = useCallback(async () => {
@@ -234,7 +278,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     await applyRemoteProfile(remoteProfile, {
       preserveLocalPreferences: true,
     });
-  }, [applyRemoteProfile, player.language, scoreClient]);
+    hydrateDailyModeOutcomeFromProfile(remoteProfile);
+  }, [
+    applyRemoteProfile,
+    hydrateDailyModeOutcomeFromProfile,
+    player.language,
+    scoreClient,
+  ]);
 
   const replacePlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -267,11 +317,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const safeWonAt = toSafeTimestamp(wonAt) ?? now;
       const safeRoundStartedAt = toSafeTimestamp(roundStartedAt);
       const current = normalizePlayer(storedPlayer);
-
       if (current.hackingBan !== null) {
         return;
       }
-
       if (safeRoundStartedAt !== null) {
         const roundDurationMs = getRoundDurationMs(
           safeRoundStartedAt,
@@ -300,7 +348,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const nextPlayer = normalizePlayer({
         ...current,
         score: current.score + safePoints,
-        streak: current.streak + 1,
+        streak:
+          safeModeId === SCOREBOARD_MODE_IDS.CLASSIC
+            ? current.streak + 1
+            : current.streak,
       });
       const currentModeScore = scoreClient.getCurrentClientScoreSnapshot(
         current.language,
@@ -349,16 +400,20 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         current.language,
         safeModeId,
       );
+      const shouldResetDefaultModeStreak =
+        safeModeId === SCOREBOARD_MODE_IDS.CLASSIC && current.streak > 0;
 
       if (current.hackingBan !== null) {
         return;
       }
 
-      if (current.streak === 0 && currentModeScore.streak === 0) {
+      if (!shouldResetDefaultModeStreak && currentModeScore.streak === 0) {
         return;
       }
 
-      const nextPlayer = { ...current, streak: 0 };
+      const nextPlayer = shouldResetDefaultModeStreak
+        ? { ...current, streak: 0 }
+        : current;
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,
@@ -529,6 +584,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     void syncQueuedRoundEvents(player)
       .then(async (syncedProfile) => {
         if (syncedProfile) {
+          hydrateDailyModeOutcomeFromProfile(syncedProfile);
           return;
         }
 
@@ -539,11 +595,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           await applyRemoteProfile(remoteProfile, {
             preserveLocalPreferences: true,
           });
+          hydrateDailyModeOutcomeFromProfile(remoteProfile);
         }
       })
       .catch(() => undefined);
   }, [
     applyRemoteProfile,
+    hydrateDailyModeOutcomeFromProfile,
     player,
     player.name,
     scoreClient,

@@ -3,8 +3,10 @@ import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import "./global.css";
 import { i18n, initI18n } from "@i18n";
+import { env } from "@config";
 import App from "./App.tsx";
 import { ErrorBoundary, ErrorFallback } from "@components";
+import { resetBrowserStorageOnAppUpdate } from "@layouts/View/utils";
 import {
   ApiProvider,
   DialogQueueProvider,
@@ -13,6 +15,8 @@ import {
   SoundProvider,
 } from "@providers";
 import { queryClient } from "./queryClient";
+
+resetBrowserStorageOnAppUpdate(env.appVersion);
 
 const root = createRoot(document.getElementById("root")!);
 

@@ -36,7 +36,6 @@ export const BoardContent = (): JSX.Element => {
         gameOver={gameOver}
         roundConfig={roundConfig}
         animateTileEntry={animateTileEntry}
-        isLoss={gameOver && !won}
         animateEntry={startAnimationsEnabled && startAnimationSeed > 0}
         shakePulse={boardShakePulse}
         activeRowHintStatuses={activeRowHintStatuses}

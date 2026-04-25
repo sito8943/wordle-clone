@@ -100,4 +100,62 @@ describe("DefeatDialog", () => {
       screen.queryByRole("button", { name: "Change difficulty" }),
     ).toBeNull();
   });
+
+  it("hides play again action when disabled and Enter does not trigger replay", () => {
+    const onPlayAgain = vi.fn();
+
+    render(
+      <DefeatDialog
+        visible
+        answer="APPLE"
+        bestStreak={4}
+        showPlayAgainAction={false}
+        onClose={() => undefined}
+        onPlayAgain={onPlayAgain}
+        onChangeDifficulty={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Play again" })).toBeNull();
+
+    fireEvent.keyDown(document, { key: "Enter" });
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(onPlayAgain).not.toHaveBeenCalled();
+  });
+
+  it("renders shield decision actions and triggers callbacks", () => {
+    const onUseShield = vi.fn();
+    const onSkipShield = vi.fn();
+
+    render(
+      <DefeatDialog
+        visible
+        answer="APPLE"
+        bestStreak={4}
+        showShieldActions
+        showPlayAgainAction={false}
+        showChangeDifficultyAction={false}
+        onClose={() => undefined}
+        onUseShield={onUseShield}
+        onSkipShield={onSkipShield}
+        onPlayAgain={() => undefined}
+        onChangeDifficulty={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Use shield" }));
+    act(() => {
+      vi.runAllTimers();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Don't use shield" }));
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(onUseShield).toHaveBeenCalledTimes(1);
+    expect(onSkipShield).toHaveBeenCalledTimes(1);
+  });
 });

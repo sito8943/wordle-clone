@@ -16,6 +16,7 @@ export const resolveFeatureFlags = (): FeatureFlags => ({
   challengesEnabled: env.challengesEnabled,
   settingsDrawerEnabled: env.settingsDrawerEnabled,
   lightningModeEnabled: env.lightningModeEnabled,
+  timerAutoPauseEnabled: env.timerAutoPauseEnabled,
   difficultyEasyEnabled: env.difficultyEasyEnabled,
   difficultyNormalEnabled: env.difficultyNormalEnabled,
   difficultyHardEnabled: env.difficultyHardEnabled,

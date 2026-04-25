@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 import { env } from "@config";
-import { getHelpRoute, getModeRoute, ROUTES } from "@config/routes";
+import {
+  getHelpRoute,
+  getModeRoute,
+  ROUTE_SEARCH_PARAMS,
+  ROUTES,
+} from "@config/routes";
 import {
   readCurrentWordleModeId,
+  resolveWordleModeId,
   resolvePlayableWordleModeId,
   SCOREBOARD_MODE_IDS,
   WORDLE_MODE_IDS,
@@ -45,13 +51,29 @@ const useNavbarController = () => {
     const modeId = HELP_MODE_BY_PATHNAME[normalizePathname(location.pathname)];
     return getHelpRoute(modeId ?? null);
   }, [location.pathname]);
+  const activeModeId = useMemo((): WordleModeId | null => {
+    const normalizedPathname = normalizePathname(location.pathname);
+    const modeByPathname = HELP_MODE_BY_PATHNAME[normalizedPathname];
+    if (modeByPathname) {
+      return modeByPathname;
+    }
+
+    if (normalizedPathname !== ROUTES.HELP) {
+      return null;
+    }
+
+    const searchParams = new URLSearchParams(location.search);
+    const modeParam = searchParams.get(ROUTE_SEARCH_PARAMS.MODE);
+    return modeParam ? resolveWordleModeId(modeParam) : null;
+  }, [location.pathname, location.search]);
   const playRoute = useMemo(() => {
-    const playModeId = resolvePlayableWordleModeId(readCurrentWordleModeId());
-    const resolvedPlayModeId =
-      playModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled
+    const currentModeId = readCurrentWordleModeId();
+    const playModeId =
+      currentModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled
         ? WORDLE_MODE_IDS.CLASSIC
-        : playModeId;
-    return getModeRoute(resolvedPlayModeId);
+        : resolvePlayableWordleModeId(currentModeId);
+
+    return getModeRoute(playModeId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
@@ -106,6 +128,7 @@ const useNavbarController = () => {
     isCurrentClientRankLoading,
     rankTone,
     helpRoute,
+    activeModeId,
     playRoute,
   };
 };

@@ -25,6 +25,12 @@ vi.mock("@i18n", () => ({
         "play.developerConsole.challengesRefreshing":
           "Refreshing challenges...",
         "play.developerConsole.challengesChanging": "Changing challenges...",
+        "play.developerConsole.dailyDescription":
+          "Developer tools for daily mode.",
+        "play.developerConsole.resetDailyForCurrentPlayer":
+          "Reset daily for current player",
+        "play.developerConsole.resetDailyForAllPlayers":
+          "Reset daily for all local players",
         "play.developerConsole.apply": "Apply",
         "play.developerConsole.cancel": "Cancel",
         "common.score": "Score",
@@ -63,6 +69,8 @@ const createBaseProps = (player: Player) => ({
   answer: "APPLE",
   player,
   showResumeDialog: false,
+  showChallengesSection: true,
+  showDailySection: false,
   submitDeveloperPlayer: () => undefined,
   refreshRemoteDictionaryChecksum: async () => undefined,
   isRefreshingDictionaryChecksum: false,
@@ -74,6 +82,10 @@ const createBaseProps = (player: Player) => ({
   isChangingDailyChallengesForDeveloper: false,
   dailyChallengesDeveloperMessage: null,
   dailyChallengesDeveloperMessageKind: null as "success" | "error" | null,
+  resetDailyForCurrentPlayerForDeveloper: () => undefined,
+  resetDailyForAllPlayersForDeveloper: () => undefined,
+  dailyModeDeveloperMessage: null,
+  dailyModeDeveloperMessageKind: null as "success" | "error" | null,
 });
 
 const renderDialog = (player: Player, visible = true) =>
@@ -153,12 +165,6 @@ describe("DeveloperConsoleDialog", () => {
       fireEvent.change(screen.getByLabelText("Streak"), {
         target: { value: "7" },
       });
-      fireEvent.change(screen.getByLabelText("Difficulty"), {
-        target: { value: "hard" },
-      });
-      fireEvent.change(screen.getByLabelText("Keyboard mode"), {
-        target: { value: "native" },
-      });
 
       fireEvent.click(screen.getByRole("button", { name: "Apply" }));
       vi.runAllTimers();
@@ -167,8 +173,6 @@ describe("DeveloperConsoleDialog", () => {
         name: "DevUser",
         score: 42,
         streak: 7,
-        difficulty: "hard",
-        keyboardPreference: "native",
       });
     } finally {
       vi.useRealTimers();
@@ -213,5 +217,76 @@ describe("DeveloperConsoleDialog", () => {
     );
 
     expect(changeDailyChallengesForDeveloper).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides daily challenges controls when the section is disabled", () => {
+    render(
+      <DeveloperConsoleDialog
+        visible
+        {...createBaseProps(basePlayer)}
+        showChallengesSection={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Refresh today's challenges" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Change today's challenges" }),
+    ).toBeNull();
+  });
+
+  it("triggers reset-daily actions when daily section is enabled", () => {
+    const resetDailyForCurrentPlayerForDeveloper = vi.fn();
+    const resetDailyForAllPlayersForDeveloper = vi.fn();
+
+    render(
+      <DeveloperConsoleDialog
+        visible
+        {...createBaseProps(basePlayer)}
+        showDailySection
+        resetDailyForCurrentPlayerForDeveloper={
+          resetDailyForCurrentPlayerForDeveloper
+        }
+        resetDailyForAllPlayersForDeveloper={
+          resetDailyForAllPlayersForDeveloper
+        }
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Reset daily for current player",
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Reset daily for all local players",
+      }),
+    );
+
+    expect(resetDailyForCurrentPlayerForDeveloper).toHaveBeenCalledTimes(1);
+    expect(resetDailyForAllPlayersForDeveloper).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides reset-daily controls when the daily section is disabled", () => {
+    render(
+      <DeveloperConsoleDialog
+        visible
+        {...createBaseProps(basePlayer)}
+        showDailySection={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", {
+        name: "Reset daily for current player",
+      }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", {
+        name: "Reset daily for all local players",
+      }),
+    ).toBeNull();
   });
 });

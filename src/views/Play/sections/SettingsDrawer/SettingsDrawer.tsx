@@ -5,7 +5,7 @@ import {
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { PlayerDifficulty } from "@domain/wordle";
+import { WORDLE_MODE_IDS, type PlayerDifficulty } from "@domain/wordle";
 import { Button } from "@components";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
@@ -30,11 +30,13 @@ const SettingsDrawer = (): JSX.Element | null => {
   const { controller, player } = usePlayView();
   const {
     showSettingsPanel,
+    activeModeId,
     openSettingsPanel,
     closeSettingsPanel,
     changeDifficulty,
     changeManualTileSelection,
   } = controller;
+  const showDifficultySettings = activeModeId !== WORDLE_MODE_IDS.DAILY;
 
   useEffect(() => {
     if (!showSettingsPanel) {
@@ -119,70 +121,72 @@ const SettingsDrawer = (): JSX.Element | null => {
 
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="space-y-6">
-              <div className="space-y-2">
-                <label
-                  htmlFor={PLAY_SETTINGS_PANEL_DIFFICULTY_INPUT_ID}
-                  className="profile-field-label"
-                >
-                  {t("profile.labels.difficulty")}
-                </label>
-                <select
-                  id={PLAY_SETTINGS_PANEL_DIFFICULTY_INPUT_ID}
-                  aria-label={t("profile.labels.difficulty")}
-                  value={player.difficulty}
-                  onChange={(event) =>
-                    changeDifficulty(event.target.value as PlayerDifficulty)
-                  }
-                  className="profile-select-input w-full"
-                >
-                  {difficultyEasyEnabled && (
-                    <option value="easy">
-                      {t("profile.difficultyOptions.easy")}
-                    </option>
-                  )}
-                  {difficultyNormalEnabled && (
-                    <option value="normal">
-                      {t("profile.difficultyOptions.normal")}
-                    </option>
-                  )}
-                  {difficultyHardEnabled && (
-                    <option value="hard">
-                      {t("profile.difficultyOptions.hard")}
-                    </option>
-                  )}
-                  {difficultyInsaneEnabled && (
-                    <option value="insane">
-                      {t("profile.difficultyOptions.insane")}
-                    </option>
-                  )}
-                </select>
-                <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-                  {difficultyEasyEnabled && (
-                    <li>
-                      {wordListButtonEnabled
-                        ? t("profile.difficultyRules.easy")
-                        : t("profile.difficultyRules.easyNoWordList")}
-                    </li>
-                  )}
-                  {difficultyNormalEnabled && (
-                    <li>
-                      {wordListButtonEnabled
-                        ? t("profile.difficultyRules.normal")
-                        : t("profile.difficultyRules.normalNoWordList")}
-                    </li>
-                  )}
-                  {difficultyHardEnabled && (
-                    <li>{t("profile.difficultyRules.hard")}</li>
-                  )}
-                  {difficultyInsaneEnabled && (
-                    <li>
-                      {t("profile.difficultyRules.insane", {
-                        seconds: HARD_MODE_TOTAL_SECONDS,
-                      })}
-                    </li>
-                  )}
-                </ul>
-              </div>
+              {showDifficultySettings ? (
+                <div className="space-y-2">
+                  <label
+                    htmlFor={PLAY_SETTINGS_PANEL_DIFFICULTY_INPUT_ID}
+                    className="profile-field-label"
+                  >
+                    {t("profile.labels.difficulty")}
+                  </label>
+                  <select
+                    id={PLAY_SETTINGS_PANEL_DIFFICULTY_INPUT_ID}
+                    aria-label={t("profile.labels.difficulty")}
+                    value={player.difficulty}
+                    onChange={(event) =>
+                      changeDifficulty(event.target.value as PlayerDifficulty)
+                    }
+                    className="profile-select-input w-full"
+                  >
+                    {difficultyEasyEnabled && (
+                      <option value="easy">
+                        {t("profile.difficultyOptions.easy")}
+                      </option>
+                    )}
+                    {difficultyNormalEnabled && (
+                      <option value="normal">
+                        {t("profile.difficultyOptions.normal")}
+                      </option>
+                    )}
+                    {difficultyHardEnabled && (
+                      <option value="hard">
+                        {t("profile.difficultyOptions.hard")}
+                      </option>
+                    )}
+                    {difficultyInsaneEnabled && (
+                      <option value="insane">
+                        {t("profile.difficultyOptions.insane")}
+                      </option>
+                    )}
+                  </select>
+                  <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">
+                    {difficultyEasyEnabled && (
+                      <li>
+                        {wordListButtonEnabled
+                          ? t("profile.difficultyRules.easy")
+                          : t("profile.difficultyRules.easyNoWordList")}
+                      </li>
+                    )}
+                    {difficultyNormalEnabled && (
+                      <li>
+                        {wordListButtonEnabled
+                          ? t("profile.difficultyRules.normal")
+                          : t("profile.difficultyRules.normalNoWordList")}
+                      </li>
+                    )}
+                    {difficultyHardEnabled && (
+                      <li>{t("profile.difficultyRules.hard")}</li>
+                    )}
+                    {difficultyInsaneEnabled && (
+                      <li>
+                        {t("profile.difficultyRules.insane", {
+                          seconds: HARD_MODE_TOTAL_SECONDS,
+                        })}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              ) : null}
 
               <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-700">
                 <div className="flex items-start gap-3">

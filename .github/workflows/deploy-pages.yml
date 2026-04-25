@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 
 env:
+  VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
   VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
   VITE_APP_VERSION: ${{ vars.VITE_APP_VERSION }}
   VITE_WORD_LIST_BUTTON_ENABLED: ${{ vars.VITE_WORD_LIST_BUTTON_ENABLED || 'true' }}
@@ -102,8 +103,8 @@ jobs:
       - name: Validate production frontend env
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         run: |
-          if [ -z "${VITE_CONVEX_URL}" ]; then
-            echo "VITE_CONVEX_URL is empty. Set repository variable VITE_CONVEX_URL."
+          if [ -z "${VITE_BACKEND_URL}" ] && [ -z "${VITE_CONVEX_URL}" ]; then
+            echo "Both VITE_BACKEND_URL and VITE_CONVEX_URL are empty. Set at least one repository variable."
             exit 1
           fi
 

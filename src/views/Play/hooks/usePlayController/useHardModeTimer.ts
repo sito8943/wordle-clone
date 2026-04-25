@@ -11,12 +11,17 @@ import {
   setHardModeTimerSnapshot,
 } from "./utils";
 
+const isDocumentVisible = (): boolean =>
+  typeof document === "undefined" || document.visibilityState !== "hidden";
+
 export const useHardModeTimer = ({
   sessionId,
   hardModeEnabled,
   hasInProgressGameAtMount,
   boardVersion,
   showResumeDialog,
+  pauseTimer = false,
+  pauseWhenHidden = false,
   gameOver,
   guessesLength,
   currentLength,
@@ -40,9 +45,12 @@ export const useHardModeTimer = ({
   );
   const [hardModeTickPulse, setHardModeTickPulse] = useState(0);
   const [boardShakePulse, setBoardShakePulse] = useState(0);
+  const [pageVisible, setPageVisible] = useState(isDocumentVisible);
 
   const showHardModeTimer = hardModeEnabled && !showResumeDialog && !gameOver;
-  const hardModeTimerRunning = showHardModeTimer && hardModeTimerStarted;
+  const hardModeTimerPaused = pauseTimer || (pauseWhenHidden && !pageVisible);
+  const hardModeTimerActive = showHardModeTimer && !hardModeTimerPaused;
+  const hardModeTimerRunning = hardModeTimerActive && hardModeTimerStarted;
   const showHardModeFinalStretchBar =
     showHardModeTimer && hardModeSecondsLeft <= HARD_MODE_FINAL_STRETCH_SECONDS;
   const hardModeFinalStretchProgressPercent =
@@ -117,16 +125,33 @@ export const useHardModeTimer = ({
   }, [boardVersion, hardModeEnabled, resetHardModeTimer]);
 
   useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const syncPageVisibility = () => {
+      setPageVisible(document.visibilityState !== "hidden");
+    };
+
+    syncPageVisibility();
+    document.addEventListener("visibilitychange", syncPageVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", syncPageVisibility);
+    };
+  }, []);
+
+  useEffect(() => {
     if (
       hardModeTimerStarted ||
-      !showHardModeTimer ||
+      !hardModeTimerActive ||
       (guessesLength === 0 && currentLength === 0)
     ) {
       return;
     }
 
     setHardModeTimerStarted(true);
-  }, [currentLength, guessesLength, hardModeTimerStarted, showHardModeTimer]);
+  }, [currentLength, guessesLength, hardModeTimerActive, hardModeTimerStarted]);
 
   useEffect(() => {
     if (!hardModeTimerRunning) {

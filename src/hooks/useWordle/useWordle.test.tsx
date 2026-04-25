@@ -6,10 +6,12 @@ import {
   WORDS_DEFAULT_LANGUAGE,
 } from "@api/words";
 import { env } from "@config";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { i18n } from "@i18n";
 import useWordle from "./useWordle";
 import {
   createHookWrapper,
+  createMockDailyWordClient,
   createMockWordDictionaryClient,
   createTestApiContextValue,
   createTestQueryClient,
@@ -512,5 +514,112 @@ describe("useWordle dictionary query integration", () => {
     });
 
     expect(result.current.showDictionaryChecksumDialog).toBe(false);
+  });
+
+  it("uses daily word client in daily mode and adapts row length", async () => {
+    const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "puente"]);
+    const getDailyWord = vi.fn().mockResolvedValue("PUENTE");
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+        dailyWordClient: createMockDailyWordClient(getDailyWord),
+      }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useWordle({
+          modeId: WORDLE_MODE_IDS.DAILY,
+        }),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.dictionaryLoading).toBe(false);
+    });
+
+    await waitFor(() => {
+      expect(result.current.roundConfig.lettersPerRow).toBe(6);
+    });
+
+    expect(result.current.answer).toBe("PUENTE");
+    expect(getDailyWord).toHaveBeenCalledOnce();
+  });
+
+  it("boots daily mode from cached daily word without resetting board version", async () => {
+    const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "mar"]);
+    const cachedDailyWord = "PUENTE";
+    const getDailyWord = vi.fn().mockResolvedValue(cachedDailyWord);
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+        dailyWordClient: createMockDailyWordClient(
+          getDailyWord,
+          vi.fn().mockResolvedValue("Meaning"),
+          {
+            getCachedWord: vi.fn().mockReturnValue(cachedDailyWord),
+          },
+        ),
+      }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useWordle({
+          modeId: WORDLE_MODE_IDS.DAILY,
+        }),
+      { wrapper },
+    );
+
+    expect(result.current.answer).toBe(cachedDailyWord);
+    expect(result.current.roundConfig.lettersPerRow).toBe(
+      cachedDailyWord.length,
+    );
+    expect(result.current.boardVersion).toBe(0);
+
+    await waitFor(() => {
+      expect(result.current.dictionaryLoading).toBe(false);
+    });
+
+    expect(result.current.boardVersion).toBe(0);
+    expect(getDailyWord).toHaveBeenCalledOnce();
+  });
+
+  it("uses remote daily word even when it is not present in dictionary", async () => {
+    const loadWords = vi.fn().mockResolvedValue(["casa", "luz", "mar"]);
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+        dailyWordClient: createMockDailyWordClient(
+          vi.fn().mockResolvedValue("INEXISTENTE"),
+        ),
+      }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useWordle({
+          modeId: WORDLE_MODE_IDS.DAILY,
+        }),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.dictionaryLoading).toBe(false);
+    });
+
+    await waitFor(() => {
+      expect(result.current.answer).toBe("INEXISTENTE");
+    });
+
+    expect(result.current.roundConfig.lettersPerRow).toBe(
+      result.current.answer.length,
+    );
   });
 });

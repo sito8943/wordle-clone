@@ -2,12 +2,25 @@ import type { ViewVersionHistoryEntry } from "./types";
 
 export const PLAYER_STORAGE_KEY = "player";
 export const APP_VERSION_STORAGE_KEY = "wordle:app-version";
+export const PREVIOUS_APP_VERSION_STORAGE_KEY = "wordle:app-version:previous";
 export const VIEW_DIALOG_IDS = {
   INITIAL_PLAYER: "view:initial-player",
   VERSION_UPDATE: "view:version-update",
 } as const;
 
 export const VIEW_VERSION_HISTORY: ViewVersionHistoryEntry[] = [
+  {
+    version: "0.0.19",
+    releasedAt: "2026-04-25",
+    changeKeys: [
+      "home.versionUpdateDialog.changes.v0019.0",
+      "home.versionUpdateDialog.changes.v0019.1",
+      "home.versionUpdateDialog.changes.v0019.2",
+      "home.versionUpdateDialog.changes.v0019.3",
+      "home.versionUpdateDialog.changes.v0019.4",
+      "home.versionUpdateDialog.changes.v0019.5",
+    ],
+  },
   {
     version: "0.0.18-beta",
     releasedAt: "2026-04-20",

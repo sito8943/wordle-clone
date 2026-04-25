@@ -11,16 +11,11 @@ export function Tile({ tile }: TilePropsType) {
     animateEntry,
     isActive,
     onClick,
-    isLoss,
     isHintReveal,
     hintRevealPulse,
   } = tile;
   const { t } = useTranslation();
-  const tileStyle =
-    isLoss &&
-    (status === "correct" || status === "present" || status === "absent")
-      ? STATUS_STYLE.absent
-      : STATUS_STYLE[status];
+  const tileStyle = STATUS_STYLE[status];
   const tileEntryClass = animateEntry ? "tile-entry-animation" : "";
   const tileEntryStyle = animateEntry
     ? { animationDelay: `${animationOrder * TILE_ENTRY_STAGGER_MS}ms` }

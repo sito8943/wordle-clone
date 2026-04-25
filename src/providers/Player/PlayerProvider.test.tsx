@@ -3,7 +3,10 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { queryKeys } from "@hooks";
-import { MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS } from "@domain/wordle";
+import {
+  MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  readDailyModeOutcomeForDate,
+} from "@domain/wordle";
 import { ApiContext } from "@providers/Api/ApiContext";
 import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
@@ -52,12 +55,17 @@ const makeWrapper =
     getCurrentPlayerProfile = vi.fn().mockResolvedValue(null),
     queueRoundEvent = vi.fn(),
     syncRoundEvents = vi.fn().mockResolvedValue(null),
+    getCurrentClientScoreSnapshot = vi.fn().mockReturnValue({
+      score: 0,
+      streak: 0,
+    }),
   }: {
     upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
     recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
     getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
     queueRoundEvent?: ApiContextType["scoreClient"]["queueRoundEvent"];
     syncRoundEvents?: ApiContextType["scoreClient"]["syncRoundEvents"];
+    getCurrentClientScoreSnapshot?: ApiContextType["scoreClient"]["getCurrentClientScoreSnapshot"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
     const apiValue = createTestApiContextValue({
@@ -74,6 +82,7 @@ const makeWrapper =
           getCurrentPlayerProfile,
           queueRoundEvent,
           syncRoundEvents,
+          getCurrentClientScoreSnapshot,
         },
       ) as never,
     });
@@ -166,6 +175,32 @@ describe("PlayerProvider", () => {
     expect(result.current.player.code).toBe("AB12");
   });
 
+  it("updatePlayer restores the daily lock from backend profile data", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      language: input.language,
+      playerCode: "AB12",
+      score: input.score ?? 0,
+      streak: input.streak ?? 0,
+      hasWonDailyToday: true,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ upsertPlayerProfile }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Carlos");
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBe("won");
+  });
+
   it("updatePlayer trims and normalizes the name", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
@@ -226,10 +261,15 @@ describe("PlayerProvider", () => {
       wrapper: makeWrapper({ queueRoundEvent }),
     });
 
+    act(() => {
+      result.current.replacePlayer({ streak: 4 });
+    });
+
     await act(async () => {
       await result.current.commitVictory(7, 1234, undefined, "lightning");
     });
 
+    expect(result.current.player.streak).toBe(4);
     expect(queueRoundEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: "win",
@@ -257,8 +297,10 @@ describe("PlayerProvider", () => {
   it("commitVictory bans the player when score submission is too fast", async () => {
     const queueRoundEvent = vi.fn();
     const wonAt = 10_000;
-    const detectedRoundDurationMs =
-      MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS - 500;
+    const detectedRoundDurationMs = Math.max(
+      0,
+      MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS - 1,
+    );
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper({ queueRoundEvent }),
     });
@@ -321,6 +363,41 @@ describe("PlayerProvider", () => {
       expect.objectContaining({
         kind: "loss",
         modeId: "classic",
+        version: 2,
+      }),
+    );
+  });
+
+  it("commitLoss in lightning keeps the classic streak unchanged", async () => {
+    const queueRoundEvent = vi.fn();
+    const getCurrentClientScoreSnapshot = vi
+      .fn()
+      .mockImplementation((_language: string, modeId?: string) => ({
+        score: modeId === "lightning" ? 40 : 42,
+        streak: modeId === "lightning" ? 2 : 3,
+      }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ queueRoundEvent, getCurrentClientScoreSnapshot }),
+    });
+
+    act(() => {
+      result.current.replacePlayer({
+        name: "Ana",
+        code: "AB12",
+        score: 42,
+        streak: 3,
+      });
+    });
+
+    await act(async () => {
+      await result.current.commitLoss("lightning");
+    });
+
+    expect(result.current.player.streak).toBe(3);
+    expect(queueRoundEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "loss",
+        modeId: "lightning",
         version: 2,
       }),
     );
@@ -456,6 +533,45 @@ describe("PlayerProvider", () => {
     expect(result.current.player.code).toBe("ZX90");
   });
 
+  it("keeps local score and streak when sync returns stale profile snapshots", async () => {
+    const syncRoundEvents = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: "Ana",
+        language: "en",
+        playerCode: "ZX90",
+        score: 10,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      });
+
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ syncRoundEvents }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Ana");
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(10, 1000);
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(10, 2000);
+    });
+
+    expect(result.current.player.score).toBe(20);
+    expect(result.current.player.streak).toBe(2);
+    expect(result.current.player.code).toBe("ZX90");
+  });
+
   it("calls scoreClient.upsertPlayerProfile when name changes", async () => {
     const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
       id: "remote-player",
@@ -512,6 +628,32 @@ describe("PlayerProvider", () => {
     expect(recoveredHook.result.current.player.name).toBe("Recovered");
     expect(recoveredHook.result.current.player.score).toBe(27);
     expect(recoveredHook.result.current.player.difficulty).toBe("hard");
+  });
+
+  it("recoverPlayer restores the daily lock from backend profile data", async () => {
+    const recoverPlayerByCode = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "recovered-record",
+      nick: "Recovered",
+      language: "en",
+      playerCode: "RCV1",
+      score: 27,
+      streak: 4,
+      hasWonDailyToday: true,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+    const recoveredHook = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ recoverPlayerByCode }),
+    });
+
+    await act(async () => {
+      await recoveredHook.result.current.recoverPlayer("rcv1");
+    });
+
+    expect(readDailyModeOutcomeForDate("RCV1")).toBe("won");
   });
 
   it("invalidates top scores after recovering a player", async () => {

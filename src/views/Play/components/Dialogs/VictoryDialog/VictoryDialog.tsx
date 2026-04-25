@@ -22,6 +22,7 @@ const VictoryDialog = ({
   shareEnabled = false,
   isSharing = false,
   shareErrorMessage = null,
+  showPlayAgainAction = true,
   onClose,
   onPlayAgain,
   onShare,
@@ -39,6 +40,10 @@ const VictoryDialog = ({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!showPlayAgainAction) {
+        return;
+      }
+
       if (event.key !== "Enter") {
         return;
       }
@@ -51,7 +56,7 @@ const VictoryDialog = ({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [closeWithAction, onPlayAgain, visible]);
+  }, [closeWithAction, onPlayAgain, showPlayAgainAction, visible]);
 
   return (
     <Dialog
@@ -155,12 +160,14 @@ const VictoryDialog = ({
                 : t("play.victoryDialog.shareAction")}
             </Button>
           ) : null}
-          <Button
-            onClick={() => closeWithAction(onPlayAgain)}
-            disabled={isClosing}
-          >
-            {t("play.endOfGame.playAgain")}
-          </Button>
+          {showPlayAgainAction ? (
+            <Button
+              onClick={() => closeWithAction(onPlayAgain)}
+              disabled={isClosing}
+            >
+              {t("play.endOfGame.playAgain")}
+            </Button>
+          ) : null}
         </div>
       </div>
     </Dialog>

@@ -34,12 +34,14 @@ export default defineSchema({
           v.object({
             classic: v.optional(v.number()),
             lightning: v.optional(v.number()),
+            daily: v.optional(v.number()),
           }),
         ),
         es: v.optional(
           v.object({
             classic: v.optional(v.number()),
             lightning: v.optional(v.number()),
+            daily: v.optional(v.number()),
           }),
         ),
       }),
@@ -50,12 +52,14 @@ export default defineSchema({
           v.object({
             classic: v.optional(v.number()),
             lightning: v.optional(v.number()),
+            daily: v.optional(v.number()),
           }),
         ),
         es: v.optional(
           v.object({
             classic: v.optional(v.number()),
             lightning: v.optional(v.number()),
+            daily: v.optional(v.number()),
           }),
         ),
       }),
@@ -66,12 +70,14 @@ export default defineSchema({
           v.object({
             classic: v.optional(v.number()),
             lightning: v.optional(v.number()),
+            daily: v.optional(v.number()),
           }),
         ),
         es: v.optional(
           v.object({
             classic: v.optional(v.number()),
             lightning: v.optional(v.number()),
+            daily: v.optional(v.number()),
           }),
         ),
       }),

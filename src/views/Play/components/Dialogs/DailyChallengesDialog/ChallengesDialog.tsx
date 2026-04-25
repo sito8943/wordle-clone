@@ -1,7 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock } from "@fortawesome/free-solid-svg-icons";
-import { Dialog } from "@components";
+import { useMemo } from "react";
+import { CountdownBadge, Dialog } from "@components";
 import {
   SIMPLE_CHALLENGE_POINTS,
   COMPLEX_CHALLENGE_POINTS,
@@ -10,7 +8,6 @@ import { useTranslation } from "@i18n";
 import { DAILY_CHALLENGES_DIALOG_TITLE_ID } from "./constants";
 import type { ChallengesDialogProps } from "./types";
 import { ChallengeRow } from "./ChallengeRow";
-import { formatCountdown } from "./utils";
 
 const ChallengesDialog = ({
   visible,
@@ -20,59 +17,14 @@ const ChallengesDialog = ({
   onClose,
 }: ChallengesDialogProps) => {
   const { t } = useTranslation();
-  const [remainingMs, setRemainingMs] = useState(millisUntilEndOfDay);
-  const [isCountdownTickAnimating, setIsCountdownTickAnimating] =
-    useState(false);
-
-  const completed = new Set(
-    progress.filter((p) => p.completed).map((p) => p.challengeId),
+  const completed = useMemo(
+    () =>
+      new Set(progress.filter((p) => p.completed).map((p) => p.challengeId)),
+    [progress],
   );
 
   const simpleCompleted = completed.has(challenges.simple.id);
   const complexCompleted = completed.has(challenges.complex.id);
-  const countdown = useMemo(() => formatCountdown(remainingMs), [remainingMs]);
-
-  useEffect(() => {
-    setRemainingMs(millisUntilEndOfDay);
-  }, [millisUntilEndOfDay]);
-
-  useEffect(() => {
-    if (!visible) {
-      return;
-    }
-
-    if (millisUntilEndOfDay <= 0) {
-      setRemainingMs(0);
-      return;
-    }
-
-    const startedAt = Date.now();
-    const initialRemainingMs = millisUntilEndOfDay;
-    const interval = window.setInterval(() => {
-      const elapsedMs = Date.now() - startedAt;
-      const nextRemainingMs = Math.max(0, initialRemainingMs - elapsedMs);
-      setRemainingMs(nextRemainingMs);
-      setIsCountdownTickAnimating(true);
-
-      if (nextRemainingMs === 0) {
-        window.clearInterval(interval);
-      }
-    }, 1_000);
-
-    return () => window.clearInterval(interval);
-  }, [millisUntilEndOfDay, visible]);
-
-  useEffect(() => {
-    if (!isCountdownTickAnimating) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setIsCountdownTickAnimating(false);
-    }, 320);
-
-    return () => window.clearTimeout(timeout);
-  }, [isCountdownTickAnimating]);
 
   return (
     <Dialog
@@ -98,26 +50,12 @@ const ChallengesDialog = ({
         />
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-        <span
-          aria-live="polite"
-          className={`inline-block font-mono tabular-nums transition-all duration-300 ease-out`}
-        >
-          {t("challenges.dailyResetsIn")}
-        </span>
-        <span
-          aria-live="polite"
-          className={`inline-block font-mono tabular-nums`}
-        >
-          {countdown}
-          <FontAwesomeIcon
-            className={`ml-2 transition-all duration-100 ease-in-out ${
-              isCountdownTickAnimating ? "scale-120 text-primary" : "scale-100"
-            }`}
-            icon={faClock}
-          />
-        </span>
-      </div>
+      <CountdownBadge
+        className="mt-4"
+        visible={visible}
+        millisUntilTarget={millisUntilEndOfDay}
+        label={t("challenges.dailyResetsIn")}
+      />
     </Dialog>
   );
 };

@@ -8,6 +8,7 @@ permissions:
   contents: read
   pull-requests: write
 env:
+  VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
   VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
   VITE_APP_VERSION: ${{ vars.VITE_APP_VERSION }}
   VITE_WORD_LIST_BUTTON_ENABLED: ${{ vars.VITE_WORD_LIST_BUTTON_ENABLED || 'true' }}
@@ -48,6 +49,7 @@ jobs:
       - name: Create .env for production build
         run: |
           {
+            echo "VITE_BACKEND_URL=${VITE_BACKEND_URL}"
             echo "VITE_CONVEX_URL=${VITE_CONVEX_URL}"
             echo "VITE_APP_VERSION=${VITE_APP_VERSION}"
             echo "VITE_WORD_LIST_BUTTON_ENABLED=${VITE_WORD_LIST_BUTTON_ENABLED:-true}"

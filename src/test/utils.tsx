@@ -55,11 +55,31 @@ const createMockChallengeClient = () =>
       .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
   }) as unknown as ApiContextType["challengeClient"];
 
+const createMockDailyWordClient = (
+  getDailyWord: ApiContextType["dailyWordClient"]["getDailyWord"] = vi
+    .fn()
+    .mockResolvedValue(null),
+  getDailyMeaning: ApiContextType["dailyWordClient"]["getDailyMeaning"] = vi
+    .fn()
+    .mockResolvedValue(null),
+  overrides: Partial<ApiContextType["dailyWordClient"]> = {},
+) =>
+  ({
+    getDailyWord,
+    getDailyMeaning,
+    getCachedWord: vi.fn().mockReturnValue(null),
+    cacheWord: vi.fn(),
+    getCachedMeaning: vi.fn().mockReturnValue(null),
+    cacheMeaning: vi.fn(),
+    ...overrides,
+  }) as unknown as ApiContextType["dailyWordClient"];
+
 const createTestApiContextValue = (
   overrides: Partial<ApiContextType> = {},
 ): ApiContextType => ({
   scoreClient: createMockScoreClient(async () => DEFAULT_TOP_SCORES_RESULT),
   wordDictionaryClient: createMockWordDictionaryClient(async () => []),
+  dailyWordClient: createMockDailyWordClient(),
   challengeClient: createMockChallengeClient(),
   convexEnabled: true,
   ...overrides,
@@ -150,6 +170,7 @@ const createHookWrapper = (
 export {
   createHookWrapper,
   createMockChallengeClient,
+  createMockDailyWordClient,
   createMockScoreClient,
   createMockWordDictionaryClient,
   createTestApiContextValue,

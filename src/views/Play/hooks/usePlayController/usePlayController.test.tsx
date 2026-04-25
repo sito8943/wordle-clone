@@ -3,6 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CLASSIC_ROUND_CONFIG,
   getTotalPointsForWin,
+  hasDailyShieldAvailableForDate,
+  readDailyModeOutcomeForDate,
+  writeDailyModeOutcomeForDate,
   WORDLE_MODE_IDS,
 } from "@domain/wordle";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
@@ -30,6 +33,7 @@ const mockUseHintController = vi.fn();
 const mockUseHardModeTimer = vi.fn();
 const mockUseSound = vi.fn();
 const mockNavigate = vi.fn();
+const defaultTimerAutoPauseEnabled = env.timerAutoPauseEnabled;
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -101,6 +105,12 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi
+          .fn()
+          .mockImplementation((_language: string, modeId?: string) => ({
+            score: 0,
+            streak: modeId === WORDLE_MODE_IDS.LIGHTNING ? 0 : 2,
+          })),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum: vi
@@ -121,6 +131,9 @@ describe("usePlayController", () => {
         seedChallenges: vi
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
     mockUsePlayer.mockReturnValue({
@@ -180,6 +193,7 @@ describe("usePlayController", () => {
       configurable: true,
       writable: true,
     });
+    env.timerAutoPauseEnabled = defaultTimerAutoPauseEnabled;
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -232,6 +246,10 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum: vi
@@ -269,6 +287,9 @@ describe("usePlayController", () => {
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
       },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
+      },
     });
 
     const { rerender, result } = renderHook(() => usePlayController());
@@ -302,6 +323,88 @@ describe("usePlayController", () => {
     expect(result.current.endOfGameChallengeBonusPoints).toBe(20);
   });
 
+  it("does not evaluate challenges when a daily-mode round ends", async () => {
+    const date = new Date().toISOString().slice(0, 10);
+    const completeChallenge = vi.fn();
+
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum: vi
+          .fn()
+          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+      challengeClient: {
+        isConfigured: true,
+        listAllChallenges: vi.fn().mockResolvedValue([]),
+        getTodayChallenges: vi.fn().mockResolvedValue({
+          date,
+          simple: {
+            id: "simple-1",
+            name: "Steady Player",
+            description: "",
+            type: "simple",
+            conditionKey: "steady_player",
+          },
+          complex: {
+            id: "complex-1",
+            name: "Speedster",
+            description: "",
+            type: "complex",
+            conditionKey: "speedster",
+          },
+        }),
+        generateDailyChallenges: vi.fn(),
+        regenerateDailyChallenges: vi.fn(),
+        getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
+        completeChallenge,
+        resetPlayerChallengeProgressForDate: vi
+          .fn()
+          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+        seedChallenges: vi
+          .fn()
+          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
+      },
+    });
+
+    const { rerender, result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    wordleState = {
+      ...wordleState,
+      answer: "APPLE",
+      guesses: [
+        {
+          word: "APPLE",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+      won: true,
+      gameOver: true,
+      roundStartedAt: Date.now() - 5_000,
+    };
+
+    await act(async () => {
+      rerender();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(completeChallenge).not.toHaveBeenCalled();
+    expect(result.current.challengeCompletionMessage).toBeNull();
+    expect(result.current.endOfGameChallengeBonusPoints).toBe(0);
+  });
+
   it("does not complete persistent challenge on the first daily win", async () => {
     const date = new Date().toISOString().slice(0, 10);
     const completeChallenge = vi.fn();
@@ -323,6 +426,10 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum: vi
@@ -359,6 +466,9 @@ describe("usePlayController", () => {
         seedChallenges: vi
           .fn()
           .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
 
@@ -398,6 +508,86 @@ describe("usePlayController", () => {
     );
   });
 
+  it("allows unknown words in daily mode regardless of difficulty", () => {
+    const basePlayerState = mockUsePlayer();
+
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      player: {
+        ...basePlayerState.player,
+        difficulty: "hard",
+      },
+    });
+
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }));
+
+    expect(mockUseWordle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowUnknownWords: true,
+        modeId: WORDLE_MODE_IDS.DAILY,
+      }),
+    );
+  });
+
+  it("overrides daily hints to one present hint every three letters", () => {
+    wordleState = {
+      ...wordleState,
+      answer: "LECTURA",
+    };
+
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }));
+
+    expect(mockUseHintController).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hintsLimitOverride: 2,
+        hintStatusOverride: "present",
+      }),
+    );
+  });
+
+  it("fetches daily meaning lazily when opening the info dialog", async () => {
+    const getDailyMeaning = vi.fn().mockResolvedValue("Acción de leer");
+    const baseApiState = mockUseApi();
+    mockUseApi.mockReturnValue({
+      ...baseApiState,
+      dailyWordClient: {
+        getDailyMeaning,
+      },
+    });
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    expect(getDailyMeaning).not.toHaveBeenCalled();
+    expect(result.current.showDailyMeaningDialog).toBe(false);
+
+    act(() => {
+      result.current.openDailyMeaningDialog();
+    });
+
+    expect(result.current.showDailyMeaningDialog).toBe(true);
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getDailyMeaning).toHaveBeenCalledWith("APPLE", expect.any(String));
+    expect(result.current.dailyMeaning).toBe("Acción de leer");
+
+    act(() => {
+      result.current.closeDailyMeaningDialog();
+      result.current.openDailyMeaningDialog();
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(getDailyMeaning).toHaveBeenCalledTimes(1);
+  });
+
   it("resolves and exposes modeId from controller options", () => {
     const { result } = renderHook(() =>
       usePlayController({ modeId: WORDLE_MODE_IDS.ZEN }),
@@ -421,6 +611,66 @@ describe("usePlayController", () => {
     expect(result.current.modeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
     expect(result.current.modeEnabled).toBe(true);
     expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
+  });
+
+  it("uses a separate streak value for lightning mode", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 5,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+    });
+    mockUseApi.mockReturnValue({
+      scoreClient: {
+        recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi
+          .fn()
+          .mockImplementation((_language: string, modeId?: string) => ({
+            score: 0,
+            streak: modeId === WORDLE_MODE_IDS.LIGHTNING ? 1 : 5,
+          })),
+      },
+      wordDictionaryClient: {
+        refreshRemoteChecksum: vi
+          .fn()
+          .mockResolvedValue({ checksum: 42, updatedAt: 1 }),
+      },
+      challengeClient: {
+        isConfigured: false,
+        listAllChallenges: vi.fn().mockResolvedValue([]),
+        getTodayChallenges: vi.fn(),
+        generateDailyChallenges: vi.fn(),
+        regenerateDailyChallenges: vi.fn(),
+        getPlayerChallengeProgress: vi.fn(),
+        completeChallenge: vi.fn(),
+        resetPlayerChallengeProgressForDate: vi
+          .fn()
+          .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+        seedChallenges: vi
+          .fn()
+          .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
+      },
+    });
+
+    const { result: classicResult } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.CLASSIC }),
+    );
+    const { result: lightningResult } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(classicResult.current.currentWinStreak).toBe(5);
+    expect(lightningResult.current.currentWinStreak).toBe(1);
   });
 
   it("falls back to classic mode when an unknown mode is provided", () => {
@@ -900,7 +1150,7 @@ describe("usePlayController", () => {
     rerender();
 
     expect(commitVictory).toHaveBeenCalledWith(
-      getTotalPointsForWin(3, 2, 2, 2),
+      getTotalPointsForWin(3, 2, 0, 2),
       undefined,
       1_000,
       WORDLE_MODE_IDS.LIGHTNING,
@@ -910,12 +1160,87 @@ describe("usePlayController", () => {
     );
   });
 
+  it("awards one point per win in daily mode", () => {
+    const commitVictory = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        name: "Player",
+        code: "AB12",
+        score: 20,
+        streak: 2,
+        language: "en",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        showEndOfGameDialogs: true,
+      },
+      commitVictory,
+    });
+
+    const { rerender, result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    wordleState = {
+      ...wordleState,
+      guesses: ["SLATE", "APPLE"],
+      won: true,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(commitVictory).toHaveBeenCalledWith(
+      1,
+      undefined,
+      1_000,
+      WORDLE_MODE_IDS.DAILY,
+    );
+    expect(result.current.victoryScoreSummary).toEqual({
+      items: [{ key: "base", value: 1 }],
+      total: 1,
+    });
+  });
+
   it("activates hard-mode timer in lightning mode regardless of player difficulty", () => {
     renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }));
 
     expect(mockUseHardModeTimer).toHaveBeenCalledWith(
       expect.objectContaining({
         hardModeEnabled: true,
+      }),
+    );
+  });
+
+  it("pauses hard-mode timer while play dialogs are open", () => {
+    env.timerAutoPauseEnabled = true;
+    wordleState = {
+      ...wordleState,
+      showDictionaryChecksumDialog: true,
+    };
+
+    renderHook(() => usePlayController());
+
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pauseTimer: true,
+      }),
+    );
+  });
+
+  it("keeps hard-mode timer running while dialogs are open when auto pause flag is disabled", () => {
+    env.timerAutoPauseEnabled = false;
+    wordleState = {
+      ...wordleState,
+      showDictionaryChecksumDialog: true,
+    };
+
+    renderHook(() => usePlayController());
+
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pauseTimer: false,
+        pauseWhenHidden: false,
       }),
     );
   });
@@ -1164,6 +1489,108 @@ describe("usePlayController", () => {
     expect(result.current.canReopenEndOfGameDialog).toBe(false);
   });
 
+  it("waits for shield decision before committing a loss when daily shield is available", () => {
+    const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const basePlayerState = mockUsePlayer();
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      commitLoss,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      guesses: ["SLATE", "CRANE", "MANGO", "TRUCK", "LEMON", "CANDY"],
+      won: false,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(result.current.showDefeatDialog).toBe(true);
+    expect(result.current.showDefeatShieldActions).toBe(true);
+    expect(commitLoss).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.closeEndOfGameDialog();
+    });
+
+    expect(result.current.showDefeatDialog).toBe(true);
+  });
+
+  it("consumes daily shield and preserves streak loss handling when selected", () => {
+    const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const basePlayerState = mockUsePlayer();
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      commitLoss,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      guesses: ["SLATE", "CRANE", "MANGO", "TRUCK", "LEMON", "CANDY"],
+      won: false,
+      gameOver: true,
+    };
+
+    rerender();
+
+    expect(hasDailyShieldAvailableForDate("AB12")).toBe(true);
+
+    act(() => {
+      result.current.useDailyShieldForCurrentDefeat();
+    });
+
+    expect(commitLoss).not.toHaveBeenCalled();
+    expect(result.current.showDefeatShieldActions).toBe(false);
+    expect(hasDailyShieldAvailableForDate("AB12")).toBe(false);
+  });
+
+  it("commits loss when shield is skipped from defeat dialog", () => {
+    const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const basePlayerState = mockUsePlayer();
+    mockUsePlayer.mockReturnValue({
+      ...basePlayerState,
+      commitLoss,
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+
+    const { rerender, result } = renderHook(() => usePlayController());
+
+    wordleState = {
+      ...wordleState,
+      answer: "BRICK",
+      guesses: ["SLATE", "CRANE", "MANGO", "TRUCK", "LEMON", "CANDY"],
+      won: false,
+      gameOver: true,
+    };
+
+    rerender();
+
+    act(() => {
+      result.current.skipDailyShieldForCurrentDefeat();
+    });
+
+    expect(commitLoss).toHaveBeenCalledWith(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.showDefeatShieldActions).toBe(false);
+  });
+
   it("shows the end-of-game settings hint only once per tab session", () => {
     const { rerender, result } = renderHook(() => usePlayController());
 
@@ -1324,6 +1751,88 @@ describe("usePlayController", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
+  it("blocks daily refresh when the daily mode is already resolved today", () => {
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "AB12",
+    });
+
+    const refresh = vi.fn();
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      refresh,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    act(() => {
+      result.current.refreshBoard();
+    });
+
+    expect(refresh).not.toHaveBeenCalled();
+    expect(result.current.showRefreshAttention).toBe(false);
+  });
+
+  it("resets daily for current player from developer actions", () => {
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "AB12",
+    });
+
+    const startNewBoard = vi.fn();
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      startNewBoard,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    act(() => {
+      result.current.resetDailyForCurrentPlayerForDeveloper();
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBeNull();
+    expect(startNewBoard).toHaveBeenCalledTimes(1);
+    expect(result.current.dailyModeDeveloperMessageKind).toBe("success");
+  });
+
+  it("resets daily for all local players from developer actions", () => {
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: "AB12",
+    });
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+      playerCode: "CD34",
+    });
+
+    const startNewBoard = vi.fn();
+    wordleState = {
+      ...wordleState,
+      gameOver: true,
+      startNewBoard,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.DAILY }),
+    );
+
+    act(() => {
+      result.current.resetDailyForAllPlayersForDeveloper();
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBeNull();
+    expect(readDailyModeOutcomeForDate("CD34")).toBeNull();
+    expect(startNewBoard).toHaveBeenCalledTimes(1);
+    expect(result.current.dailyModeDeveloperMessageKind).toBe("success");
+  });
+
   it("shows a checksum dialog and restarts the board after accepting it", () => {
     const resetHints = vi.fn();
     const resetHardModeTimer = vi.fn();
@@ -1402,9 +1911,19 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
+          score: 0,
+          streak: 0,
+        }),
       },
       wordDictionaryClient: {
         refreshRemoteChecksum,
+      },
+      challengeClient: {
+        isConfigured: false,
+      },
+      dailyWordClient: {
+        getDailyMeaning: vi.fn().mockResolvedValue(null),
       },
     });
 

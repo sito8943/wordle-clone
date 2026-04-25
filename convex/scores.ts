@@ -28,13 +28,13 @@ const normalizeStreak = (value: number | undefined): number =>
   Math.max(0, Math.floor(value ?? 0));
 
 type SupportedLanguage = "en" | "es";
-type SupportedMode = "classic" | "lightning";
+type SupportedMode = "classic" | "lightning" | "daily";
 
 const normalizeLanguage = (value?: string): SupportedLanguage =>
   value === "es" ? "es" : "en";
 
 const normalizeModeId = (value?: string): SupportedMode =>
-  value === "lightning" ? "lightning" : "classic";
+  value === "lightning" || value === "daily" ? value : "classic";
 
 const normalizeDifficulty = (value?: string): string =>
   value === "easy" ||
@@ -364,6 +364,7 @@ const assertNickAvailable = (
 const buildPlayerProfile = (
   record: ScoreRecord,
   language: SupportedLanguage = normalizeLanguage(record.language),
+  options?: { hasWonDailyToday?: boolean },
 ) => {
   const stats = getLanguageStats(record, language);
 
@@ -376,10 +377,73 @@ const buildPlayerProfile = (
     language,
     score: stats.score,
     streak: stats.streak,
+    hasWonDailyToday: options?.hasWonDailyToday === true,
     difficulty: normalizeDifficulty(record.difficulty),
     keyboardPreference: normalizeKeyboardPreference(record.keyboardPreference),
     createdAt: stats.createdAt,
   };
+};
+
+const getCurrentUTCDayRange = (): { startAt: number; endAt: number } => {
+  const now = new Date();
+  const startAt = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
+
+  return {
+    startAt,
+    endAt: startAt + 24 * 60 * 60 * 1000,
+  };
+};
+
+const hasWonDailyTodayFromEvents = (
+  events: ScoreEventRecord[],
+  range: { startAt: number; endAt: number },
+): boolean =>
+  events.some(
+    (event) =>
+      event.kind === "win" &&
+      normalizeModeId(event.modeId) === "daily" &&
+      event.happenedAt >= range.startAt &&
+      event.happenedAt < range.endAt,
+  );
+
+const getDailyWinnersTodayByProfileId = async (
+  ctx: ScoresCtx,
+  profileIds: string[],
+): Promise<Map<string, boolean>> => {
+  const dailyWinsByProfileId = new Map<string, boolean>();
+  const range = getCurrentUTCDayRange();
+  const uniqueProfileIds = [...new Set(profileIds.filter(Boolean))];
+
+  await Promise.all(
+    uniqueProfileIds.map(async (profileId) => {
+      const profileEvents = (await ctx.db
+        .query("scoreEvents")
+        .withIndex("by_profile_id", (query) => query.eq("profileId", profileId))
+        .collect()) as ScoreEventRecord[];
+      dailyWinsByProfileId.set(
+        profileId,
+        hasWonDailyTodayFromEvents(profileEvents, range),
+      );
+    }),
+  );
+
+  return dailyWinsByProfileId;
+};
+
+const hasProfileWonDailyToday = async (
+  ctx: ScoresCtx,
+  profileId: string,
+): Promise<boolean> => {
+  const profileEvents = (await ctx.db
+    .query("scoreEvents")
+    .withIndex("by_profile_id", (query) => query.eq("profileId", profileId))
+    .collect()) as ScoreEventRecord[];
+
+  return hasWonDailyTodayFromEvents(profileEvents, getCurrentUTCDayRange());
 };
 
 const roundSyncEventValidator = v.union(
@@ -719,18 +783,24 @@ export const upsertPlayerProfile = mutation({
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
   },
-  handler: async (ctx, args) =>
-    buildPlayerProfile(
-      await upsertProfileRecord(ctx, {
-        clientId: args.clientId,
-        clientRecordId: args.clientRecordId,
-        nick: args.nick,
-        language: args.language,
-        difficulty: args.difficulty,
-        keyboardPreference: args.keyboardPreference,
-      }),
-      normalizeLanguage(args.language),
-    ),
+  handler: async (ctx, args) => {
+    const profileRecord = await upsertProfileRecord(ctx, {
+      clientId: args.clientId,
+      clientRecordId: args.clientRecordId,
+      nick: args.nick,
+      language: args.language,
+      difficulty: args.difficulty,
+      keyboardPreference: args.keyboardPreference,
+    });
+    const hasWonDailyToday = await hasProfileWonDailyToday(
+      ctx,
+      profileRecord._id,
+    );
+
+    return buildPlayerProfile(profileRecord, normalizeLanguage(args.language), {
+      hasWonDailyToday,
+    });
+  },
 });
 
 export const getPlayerByCode = query({
@@ -752,7 +822,11 @@ export const getPlayerByCode = query({
       throw new Error(PLAYER_CODE_NOT_FOUND_ERROR);
     }
 
-    return buildPlayerProfile(existing);
+    const hasWonDailyToday = await hasProfileWonDailyToday(ctx, existing._id);
+
+    return buildPlayerProfile(existing, normalizeLanguage(existing.language), {
+      hasWonDailyToday,
+    });
   },
 });
 
@@ -769,9 +843,14 @@ export const getCurrentPlayerProfile = query({
       args.clientId,
     );
 
-    return existing
-      ? buildPlayerProfile(existing, normalizeLanguage(args.language))
-      : null;
+    if (!existing) {
+      return null;
+    }
+
+    const hasWonDailyToday = await hasProfileWonDailyToday(ctx, existing._id);
+    return buildPlayerProfile(existing, normalizeLanguage(args.language), {
+      hasWonDailyToday,
+    });
   },
 });
 
@@ -787,7 +866,7 @@ export const syncRoundEvents = mutation({
   },
   handler: async (ctx, args) => {
     const language = normalizeLanguage(args.language);
-    const modeIds: SupportedMode[] = ["classic", "lightning"];
+    const modeIds: SupportedMode[] = ["classic", "lightning", "daily"];
     const orderedEvents = [...args.events]
       .filter((event) => event.version === 2)
       .sort((left, right) => left.happenedAt - right.happenedAt);
@@ -813,6 +892,7 @@ export const syncRoundEvents = mutation({
       {
         classic: { score: 0, streak: 0, createdAt: profile.createdAt },
         lightning: { score: 0, streak: 0, createdAt: profile.createdAt },
+        daily: { score: 0, streak: 0, createdAt: profile.createdAt },
       },
     );
     const touchedModeIds = new Set<SupportedMode>();
@@ -895,12 +975,17 @@ export const syncRoundEvents = mutation({
       await ctx.db.patch(profile._id, nextPatch);
     }
 
+    const hasWonDailyToday = await hasProfileWonDailyToday(ctx, profile._id);
+
     return buildPlayerProfile(
       {
         ...profile,
         ...nextPatch,
       },
       language,
+      {
+        hasWonDailyToday,
+      },
     );
   },
 });
@@ -1025,6 +1110,14 @@ export const listTopScores = query({
       : -1;
     const currentClientScore =
       currentClientIndex >= 0 ? sortedScores[currentClientIndex] : null;
+    const profilesToResolveDailyWinFor = [
+      ...sortedScores.slice(0, limit).map((score) => score._id),
+      ...(currentClientScore ? [currentClientScore._id] : []),
+    ];
+    const dailyWinnersTodayByProfileId = await getDailyWinnersTodayByProfileId(
+      ctx,
+      profilesToResolveDailyWinFor,
+    );
 
     const mappedTopScores = sortedScores.slice(0, limit).map((score) => {
       const stats = getModeStats(score, language, modeId);
@@ -1035,6 +1128,7 @@ export const listTopScores = query({
         modeId,
         score: stats.score,
         streak: normalizeStreak(stats.streak),
+        hasWonDailyToday: dailyWinnersTodayByProfileId.get(score._id) === true,
         createdAt: stats.createdAt,
         isCurrentClient:
           currentProfile !== null &&
@@ -1057,6 +1151,9 @@ export const listTopScores = query({
               modeId,
               score: stats.score,
               streak: normalizeStreak(stats.streak),
+              hasWonDailyToday:
+                dailyWinnersTodayByProfileId.get(currentClientScore._id) ===
+                true,
               createdAt: stats.createdAt,
               isCurrentClient: true,
             };

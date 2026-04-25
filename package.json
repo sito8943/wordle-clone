@@ -1,7 +1,7 @@
 {
   "name": "wordle",
   "private": false,
-  "version": "0.0.18",
+  "version": "0.0.19",
   "type": "module",
   "scripts": {
     "lint": "npm run lint-typecheck && npm run lint-eslint && npm run lint-prettier && npm run lint-depcheck",
@@ -19,6 +19,7 @@
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
     "convex:seed-es": "node scripts/seed-spanish-words.mjs",
+    "convex:export-json": "node scripts/export-convex-data.mjs",
     "firebase:deploy": "firebase deploy --only hosting:sito-wordle"
   },
   "dependencies": {

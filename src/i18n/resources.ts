@@ -106,6 +106,10 @@ export const resources = {
               baseRules:
                 "{{rows}} rows and N letters, where N is the daily word length.",
             },
+            access: {
+              loading: "Loading daily requirements...",
+              unavailable: "Requires daily word and meaning to unlock.",
+            },
           },
         },
       },
@@ -124,6 +128,14 @@ export const resources = {
             "No detailed changelog entries were found for this update range.",
           closeAction: "Got it",
           changes: {
+            v0019: [
+              "Added full Daily mode support: one daily round lock per profile and UTC day, with per-player persistence.",
+              "Added a daily shield flow: winning Daily grants one shield that can be consumed to avoid a streak reset after a non-daily defeat.",
+              "Integrated daily word + meaning loading from a single backend payload (`/api/daily`) with cached hydration and deterministic fallback.",
+              "Added a dedicated daily meaning dialog and toolbar shortcut so players can review the word definition from the Play screen.",
+              "Extended Scoreboard mode selection and score synchronization contracts to include Daily rankings end-to-end.",
+              "Polished mode-aware navigation and anti-fraud score-commit checks to reduce false streak resets while preserving protection rules.",
+            ],
             v0018beta: [
               "Split Scoreboard data by game mode so Classic and Lightning keep independent rankings.",
               "Added a mode switcher in Scoreboard to toggle between Classic and Lightning tables.",
@@ -194,7 +206,7 @@ export const resources = {
         refreshAriaLabel: "Refresh scores",
         modeSelectorAriaLabel: "Select scoreboard mode",
         convexNotConfigured:
-          "Convex is not configured (`VITE_CONVEX_URL`). Using local storage only.",
+          "Backend is not configured (`VITE_BACKEND_URL` or `VITE_CONVEX_URL`). Using local storage only.",
         offlineFallback:
           "Offline fallback active. Showing cached local scores.",
         currentPosition:
@@ -331,6 +343,11 @@ export const resources = {
           description:
             "This mode is still in preparation. You can keep playing in Classic meanwhile.",
           classicAction: "Play Classic",
+          dailyRequirementsTitle: "{{mode}} requires daily data",
+          dailyRequirementsLoading:
+            "Loading daily word and meaning before entering this mode.",
+          dailyRequirementsDescription:
+            "This mode requires loading the daily word and meaning. Daily stays disabled if either cannot be loaded.",
         },
         sections: {
           boardError: {
@@ -388,6 +405,8 @@ export const resources = {
           wordListUnavailable: "Word list unavailable.",
           hintAriaLabel: "Hint",
           hintButton: "Hint ({{count}})",
+          dailyMeaningAriaLabel: "Daily word meaning",
+          dailyMeaningButton: "Meaning",
           helpAriaLabel: "Help",
           helpButton: "Help",
           resultsAriaLabel: "Results",
@@ -413,6 +432,11 @@ export const resources = {
           unmuteAriaLabel: "Unmute",
           volumeSliderAriaLabel: "Volume level",
         },
+        dailyMeaningDialog: {
+          title: "Daily word meaning",
+          loading: "Loading meaning...",
+          unavailable: "Could not load the meaning right now.",
+        },
         dictionaryChecksumDialog: {
           title: "Dictionary updated",
           description:
@@ -429,6 +453,7 @@ export const resources = {
         gameModes: {
           classic: "Classic",
           lightning: "Lightning",
+          daily: "Daily",
         },
         tutorialPromptDialog: {
           title: "Welcome to {{gameMode}}",
@@ -514,6 +539,10 @@ export const resources = {
           title: "Game Over",
           description: "That round is over.",
           bestStreak: "Best streak: {{count}}",
+          shieldPrompt:
+            "You have a daily shield available. Do you want to use it?",
+          useShield: "Use shield",
+          skipShield: "Don't use shield",
           closingMessage: "Better luck next time.",
           changeDifficulty: "Change difficulty",
         },
@@ -545,6 +574,13 @@ export const resources = {
           challengesChanged:
             "Challenges changed and reset: {{simple}} / {{complex}}. Cleared {{count}} completions (-{{points}} pts).",
           challengesActionError: "Could not update daily challenges.",
+          dailyDescription:
+            "Developer tools for daily mode. Reset current player unlocks only this profile; reset all unlocks all local profiles in this browser.",
+          resetDailyForCurrentPlayer: "Reset daily for current player",
+          resetDailyForAllPlayers: "Reset daily for all local players",
+          dailyCurrentPlayerResetSuccess: "Daily reset for current player.",
+          dailyAllPlayersResetSuccess: "Daily reset for all local players.",
+          dailyResetError: "Could not reset daily mode.",
           refreshing: "Refreshing...",
           checksumUpdated: "Remote checksum updated to {{checksum}}.",
           checksumRefreshError: "Could not refresh remote dictionary checksum.",
@@ -665,7 +701,7 @@ export const resources = {
         },
         modes: {
           zen: {
-            name: "Zen",
+            name: "Calmado",
             details: {
               neverLose: "Nunca pierdes una partida.",
               infiniteRows:
@@ -677,7 +713,7 @@ export const resources = {
             },
           },
           classic: {
-            name: "Classic",
+            name: "Clásico",
             details: {
               baseRules:
                 "Modo estándar actual: {{rows}} filas y {{letters}} letras.",
@@ -690,7 +726,7 @@ export const resources = {
             },
           },
           lightning: {
-            name: "Lightning",
+            name: "Relámpago",
             details: {
               baseRules:
                 "Modo contrarreloj actual: {{rows}} filas y {{letters}} letras.",
@@ -704,10 +740,15 @@ export const resources = {
             },
           },
           daily: {
-            name: "Daily",
+            name: "Diario",
             details: {
               baseRules:
                 "{{rows}} filas y N letras, donde N es la longitud de la palabra del día.",
+            },
+            access: {
+              loading: "Cargando requisitos del modo diario...",
+              unavailable:
+                "Requiere palabra y significado diarios para desbloquearse.",
             },
           },
         },
@@ -726,6 +767,14 @@ export const resources = {
             "No se han encontrado entradas detalladas para este rango de actualización.",
           closeAction: "Entendido",
           changes: {
+            v0019: [
+              "Se añadió soporte completo del modo Diario: bloqueo de una ronda diaria por perfil y día UTC, con persistencia por jugador.",
+              "Se añadió el flujo de escudo diario: ganar en Diario otorga un escudo que puede consumirse para evitar el reinicio de racha tras una derrota fuera de Diario.",
+              "Se integró la carga de palabra + significado diarios desde un único payload backend (`/api/daily`), con hidratación en caché y fallback determinista.",
+              "Se añadió un diálogo dedicado al significado diario y un acceso directo en la barra de herramientas para consultarlo desde Play.",
+              "Se amplió la selección de modos en la Clasificación y el contrato de sincronización de puntuación para incluir rankings de Diario de extremo a extremo.",
+              "Se pulieron la navegación contextual por modo y las validaciones anti-fraude al confirmar puntuaciones para reducir falsos reinicios de racha manteniendo las reglas de protección.",
+            ],
             v0018beta: [
               "Se separó la clasificación por modo de juego para que Clásico y Relámpago tengan rankings independientes.",
               "Se añadió un selector de modo en Clasificación para alternar entre las tablas de Clásico y Relámpago.",
@@ -797,7 +846,7 @@ export const resources = {
         refreshAriaLabel: "Actualizar puntuaciones",
         modeSelectorAriaLabel: "Seleccionar modo del marcador",
         convexNotConfigured:
-          "Convex no está configurado (`VITE_CONVEX_URL`). Se usará solo almacenamiento local.",
+          "El backend no está configurado (`VITE_BACKEND_URL` o `VITE_CONVEX_URL`). Se usará solo almacenamiento local.",
         offlineFallback:
           "Modo sin conexión activo. Mostrando puntuaciones locales en caché.",
         currentPosition:
@@ -935,6 +984,11 @@ export const resources = {
           description:
             "Este modo sigue en preparación. Mientras tanto puedes seguir jugando en Clásico.",
           classicAction: "Jugar Clásico",
+          dailyRequirementsTitle: "{{mode}} requiere datos diarios",
+          dailyRequirementsLoading:
+            "Cargando palabra y significado diarios antes de entrar en este modo.",
+          dailyRequirementsDescription:
+            "Este modo requiere cargar la palabra del día y su significado. Si alguno no se puede cargar, Daily queda deshabilitado.",
         },
         sections: {
           boardError: {
@@ -992,6 +1046,8 @@ export const resources = {
           wordListUnavailable: "La lista de palabras no está disponible.",
           hintAriaLabel: "Pista",
           hintButton: "Pista ({{count}})",
+          dailyMeaningAriaLabel: "Significado de la palabra del día",
+          dailyMeaningButton: "Significado",
           helpAriaLabel: "Ayuda",
           helpButton: "Ayuda",
           resultsAriaLabel: "Resultados",
@@ -1017,6 +1073,12 @@ export const resources = {
           unmuteAriaLabel: "Activar sonido",
           volumeSliderAriaLabel: "Nivel de volumen",
         },
+        dailyMeaningDialog: {
+          title: "Significado de la palabra del día",
+          description: "Definición",
+          loading: "Cargando significado...",
+          unavailable: "No se pudo cargar el significado ahora mismo.",
+        },
         dictionaryChecksumDialog: {
           title: "Diccionario actualizado",
           description:
@@ -1033,6 +1095,7 @@ export const resources = {
         gameModes: {
           classic: "Clásico",
           lightning: "Relámpago",
+          daily: "Diario",
         },
         tutorialPromptDialog: {
           title: "Bienvenido a {{gameMode}}",
@@ -1128,6 +1191,9 @@ export const resources = {
           title: "Fin de partida",
           description: "Esta ronda ha terminado.",
           bestStreak: "Mejor racha: {{count}}",
+          shieldPrompt: "Tienes un escudo diario disponible. ¿Quieres usarlo?",
+          useShield: "Usar escudo",
+          skipShield: "No usar escudo",
           closingMessage: "Suerte la próxima vez.",
           changeDifficulty: "Cambiar dificultad",
         },
@@ -1161,6 +1227,16 @@ export const resources = {
             "Retos cambiados y reiniciados: {{simple}} / {{complex}}. Se limpiaron {{count}} completados (-{{points}} pts).",
           challengesActionError:
             "No se han podido actualizar los retos diarios.",
+          dailyDescription:
+            "Herramientas de desarrollo para modo daily. Reiniciar jugador actual desbloquea solo este perfil; reiniciar todos desbloquea todos los perfiles locales de este navegador.",
+          resetDailyForCurrentPlayer: "Reiniciar daily del jugador actual",
+          resetDailyForAllPlayers:
+            "Reiniciar daily de todos los jugadores locales",
+          dailyCurrentPlayerResetSuccess:
+            "Daily reiniciado para el jugador actual.",
+          dailyAllPlayersResetSuccess:
+            "Daily reiniciado para todos los jugadores locales.",
+          dailyResetError: "No se ha podido reiniciar el modo daily.",
           refreshing: "Actualizando...",
           checksumUpdated: "Checksum remoto actualizado a {{checksum}}.",
           checksumRefreshError:

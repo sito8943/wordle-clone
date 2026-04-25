@@ -8,7 +8,6 @@ export interface KeyboardProps {
   language?: DictionaryLanguage;
   animateEntry?: boolean;
   onEntryAnimationEnd?: () => void;
-  isLoss?: boolean;
 }
 
 export type KeyboardKeyModel = {
@@ -23,5 +22,5 @@ export type KeyboardRowModel = KeyboardKeyModel[];
 
 export type UseKeyboardControllerParams = Pick<
   KeyboardProps,
-  "guesses" | "isLoss" | "language"
+  "guesses" | "language"
 >;

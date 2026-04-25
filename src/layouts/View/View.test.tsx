@@ -10,7 +10,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
 import { DialogQueueProvider } from "@providers";
 import View from "./View";
-import { APP_VERSION_STORAGE_KEY, PLAYER_STORAGE_KEY } from "./constants";
+import {
+  APP_VERSION_STORAGE_KEY,
+  PLAYER_STORAGE_KEY,
+  PREVIOUS_APP_VERSION_STORAGE_KEY,
+} from "./constants";
 
 const ORIGINAL_APP_VERSION = env.appVersion;
 
@@ -126,6 +130,27 @@ describe("View app version dialog", () => {
 
     await waitFor(() => {
       expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.16-beta");
+    });
+  });
+
+  it("shows pending update dialog details when previous app version is preserved after storage reset", async () => {
+    env.appVersion = "0.0.16-beta";
+    localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.16-beta");
+    localStorage.setItem(PREVIOUS_APP_VERSION_STORAGE_KEY, "0.0.15");
+
+    renderView("/scoreboard");
+
+    expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "You were on 0.0.15. Review the latest changelog and version history.",
+      ),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Close" })[0]);
+
+    await waitFor(() => {
+      expect(localStorage.getItem(PREVIOUS_APP_VERSION_STORAGE_KEY)).toBeNull();
     });
   });
 

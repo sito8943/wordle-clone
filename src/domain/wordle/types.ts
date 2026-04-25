@@ -65,3 +65,21 @@ export type RoundSyncEvent =
       happenedAt: number;
       version: 2;
     };
+
+export type ResolveDailyAnswerInput = {
+  words: string[];
+  date?: string | null;
+  remoteDailyWord?: string | null;
+};
+
+export type DailyModeOutcome = "won" | "lost";
+
+export type StoredDailyModeStatus = {
+  date: string;
+  outcome: DailyModeOutcome;
+};
+
+export type StoredDailyShieldUsage = {
+  date: string;
+  used: boolean;
+};

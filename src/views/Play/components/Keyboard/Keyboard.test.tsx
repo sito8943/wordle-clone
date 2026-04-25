@@ -148,7 +148,7 @@ describe("Keyboard", () => {
     expect(aKey.className).toContain("bg-green-700");
   });
 
-  it("renders revealed keys in gray when the player loses", () => {
+  it("renders revealed keys with their semantic colors", () => {
     const statuses: TileStatus[] = [
       "correct",
       "present",
@@ -158,11 +158,7 @@ describe("Keyboard", () => {
     ];
 
     render(
-      <Keyboard
-        guesses={[{ word: "ALERT", statuses }]}
-        onKey={vi.fn()}
-        isLoss
-      />,
+      <Keyboard guesses={[{ word: "ALERT", statuses }]} onKey={vi.fn()} />,
     );
 
     const aKey = screen.getByRole("button", {
@@ -172,9 +168,8 @@ describe("Keyboard", () => {
       name: i18n.t("play.gameplay.keys.letter", { key: "L" }),
     });
 
-    expect(aKey.className).toContain("bg-neutral-500");
-    expect(aKey.className).not.toContain("bg-green-700");
-    expect(lKey.className).toContain("bg-neutral-500");
+    expect(aKey.className).toContain("bg-green-700");
+    expect(lKey.className).toContain("bg-yellow-500");
   });
 
   it("adds the entry animation class when enabled", () => {

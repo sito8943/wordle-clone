@@ -157,6 +157,35 @@ describe("useScoreboardController", () => {
     });
   });
 
+  it("requests top scores for daily mode", async () => {
+    const listTopScores = vi.fn().mockResolvedValue({
+      scores: [],
+      source: "local",
+      currentClientRank: null,
+      currentClientEntry: null,
+    });
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        scoreClient: createMockScoreClient(listTopScores),
+      }),
+    );
+    const scoreboardWrapper = createScoreboardWrapper(wrapper);
+
+    renderHook(() => useScoreboardController("daily"), {
+      wrapper: scoreboardWrapper,
+    });
+
+    await waitFor(() => {
+      expect(listTopScores).toHaveBeenCalledWith(
+        expect.any(Number),
+        "en",
+        "daily",
+      );
+    });
+  });
+
   it("surfaces query error messages", async () => {
     const listTopScores = vi
       .fn()

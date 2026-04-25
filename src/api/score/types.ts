@@ -15,6 +15,7 @@ export type ScoreEntry = {
   modeId: ScoreboardModeId;
   score: number;
   streak: number;
+  hasWonDailyToday?: boolean;
   createdAt: number;
   source: ScoreSource;
   isCurrentClient: boolean;
@@ -69,6 +70,7 @@ export type RemoteScore = {
   modeId?: ScoreboardModeId;
   score: number;
   streak?: number;
+  hasWonDailyToday?: boolean;
   createdAt: number;
   isCurrentClient?: boolean;
 };
@@ -79,6 +81,16 @@ export type RemoteScoresResponse = {
   currentClientEntry?: RemoteScore | null;
 };
 
+export type RemoteModeProgress = {
+  score: number;
+  streak: number;
+  updatedAt: number;
+};
+
+export type RemoteProgressByMode = Partial<
+  Record<ScoreboardModeId, RemoteModeProgress>
+>;
+
 export type RemotePlayerProfile = {
   id: string;
   clientId: string | null;
@@ -88,9 +100,11 @@ export type RemotePlayerProfile = {
   language: PlayerLanguage;
   score: number;
   streak: number;
+  hasWonDailyToday?: boolean;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
   createdAt: number;
+  progressByMode?: RemoteProgressByMode;
 };
 
 export type StoredScoreIdentity = {

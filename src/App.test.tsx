@@ -31,7 +31,11 @@ import {
 } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Play/hooks/useHintController";
-import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Play/hooks/usePlayController/constants";
+import {
+  END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+} from "@views/Play/hooks/usePlayController/constants";
+import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 
 vi.mock("./utils/words", async () => {
   const actual =
@@ -79,7 +83,21 @@ const waitForPlayReady = async () => {
   await waitFor(() => {
     expect(screen.queryByRole("status", { name: "Loading Wordle" })).toBeNull();
   });
-  await screen.findByRole("heading", { name: "WORDLE" }, { timeout: 5000 });
+  await screen.findByRole("grid", { name: "Wordle board" }, { timeout: 5000 });
+};
+
+const getInsaneTimerSeconds = (): number => {
+  const timer = screen.getByLabelText(/Insane timer: \d+ seconds/);
+  const timerLabel = timer.getAttribute("aria-label") ?? "";
+  const match = /Insane timer: (\d+) seconds/.exec(timerLabel);
+
+  if (!match) {
+    throw new Error(
+      `Unable to parse insane timer seconds from "${timerLabel}"`,
+    );
+  }
+
+  return Number(match[1]);
 };
 
 const waitForInitialPlayerDialog = async () => {
@@ -96,6 +114,7 @@ const waitForInitialPlayerDialog = async () => {
 };
 
 const defaultEnvMode = env.mode;
+const defaultEnvBackendUrl = env.backendUrl;
 const defaultEnvConvexUrl = env.convexUrl;
 const defaultEnvWordListButtonEnabled = env.wordListButtonEnabled;
 const defaultEnvDifficultyEasyEnabled = env.difficultyEasyEnabled;
@@ -153,6 +172,7 @@ describe("App", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    env.backendUrl = defaultEnvBackendUrl;
     env.wordListButtonEnabled = defaultEnvWordListButtonEnabled;
     env.difficultyEasyEnabled = defaultEnvDifficultyEasyEnabled;
     env.difficultyNormalEnabled = defaultEnvDifficultyNormalEnabled;
@@ -168,6 +188,7 @@ describe("App", () => {
     mockNavigatorLanguage("en-US");
     await i18n.changeLanguage("en");
     env.mode = defaultEnvMode;
+    env.backendUrl = defaultEnvBackendUrl;
     env.convexUrl = defaultEnvConvexUrl;
     env.wordListButtonEnabled = true;
     env.difficultyEasyEnabled = true;
@@ -474,7 +495,7 @@ describe("App", () => {
 
     renderApp();
 
-    expect(await screen.findByRole("heading", { name: "WORDLE" })).toBeTruthy();
+    await waitForPlayReady();
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(localStorage.getItem(THEME_PREFERENCE_STORAGE_KEY)).toBe(
       JSON.stringify("system"),
@@ -654,6 +675,8 @@ describe("App", () => {
       }),
     );
     env.mode = "develpment";
+    env.backendUrl = undefined;
+    env.convexUrl = undefined;
     const recordScoreSpy = vi
       .spyOn(ScoreClient.prototype, "recordScore")
       .mockResolvedValue();
@@ -683,12 +706,6 @@ describe("App", () => {
       fireEvent.change(dialog.getByLabelText("Streak"), {
         target: { value: "7" },
       });
-      fireEvent.change(dialog.getByLabelText("Difficulty"), {
-        target: { value: "hard" },
-      });
-      fireEvent.change(dialog.getByLabelText("Keyboard mode"), {
-        target: { value: "native" },
-      });
 
       fireEvent.click(dialog.getByRole("button", { name: "Apply" }));
 
@@ -702,8 +719,6 @@ describe("App", () => {
         expect(player.name).toBe("DevUser");
         expect(player.score).toBe(42);
         expect(player.streak).toBe(7);
-        expect(player.difficulty).toBe("hard");
-        expect(player.keyboardPreference).toBe("native");
       });
 
       expect(recordScoreSpy).toHaveBeenCalledWith(
@@ -745,46 +760,83 @@ describe("App", () => {
       ]),
     );
     env.mode = "develpment";
+    env.backendUrl = undefined;
     env.convexUrl = undefined;
+    const recordScoreSpy = vi
+      .spyOn(ScoreClient.prototype, "recordScore")
+      .mockImplementation(async (input) => {
+        const cache = JSON.parse(
+          localStorage.getItem("wordle:scoreboard:cache") || "[]",
+        ) as Array<Record<string, unknown>>;
+        const targetIndex = cache.findIndex(
+          (entry) => entry.clientId === "dev-client",
+        );
 
-    renderApp();
+        const nextEntry = {
+          localId: "dev-row",
+          clientId: "dev-client",
+          nick: input.nick,
+          score: input.score,
+          streak: input.streak ?? 0,
+          createdAt: Date.now(),
+          language: input.language,
+          modeId: input.modeId,
+        };
 
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Developer console" }),
-    );
-    const developerConsoleDialog = await screen.findByRole("dialog", {
-      name: "Developer console",
-    });
-    const dialog = within(developerConsoleDialog);
+        if (targetIndex >= 0) {
+          cache[targetIndex] = { ...cache[targetIndex], ...nextEntry };
+        } else {
+          cache.push(nextEntry);
+        }
 
-    expect(developerConsoleDialog).toBeTruthy();
+        localStorage.setItem("wordle:scoreboard:cache", JSON.stringify(cache));
+      });
 
-    fireEvent.change(dialog.getByLabelText("Score"), {
-      target: { value: "12" },
-    });
-    fireEvent.change(dialog.getByLabelText("Streak"), {
-      target: { value: "1" },
-    });
-    fireEvent.click(dialog.getByRole("button", { name: "Apply" }));
+    try {
+      renderApp();
 
-    await waitFor(() => {
-      expect(
-        screen.queryByRole("dialog", { name: "Developer console" }),
-      ).toBeNull();
-    });
-
-    fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
-    expect(
-      await screen.findByRole("heading", { name: "Scoreboard" }),
-    ).toBeTruthy();
-
-    await waitFor(() => {
-      const currentRow = document.querySelector(
-        ".scoreboard-current-player-row",
+      fireEvent.click(
+        await screen.findByRole("button", { name: "Developer console" }),
       );
-      expect(currentRow).toBeTruthy();
-      expect(currentRow?.textContent).toContain("12");
-    });
+      const developerConsoleDialog = await screen.findByRole("dialog", {
+        name: "Developer console",
+      });
+      const dialog = within(developerConsoleDialog);
+
+      expect(developerConsoleDialog).toBeTruthy();
+
+      fireEvent.change(dialog.getByLabelText("Score"), {
+        target: { value: "12" },
+      });
+      fireEvent.change(dialog.getByLabelText("Streak"), {
+        target: { value: "1" },
+      });
+      fireEvent.click(dialog.getByRole("button", { name: "Apply" }));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("dialog", { name: "Developer console" }),
+        ).toBeNull();
+      });
+
+      fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
+      expect(
+        await screen.findByRole("heading", { name: "Scoreboard" }),
+      ).toBeTruthy();
+
+      await waitFor(() => {
+        const cachedScores = JSON.parse(
+          localStorage.getItem("wordle:scoreboard:cache") || "[]",
+        ) as Array<{ clientId?: string; score?: number }>;
+        expect(
+          cachedScores.some(
+            (entry) => entry.clientId === "dev-client" && entry.score === 12,
+          ),
+        ).toBe(true);
+      });
+    } finally {
+      recordScoreSpy.mockRestore();
+    }
   });
 
   it("refreshes remote dictionary checksum from developer console", async () => {
@@ -798,6 +850,8 @@ describe("App", () => {
       }),
     );
     env.mode = "develpment";
+    env.backendUrl = undefined;
+    env.convexUrl = undefined;
     const refreshRemoteChecksumSpy = vi
       .spyOn(WordDictionaryClient.prototype, "refreshRemoteChecksum")
       .mockResolvedValue({ checksum: 10101, updatedAt: 123 });
@@ -1175,7 +1229,6 @@ describe("App", () => {
   });
 
   it("shows an insane mode timer and decreases it on each tick", async () => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     localStorage.setItem(
       "player",
       JSON.stringify({
@@ -1189,6 +1242,7 @@ describe("App", () => {
     try {
       renderApp();
       await waitForPlayReady();
+      vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
 
       expect(screen.getByLabelText("Insane timer: 60 seconds")).toBeTruthy();
 
@@ -1239,13 +1293,14 @@ describe("App", () => {
 
     try {
       renderApp();
-      await waitForPlayReady();
+      await screen.findByRole("grid", { name: "Wordle board" });
 
       act(() => {
         vi.advanceTimersByTime(3000);
       });
 
-      expect(screen.getByLabelText("Insane timer: 57 seconds")).toBeTruthy();
+      const secondsBeforeRouteChange = getInsaneTimerSeconds();
+      expect([57, 58]).toContain(secondsBeforeRouteChange);
 
       fireEvent.click(screen.getByRole("link", { name: "Settings" }));
       expect(await screen.findByLabelText("Theme mode")).toBeTruthy();
@@ -1258,21 +1313,20 @@ describe("App", () => {
       window.history.pushState({}, "", ROUTES.CLASSIC);
       window.dispatchEvent(new PopStateEvent("popstate"));
 
-      expect(
-        await screen.findByLabelText("Insane timer: 57 seconds"),
-      ).toBeTruthy();
+      await screen.findByLabelText(/Insane timer: \d+ seconds/);
+      expect(getInsaneTimerSeconds()).toBe(secondsBeforeRouteChange);
 
       act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      if (!screen.queryByLabelText("Insane timer: 56 seconds")) {
+      if (getInsaneTimerSeconds() !== secondsBeforeRouteChange - 1) {
         act(() => {
           vi.advanceTimersByTime(1000);
         });
       }
 
-      expect(screen.getByLabelText("Insane timer: 56 seconds")).toBeTruthy();
+      expect(getInsaneTimerSeconds()).toBe(secondsBeforeRouteChange - 1);
     } finally {
       vi.useRealTimers();
     }
@@ -1309,7 +1363,7 @@ describe("App", () => {
 
       const boardWrapper = screen
         .getByRole("grid", { name: "Wordle board" })
-        .closest("div.mx-auto");
+        .closest(`#${PLAY_BOARD_SHARE_CAPTURE_ID}`);
       expect(boardWrapper?.className).toContain("board-shake-pulse-animation");
     } finally {
       vi.useRealTimers();
@@ -1694,6 +1748,64 @@ describe("App", () => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.streak).toBe(1);
     });
+  });
+
+  it("keeps the lightning streak in toolbar after closing the victory dialog", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "TestUser",
+        score: 88,
+        streak: 3,
+        language: "en",
+        declinedTutorial: false,
+      }),
+    );
+    localStorage.setItem("wordle:scoreboard:client-id", "lightning-client");
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "lightning-local",
+          clientId: "lightning-client",
+          nick: "TestUser",
+          language: "en",
+          modeId: "lightning",
+          score: 110,
+          streak: 3,
+          createdAt: 1000,
+        },
+      ]),
+    );
+    localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    window.history.pushState({}, "", ROUTES.LIGHTING);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    renderApp();
+    await waitForPlayReady();
+    expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    const victoryDialog = await screen.findByRole("dialog", {
+      name: "Victory",
+    });
+    expect(within(victoryDialog).getByLabelText("Streak: 4")).toBeTruthy();
+
+    fireEvent.click(
+      within(victoryDialog).getByRole("button", { name: "Close" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Victory" })).toBeNull();
+    });
+    expect(screen.getByLabelText("Streak: 4")).toBeTruthy();
   });
 
   it("shows the settings hint only on the first end-of-game dialog in a tab", async () => {

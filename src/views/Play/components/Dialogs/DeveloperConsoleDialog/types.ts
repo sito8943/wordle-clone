@@ -10,6 +10,8 @@ export type DeveloperConsoleDialogProps = {
   answer: string;
   player: Player;
   showResumeDialog: boolean;
+  showChallengesSection: boolean;
+  showDailySection: boolean;
   submitDeveloperPlayer: PlayControllerState["submitDeveloperPlayer"];
   refreshRemoteDictionaryChecksum: PlayControllerState["refreshRemoteDictionaryChecksum"];
   isRefreshingDictionaryChecksum: boolean;
@@ -21,4 +23,8 @@ export type DeveloperConsoleDialogProps = {
   isChangingDailyChallengesForDeveloper: boolean;
   dailyChallengesDeveloperMessage: string | null;
   dailyChallengesDeveloperMessageKind: "success" | "error" | null;
+  resetDailyForCurrentPlayerForDeveloper: PlayControllerState["resetDailyForCurrentPlayerForDeveloper"];
+  resetDailyForAllPlayersForDeveloper: PlayControllerState["resetDailyForAllPlayersForDeveloper"];
+  dailyModeDeveloperMessage: string | null;
+  dailyModeDeveloperMessageKind: "success" | "error" | null;
 };

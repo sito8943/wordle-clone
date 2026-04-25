@@ -34,11 +34,21 @@ npm run convex:dev
 
 ```bash
 VITE_CONVEX_URL=https://YOUR-DEPLOYMENT.convex.cloud
+DAILY_PROXY_TARGET=http://localhost:8787
+VITE_DAILY_WORD_API_URL=/api/daily
 VITE_WORD_LIST_BUTTON_ENABLED=true
 VITE_SETTINGS_DRAWER_ENABLED=true
 ```
 
-4. Run the app:
+4. (Recommended for Daily mode in local dev) start the sibling daily backend:
+
+```bash
+cd ../wordle-daily-backend
+npm install
+npm run dev
+```
+
+5. Run the app:
 
 ```bash
 npm run dev
@@ -145,8 +155,10 @@ All flags are read from `src/config/env.ts`.
 
 - `VITE_APP_VERSION` (default `"0.0.0"`): app version.
 - `VITE_CONVEX_URL` (optional): Convex deployment URL.
+- `VITE_DAILY_WORD_API_URL` (default `"/api/daily"`): base endpoint used by `DailyWordClient` to fetch the daily payload (word + meaning) in a single request.
 - `VITE_WORD_REPORT_PHONE_NUMBER` (optional): WhatsApp target for the invalid-word report link.
 - `VITE_PAYPAL_DONATION_BUTTON_URL` (optional): PayPal donation URL.
+- `DAILY_PROXY_TARGET` (default `"http://localhost:8787"`): dev proxy target for `/api/daily` in Vite.
 
 Feature flags (all default `true` unless noted):
 
@@ -162,6 +174,7 @@ Feature flags (all default `true` unless noted):
 - `VITE_SETTINGS_DRAWER_ENABLED`: enables the in-game settings drawer.
 - `VITE_PLAY_OFFLINE_STATE_ENABLED` (default `false`): shows the offline state in Play view.
 - `VITE_LIGHTNING_MODE_ENABLED`: enables the lightning/insane timer mode.
+- `VITE_TIMER_AUTO_PAUSE_ENABLED` (default `false`): pauses the hard-mode timer when Play dialogs are open or the browser tab is hidden.
 - `VITE_DIFFICULTY_EASY_ENABLED` / `VITE_DIFFICULTY_NORMAL_ENABLED` / `VITE_DIFFICULTY_HARD_ENABLED` / `VITE_DIFFICULTY_INSANE_ENABLED`: individual difficulty toggles.
 
 Notes:
@@ -199,6 +212,8 @@ Notes:
   - `wordle:hint-usage`: hint usage snapshot keyed by game reference, without storing `answer` in clear.
   - `wordle:sync-events`: pending offline victory events used to sync score/streak to Convex in order.
   - `wordle:dictionary:es`: cached dictionary.
+  - `wordle:daily-word:<YYYY-MM-DD>`: cached remote daily word.
+  - `wordle:daily-meaning:<YYYY-MM-DD>:<WORD>`: cached meaning for the daily word fetched from the daily payload.
   - `player`: player profile and score/streak metadata, including recovery `code`.
     - local `score`/`streak` act as UI cache; confirmed remote values take precedence after sync.
   - `wordle:scoreboard:*`: scoreboard cache/pending/client metadata.

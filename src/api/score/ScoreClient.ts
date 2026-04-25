@@ -16,11 +16,17 @@ import {
   UPSERT_PLAYER_PROFILE_MUTATION,
   WORDLE_SYNC_EVENTS_KEY,
 } from "./constants";
-import { SCOREBOARD_MODE_IDS, resolveScoreboardModeId } from "@domain/wordle";
+import {
+  DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
+  SCOREBOARD_MODE_IDS,
+  resolveScoreboardModeId,
+} from "@domain/wordle";
 import type { PlayerLanguage, ScoreboardModeId } from "@domain/wordle";
 import type {
   RecordScoreInput,
+  RemoteModeProgress,
   RemotePlayerProfile,
+  RemoteProgressByMode,
   RemoteScore,
   RemoteScoresResponse,
   ScoreEntry,
@@ -39,6 +45,11 @@ class ScoreClient {
   private static readonly DEFAULT_LANGUAGE: PlayerLanguage = "en";
   private static readonly DEFAULT_MODE: ScoreboardModeId =
     SCOREBOARD_MODE_IDS.CLASSIC;
+  private static readonly PROFILE_PROGRESS_MODE_IDS: ScoreboardModeId[] = [
+    SCOREBOARD_MODE_IDS.CLASSIC,
+    SCOREBOARD_MODE_IDS.LIGHTNING,
+    SCOREBOARD_MODE_IDS.DAILY,
+  ];
 
   private readonly gateway: ConvexGateway;
   private readonly storage: Storage;
@@ -164,13 +175,18 @@ class ScoreClient {
   }
 
   queueRoundEvent(event: StoredRoundSyncEvent): void {
+    const safeModeId = this.normalizeModeId(event.modeId);
+    if (!this.isRemoteSupportedMode(safeModeId)) {
+      return;
+    }
+
     const pending = this.readRoundEvents();
     const next = pending.filter((entry) => entry.id !== event.id);
     if (event.kind === "win") {
       next.push({
         ...event,
         pointsDelta: this.normalizeScore(event.pointsDelta),
-        modeId: this.normalizeModeId(event.modeId),
+        modeId: safeModeId,
         happenedAt:
           Number.isFinite(event.happenedAt) && event.happenedAt > 0
             ? Math.floor(event.happenedAt)
@@ -180,7 +196,7 @@ class ScoreClient {
     } else {
       next.push({
         ...event,
-        modeId: this.normalizeModeId(event.modeId),
+        modeId: safeModeId,
         happenedAt:
           Number.isFinite(event.happenedAt) && event.happenedAt > 0
             ? Math.floor(event.happenedAt)
@@ -195,13 +211,24 @@ class ScoreClient {
     input: SyncRoundEventsInput,
   ): Promise<RemotePlayerProfile | null> {
     const events = this.readRoundEvents();
+    const supportedEvents = events.filter((event) =>
+      this.isRemoteSupportedMode(event.modeId),
+    );
+    if (supportedEvents.length !== events.length) {
+      this.writeRoundEvents(supportedEvents);
+    }
+
     const identity = this.readProfileIdentity();
 
-    if (events.length === 0 || !this.gateway.isConfigured || !this.isOnline()) {
+    if (
+      supportedEvents.length === 0 ||
+      !this.gateway.isConfigured ||
+      !this.isOnline()
+    ) {
       return null;
     }
 
-    const orderedEvents = [...events].sort(
+    const orderedEvents = [...supportedEvents].sort(
       (left, right) => left.happenedAt - right.happenedAt,
     );
 
@@ -334,6 +361,10 @@ class ScoreClient {
 
     this.addToCache(record, overwriteExisting);
 
+    if (!this.isRemoteSupportedMode(modeId)) {
+      return;
+    }
+
     if (!this.gateway.isConfigured || !this.isOnline()) {
       this.addToPending(record, overwriteExisting, mutation);
       return;
@@ -408,6 +439,10 @@ class ScoreClient {
     const safeLimit = this.normalizeLimit(limit);
     const identity = this.readProfileIdentity();
 
+    if (!this.isRemoteSupportedMode(safeModeId)) {
+      return this.getCachedTopScores(safeLimit, safeLanguage, safeModeId);
+    }
+
     if (!this.gateway.isConfigured || !this.isOnline()) {
       return this.getCachedTopScores(safeLimit, safeLanguage, safeModeId);
     }
@@ -423,6 +458,20 @@ class ScoreClient {
         clientRecordId: identity?.clientRecordId,
       });
       const parsedResponse = this.parseRemoteScoresResponse(remoteResponse);
+      const remoteModeMismatch = parsedResponse.scores.some(
+        (entry) =>
+          this.normalizeModeId(entry.modeId ?? safeModeId) !== safeModeId,
+      );
+      const remoteCurrentClientEntryModeMismatch =
+        parsedResponse.currentClientEntry !== null &&
+        this.normalizeModeId(
+          parsedResponse.currentClientEntry.modeId ?? safeModeId,
+        ) !== safeModeId;
+
+      if (remoteModeMismatch || remoteCurrentClientEntryModeMismatch) {
+        return this.getCachedTopScores(safeLimit, safeLanguage, safeModeId);
+      }
+
       const mergedScores = this.mergeRemoteAndPending(
         parsedResponse.scores,
         safeLimit,
@@ -477,9 +526,15 @@ class ScoreClient {
     const pending = this.dedupeStoredByNick(
       this.readScores(SCOREBOARD_PENDING_KEY),
     );
+    const supportedPending = pending.filter((entry) =>
+      this.isRemoteSupportedMode(entry.modeId),
+    );
+    if (supportedPending.length !== pending.length) {
+      this.writeScores(SCOREBOARD_PENDING_KEY, supportedPending);
+    }
 
     if (
-      pending.length === 0 ||
+      supportedPending.length === 0 ||
       !this.gateway.isConfigured ||
       !this.isOnline()
     ) {
@@ -489,7 +544,7 @@ class ScoreClient {
     const stillPending: StoredScore[] = [];
     let networkDown = false;
 
-    for (const entry of pending) {
+    for (const entry of supportedPending) {
       if (networkDown) {
         stillPending.push(entry);
         continue;
@@ -527,7 +582,7 @@ class ScoreClient {
       this.dedupeStoredByNick(stillPending),
     );
 
-    return { flushed: stillPending.length !== pending.length };
+    return { flushed: stillPending.length !== supportedPending.length };
   }
 
   private localScoresRanked(
@@ -556,6 +611,14 @@ class ScoreClient {
         (entry) => entry.language === language && entry.modeId === modeId,
       ),
     );
+    const cachedCurrentClientScores = this.dedupeStoredByNick(
+      this.readScores(SCOREBOARD_CACHE_KEY).filter(
+        (entry) =>
+          entry.language === language &&
+          entry.modeId === modeId &&
+          this.isCurrentBrowserEntryForAnyMode(entry),
+      ),
+    );
 
     const remoteEntries: ScoreEntry[] = remoteScores.map((entry) =>
       this.toScoreEntry(entry, "convex", language, modeId),
@@ -564,15 +627,23 @@ class ScoreClient {
     const pendingEntries: ScoreEntry[] = pending.map((entry) =>
       this.toLocalScoreEntry(entry),
     );
+    const cachedCurrentClientEntries: ScoreEntry[] =
+      cachedCurrentClientScores.map((entry) => this.toLocalScoreEntry(entry));
 
     return this.dedupeCurrentClientEntries(
-      this.dedupeScoreEntriesByNick([...remoteEntries, ...pendingEntries]),
+      this.dedupeScoreEntriesByNick([
+        ...remoteEntries,
+        ...pendingEntries,
+        ...cachedCurrentClientEntries,
+      ]),
     )
       .sort((a, b) => scoreSorter(a, b))
       .slice(0, limit);
   }
 
   private toLocalScoreEntry(entry: StoredScore): ScoreEntry {
+    const isCurrentBrowserEntry = this.isCurrentBrowserEntryForAnyMode(entry);
+
     return {
       id: entry.localId,
       nick: entry.nick,
@@ -580,6 +651,8 @@ class ScoreClient {
       modeId: this.normalizeModeId(entry.modeId),
       score: entry.score,
       streak: entry.streak,
+      hasWonDailyToday:
+        isCurrentBrowserEntry && this.hasCurrentBrowserWonDailyTodayLocally(),
       createdAt: entry.createdAt,
       source: "local",
       isCurrentClient: !entry.clientId || entry.clientId === this.clientId,
@@ -589,7 +662,14 @@ class ScoreClient {
   private toScoreEntry(
     entry: Pick<RemoteScore, "id" | "nick" | "score" | "createdAt"> &
       Partial<
-        Pick<RemoteScore, "isCurrentClient" | "streak" | "language" | "modeId">
+        Pick<
+          RemoteScore,
+          | "isCurrentClient"
+          | "streak"
+          | "language"
+          | "modeId"
+          | "hasWonDailyToday"
+        >
       >,
     source: ScoreSource,
     defaultLanguage: PlayerLanguage,
@@ -602,6 +682,7 @@ class ScoreClient {
       modeId: this.normalizeModeId(entry.modeId ?? defaultModeId),
       score: entry.score,
       streak: this.normalizeStreak(entry.streak ?? 0),
+      hasWonDailyToday: Boolean(entry.hasWonDailyToday),
       createdAt: entry.createdAt,
       source,
       isCurrentClient: Boolean(entry.isCurrentClient),
@@ -798,6 +879,14 @@ class ScoreClient {
     );
   }
 
+  private isRemoteSupportedMode(modeId: ScoreboardModeId): boolean {
+    return (
+      modeId === SCOREBOARD_MODE_IDS.CLASSIC ||
+      modeId === SCOREBOARD_MODE_IDS.LIGHTNING ||
+      modeId === SCOREBOARD_MODE_IDS.DAILY
+    );
+  }
+
   private nickLanguageModeKey(
     nick: string,
     language: PlayerLanguage,
@@ -874,21 +963,31 @@ class ScoreClient {
       typeof candidate.pointsDelta === "number" &&
       typeof candidate.happenedAt === "number"
     ) {
+      const modeId = this.normalizeModeId(candidate.modeId);
+      if (!this.isRemoteSupportedMode(modeId)) {
+        return null;
+      }
+
       return {
         id: candidate.id,
         kind: "win",
         pointsDelta: this.normalizeScore(candidate.pointsDelta),
-        modeId: this.normalizeModeId(candidate.modeId),
+        modeId,
         happenedAt: Math.floor(candidate.happenedAt),
         version: 2,
       };
     }
 
     if (candidate.kind === "loss" && typeof candidate.happenedAt === "number") {
+      const modeId = this.normalizeModeId(candidate.modeId);
+      if (!this.isRemoteSupportedMode(modeId)) {
+        return null;
+      }
+
       return {
         id: candidate.id,
         kind: "loss",
-        modeId: this.normalizeModeId(candidate.modeId),
+        modeId,
         happenedAt: Math.floor(candidate.happenedAt),
         version: 2,
       };
@@ -968,26 +1067,53 @@ class ScoreClient {
     modeId: ScoreboardModeId,
   ): StoredScore | null {
     const identity = this.readProfileIdentity();
-    const entries = [
-      ...this.readScores(SCOREBOARD_CACHE_KEY),
-      ...this.readScores(SCOREBOARD_PENDING_KEY),
-    ].filter(
-      (entry) =>
-        entry.language === language &&
-        entry.modeId === modeId &&
-        (entry.clientId === this.clientId ||
-          (identity !== null && entry.localId === identity.clientRecordId)),
+    const isCurrentClientEntry = (entry: StoredScore): boolean =>
+      entry.language === language &&
+      entry.modeId === modeId &&
+      (entry.clientId === this.clientId ||
+        (identity !== null && entry.localId === identity.clientRecordId));
+
+    const cacheEntries =
+      this.readScores(SCOREBOARD_CACHE_KEY).filter(isCurrentClientEntry);
+
+    if (cacheEntries.length > 0) {
+      return this.pickCurrentClientSnapshot(cacheEntries);
+    }
+
+    const pendingEntries = this.readScores(SCOREBOARD_PENDING_KEY).filter(
+      isCurrentClientEntry,
     );
 
+    return this.pickCurrentClientSnapshot(pendingEntries);
+  }
+
+  private pickCurrentClientSnapshot(
+    entries: StoredScore[],
+  ): StoredScore | null {
     let current: StoredScore | null = null;
 
     for (const entry of entries) {
-      if (!current || scoreSorter(entry, current) < 0) {
+      if (!current || this.shouldPreferCurrentClientSnapshot(entry, current)) {
         current = entry;
       }
     }
 
     return current;
+  }
+
+  private shouldPreferCurrentClientSnapshot(
+    candidate: Pick<StoredScore, "score" | "createdAt" | "streak">,
+    current: Pick<StoredScore, "score" | "createdAt" | "streak">,
+  ): boolean {
+    if (candidate.score !== current.score) {
+      return candidate.score > current.score;
+    }
+
+    if (candidate.createdAt !== current.createdAt) {
+      return candidate.createdAt > current.createdAt;
+    }
+
+    return false;
   }
 
   private dedupeScoreEntriesByNick(entries: ScoreEntry[]): ScoreEntry[] {
@@ -1000,9 +1126,23 @@ class ScoreClient {
         entry.modeId,
       );
       const current = byNick.get(key);
+      const mergeDailyWinToday = (
+        preferred: ScoreEntry,
+        candidate: ScoreEntry,
+      ): ScoreEntry => ({
+        ...preferred,
+        hasWonDailyToday:
+          Boolean(preferred.hasWonDailyToday) ||
+          Boolean(candidate.hasWonDailyToday),
+      });
 
-      if (!current || scoreSorter(entry, current) < 0) {
+      if (!current) {
         byNick.set(key, entry);
+        continue;
+      }
+
+      if (scoreSorter(entry, current) < 0) {
+        byNick.set(key, mergeDailyWinToday(entry, current));
         continue;
       }
 
@@ -1012,7 +1152,7 @@ class ScoreClient {
         (!current.isCurrentClient ||
           (entry.source === "local" && current.source !== "local"))
       ) {
-        byNick.set(key, entry);
+        byNick.set(key, mergeDailyWinToday(entry, current));
         continue;
       }
 
@@ -1021,7 +1161,18 @@ class ScoreClient {
         entry.source === "convex" &&
         current.source !== "convex"
       ) {
-        byNick.set(key, entry);
+        byNick.set(key, mergeDailyWinToday(entry, current));
+        continue;
+      }
+
+      if (
+        entry.hasWonDailyToday === true &&
+        current.hasWonDailyToday !== true
+      ) {
+        byNick.set(key, {
+          ...current,
+          hasWonDailyToday: true,
+        });
       }
     }
 
@@ -1068,9 +1219,20 @@ class ScoreClient {
       preferred = candidate;
     }
 
-    return entries.filter(
-      (entry) => !entry.isCurrentClient || entry === preferred,
+    const hasAnyDailyWinToday = currentClientEntries.some(
+      (entry) => entry.hasWonDailyToday === true,
     );
+
+    return entries
+      .filter((entry) => !entry.isCurrentClient || entry === preferred)
+      .map((entry) =>
+        entry === preferred && hasAnyDailyWinToday
+          ? {
+              ...entry,
+              hasWonDailyToday: true,
+            }
+          : entry,
+      );
   }
 
   private isNickAvailableInLocalData(nick: string): boolean {
@@ -1094,6 +1256,46 @@ class ScoreClient {
     }
 
     return navigator.onLine;
+  }
+
+  private hasCurrentBrowserWonDailyTodayLocally(): boolean {
+    const today = new Date().toISOString().slice(0, 10);
+
+    try {
+      const keysToCheck: string[] = [DAILY_MODE_STATUS_STORAGE_KEY_PREFIX];
+
+      for (let index = 0; index < this.storage.length; index += 1) {
+        const key = this.storage.key(index);
+        if (key && key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)) {
+          keysToCheck.push(key);
+        }
+      }
+
+      for (const key of keysToCheck) {
+        const raw = this.storage.getItem(key);
+        if (!raw) {
+          continue;
+        }
+
+        let parsed: { date?: unknown; outcome?: unknown } | null = null;
+        try {
+          parsed = JSON.parse(raw) as {
+            date?: unknown;
+            outcome?: unknown;
+          };
+        } catch {
+          parsed = null;
+        }
+
+        if (parsed?.date === today && parsed?.outcome === "won") {
+          return true;
+        }
+      }
+    } catch {
+      return false;
+    }
+
+    return false;
   }
 
   private normalizeRecoveryCode(code: string): string {
@@ -1127,6 +1329,36 @@ class ScoreClient {
       throw new Error("Profile sync returned a profile without identity.");
     }
 
+    const normalizedFallbackScore = this.normalizeScore(fallback.score);
+    const normalizedFallbackStreak = this.normalizeStreak(fallback.streak);
+    const fallbackCreatedAt =
+      Number.isFinite(fallback.createdAt) && fallback.createdAt > 0
+        ? Math.floor(fallback.createdAt)
+        : Date.now();
+    const normalizedCandidateScore =
+      typeof candidate.score === "number"
+        ? this.normalizeScore(candidate.score)
+        : normalizedFallbackScore;
+    const normalizedCandidateStreak =
+      typeof candidate.streak === "number"
+        ? this.normalizeStreak(candidate.streak)
+        : normalizedFallbackStreak;
+    const normalizedCandidateCreatedAt =
+      typeof candidate.createdAt === "number" &&
+      Number.isFinite(candidate.createdAt) &&
+      candidate.createdAt > 0
+        ? Math.floor(candidate.createdAt)
+        : fallbackCreatedAt;
+    const progressByMode = this.parseRemoteProgressByMode(
+      candidate.progressByMode,
+      {
+        score: normalizedCandidateScore,
+        streak: normalizedCandidateStreak,
+        updatedAt: normalizedCandidateCreatedAt,
+      },
+    );
+    const classicProgress = progressByMode[SCOREBOARD_MODE_IDS.CLASSIC];
+
     return {
       id: candidate.id,
       clientId:
@@ -1141,14 +1373,12 @@ class ScoreClient {
           ? this.normalizeRecoveryCode(candidate.playerCode)
           : this.normalizeRecoveryCode(fallback.playerCode),
       language: this.normalizeLanguage(candidate.language ?? fallback.language),
-      score: this.normalizeScore(
-        typeof candidate.score === "number" ? candidate.score : fallback.score,
-      ),
-      streak: this.normalizeStreak(
-        typeof candidate.streak === "number"
-          ? candidate.streak
-          : fallback.streak,
-      ),
+      score: classicProgress?.score ?? normalizedCandidateScore,
+      streak: classicProgress?.streak ?? normalizedCandidateStreak,
+      hasWonDailyToday:
+        typeof candidate.hasWonDailyToday === "boolean"
+          ? candidate.hasWonDailyToday
+          : Boolean(fallback.hasWonDailyToday),
       difficulty:
         candidate.difficulty === "easy" ||
         candidate.difficulty === "normal" ||
@@ -1161,12 +1391,82 @@ class ScoreClient {
         candidate.keyboardPreference === "native"
           ? candidate.keyboardPreference
           : fallback.keyboardPreference,
-      createdAt:
-        typeof candidate.createdAt === "number" &&
-        Number.isFinite(candidate.createdAt)
-          ? candidate.createdAt
-          : fallback.createdAt,
+      createdAt: classicProgress?.updatedAt ?? normalizedCandidateCreatedAt,
+      progressByMode,
     };
+  }
+
+  private toRemoteModeProgress(
+    value: unknown,
+    fallback: RemoteModeProgress,
+  ): RemoteModeProgress | null {
+    if (!value || typeof value !== "object") {
+      return null;
+    }
+
+    const candidate = value as Partial<RemoteModeProgress> & {
+      createdAt?: unknown;
+    };
+    const score =
+      typeof candidate.score === "number"
+        ? this.normalizeScore(candidate.score)
+        : null;
+    const streak =
+      typeof candidate.streak === "number"
+        ? this.normalizeStreak(candidate.streak)
+        : null;
+
+    if (score === null && streak === null) {
+      return null;
+    }
+
+    const updatedAt =
+      typeof candidate.updatedAt === "number" &&
+      Number.isFinite(candidate.updatedAt) &&
+      candidate.updatedAt > 0
+        ? Math.floor(candidate.updatedAt)
+        : typeof candidate.createdAt === "number" &&
+            Number.isFinite(candidate.createdAt) &&
+            candidate.createdAt > 0
+          ? Math.floor(candidate.createdAt)
+          : fallback.updatedAt;
+
+    return {
+      score: score ?? fallback.score,
+      streak: streak ?? fallback.streak,
+      updatedAt,
+    };
+  }
+
+  private parseRemoteProgressByMode(
+    value: unknown,
+    classicFallback: RemoteModeProgress,
+  ): RemoteProgressByMode {
+    const progressByMode: RemoteProgressByMode = {
+      [SCOREBOARD_MODE_IDS.CLASSIC]: classicFallback,
+    };
+
+    if (!value || typeof value !== "object") {
+      return progressByMode;
+    }
+
+    const candidate = value as Record<string, unknown>;
+    for (const modeId of ScoreClient.PROFILE_PROGRESS_MODE_IDS) {
+      const fallback =
+        modeId === SCOREBOARD_MODE_IDS.CLASSIC
+          ? classicFallback
+          : {
+              score: 0,
+              streak: 0,
+              updatedAt: classicFallback.updatedAt,
+            };
+      const parsed = this.toRemoteModeProgress(candidate[modeId], fallback);
+      if (parsed) {
+        progressByMode[modeId] = parsed;
+      }
+    }
+
+    return progressByMode;
   }
 
   private readProfileIdentity(): StoredScoreIdentity | null {
@@ -1198,27 +1498,106 @@ class ScoreClient {
     );
   }
 
+  private resolveProfileModeCacheEntries(
+    profile: RemotePlayerProfile,
+    localEntries: StoredScore[],
+  ): StoredScore[] {
+    const fallbackProgress: RemoteModeProgress = {
+      score: profile.score,
+      streak: profile.streak,
+      updatedAt: profile.createdAt,
+    };
+    const progressByMode: RemoteProgressByMode = profile.progressByMode ?? {
+      [SCOREBOARD_MODE_IDS.CLASSIC]: fallbackProgress,
+    };
+    const remoteEntries = ScoreClient.PROFILE_PROGRESS_MODE_IDS.flatMap(
+      (modeId) => {
+        const progress = progressByMode[modeId];
+        if (!progress) {
+          return [];
+        }
+
+        return [
+          {
+            localId: profile.clientRecordId,
+            clientId: this.clientId,
+            nick: profile.nick,
+            language: profile.language,
+            modeId,
+            score: this.normalizeScore(progress.score),
+            streak: this.normalizeStreak(progress.streak),
+            createdAt:
+              Number.isFinite(progress.updatedAt) && progress.updatedAt > 0
+                ? Math.floor(progress.updatedAt)
+                : profile.createdAt,
+          } satisfies StoredScore,
+        ];
+      },
+    );
+
+    const baseEntries =
+      remoteEntries.length > 0
+        ? remoteEntries
+        : [
+            {
+              localId: profile.clientRecordId,
+              clientId: this.clientId,
+              nick: profile.nick,
+              language: profile.language,
+              modeId: SCOREBOARD_MODE_IDS.CLASSIC,
+              score: profile.score,
+              streak: profile.streak,
+              createdAt: profile.createdAt,
+            } satisfies StoredScore,
+          ];
+
+    return baseEntries.map((remoteEntry) => {
+      const localSnapshot = this.pickCurrentClientSnapshot(
+        localEntries.filter((entry) => entry.modeId === remoteEntry.modeId),
+      );
+
+      if (
+        localSnapshot &&
+        this.shouldPreferCurrentClientSnapshot(localSnapshot, remoteEntry)
+      ) {
+        return {
+          ...localSnapshot,
+          localId: profile.clientRecordId,
+          clientId: this.clientId,
+          nick: profile.nick,
+          language: profile.language,
+          modeId: remoteEntry.modeId,
+        };
+      }
+
+      return remoteEntry;
+    });
+  }
+
   private replaceCurrentBrowserScores(
     profile: RemotePlayerProfile,
     preserveModeScopedEntries: boolean,
   ): void {
     const cacheEntries = this.readScores(SCOREBOARD_CACHE_KEY);
     const pendingEntries = this.readScores(SCOREBOARD_PENDING_KEY);
-    const nextEntry: StoredScore = {
-      localId: profile.clientRecordId,
-      clientId: this.clientId,
-      nick: profile.nick,
-      language: profile.language,
-      modeId: ScoreClient.DEFAULT_MODE,
-      score: profile.score,
-      streak: profile.streak,
-      createdAt: profile.createdAt,
-    };
+    const localCurrentLanguageEntries = [
+      ...cacheEntries,
+      ...pendingEntries,
+    ].filter(
+      (entry) =>
+        this.isCurrentBrowserEntryForAnyMode(entry) &&
+        entry.language === profile.language,
+    );
+    const nextEntries = this.resolveProfileModeCacheEntries(
+      profile,
+      localCurrentLanguageEntries,
+    );
+    const syncedModeIds = new Set(nextEntries.map((entry) => entry.modeId));
     const preserveModeEntries = (entry: StoredScore): boolean =>
       preserveModeScopedEntries &&
       this.isCurrentBrowserEntryForAnyMode(entry) &&
       entry.language === profile.language &&
-      entry.modeId !== ScoreClient.DEFAULT_MODE;
+      !syncedModeIds.has(entry.modeId);
     const normalizePreservedModeEntry = (entry: StoredScore): StoredScore => ({
       ...entry,
       localId: profile.clientRecordId,
@@ -1240,7 +1619,7 @@ class ScoreClient {
     const cache = [
       ...cacheEntries.filter((entry) => !shouldDropCurrentEntry(entry)),
       ...preservedCacheEntries,
-      nextEntry,
+      ...nextEntries,
     ];
     const pending = [
       ...pendingEntries.filter((entry) => !shouldDropCurrentEntry(entry)),

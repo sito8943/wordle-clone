@@ -1,5 +1,9 @@
 import type { Player } from "@domain/wordle";
-import { APP_VERSION_STORAGE_KEY, PLAYER_STORAGE_KEY } from "./constants";
+import {
+  APP_VERSION_STORAGE_KEY,
+  PLAYER_STORAGE_KEY,
+  PREVIOUS_APP_VERSION_STORAGE_KEY,
+} from "./constants";
 import { DEFAULT_PLAYER } from "@providers/Player/constants";
 import type { ViewVersionHistoryEntry } from "./types";
 
@@ -39,6 +43,63 @@ export const storeAppVersion = (version: string): void => {
     localStorage.setItem(APP_VERSION_STORAGE_KEY, version);
   } catch {
     // Ignore localStorage errors.
+  }
+};
+
+export const getPendingPreviousAppVersion = (): string | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const stored = localStorage.getItem(PREVIOUS_APP_VERSION_STORAGE_KEY);
+    return typeof stored === "string" && stored.trim().length > 0
+      ? stored
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+const storePendingPreviousAppVersion = (version: string): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.setItem(PREVIOUS_APP_VERSION_STORAGE_KEY, version);
+  } catch {
+    // Ignore localStorage errors.
+  }
+};
+
+export const clearPendingPreviousAppVersion = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(PREVIOUS_APP_VERSION_STORAGE_KEY);
+  } catch {
+    // Ignore localStorage errors.
+  }
+};
+
+const clearBrowserStorages = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.clear();
+  } catch {
+    // Ignore localStorage errors.
+  }
+
+  try {
+    window.sessionStorage.clear();
+  } catch {
+    // Ignore sessionStorage errors.
   }
 };
 
@@ -132,6 +193,24 @@ export const isVersionNewer = (
   currentVersion: string,
   previousVersion?: string | null,
 ): boolean => compareAppVersions(currentVersion, previousVersion) > 0;
+
+export const resetBrowserStorageOnAppUpdate = (
+  currentVersion: string,
+): string | null => {
+  const previousVersion = getStoredAppVersion();
+  if (!previousVersion || previousVersion === currentVersion) {
+    return null;
+  }
+
+  if (!isVersionNewer(currentVersion, previousVersion)) {
+    return null;
+  }
+
+  clearBrowserStorages();
+  storeAppVersion(currentVersion);
+  storePendingPreviousAppVersion(previousVersion);
+  return previousVersion;
+};
 
 export const getVersionHistoryEntriesForUpdate = (
   history: ViewVersionHistoryEntry[],

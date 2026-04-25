@@ -22,6 +22,8 @@ import { env } from "@config/env";
 import { ROUTES } from "@config/routes";
 import { VIEW_DIALOG_IDS, VIEW_VERSION_HISTORY } from "./constants";
 import {
+  clearPendingPreviousAppVersion,
+  getPendingPreviousAppVersion,
   getStoredAppVersion,
   getVersionHistoryEntriesForUpdate,
   isVersionNewer,
@@ -64,6 +66,7 @@ const View = () => {
   const closeVersionDialog = useCallback(() => {
     setVersionDialogVisible(false);
     storeAppVersion(env.appVersion);
+    clearPendingPreviousAppVersion();
   }, []);
 
   const confirmInitialPlayerName = useCallback(
@@ -116,6 +119,14 @@ const View = () => {
 
   useEffect(() => {
     const currentVersion = env.appVersion;
+    const pendingPreviousVersion = getPendingPreviousAppVersion();
+
+    if (pendingPreviousVersion) {
+      setPreviousAppVersion(pendingPreviousVersion);
+      setVersionDialogVisible(true);
+      return;
+    }
+
     const storedVersion = getStoredAppVersion();
 
     if (!storedVersion) {

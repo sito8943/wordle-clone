@@ -8,15 +8,5 @@ export const KEY_STYLE: Record<TileStatus | "default", string> = {
     "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600",
 };
 
-const NEUTRAL_REVEALED_KEY_STYLE =
-  "border-neutral-500 bg-neutral-500 text-white hover:bg-neutral-600";
-
-export const KEY_STYLE_ON_LOSS: Record<TileStatus | "default", string> = {
-  correct: NEUTRAL_REVEALED_KEY_STYLE,
-  present: NEUTRAL_REVEALED_KEY_STYLE,
-  absent: NEUTRAL_REVEALED_KEY_STYLE,
-  default: KEY_STYLE.default,
-};
-
 export const DELETE_HOLD_DELAY_MS = 300;
 export const DELETE_REPEAT_INTERVAL_MS = 75;

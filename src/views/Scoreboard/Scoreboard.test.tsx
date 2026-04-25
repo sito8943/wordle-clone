@@ -63,7 +63,7 @@ describe("Scoreboard", () => {
     expect(screen.getByRole("button", { name: "Refresh scores" })).toBeTruthy();
   });
 
-  it("lets the player switch between Classic and Lightning scoreboards", () => {
+  it("lets the player switch between Classic, Lightning and Daily scoreboards", () => {
     mockController();
     render(<Scoreboard />);
 
@@ -72,6 +72,15 @@ describe("Scoreboard", () => {
 
     expect(vi.mocked(useScoreboardController)).toHaveBeenLastCalledWith(
       "lightning",
+    );
+
+    const dailyButton = screen.getByRole("button", {
+      name: i18n.t("gameModes.modes.daily.name"),
+    });
+    fireEvent.click(dailyButton);
+
+    expect(vi.mocked(useScoreboardController)).toHaveBeenLastCalledWith(
+      "daily",
     );
   });
 
@@ -87,10 +96,10 @@ describe("Scoreboard", () => {
     expect(screen.getByText("Loading scores...")).toBeTruthy();
   });
 
-  it("shows convex not configured notice when convexEnabled is false", () => {
+  it("shows backend not configured notice when convexEnabled is false", () => {
     mockController({ convexEnabled: false });
     render(<Scoreboard />);
-    expect(screen.getByText(/Convex is not configured/)).toBeTruthy();
+    expect(screen.getByText(/Backend is not configured/)).toBeTruthy();
   });
 
   it("shows offline fallback notice when convexEnabled but source is local", () => {
@@ -395,5 +404,49 @@ describe("Scoreboard", () => {
     });
     const { container } = render(<Scoreboard />);
     expect(container.querySelector("svg")).toBeTruthy();
+  });
+
+  it("shows shield icon for players who won daily today in any scoreboard", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Sito",
+          score: 1,
+          streak: 0,
+          hasWonDailyToday: true,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    const { container } = render(<Scoreboard />);
+
+    expect(container.querySelector('svg[data-icon="shield"]')).toBeTruthy();
+  });
+
+  it("does not show shield icon when the player has not won daily today", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Sito",
+          score: 0,
+          streak: 0,
+          hasWonDailyToday: false,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    const { container } = render(<Scoreboard />);
+
+    expect(container.querySelector('svg[data-icon="shield"]')).toBeNull();
   });
 });

@@ -1,5 +1,6 @@
 import { memo, useState, type JSX } from "react";
 import {
+  faCircleInfo,
   faCode,
   faLightbulb,
   faList,
@@ -8,6 +9,7 @@ import {
   faTrophy,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, FireStreak, Alert } from "@components";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useSound } from "@providers/Sound";
@@ -31,10 +33,12 @@ const Toolbar = (): JSX.Element => {
     challenges,
   } = usePlayView();
   const {
+    activeModeId,
     currentWinStreak,
     dictionaryLoading,
     dictionaryWords,
     openWordsDialog,
+    openDailyMeaningDialog,
     hintsEnabledForDifficulty,
     useHint,
     hintButtonDisabled,
@@ -53,6 +57,8 @@ const Toolbar = (): JSX.Element => {
     hardModeTickPulse,
     hardModeClockBoostScale,
   } = controller;
+  const showDailyMeaningButton = activeModeId === WORDLE_MODE_IDS.DAILY;
+  const showRefreshButton = activeModeId !== WORDLE_MODE_IDS.DAILY;
 
   return (
     <>
@@ -88,6 +94,19 @@ const Toolbar = (): JSX.Element => {
               {t("play.toolbar.hintButton", { count: hintsRemaining })}
             </Button>
           )}
+          {showDailyMeaningButton ? (
+            <Button
+              onClick={openDailyMeaningDialog}
+              aria-label={t("play.toolbar.dailyMeaningAriaLabel")}
+              variant="ghost"
+              icon={faCircleInfo}
+              iconClassName={toolbarIconClassName}
+              className="mobile-compact-button"
+              hideLabelOnMobile
+            >
+              {t("play.toolbar.dailyMeaningButton")}
+            </Button>
+          ) : null}
           {challengesEnabled &&
             challenges.challenges &&
             (() => {
@@ -165,38 +184,40 @@ const Toolbar = (): JSX.Element => {
             hardModeTickPulse={hardModeTickPulse}
             hardModeClockBoostScale={hardModeClockBoostScale}
           />
-          <span
-            key={showRefreshAttention ? refreshAttentionPulse : "idle"}
-            className={
-              showRefreshAttention
-                ? "boost-animation inline-flex"
-                : "inline-flex"
-            }
-            style={
-              showRefreshAttention
-                ? ({
-                    "--boost-scale": refreshAttentionScale.toString(),
-                  } as NativeKeyboardClockStyle)
-                : undefined
-            }
-          >
-            <Button
-              onClick={refreshBoard}
-              aria-label={t("play.toolbar.refreshAriaLabel")}
-              data-wordle-refresh="true"
-              icon={faRotateRight}
-              variant="ghost"
-              iconClassName={toolbarIconClassName}
+          {showRefreshButton ? (
+            <span
+              key={showRefreshAttention ? refreshAttentionPulse : "idle"}
               className={
                 showRefreshAttention
-                  ? "mobile-compact-button text-amber-700 dark:text-amber-300"
-                  : "mobile-compact-button"
+                  ? "boost-animation inline-flex"
+                  : "inline-flex"
               }
-              hideLabelOnMobile
+              style={
+                showRefreshAttention
+                  ? ({
+                      "--boost-scale": refreshAttentionScale.toString(),
+                    } as NativeKeyboardClockStyle)
+                  : undefined
+              }
             >
-              {t("common.refresh")}
-            </Button>
-          </span>
+              <Button
+                onClick={refreshBoard}
+                aria-label={t("play.toolbar.refreshAriaLabel")}
+                data-wordle-refresh="true"
+                icon={faRotateRight}
+                variant="ghost"
+                iconClassName={toolbarIconClassName}
+                className={
+                  showRefreshAttention
+                    ? "mobile-compact-button text-amber-700 dark:text-amber-300"
+                    : "mobile-compact-button"
+                }
+                hideLabelOnMobile
+              >
+                {t("common.refresh")}
+              </Button>
+            </span>
+          ) : null}
         </div>
       </div>
 

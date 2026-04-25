@@ -1,6 +1,7 @@
 import { lazy, memo, Suspense, type JSX } from "react";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { DIALOG_QUEUE_PRIORITIES, useDialogQueueItem } from "@providers";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { PLAY_DIALOG_IDS } from "@views/Play/constants";
@@ -24,6 +25,10 @@ const TutorialPromptDialog = lazy(
 );
 const WordListDialog = lazy(
   () => import("../../components/Dialogs/WordListDialog/WordListDialog"),
+);
+const DailyMeaningDialog = lazy(
+  () =>
+    import("../../components/Dialogs/DailyMeaningDialog/DailyMeaningDialog"),
 );
 const PlayDeveloperConsoleDialog = lazy(
   () => import("../../components/Dialogs/DeveloperConsoleDialog"),
@@ -62,10 +67,17 @@ const DialogsSection = (): JSX.Element => {
     showRefreshDialog,
     showTutorialPromptDialog,
     showWordsDialog,
+    showDailyMeaningDialog,
+    isLoadingDailyMeaning,
+    dailyMeaning,
+    dailyMeaningError,
     showDeveloperConsoleDialog,
+    showDeveloperChallengesSection,
+    showDeveloperDailySection,
     isDifficultyChangeConfirmationOpen,
     showVictoryDialog,
     showDefeatDialog,
+    showDefeatShieldActions,
     answer,
     victoryBoardShareSupported,
     isSharingVictoryBoard,
@@ -80,6 +92,9 @@ const DialogsSection = (): JSX.Element => {
     continuePreviousBoard,
     startNewBoard,
     closeEndOfGameDialog,
+    useDailyShieldForCurrentDefeat,
+    skipDailyShieldForCurrentDefeat,
+    goToPlayRoute,
     openSettingsPanel,
     cancelRefreshBoard,
     acceptTutorialPrompt,
@@ -89,6 +104,8 @@ const DialogsSection = (): JSX.Element => {
     dictionaryWords,
     currentLanguage,
     closeWordsDialog,
+    closeDailyMeaningDialog,
+    retryDailyMeaningFetch,
     closeDeveloperConsoleDialog,
     submitDeveloperPlayer,
     refreshRemoteDictionaryChecksum,
@@ -101,7 +118,20 @@ const DialogsSection = (): JSX.Element => {
     isChangingDailyChallengesForDeveloper,
     dailyChallengesDeveloperMessage,
     dailyChallengesDeveloperMessageKind,
+    resetDailyForCurrentPlayerForDeveloper,
+    resetDailyForAllPlayersForDeveloper,
+    dailyModeDeveloperMessage,
+    dailyModeDeveloperMessageKind,
   } = controller;
+  const showVictoryPlayAgainAction =
+    controller.activeModeId !== WORDLE_MODE_IDS.DAILY;
+  const showDefeatReplayActions =
+    controller.activeModeId !== WORDLE_MODE_IDS.DAILY &&
+    !showDefeatShieldActions;
+  const closeEndOfGameDialogAction =
+    controller.activeModeId !== WORDLE_MODE_IDS.DAILY
+      ? closeEndOfGameDialog
+      : goToPlayRoute;
 
   const resumeDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.RESUME,
@@ -136,6 +166,11 @@ const DialogsSection = (): JSX.Element => {
   const wordListDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.WORD_LIST,
     wordListButtonEnabled && showWordsDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
+  );
+  const dailyMeaningDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.DAILY_MEANING,
+    showDailyMeaningDialog,
     DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const challengesDialogVisible = useDialogQueueItem(
@@ -174,6 +209,7 @@ const DialogsSection = (): JSX.Element => {
         showRefreshDialog,
         showTutorialPromptDialog,
         showWordsDialog,
+        showDailyMeaningDialog,
         showDeveloperConsoleDialog,
         isDifficultyChangeConfirmationOpen,
         showVictoryDialog,
@@ -230,6 +266,16 @@ const DialogsSection = (): JSX.Element => {
               onClose={closeWordsDialog}
             />
           ) : null}
+          {dailyMeaningDialogVisible ? (
+            <DailyMeaningDialog
+              visible
+              meaning={dailyMeaning}
+              loading={isLoadingDailyMeaning}
+              errorMessage={dailyMeaningError}
+              onClose={closeDailyMeaningDialog}
+              onRetry={retryDailyMeaningFetch}
+            />
+          ) : null}
           {victoryDialogVisible && victoryScoreSummary ? (
             <VictoryDialog
               visible
@@ -241,7 +287,8 @@ const DialogsSection = (): JSX.Element => {
               shareEnabled={shareButtonEnabled && victoryBoardShareSupported}
               isSharing={isSharingVictoryBoard}
               shareErrorMessage={victoryBoardShareError}
-              onClose={closeEndOfGameDialog}
+              showPlayAgainAction={showVictoryPlayAgainAction}
+              onClose={closeEndOfGameDialogAction}
               onPlayAgain={startNewBoard}
               onShare={shareVictoryBoard}
             />
@@ -251,9 +298,15 @@ const DialogsSection = (): JSX.Element => {
               visible
               answer={endOfGameAnswer}
               bestStreak={endOfGameBestStreak}
+              showShieldActions={showDefeatShieldActions}
               showSettingsHint={showEndOfGameSettingsHint}
-              showChangeDifficultyAction={settingsDrawerEnabled}
-              onClose={closeEndOfGameDialog}
+              showPlayAgainAction={showDefeatReplayActions}
+              showChangeDifficultyAction={
+                settingsDrawerEnabled && showDefeatReplayActions
+              }
+              onClose={closeEndOfGameDialogAction}
+              onUseShield={useDailyShieldForCurrentDefeat}
+              onSkipShield={skipDailyShieldForCurrentDefeat}
               onPlayAgain={startNewBoard}
               onChangeDifficulty={changeDifficulty}
             />
@@ -275,6 +328,8 @@ const DialogsSection = (): JSX.Element => {
               answer={answer}
               player={player}
               showResumeDialog={showResumeDialog}
+              showChallengesSection={showDeveloperChallengesSection}
+              showDailySection={showDeveloperDailySection}
               submitDeveloperPlayer={submitDeveloperPlayer}
               refreshRemoteDictionaryChecksum={refreshRemoteDictionaryChecksum}
               isRefreshingDictionaryChecksum={isRefreshingDictionaryChecksum}
@@ -296,6 +351,14 @@ const DialogsSection = (): JSX.Element => {
               dailyChallengesDeveloperMessageKind={
                 dailyChallengesDeveloperMessageKind
               }
+              resetDailyForCurrentPlayerForDeveloper={
+                resetDailyForCurrentPlayerForDeveloper
+              }
+              resetDailyForAllPlayersForDeveloper={
+                resetDailyForAllPlayersForDeveloper
+              }
+              dailyModeDeveloperMessage={dailyModeDeveloperMessage}
+              dailyModeDeveloperMessageKind={dailyModeDeveloperMessageKind}
             />
           ) : null}
           {tutorialPromptDialogVisible ? (

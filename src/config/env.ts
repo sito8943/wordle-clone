@@ -11,7 +11,12 @@ const env: RuntimeEnv = {
   appVersion: readString(import.meta.env.VITE_APP_VERSION, "0.0.0"),
   mode: runtimeMode,
   baseUrl: readString(import.meta.env.BASE_URL, "/"),
+  backendUrl: readOptionalString(import.meta.env.VITE_BACKEND_URL),
   convexUrl: readOptionalString(import.meta.env.VITE_CONVEX_URL),
+  dailyWordApiUrl: readString(
+    import.meta.env.VITE_DAILY_WORD_API_URL,
+    "/api/daily",
+  ),
   wordReportPhoneNumber: readOptionalString(
     import.meta.env.VITE_WORD_REPORT_PHONE_NUMBER,
   ),
@@ -65,6 +70,11 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_LIGHTNING_MODE_ENABLED ??
       rawEnv.LIGHTNING_MODE_ENABLED,
     true,
+  ),
+  timerAutoPauseEnabled: readBoolean(
+    import.meta.env.VITE_TIMER_AUTO_PAUSE_ENABLED ??
+      rawEnv.TIMER_AUTO_PAUSE_ENABLED,
+    false,
   ),
   difficultyEasyEnabled: readBoolean(
     import.meta.env.VITE_DIFFICULTY_EASY_ENABLED ??

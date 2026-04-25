@@ -4,6 +4,7 @@ import {
   isWordleModeEnabled,
   resolvePlayableWordleModeId,
   resolveRoundConfigForMode,
+  resolveScoreboardModeId,
   resolveWordleModeId,
   WORDLE_MODE_IDS,
 } from "./modeConfig";
@@ -28,6 +29,24 @@ describe("modeConfig", () => {
     );
   });
 
+  it("keeps supported scoreboard mode ids and falls back to classic", () => {
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.CLASSIC)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.LIGHTNING)).toBe(
+      WORDLE_MODE_IDS.LIGHTNING,
+    );
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.DAILY)).toBe(
+      WORDLE_MODE_IDS.DAILY,
+    );
+    expect(resolveScoreboardModeId(WORDLE_MODE_IDS.ZEN)).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    expect(resolveScoreboardModeId("unsupported")).toBe(
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+  });
+
   it("resolves current mode configs to classic defaults", () => {
     expect(resolveRoundConfigForMode(WORDLE_MODE_IDS.CLASSIC)).toEqual(
       CLASSIC_ROUND_CONFIG,
@@ -43,11 +62,11 @@ describe("modeConfig", () => {
     );
   });
 
-  it("keeps classic and lightning enabled while gating remaining modes", () => {
+  it("keeps classic, lightning and daily enabled while gating zen", () => {
     expect(isWordleModeEnabled(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
     expect(isWordleModeEnabled(WORDLE_MODE_IDS.LIGHTNING)).toBe(true);
     expect(isWordleModeEnabled(WORDLE_MODE_IDS.ZEN)).toBe(false);
-    expect(isWordleModeEnabled(WORDLE_MODE_IDS.DAILY)).toBe(false);
+    expect(isWordleModeEnabled(WORDLE_MODE_IDS.DAILY)).toBe(true);
   });
 
   it("resolves playable mode and falls back to classic for gated modes", () => {
@@ -61,7 +80,7 @@ describe("modeConfig", () => {
       WORDLE_MODE_IDS.CLASSIC,
     );
     expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.DAILY)).toBe(
-      WORDLE_MODE_IDS.CLASSIC,
+      WORDLE_MODE_IDS.DAILY,
     );
   });
 

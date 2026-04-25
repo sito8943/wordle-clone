@@ -10,6 +10,7 @@ export type VictoryDialogProps = {
   shareEnabled?: boolean;
   isSharing?: boolean;
   shareErrorMessage?: string | null;
+  showPlayAgainAction?: boolean;
   onClose: () => void;
   onPlayAgain: () => void;
   onShare?: () => void;

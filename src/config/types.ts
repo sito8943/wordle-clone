@@ -2,7 +2,9 @@ export type RuntimeEnv = {
   appVersion: string;
   mode: string;
   baseUrl: string;
+  backendUrl?: string;
   convexUrl?: string;
+  dailyWordApiUrl: string;
   wordReportPhoneNumber?: string;
   wordListButtonEnabled: boolean;
   wordReportButtonEnabled: boolean;
@@ -16,6 +18,7 @@ export type RuntimeEnv = {
   settingsDrawerEnabled: boolean;
   playOfflineStateEnabled: boolean;
   lightningModeEnabled: boolean;
+  timerAutoPauseEnabled: boolean;
   difficultyEasyEnabled: boolean;
   difficultyNormalEnabled: boolean;
   difficultyHardEnabled: boolean;
