@@ -4,6 +4,7 @@ import { ScoreClient } from "./ScoreClient";
 import {
   SCOREBOARD_CACHE_KEY,
   SCOREBOARD_CLIENT_ID_KEY,
+  SCOREBOARD_PENDING_KEY,
   SCOREBOARD_PROFILE_IDENTITY_KEY,
   SYNC_ROUND_EVENTS_MUTATION,
   UPDATE_SCORE_MUTATION,
@@ -714,6 +715,11 @@ describe("ScoreClient", () => {
       playerCode: "ZX90",
       score: 40,
       streak: 7,
+      progressByMode: {
+        classic: { score: 40, streak: 7, updatedAt: 1000 },
+        lightning: { score: 15, streak: 4, updatedAt: 1500 },
+        daily: { score: 5, streak: 1, updatedAt: 2000 },
+      },
       difficulty: "normal",
       keyboardPreference: "onscreen",
       createdAt: 1000,
@@ -735,13 +741,39 @@ describe("ScoreClient", () => {
     });
 
     const cache = JSON.parse(storage.getItem(SCOREBOARD_CACHE_KEY) || "[]");
-    expect(cache).toEqual([
-      expect.objectContaining({
-        localId: "remote-record",
-        nick: "Recovered",
-        score: 40,
-      }),
-    ]);
+    expect(cache).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          localId: "remote-record",
+          nick: "Recovered",
+          modeId: "classic",
+          score: 40,
+          streak: 7,
+        }),
+        expect.objectContaining({
+          localId: "remote-record",
+          nick: "Recovered",
+          modeId: "lightning",
+          score: 15,
+          streak: 4,
+        }),
+        expect.objectContaining({
+          localId: "remote-record",
+          nick: "Recovered",
+          modeId: "daily",
+          score: 5,
+          streak: 1,
+        }),
+      ]),
+    );
+    expect(client.getCurrentClientScoreSnapshot("en", "lightning")).toEqual({
+      score: 15,
+      streak: 4,
+    });
+    expect(client.getCurrentClientScoreSnapshot("en", "daily")).toEqual({
+      score: 5,
+      streak: 1,
+    });
   });
 
   it("requests top scores using the recovered profile identity", async () => {
@@ -888,6 +920,100 @@ describe("ScoreClient", () => {
       }),
     );
     expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
+  });
+
+  it("keeps local classic snapshot when sync returns a stale profile", async () => {
+    const mutation = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "remote-client",
+      clientRecordId: "remote-record",
+      nick: "Ana",
+      playerCode: "AB12",
+      score: 10,
+      streak: 1,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        mutation,
+      }),
+      storage,
+    );
+
+    client.cachePlayerScore({
+      nick: "Ana",
+      language: "en",
+      modeId: "classic",
+      score: 20,
+      streak: 2,
+      createdAt: 2000,
+      overwriteExisting: true,
+    });
+    client.queueRoundEvent({
+      id: "win-1",
+      kind: "win",
+      pointsDelta: 10,
+      modeId: "classic",
+      happenedAt: 3000,
+      version: 2,
+    });
+
+    await client.syncRoundEvents({
+      nick: "Ana",
+      language: "en",
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+    });
+
+    expect(client.getCurrentClientScoreSnapshot("en", "classic")).toEqual({
+      score: 20,
+      streak: 2,
+    });
+  });
+
+  it("prefers cache snapshot over pending rows for current streak", () => {
+    const client = new ScoreClient(createGateway(), storage);
+    const clientId = storage.getItem(SCOREBOARD_CLIENT_ID_KEY) ?? "";
+
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "current-cache",
+          clientId,
+          nick: "Ana",
+          language: "en",
+          modeId: "classic",
+          score: 12,
+          streak: 0,
+          createdAt: 2000,
+        },
+      ]),
+    );
+    storage.setItem(
+      SCOREBOARD_PENDING_KEY,
+      JSON.stringify([
+        {
+          localId: "current-pending",
+          clientId,
+          nick: "Ana",
+          language: "en",
+          modeId: "classic",
+          score: 99,
+          streak: 7,
+          createdAt: 1000,
+          mutation: "scores:addScore",
+        },
+      ]),
+    );
+
+    expect(client.getCurrentClientScoreSnapshot("en", "classic")).toEqual({
+      score: 12,
+      streak: 0,
+    });
   });
 
   it("queues daily round events for remote sync", async () => {

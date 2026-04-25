@@ -693,7 +693,7 @@ export const resources = {
         },
         modes: {
           zen: {
-            name: "Zen",
+            name: "Calmado",
             details: {
               neverLose: "Nunca pierdes una partida.",
               infiniteRows:
@@ -705,7 +705,7 @@ export const resources = {
             },
           },
           classic: {
-            name: "Classic",
+            name: "Clásico",
             details: {
               baseRules:
                 "Modo estándar actual: {{rows}} filas y {{letters}} letras.",
@@ -718,7 +718,7 @@ export const resources = {
             },
           },
           lightning: {
-            name: "Lightning",
+            name: "Relámpago",
             details: {
               baseRules:
                 "Modo contrarreloj actual: {{rows}} filas y {{letters}} letras.",
@@ -732,7 +732,7 @@ export const resources = {
             },
           },
           daily: {
-            name: "Daily",
+            name: "Diario",
             details: {
               baseRules:
                 "{{rows}} filas y N letras, donde N es la longitud de la palabra del día.",

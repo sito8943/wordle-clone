@@ -31,7 +31,10 @@ import {
 } from "@providers";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Play/hooks/useHintController";
-import { END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY } from "@views/Play/hooks/usePlayController/constants";
+import {
+  END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+} from "@views/Play/hooks/usePlayController/constants";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 
 vi.mock("./utils/words", async () => {
@@ -1737,6 +1740,60 @@ describe("App", () => {
       const player = JSON.parse(localStorage.getItem("player") || "{}");
       expect(player.streak).toBe(1);
     });
+  });
+
+  it("keeps the lightning streak in toolbar after closing the victory dialog", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "TestUser",
+        score: 88,
+        streak: 3,
+        language: "en",
+        declinedTutorial: false,
+      }),
+    );
+    localStorage.setItem("wordle:scoreboard:client-id", "lightning-client");
+    localStorage.setItem(
+      "wordle:scoreboard:cache",
+      JSON.stringify([
+        {
+          localId: "lightning-local",
+          clientId: "lightning-client",
+          nick: "TestUser",
+          language: "en",
+          modeId: "lightning",
+          score: 110,
+          streak: 3,
+          createdAt: 1000,
+        },
+      ]),
+    );
+    localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    window.history.pushState({}, "", ROUTES.LIGHTING);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    renderApp();
+    await waitForPlayReady();
+    expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
+
+    for (const letter of ["A", "P", "P", "L", "E"]) {
+      fireEvent.click(screen.getByRole("button", { name: `Letter ${letter}` }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit guess" }));
+
+    const victoryDialog = await screen.findByRole("dialog", { name: "Victory" });
+    expect(within(victoryDialog).getByLabelText("Streak: 4")).toBeTruthy();
+
+    fireEvent.click(within(victoryDialog).getByRole("button", { name: "Close" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Victory" })).toBeNull();
+    });
+    expect(screen.getByLabelText("Streak: 4")).toBeTruthy();
   });
 
   it("shows the settings hint only on the first end-of-game dialog in a tab", async () => {

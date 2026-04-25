@@ -183,7 +183,8 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:scoreboard:cache` and `wordle:scoreboard:pending`: local scoreboard caches segmented by `language` and `modeId` (`classic`, `lightning`, `daily`).
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.
-- `wordle:app-version`: last frontend app version seen by this browser, used to detect newer releases and show changelog/version-history dialog from the shared `View` layout (available on any route).
+- `wordle:app-version`: last frontend app version seen by this browser. On startup, if `env.appVersion` is newer than this value, the app clears both `localStorage` and `sessionStorage` before providers mount, then stores the current version.
+- `wordle:app-version:previous`: temporary previous version marker used to keep the version-update dialog context after the storage reset.
 - additional feature keys for theme/animations/scoreboard caches.
 
 ## Data Flow (Play Gameplay)

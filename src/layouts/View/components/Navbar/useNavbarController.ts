@@ -68,11 +68,8 @@ const useNavbarController = () => {
   }, [location.pathname, location.search]);
   const playRoute = useMemo(() => {
     const playModeId = resolvePlayableWordleModeId(readCurrentWordleModeId());
-    const resolvedPlayModeId =
-      playModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled
-        ? WORDLE_MODE_IDS.CLASSIC
-        : playModeId;
-    return getModeRoute(resolvedPlayModeId);
+
+    return getModeRoute(playModeId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 

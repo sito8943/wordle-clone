@@ -31,6 +31,7 @@ import {
   type ScoreboardModeId,
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import type { RemotePlayerProfile } from "@api/score";
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
@@ -55,7 +56,12 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   });
 
   const hydrateDailyModeOutcomeFromProfile = useCallback(
-    (remoteProfile: { playerCode: string; hasWonDailyToday?: boolean }) => {
+    (
+      remoteProfile: Pick<
+        RemotePlayerProfile,
+        "playerCode" | "hasWonDailyToday"
+      >,
+    ) => {
       if (
         remoteProfile.playerCode.trim().length === 0 ||
         remoteProfile.hasWonDailyToday !== true
@@ -73,20 +79,20 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const applyRemoteProfile = useCallback(
     async (
-      remoteProfile: {
-        nick: string;
-        playerCode: string;
-        score: number;
-        streak: number;
-        language: PlayerLanguage;
-        difficulty: PlayerDifficulty;
-        keyboardPreference: PlayerKeyboardPreference;
+      remoteProfile: RemotePlayerProfile,
+      options?: {
+        preserveLocalPreferences?: boolean;
+        preserveLocalProgress?: boolean;
       },
-      options?: { preserveLocalPreferences?: boolean },
     ) => {
       const preserveLocalPreferences =
         options?.preserveLocalPreferences === true;
+      const preserveLocalProgress = options?.preserveLocalProgress === true;
       let shouldInvalidateTopScores = false;
+      const classicProgress = remoteProfile.progressByMode?.classic;
+      const resolvedRemoteScore = classicProgress?.score ?? remoteProfile.score;
+      const resolvedRemoteStreak =
+        classicProgress?.streak ?? remoteProfile.streak;
 
       setStoredPlayer((previous) => {
         const normalizedPrevious = normalizePlayer(previous);
@@ -102,8 +108,12 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         const nextPlayer = {
           name: remoteProfile.nick,
           code: remoteProfile.playerCode,
-          score: remoteProfile.score,
-          streak: remoteProfile.streak,
+          score: preserveLocalProgress
+            ? normalizedPrevious.score
+            : resolvedRemoteScore,
+          streak: preserveLocalProgress
+            ? normalizedPrevious.streak
+            : resolvedRemoteStreak,
           language,
           difficulty,
           keyboardPreference,
@@ -196,6 +206,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       if (syncedProfile) {
         await applyRemoteProfile(syncedProfile, {
           preserveLocalPreferences: true,
+          preserveLocalProgress: true,
         });
       }
 
@@ -298,6 +309,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
       const safeModeId = resolveScoreboardModeId(modeId);
 
+      console.log("safePoints", safePoints);
       if (safePoints === 0) {
         return;
       }
@@ -306,11 +318,11 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       const safeWonAt = toSafeTimestamp(wonAt) ?? now;
       const safeRoundStartedAt = toSafeTimestamp(roundStartedAt);
       const current = normalizePlayer(storedPlayer);
-
+      console.log("current", current);
       if (current.hackingBan !== null) {
         return;
       }
-
+      console.log("safeRoundStartedAt", safeRoundStartedAt);
       if (safeRoundStartedAt !== null) {
         const roundDurationMs = getRoundDurationMs(
           safeRoundStartedAt,
@@ -348,7 +360,15 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         current.language,
         safeModeId,
       );
-
+      console.log({
+        nick: nextPlayer.name,
+        language: nextPlayer.language,
+        modeId: safeModeId,
+        score: currentModeScore.score + safePoints,
+        streak: currentModeScore.streak + 1,
+        createdAt: safeWonAt,
+        overwriteExisting: true,
+      });
       setStoredPlayer(nextPlayer);
       scoreClient.cachePlayerScore({
         nick: nextPlayer.name,

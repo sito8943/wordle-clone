@@ -111,24 +111,7 @@ export default function usePlayController(
     () => resolveRoundConfigForMode(activeModeId),
     [activeModeId],
   );
-  const activeModeStreak = useMemo(() => {
-    const snapshotStreak = scoreClient.getCurrentClientScoreSnapshot(
-      player.language,
-      activeScoreboardModeId,
-    ).streak;
 
-    if (
-      activeScoreboardModeId === WORDLE_MODE_IDS.CLASSIC &&
-      snapshotStreak === 0 &&
-      player.streak > 0
-    ) {
-      // Backward-compat fallback for clients that still have legacy player streak
-      // but no classic score snapshot cached yet.
-      return player.streak;
-    }
-
-    return snapshotStreak;
-  }, [activeScoreboardModeId, player.language, player.streak, scoreClient]);
   const wordle = useWordle({
     allowUnknownWords:
       player.difficulty === "easy" ||
@@ -159,6 +142,20 @@ export default function usePlayController(
     revealHint,
     invalidGuessShakePulse = 0,
   } = wordle;
+
+  const snapshotStreak = scoreClient.getCurrentClientScoreSnapshot(
+    player.language,
+    activeScoreboardModeId,
+  ).streak;
+  const activeModeStreak =
+    activeScoreboardModeId === WORDLE_MODE_IDS.CLASSIC &&
+    snapshotStreak === 0 &&
+    player.streak > 0
+      ? // Backward-compat fallback for clients that still have legacy player streak
+        // but no classic score snapshot cached yet.
+        player.streak
+      : snapshotStreak;
+
   const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
   const dailyModeActive = activeModeId === WORDLE_MODE_IDS.DAILY;
   const showDeveloperChallengesSection =

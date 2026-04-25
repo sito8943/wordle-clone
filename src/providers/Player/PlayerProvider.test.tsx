@@ -531,6 +531,45 @@ describe("PlayerProvider", () => {
     expect(result.current.player.code).toBe("ZX90");
   });
 
+  it("keeps local score and streak when sync returns stale profile snapshots", async () => {
+    const syncRoundEvents = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: "Ana",
+        language: "en",
+        playerCode: "ZX90",
+        score: 10,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      });
+
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ syncRoundEvents }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Ana");
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(10, 1000);
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(10, 2000);
+    });
+
+    expect(result.current.player.score).toBe(20);
+    expect(result.current.player.streak).toBe(2);
+    expect(result.current.player.code).toBe("ZX90");
+  });
+
   it("calls scoreClient.upsertPlayerProfile when name changes", async () => {
     const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
       id: "remote-player",
