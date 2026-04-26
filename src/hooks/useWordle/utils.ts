@@ -93,9 +93,7 @@ export const hasVisibleModalDialog = (): boolean => {
     return false;
   }
 
-  return (
-    document.querySelector('[role="dialog"][aria-modal="true"]') !== null
-  );
+  return document.querySelector('[role="dialog"][aria-modal="true"]') !== null;
 };
 
 export const blurRefreshButtonIfFocused = (): void => {

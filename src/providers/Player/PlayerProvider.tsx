@@ -270,9 +270,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 
   const refreshCurrentPlayerProfile = useCallback(async () => {
-    const remoteProfile = await scoreClient.getCurrentPlayerProfile(
-      GAMEPLAY_LANGUAGE,
-    );
+    const remoteProfile =
+      await scoreClient.getCurrentPlayerProfile(GAMEPLAY_LANGUAGE);
 
     if (!remoteProfile) {
       return;
@@ -282,11 +281,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       preserveLocalPreferences: true,
     });
     hydrateDailyModeOutcomeFromProfile(remoteProfile);
-  }, [
-    applyRemoteProfile,
-    hydrateDailyModeOutcomeFromProfile,
-    scoreClient,
-  ]);
+  }, [applyRemoteProfile, hydrateDailyModeOutcomeFromProfile, scoreClient]);
 
   const replacePlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -590,9 +585,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           return;
         }
 
-        const remoteProfile = await scoreClient.getCurrentPlayerProfile(
-          GAMEPLAY_LANGUAGE,
-        );
+        const remoteProfile =
+          await scoreClient.getCurrentPlayerProfile(GAMEPLAY_LANGUAGE);
         if (remoteProfile) {
           await applyRemoteProfile(remoteProfile, {
             preserveLocalPreferences: true,

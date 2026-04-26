@@ -32,9 +32,7 @@ const DailyMeaningDialog = lazy(
 );
 const DailyCompletedDialog = lazy(
   () =>
-    import(
-      "../../components/Dialogs/DailyCompletedDialog/DailyCompletedDialog"
-    ),
+    import("../../components/Dialogs/DailyCompletedDialog/DailyCompletedDialog"),
 );
 const PlayDeveloperConsoleDialog = lazy(
   () => import("../../components/Dialogs/DeveloperConsoleDialog"),

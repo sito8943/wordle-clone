@@ -159,8 +159,8 @@ export default function usePlayController(
 
   const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
   const dailyModeActive = activeModeId === WORDLE_MODE_IDS.DAILY;
-  const resolveDailyModeOutcomeForToday = useCallback(
-    (): DailyModeOutcome | null => {
+  const resolveDailyModeOutcomeForToday =
+    useCallback((): DailyModeOutcome | null => {
       if (!dailyModeActive) {
         return null;
       }
@@ -171,9 +171,7 @@ export default function usePlayController(
       }
 
       return readDailyModeOutcomeForDate();
-    },
-    [dailyModeActive, player.code],
-  );
+    }, [dailyModeActive, player.code]);
   const showDeveloperChallengesSection =
     activeModeId === WORDLE_MODE_IDS.CLASSIC;
   const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
@@ -1328,7 +1326,7 @@ export default function usePlayController(
   const endOfGameAnswer =
     showDailyCompletedDialog && dailyCompletedAnswer
       ? dailyCompletedAnswer
-      : endOfGameSnapshot?.answer ?? answer;
+      : (endOfGameSnapshot?.answer ?? answer);
   const showRefreshAttention =
     gameOver && !isDailyModeLockedForToday() && !defeatShieldDecisionPending;
   const endOfGameDialogVisible = showVictoryDialog || showDefeatDialog;
