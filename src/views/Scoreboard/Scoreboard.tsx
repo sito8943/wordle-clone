@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import { faRotateRight, faShield } from "@fortawesome/free-solid-svg-icons";
+import { faRotateRight, faShieldHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "@i18n";
 import {
@@ -516,9 +516,9 @@ const Scoreboard = (): JSX.Element => {
                               <span>{entry.nick}</span>
                               {showWinnerShield && (
                                 <FontAwesomeIcon
-                                  icon={faShield}
+                                  icon={faShieldHeart}
                                   aria-hidden="true"
-                                  className="text-xs text-sky-500 dark:text-sky-300"
+                                  className="text-xs text-sky-500 dark:text-sky-300 boost-animation-infinite"
                                 />
                               )}
                             </span>
