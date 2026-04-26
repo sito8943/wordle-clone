@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-04-25T11:43:01.673Z",
+  "generatedAt": "2026-04-26T21:01:42.533Z",
   "source": {
     "function": "exportData:exportAllData"
   },
   "data": {
     "counts": {
       "challenges": 26,
-      "dailyChallenges": 14,
+      "dailyChallenges": 15,
       "playerChallengeProgress": 44,
       "scoreEvents": 1500,
-      "scores": 56,
+      "scores": 57,
       "words": 2342,
       "wordsMeta": 1
     },
-    "exportedAt": 1777117380890,
+    "exportedAt": 1777237301944,
     "tables": {
       "challenges": [
         {
@@ -95,7 +95,7 @@
           "description": "Win in less than 180 seconds",
           "name": "Late Win",
           "type": "simple",
-          "used": false
+          "used": true
         },
         {
           "_creationTime": 1776105048841.3762,
@@ -203,7 +203,7 @@
           "description": "All guess rows use a single-vowel pattern",
           "name": "Same Vowel Pattern",
           "type": "complex",
-          "used": false
+          "used": true
         },
         {
           "_creationTime": 1776105321489.3538,
@@ -349,6 +349,13 @@
           "complexChallengeId": "jn731bbbqddt0ww70r899fhpv984svx5",
           "date": "2026-04-24",
           "simpleChallengeId": "jn70fs7ytk8r8ksk4ez8saxr4x84m24x"
+        },
+        {
+          "_creationTime": 1777141333250.0093,
+          "_id": "js79efjrcnvv0fm1dbfh9bkhqx85gfrp",
+          "complexChallengeId": "jn75tah28wpefcr50mcts1x9d584s7et",
+          "date": "2026-04-25",
+          "simpleChallengeId": "jn7b6p5f3ajebnwzchw8aw5en184rydt"
         }
       ],
       "playerChallengeProgress": [
@@ -15853,17 +15860,17 @@
           "_id": "j5748sw6q1tpnrngg417b78zgx82vw96",
           "clientId": "e8525787-2b91-40c4-b69a-fbd5b5567b2c",
           "clientRecordId": "1773417316219-c7148757-5547-4543-b029-cbde90f97868",
-          "createdAt": 1775000313669,
+          "createdAt": 1773756152200,
           "createdAtByLanguage": {
             "en": 1773756152200,
             "es": 1775000313669
           },
           "difficulty": "hard",
           "keyboardPreference": "onscreen",
-          "language": "es",
+          "language": "en",
           "nick": "Eaam",
           "playerCode": "PMGJ",
-          "score": 35,
+          "score": 1214,
           "scoreByLanguage": {
             "en": 1214,
             "es": 35
@@ -15874,7 +15881,7 @@
               "lightning": 0
             }
           },
-          "streak": 1,
+          "streak": 3,
           "streakByLanguage": {
             "en": 3,
             "es": 1
@@ -16935,6 +16942,29 @@
           "streakByLanguage": {
             "en": 0,
             "es": 0
+          }
+        },
+        {
+          "_creationTime": 1777137672483.6936,
+          "_id": "j5751c21e0zm9t1nx3grdxwqy985h9t3",
+          "clientId": "22b132db-24e8-4396-899e-800440a32732",
+          "clientRecordId": "1777137911380-6660d443-cc9b-4e1b-8e3e-c7fee346ad61",
+          "createdAt": 1777137672483,
+          "createdAtByLanguage": {
+            "en": 1777137672483
+          },
+          "difficulty": "normal",
+          "keyboardPreference": "onscreen",
+          "language": "en",
+          "nick": "cosmico",
+          "playerCode": "418V",
+          "score": 0,
+          "scoreByLanguage": {
+            "en": 0
+          },
+          "streak": 0,
+          "streakByLanguage": {
+            "en": 0
           }
         }
       ],
