@@ -1,4 +1,5 @@
 import { Board } from "@views/Play/components";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { usePlayView } from "@views/Play/providers";
 import type { JSX } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,6 +35,7 @@ export const BoardContent = (): JSX.Element => {
         guesses={guesses}
         current={current}
         gameOver={gameOver}
+        enableHorizontalScroll={controller.activeModeId === WORDLE_MODE_IDS.DAILY}
         roundConfig={roundConfig}
         animateTileEntry={animateTileEntry}
         animateEntry={startAnimationsEnabled && startAnimationSeed > 0}

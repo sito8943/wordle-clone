@@ -1,15 +1,15 @@
 import { Row } from "./Row";
 import { useTranslation } from "@i18n";
-import { NORMAL_DICTIONARY_ROW_BONUS, WORDLE_MODE_IDS } from "@domain/wordle";
+import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import type { BoardPropsType } from "./types";
 import useBoardController from "./useBoardController";
-import { usePlayView } from "@views/Play/providers";
 
 export function Board({
   guesses,
   current,
   gameOver,
+  enableHorizontalScroll = false,
   roundConfig,
   animateEntry = false,
   animateTileEntry = false,
@@ -54,13 +54,12 @@ export function Board({
     },
   );
 
-  const { controller } = usePlayView();
-  const { activeModeId } = controller;
-
   return (
     <div
       data-testid="board-scroll-container"
-      className={`w-full max-w-full ${activeModeId === WORDLE_MODE_IDS.DAILY ? "overflow-x-auto overscroll-x-contain" : ""}`}
+      className={`w-full max-w-full ${
+        enableHorizontalScroll ? "overflow-x-auto overscroll-x-contain" : ""
+      }`}
     >
       <div className="mx-auto w-fit min-w-max px-4 sm:px-6">
         <div id={PLAY_BOARD_SHARE_CAPTURE_ID} className={boardWrapperClassName}>
