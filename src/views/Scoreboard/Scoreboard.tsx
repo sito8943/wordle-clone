@@ -464,7 +464,7 @@ const Scoreboard = (): JSX.Element => {
                         <td className="scoreboard-cell py-2" colSpan={3}>
                           <div
                             id={`scoreboard-date-dropdown-${entry.id}`}
-                            className={`${dropdownAnimationClass} inline-flex max-w-full items-center gap-2 rounded border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-700 shadow-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200`}
+                            className={`${dropdownAnimationClass} inline-flex max-w-full items-center gap-2 rounded border border-neutral-300/0 bg-white/0 px-3 py-1.5 text-xs text-neutral-700 shadow-sm dark:border-neutral-600/0 dark:bg-neutral-800/0 dark:text-neutral-200`}
                             aria-hidden={isClosing}
                           >
                             <span className="font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
