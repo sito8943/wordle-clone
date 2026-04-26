@@ -1773,7 +1773,7 @@ describe("App", () => {
           localId: "lightning-local",
           clientId: "lightning-client",
           nick: "TestUser",
-          language: "en",
+          language: WORDS_DEFAULT_LANGUAGE,
           modeId: "lightning",
           score: 110,
           streak: 3,

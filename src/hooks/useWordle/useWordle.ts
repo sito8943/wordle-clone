@@ -667,14 +667,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
   const handleKey = useCallback(
     (key: string) => {
       const modalDialogVisible = hasVisibleModalDialog();
-      const allowEnterWithOpenModal =
-        allowSubmitWhenModalOpen && key === "ENTER";
 
       if (
-        gameOver ||
-        showResumeDialog ||
-        showDictionaryChecksumDialog ||
-        (modalDialogVisible && !allowEnterWithOpenModal)
+        !allowSubmitWhenModalOpen &&
+        (gameOver ||
+          showResumeDialog ||
+          showDictionaryChecksumDialog ||
+          modalDialogVisible)
       ) {
         return;
       }
