@@ -35,7 +35,9 @@ export const BoardContent = (): JSX.Element => {
         guesses={guesses}
         current={current}
         gameOver={gameOver}
-        enableHorizontalScroll={controller.activeModeId === WORDLE_MODE_IDS.DAILY}
+        enableHorizontalScroll={
+          controller.activeModeId === WORDLE_MODE_IDS.DAILY
+        }
         roundConfig={roundConfig}
         animateTileEntry={animateTileEntry}
         animateEntry={startAnimationsEnabled && startAnimationSeed > 0}

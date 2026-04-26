@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import { faRotateRight, faShieldHeart } from "@fortawesome/free-solid-svg-icons";
+import {
+  faRotateRight,
+  faShieldHeart,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "@i18n";
 import {

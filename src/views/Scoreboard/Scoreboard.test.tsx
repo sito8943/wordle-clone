@@ -425,7 +425,9 @@ describe("Scoreboard", () => {
     });
     const { container } = render(<Scoreboard />);
 
-    expect(container.querySelector('svg[data-icon="shield-heart"]')).toBeTruthy();
+    expect(
+      container.querySelector('svg[data-icon="shield-heart"]'),
+    ).toBeTruthy();
   });
 
   it("does not show shield icon when the player has not won daily today", () => {

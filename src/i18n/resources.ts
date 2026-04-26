@@ -219,8 +219,7 @@ export const resources = {
           dailyWinner: "Daily winner",
         },
         info: {
-          dailyWinner:
-            "This player won today's daily challenge",
+          dailyWinner: "This player won today's daily challenge",
         },
         loading: "Loading scores...",
         empty: "No scores yet.",
