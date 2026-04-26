@@ -126,12 +126,27 @@ describe("Board", () => {
     );
   });
 
-  it("renders the board inside a horizontal scroll container", () => {
+  it("renders the board inside a capped-width container without scroll by default", () => {
     render(<Board guesses={[]} current="" gameOver={false} />);
 
     const scrollContainer = screen.getByTestId("board-scroll-container");
-    expect(scrollContainer.className).toContain("overflow-x-auto");
     expect(scrollContainer.className).toContain("max-w-full");
+    expect(scrollContainer.className).not.toContain("overflow-x-auto");
+  });
+
+  it("adds horizontal scroll classes when enabled", () => {
+    render(
+      <Board
+        guesses={[]}
+        current=""
+        gameOver={false}
+        enableHorizontalScroll={true}
+      />,
+    );
+
+    const scrollContainer = screen.getByTestId("board-scroll-container");
+    expect(scrollContainer.className).toContain("overflow-x-auto");
+    expect(scrollContainer.className).toContain("overscroll-x-contain");
   });
 
   it("adds staggered tile entry animation when enabled", () => {
