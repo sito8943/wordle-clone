@@ -438,6 +438,7 @@ export const resources = {
         },
         dailyMeaningDialog: {
           title: "Daily word meaning",
+          description: "Definition",
           loading: "Loading meaning...",
           unavailable: "Could not load the meaning right now.",
         },
@@ -867,6 +868,10 @@ export const resources = {
           nick: "Nick",
           score: "Puntuación",
           date: "Última partida",
+          dailyWinner: "Ganador diario",
+        },
+        info: {
+          dailyWinner: "Este jugador ganó el desafío diario de hoy",
         },
         loading: "Cargando puntuaciones...",
         empty: "Todavía no hay puntuaciones.",

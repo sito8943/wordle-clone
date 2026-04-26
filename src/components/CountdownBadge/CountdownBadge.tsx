@@ -71,7 +71,7 @@ const CountdownBadge = ({
       {label ? (
         <span
           aria-live="polite"
-          className={`inline-block font-mono tabular-nums ${labelClassName}`.trim()}
+          className={`max-sm:hidden inline-block font-mono tabular-nums ${labelClassName}`.trim()}
         >
           {label}
         </span>
