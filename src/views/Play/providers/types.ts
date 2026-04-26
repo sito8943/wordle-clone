@@ -31,6 +31,7 @@ export type PlayViewContextValue = {
 export type PlayViewProviderProps = {
   children: ReactNode;
   modeId?: WordleModeId;
+  allowSubmitWhenModalOpen?: boolean;
 };
 
 export type PlayControllerState = ReturnType<typeof usePlayController>;

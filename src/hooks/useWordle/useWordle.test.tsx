@@ -195,6 +195,48 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.current).toBe("A");
   });
 
+  it("allows submit while a modal dialog is visible when enabled", () => {
+    localStorage.setItem(dictionaryStorageKey, JSON.stringify(["apple"]));
+
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(
+      () => useWordle({ allowSubmitWhenModalOpen: true }),
+      { wrapper },
+    );
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+
+    act(() => {
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+      result.current.handleKey("Z");
+    });
+
+    document.body.appendChild(dialog);
+
+    act(() => {
+      result.current.handleKey("ENTER");
+    });
+
+    expect(result.current.message).toBe(
+      i18n.t("play.gameplay.messages.notInWordList"),
+    );
+    expect(result.current.current).toBe("ZZZZZ");
+
+    dialog.remove();
+  });
+
   it("supports manual tile selection without automatic cursor advance", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();

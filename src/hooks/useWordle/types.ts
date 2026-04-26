@@ -3,6 +3,7 @@ import type { BoardRoundConfig, WordleModeId } from "@domain/wordle";
 
 export type UseWordleOptions = {
   allowUnknownWords?: boolean;
+  allowSubmitWhenModalOpen?: boolean;
   language?: DictionaryLanguage;
   manualTileSelection?: boolean;
   roundConfig?: Partial<BoardRoundConfig>;

@@ -42,6 +42,7 @@ export type EndOfGameSnapshot = {
 
 export type UsePlayControllerOptions = {
   modeId?: WordleModeId;
+  allowSubmitWhenModalOpen?: boolean;
 };
 
 export type UseHardModeTimerParams = {

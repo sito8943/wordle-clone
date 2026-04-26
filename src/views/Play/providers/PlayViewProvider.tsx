@@ -10,8 +10,14 @@ import { usePlayController } from "../hooks";
 const PlayViewProvider = ({
   children,
   modeId,
+  allowSubmitWhenModalOpen,
 }: PlayViewProviderProps): JSX.Element => {
-  const controller = usePlayController({ modeId });
+  const controller = usePlayController({
+    modeId,
+    ...(allowSubmitWhenModalOpen === true
+      ? { allowSubmitWhenModalOpen: true }
+      : {}),
+  });
   const { player } = usePlayer();
   const {
     wordListButtonEnabled,

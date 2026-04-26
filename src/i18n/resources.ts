@@ -216,6 +216,11 @@ export const resources = {
           nick: "Nick",
           score: "Score",
           date: "Last play at",
+          dailyWinner: "Daily winner",
+        },
+        info: {
+          dailyWinner:
+            "This player won today's daily challenge",
         },
         loading: "Loading scores...",
         empty: "No scores yet.",

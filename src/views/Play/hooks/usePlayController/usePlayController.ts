@@ -118,6 +118,9 @@ export default function usePlayController(
       player.difficulty === "easy" ||
       player.difficulty === "normal" ||
       activeModeId === WORDLE_MODE_IDS.DAILY,
+    ...(options.allowSubmitWhenModalOpen === true
+      ? { allowSubmitWhenModalOpen: true }
+      : {}),
     language: gameplayLanguage,
     manualTileSelection: player.manualTileSelection === true,
     roundConfig: modeRoundConfig,

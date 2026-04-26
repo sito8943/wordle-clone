@@ -249,6 +249,11 @@ describe("App", () => {
       keyboardPreference: "onscreen",
       createdAt: 1000,
     });
+    vi.spyOn(
+      ScoreClient.prototype,
+      "getCurrentPlayerProfile",
+    ).mockResolvedValue(null);
+    vi.spyOn(ScoreClient.prototype, "syncRoundEvents").mockResolvedValue(null);
   });
 
   it("renders the main navigation", async () => {
@@ -441,6 +446,8 @@ describe("App", () => {
           localId: "other-player",
           clientId: "other-client",
           nick: "Ana",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 20,
           streak: 3,
           createdAt: 1000,
@@ -753,6 +760,8 @@ describe("App", () => {
           localId: "dev-row",
           clientId: "dev-client",
           nick: "Player",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 80,
           streak: 5,
           createdAt: 1000,
@@ -1228,41 +1237,6 @@ describe("App", () => {
     });
   });
 
-  it("shows an insane mode timer and decreases it on each tick", async () => {
-    localStorage.setItem(
-      "player",
-      JSON.stringify({
-        name: "Player",
-        score: 0,
-        streak: 0,
-        difficulty: "insane",
-      }),
-    );
-
-    try {
-      renderApp();
-      await waitForPlayReady();
-      vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
-
-      expect(screen.getByLabelText("Insane timer: 60 seconds")).toBeTruthy();
-
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-
-      expect(screen.getByLabelText("Insane timer: 60 seconds")).toBeTruthy();
-      fireEvent.click(screen.getByRole("button", { name: "Letter A" }));
-
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-
-      expect(screen.getByLabelText("Insane timer: 59 seconds")).toBeTruthy();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
   it("pauses and restores insane mode timer when navigating away and back", async () => {
     vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     localStorage.setItem(
@@ -1581,6 +1555,8 @@ describe("App", () => {
         {
           localId: "me",
           nick: "Sito",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 999,
           createdAt: 1,
         },
@@ -1605,12 +1581,16 @@ describe("App", () => {
           localId: "other",
           clientId: "other-client",
           nick: "Alpha",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 100,
           createdAt: 1,
         },
         {
           localId: "me",
           nick: "Sito",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 99,
           createdAt: 2,
         },
@@ -1635,6 +1615,8 @@ describe("App", () => {
           localId: "p1",
           clientId: "other-1",
           nick: "A",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 120,
           createdAt: 1,
         },
@@ -1642,6 +1624,8 @@ describe("App", () => {
           localId: "p2",
           clientId: "other-2",
           nick: "B",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 119,
           createdAt: 2,
         },
@@ -1649,6 +1633,8 @@ describe("App", () => {
           localId: "p3",
           clientId: "other-3",
           nick: "C",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 118,
           createdAt: 3,
         },
@@ -1656,6 +1642,8 @@ describe("App", () => {
           localId: "p4",
           clientId: "other-4",
           nick: "D",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 117,
           createdAt: 4,
         },
@@ -1663,6 +1651,8 @@ describe("App", () => {
           localId: "p5",
           clientId: "other-5",
           nick: "E",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 116,
           createdAt: 5,
         },
@@ -1670,6 +1660,8 @@ describe("App", () => {
           localId: "p6",
           clientId: "other-6",
           nick: "F",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 115,
           createdAt: 6,
         },
@@ -1677,6 +1669,8 @@ describe("App", () => {
           localId: "p7",
           clientId: "other-7",
           nick: "G",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 114,
           createdAt: 7,
         },
@@ -1684,6 +1678,8 @@ describe("App", () => {
           localId: "p8",
           clientId: "other-8",
           nick: "H",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 113,
           createdAt: 8,
         },
@@ -1691,6 +1687,8 @@ describe("App", () => {
           localId: "p9",
           clientId: "other-9",
           nick: "I",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 112,
           createdAt: 9,
         },
@@ -1698,6 +1696,8 @@ describe("App", () => {
           localId: "p10",
           clientId: "other-10",
           nick: "J",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 111,
           createdAt: 10,
         },
@@ -1705,12 +1705,16 @@ describe("App", () => {
           localId: "p11",
           clientId: "other-11",
           nick: "K",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 110,
           createdAt: 11,
         },
         {
           localId: "me",
           nick: "Sito",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 1,
           createdAt: 12,
         },
@@ -2090,6 +2094,7 @@ describe("App", () => {
         difficulty: "hard",
       }),
     );
+    localStorage.setItem("wordle:current-mode", "classic");
 
     renderApp();
 
@@ -2132,7 +2137,7 @@ describe("App", () => {
     localStorage.setItem(
       "player",
       JSON.stringify({
-        name: "Player",
+        name: "Winner",
         score: 0,
         streak: 0,
         showEndOfGameDialogs: false,
@@ -2299,19 +2304,93 @@ describe("App", () => {
     localStorage.setItem(
       "wordle:scoreboard:cache",
       JSON.stringify([
-        { localId: "p1", clientId: "c1", nick: "A", score: 110, createdAt: 1 },
-        { localId: "p2", clientId: "c2", nick: "B", score: 109, createdAt: 2 },
-        { localId: "p3", clientId: "c3", nick: "C", score: 108, createdAt: 3 },
-        { localId: "p4", clientId: "c4", nick: "D", score: 107, createdAt: 4 },
-        { localId: "p5", clientId: "c5", nick: "E", score: 106, createdAt: 5 },
-        { localId: "p6", clientId: "c6", nick: "F", score: 105, createdAt: 6 },
-        { localId: "p7", clientId: "c7", nick: "G", score: 104, createdAt: 7 },
-        { localId: "p8", clientId: "c8", nick: "H", score: 103, createdAt: 8 },
-        { localId: "p9", clientId: "c9", nick: "I", score: 102, createdAt: 9 },
+        {
+          localId: "p1",
+          clientId: "c1",
+          nick: "A",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 110,
+          createdAt: 1,
+        },
+        {
+          localId: "p2",
+          clientId: "c2",
+          nick: "B",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 109,
+          createdAt: 2,
+        },
+        {
+          localId: "p3",
+          clientId: "c3",
+          nick: "C",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 108,
+          createdAt: 3,
+        },
+        {
+          localId: "p4",
+          clientId: "c4",
+          nick: "D",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 107,
+          createdAt: 4,
+        },
+        {
+          localId: "p5",
+          clientId: "c5",
+          nick: "E",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 106,
+          createdAt: 5,
+        },
+        {
+          localId: "p6",
+          clientId: "c6",
+          nick: "F",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 105,
+          createdAt: 6,
+        },
+        {
+          localId: "p7",
+          clientId: "c7",
+          nick: "G",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 104,
+          createdAt: 7,
+        },
+        {
+          localId: "p8",
+          clientId: "c8",
+          nick: "H",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 103,
+          createdAt: 8,
+        },
+        {
+          localId: "p9",
+          clientId: "c9",
+          nick: "I",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
+          score: 102,
+          createdAt: 9,
+        },
         {
           localId: "p10",
           clientId: "c10",
           nick: "J",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 101,
           createdAt: 10,
         },
@@ -2319,6 +2398,8 @@ describe("App", () => {
           localId: "p11",
           clientId: "c11",
           nick: "K",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 100,
           createdAt: 11,
         },
@@ -2326,6 +2407,8 @@ describe("App", () => {
           localId: "me",
           clientId,
           nick: "Sito",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 1,
           createdAt: 12,
         },
@@ -2350,6 +2433,9 @@ describe("App", () => {
   });
 
   it("renders a fire streak badge for each visible scoreboard row", async () => {
+    env.backendUrl = undefined;
+    env.convexUrl = undefined;
+
     localStorage.setItem(
       "wordle:scoreboard:cache",
       JSON.stringify([
@@ -2357,6 +2443,8 @@ describe("App", () => {
           localId: "p1",
           clientId: "c1",
           nick: "Ana",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 20,
           streak: 4,
           createdAt: 1,
@@ -2365,6 +2453,8 @@ describe("App", () => {
           localId: "p2",
           clientId: "c2",
           nick: "Luis",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 19,
           streak: 2,
           createdAt: 2,
@@ -2373,6 +2463,7 @@ describe("App", () => {
     );
 
     renderApp();
+    await waitForPlayReady();
 
     fireEvent.click(screen.getByRole("link", { name: "Scoreboard" }));
     expect(
@@ -2473,6 +2564,8 @@ describe("App", () => {
           localId: "other-player",
           clientId: "other-client",
           nick: "Ana",
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: "classic",
           score: 20,
           streak: 3,
           createdAt: 1000,

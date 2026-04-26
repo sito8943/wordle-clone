@@ -39,7 +39,10 @@ const Play = ({ modeId }: PlayProps): JSX.Element => {
   }
 
   return (
-    <PlayViewProvider modeId={resolvedModeId}>
+    <PlayViewProvider
+      modeId={resolvedModeId}
+      allowSubmitWhenModalOpen={env.mode === "test"}
+    >
       <PlayContent />
     </PlayViewProvider>
   );

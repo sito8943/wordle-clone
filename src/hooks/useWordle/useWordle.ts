@@ -57,6 +57,7 @@ import {
 export default function useWordle(options: UseWordleOptions = {}) {
   const {
     allowUnknownWords = false,
+    allowSubmitWhenModalOpen = false,
     language = WORDS_DEFAULT_LANGUAGE,
     manualTileSelection = false,
     roundConfig,
@@ -665,11 +666,15 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
   const handleKey = useCallback(
     (key: string) => {
+      const modalDialogVisible = hasVisibleModalDialog();
+      const allowEnterWithOpenModal =
+        allowSubmitWhenModalOpen && key === "ENTER";
+
       if (
         gameOver ||
         showResumeDialog ||
         showDictionaryChecksumDialog ||
-        hasVisibleModalDialog()
+        (modalDialogVisible && !allowEnterWithOpenModal)
       ) {
         return;
       }
@@ -704,6 +709,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       current,
       gameOver,
       language,
+      allowSubmitWhenModalOpen,
       moveActiveTile,
       removeCurrentLetter,
       showDictionaryChecksumDialog,
