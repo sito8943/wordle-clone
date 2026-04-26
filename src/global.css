@@ -458,6 +458,10 @@ h1,
   animation: boost 420ms cubic-bezier(0.2, 0.85, 0.32, 1.15);
 }
 
+.boost-animation-infinite {
+  animation: boost 420ms cubic-bezier(0.2, 0.85, 0.32, 1.15) infinite;
+}
+
 .fire-streak-icon-active .fire-ember-2 {
   animation-delay: 320ms;
 }
