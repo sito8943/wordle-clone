@@ -155,6 +155,17 @@ describe("useNavbarController", () => {
     expect(result.current.playRoute).toBe(getModeRoute("lightning"));
   });
 
+  it("prioritizes active mode route over stale stored mode", () => {
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.CLASSIC,
+    );
+    mockLocation.pathname = ROUTES.LIGHTING;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.playRoute).toBe(getModeRoute("lightning"));
+  });
+
   it("falls back Play route to classic when current mode is missing", () => {
     const { result } = renderHook(() => useNavbarController());
 

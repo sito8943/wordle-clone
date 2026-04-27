@@ -26,7 +26,6 @@ const Play = ({ modeId }: PlayProps): JSX.Element => {
     if (blockedMode) {
       return;
     }
-
     persistCurrentWordleModeId(resolvedModeId);
   }, [blockedMode, resolvedModeId]);
 

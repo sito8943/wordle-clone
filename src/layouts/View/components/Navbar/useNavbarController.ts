@@ -34,6 +34,14 @@ const normalizePathname = (pathname: string): string => {
   return pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
 };
 
+const resolveNavbarPlayableModeId = (modeId: WordleModeId): WordleModeId => {
+  if (modeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled) {
+    return WORDLE_MODE_IDS.CLASSIC;
+  }
+
+  return resolvePlayableWordleModeId(modeId);
+};
+
 const useNavbarController = () => {
   const { scoreClient } = useApi();
   const { player } = usePlayer();
@@ -68,15 +76,11 @@ const useNavbarController = () => {
     return modeParam ? resolveWordleModeId(modeParam) : null;
   }, [location.pathname, location.search]);
   const playRoute = useMemo(() => {
-    const currentModeId = readCurrentWordleModeId();
-    const playModeId =
-      currentModeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled
-        ? WORDLE_MODE_IDS.CLASSIC
-        : resolvePlayableWordleModeId(currentModeId);
+    const currentModeId = activeModeId ?? readCurrentWordleModeId();
+    const playModeId = resolveNavbarPlayableModeId(currentModeId);
 
     return getModeRoute(playModeId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+  }, [activeModeId, location.pathname, location.search]);
 
   useEffect(() => {
     let cancelled = false;
