@@ -4,10 +4,18 @@ export type DailyWordMeaningEntry = {
   }>;
 };
 
+export type DailyWordReference = {
+  gameId: string;
+  seed: number;
+};
+
 export type DailyWordResponse = {
   ok?: unknown;
   data?: {
+    date?: unknown;
     word?: unknown;
+    gameId?: unknown;
+    seed?: unknown;
     meaning?: unknown;
     meanings?: DailyWordMeaningEntry[];
   };

@@ -66,9 +66,12 @@ const createMockDailyWordClient = (
 ) =>
   ({
     getDailyWord,
+    getDailyReference: vi.fn().mockResolvedValue(null),
     getDailyMeaning,
     getCachedWord: vi.fn().mockReturnValue(null),
     cacheWord: vi.fn(),
+    getCachedReference: vi.fn().mockReturnValue(null),
+    cacheReference: vi.fn(),
     getCachedMeaning: vi.fn().mockReturnValue(null),
     cacheMeaning: vi.fn(),
     ...overrides,

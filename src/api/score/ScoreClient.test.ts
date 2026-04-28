@@ -1035,6 +1035,77 @@ describe("ScoreClient", () => {
     expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
   });
 
+  it("syncs v3 win events with round proof metadata", async () => {
+    const mutation = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "remote-client",
+      clientRecordId: "remote-record",
+      nick: "Ana",
+      playerCode: "AB12",
+      score: 24,
+      streak: 1,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 2000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        mutation,
+      }),
+      storage,
+    );
+
+    client.queueRoundEvent({
+      id: "win-v3-1",
+      kind: "win",
+      pointsDelta: 8,
+      modeId: "classic",
+      happenedAt: 1000,
+      version: 3,
+      proof: {
+        roundStartedAt: 500,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      },
+    });
+
+    await client.syncRoundEvents({
+      nick: "Ana",
+      language: "en",
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+    });
+
+    expect(mutation).toHaveBeenCalledWith(
+      SYNC_ROUND_EVENTS_MUTATION,
+      expect.objectContaining({
+        events: [
+          {
+            id: "win-v3-1",
+            kind: "win",
+            pointsDelta: 8,
+            modeId: "classic",
+            happenedAt: 1000,
+            version: 3,
+            proof: {
+              roundStartedAt: 500,
+              guessesUsed: 3,
+              difficulty: "normal",
+              hardModeEnabled: false,
+              hardModeSecondsLeft: 60,
+              guessWords: ["SLATE", "CRANE", "APPLE"],
+            },
+          },
+        ],
+      }),
+    );
+    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
+  });
+
   it("keeps local classic snapshot when sync returns a stale profile", async () => {
     const mutation = vi.fn().mockResolvedValue({
       id: "remote-player",

@@ -284,6 +284,48 @@ describe("PlayerProvider", () => {
     );
   });
 
+  it("commitVictory enqueues a v3 event when round proof is provided", async () => {
+    const queueRoundEvent = vi.fn();
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ queueRoundEvent }),
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(
+        5,
+        1234,
+        1000,
+        "classic",
+        {
+          roundStartedAt: 1000,
+          guessesUsed: 3,
+          difficulty: "normal",
+          hardModeEnabled: false,
+          hardModeSecondsLeft: 60,
+          guessWords: ["SLATE", "CRANE", "APPLE"],
+        },
+      );
+    });
+
+    expect(queueRoundEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "win",
+        pointsDelta: 5,
+        modeId: "classic",
+        happenedAt: 1234,
+        version: 3,
+        proof: {
+          roundStartedAt: 1000,
+          guessesUsed: 3,
+          difficulty: "normal",
+          hardModeEnabled: false,
+          hardModeSecondsLeft: 60,
+          guessWords: ["SLATE", "CRANE", "APPLE"],
+        },
+      }),
+    );
+  });
+
   it("commitVictory tags events with the provided scoreboard mode", async () => {
     const queueRoundEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {

@@ -228,6 +228,25 @@ export default function useWordle(options: UseWordleOptions = {}) {
     };
   }, [dailyDate, dailyModeActive, dailyWordClient]);
 
+  useEffect(() => {
+    if (!dailyModeActive || remoteDailyWord) {
+      return;
+    }
+
+    const cachedWord = dailyWordClient.getCachedWord(dailyDate);
+    if (!cachedWord) {
+      return;
+    }
+
+    setRemoteDailyWord(cachedWord);
+  }, [
+    dailyDate,
+    dailyModeActive,
+    dailyWordClient,
+    dictionaryWords,
+    remoteDailyWord,
+  ]);
+
   const { sessionId, gameId, answer, startedAt, guesses, current, gameOver } =
     gameState;
   const maxSelectableTileIndex = resolvedRoundConfig.lettersPerRow - 1;

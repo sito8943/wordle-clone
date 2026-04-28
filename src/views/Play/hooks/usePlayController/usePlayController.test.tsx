@@ -235,6 +235,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.CLASSIC,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      }),
     );
   });
 
@@ -1027,6 +1035,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.CLASSIC,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 4,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "BRICK", "APPLE"],
+      }),
     );
   });
 
@@ -1119,6 +1135,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.CLASSIC,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 3,
+        difficulty: "insane",
+        hardModeEnabled: true,
+        hardModeSecondsLeft: 11,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      }),
     );
     expect(result.current.victoryScoreSummary?.total).toBe(
       getTotalPointsForWin(3, 7, 2, 2),
@@ -1165,6 +1189,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.LIGHTNING,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: true,
+        hardModeSecondsLeft: 11,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      }),
     );
     expect(result.current.victoryScoreSummary?.items).toEqual(
       expect.arrayContaining([{ key: "time", value: 2 }]),
@@ -1206,6 +1238,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.DAILY,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 2,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "APPLE"],
+      }),
     );
     expect(result.current.victoryScoreSummary).toEqual({
       items: [{ key: "base", value: 1 }],

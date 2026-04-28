@@ -30,6 +30,7 @@ import {
   type PlayerKeyboardPreference,
   type PlayerLanguage,
   type RoundSyncEvent,
+  type RoundSyncWinProof,
   type ScoreboardModeId,
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
@@ -319,6 +320,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       wonAt = Date.now(),
       roundStartedAt?: number,
       modeId?: ScoreboardModeId,
+      roundSyncProof?: RoundSyncWinProof,
     ) => {
       const safePoints =
         Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
@@ -384,17 +386,28 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         overwriteExisting: true,
       });
 
-      const event: RoundSyncEvent = {
-        id:
-          typeof crypto !== "undefined" && "randomUUID" in crypto
-            ? crypto.randomUUID()
-            : `${safeWonAt}-${Math.random().toString(36).slice(2)}`,
-        kind: "win",
-        pointsDelta: safePoints,
-        modeId: safeModeId,
-        happenedAt: safeWonAt,
-        version: 2,
-      };
+      const eventId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${safeWonAt}-${Math.random().toString(36).slice(2)}`;
+      const event: RoundSyncEvent = roundSyncProof
+        ? {
+            id: eventId,
+            kind: "win",
+            pointsDelta: safePoints,
+            modeId: safeModeId,
+            happenedAt: safeWonAt,
+            version: 3,
+            proof: roundSyncProof,
+          }
+        : {
+            id: eventId,
+            kind: "win",
+            pointsDelta: safePoints,
+            modeId: safeModeId,
+            happenedAt: safeWonAt,
+            version: 2,
+          };
 
       scoreClient.queueRoundEvent(event);
 

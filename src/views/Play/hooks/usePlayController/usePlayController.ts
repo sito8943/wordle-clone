@@ -541,6 +541,14 @@ export default function usePlayController(
         undefined,
         roundStartedAt,
         activeModeId,
+        {
+          roundStartedAt,
+          guessesUsed: guesses.length,
+          difficulty: player.difficulty,
+          hardModeEnabled,
+          hardModeSecondsLeft,
+          guessWords,
+        },
       );
     } else {
       if (dailyModeActive) {

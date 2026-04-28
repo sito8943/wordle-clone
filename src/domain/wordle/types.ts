@@ -1,4 +1,5 @@
 import type { TileStatus } from "@utils/types";
+import type { PlayerDifficulty } from "./player";
 
 export type BoardRoundConfig = {
   lettersPerRow: number;
@@ -60,11 +61,29 @@ export type RoundSyncEvent =
     }
   | {
       id: string;
+      kind: "win";
+      pointsDelta: number;
+      modeId: ScoreboardModeId;
+      happenedAt: number;
+      version: 3;
+      proof: RoundSyncWinProof;
+    }
+  | {
+      id: string;
       kind: "loss";
       modeId: ScoreboardModeId;
       happenedAt: number;
       version: 2;
     };
+
+export type RoundSyncWinProof = {
+  roundStartedAt: number;
+  guessesUsed: number;
+  difficulty: PlayerDifficulty;
+  hardModeEnabled: boolean;
+  hardModeSecondsLeft: number;
+  guessWords: string[];
+};
 
 export type ResolveDailyAnswerInput = {
   words: string[];

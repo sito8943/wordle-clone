@@ -1,6 +1,7 @@
 import { env } from "@config";
 
 export const DAILY_WORD_STORAGE_KEY_PREFIX = "wordle:daily-word";
+export const DAILY_REFERENCE_STORAGE_KEY_PREFIX = "wordle:daily-ref";
 export const DAILY_MEANING_STORAGE_KEY_PREFIX = "wordle:daily-meaning";
 export const RAE_DAILY_WORD_API_URL = env.dailyWordApiUrl;
 

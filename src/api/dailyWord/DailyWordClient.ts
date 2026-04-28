@@ -1,15 +1,20 @@
 import {
+  DAILY_REFERENCE_STORAGE_KEY_PREFIX,
   DAILY_MEANING_STORAGE_KEY_PREFIX,
   DAILY_WORD_STORAGE_KEY_PREFIX,
   RAE_DAILY_WORD_API_URL,
 } from "./constants";
-import type { DailyWordClientOptions } from "./types";
+import { resolveAnswerFromGameReference } from "@domain/wordle";
+import { getWordDictionary } from "@utils/words";
+import type { DailyWordClientOptions, DailyWordReference } from "./types";
 import {
+  extractDailyReferenceFromResponse,
   extractDailyMeaningFromResponse,
   extractDailyWordFromResponse,
   normalizeDailyWordDate,
   normalizeDailyWordCandidate,
   normalizeDailyMeaningCandidate,
+  normalizeDailyWordReferenceCandidate,
   resolveStorage,
 } from "./utils";
 
@@ -17,6 +22,7 @@ class DailyWordClient {
   private readonly endpoint: string;
   private readonly storage: Storage;
   private readonly fetchFn: typeof fetch;
+  private readonly wordMemoryByDate = new Map<string, string>();
 
   constructor(options: DailyWordClientOptions = {}) {
     this.endpoint = options.endpoint ?? RAE_DAILY_WORD_API_URL;
@@ -32,17 +38,40 @@ class DailyWordClient {
 
   getCachedWord(date?: string): string | null {
     const normalizedDate = normalizeDailyWordDate(date);
+    const memoryWord = normalizeDailyWordCandidate(
+      this.wordMemoryByDate.get(normalizedDate),
+    );
+    if (memoryWord) {
+      return memoryWord;
+    }
 
     try {
-      const raw = this.storage.getItem(this.getStorageKey(normalizedDate));
-      if (!raw) {
-        return null;
+      const legacyRaw = this.storage.getItem(
+        this.getLegacyWordStorageKey(normalizedDate),
+      );
+      if (legacyRaw) {
+        const legacyWord = normalizeDailyWordCandidate(JSON.parse(legacyRaw));
+        if (legacyWord) {
+          this.wordMemoryByDate.set(normalizedDate, legacyWord);
+          try {
+            this.storage.removeItem(this.getLegacyWordStorageKey(normalizedDate));
+          } catch {
+            // Ignore legacy cache clear errors.
+          }
+          return legacyWord;
+        }
       }
-
-      return normalizeDailyWordCandidate(JSON.parse(raw));
     } catch {
-      return null;
+      // Ignore legacy cache read errors.
     }
+
+    const referenceWord = this.resolveWordFromReference(normalizedDate);
+    if (referenceWord) {
+      this.wordMemoryByDate.set(normalizedDate, referenceWord);
+      return referenceWord;
+    }
+
+    return null;
   }
 
   cacheWord(word: string, date?: string): void {
@@ -59,14 +88,72 @@ class DailyWordClient {
       // Ignore stale-cache clear errors.
     }
 
+    this.wordMemoryByDate.set(normalizedDate, normalizedWord);
+
+    try {
+      this.storage.removeItem(this.getLegacyWordStorageKey(normalizedDate));
+    } catch {
+      // Ignore legacy cache clear errors.
+    }
+  }
+
+  getCachedReference(date?: string): DailyWordReference | null {
+    const normalizedDate = normalizeDailyWordDate(date);
+
+    try {
+      const raw = this.storage.getItem(
+        this.getReferenceStorageKey(normalizedDate),
+      );
+      if (!raw) {
+        return null;
+      }
+
+      return normalizeDailyWordReferenceCandidate(JSON.parse(raw));
+    } catch {
+      return null;
+    }
+  }
+
+  cacheReference(reference: DailyWordReference, date?: string): void {
+    const normalizedDate = normalizeDailyWordDate(date);
+    const normalizedReference =
+      normalizeDailyWordReferenceCandidate(reference);
+
+    if (!normalizedReference) {
+      return;
+    }
+
+    try {
+      this.clearStaleDailyCacheEntries(normalizedDate);
+    } catch {
+      // Ignore stale-cache clear errors.
+    }
+
     try {
       this.storage.setItem(
-        this.getStorageKey(normalizedDate),
-        JSON.stringify(normalizedWord),
+        this.getReferenceStorageKey(normalizedDate),
+        JSON.stringify(normalizedReference),
       );
     } catch {
       // Ignore storage write errors.
     }
+  }
+
+  async getDailyReference(date?: string): Promise<DailyWordReference | null> {
+    const normalizedDate = normalizeDailyWordDate(date);
+    const cachedReference = this.getCachedReference(normalizedDate);
+
+    if (cachedReference) {
+      return cachedReference;
+    }
+
+    const dailyPayload = await this.fetchDailyPayload();
+    if (!dailyPayload) {
+      return null;
+    }
+
+    this.storeDailyPayload(dailyPayload, normalizedDate);
+    return dailyPayload.reference;
   }
 
   async getDailyWord(date?: string): Promise<string | null> {
@@ -82,16 +169,19 @@ class DailyWordClient {
       return null;
     }
 
-    this.cacheWord(dailyPayload.word, normalizedDate);
-    if (dailyPayload.meaning) {
-      this.cacheMeaning(
-        dailyPayload.word,
-        dailyPayload.meaning,
-        normalizedDate,
-      );
+    this.storeDailyPayload(dailyPayload, normalizedDate);
+
+    if (dailyPayload.word) {
+      return dailyPayload.word;
     }
 
-    return dailyPayload.word;
+    const referenceWord = this.resolveWordFromReference(normalizedDate);
+    if (referenceWord) {
+      this.wordMemoryByDate.set(normalizedDate, referenceWord);
+      return referenceWord;
+    }
+
+    return null;
   }
 
   getCachedMeaning(word: string, date?: string): string | null {
@@ -104,13 +194,35 @@ class DailyWordClient {
 
     try {
       const raw = this.storage.getItem(
-        this.getMeaningStorageKey(normalizedDate, normalizedWord),
+        this.getMeaningStorageKey(normalizedDate),
       );
-      if (!raw) {
+      if (raw) {
+        const meaning = normalizeDailyMeaningCandidate(JSON.parse(raw));
+        if (meaning) {
+          return meaning;
+        }
+      }
+    } catch {
+      // Ignore current cache read errors.
+    }
+
+    try {
+      const legacyRaw = this.storage.getItem(
+        this.getLegacyMeaningStorageKey(normalizedDate, normalizedWord),
+      );
+      if (!legacyRaw) {
         return null;
       }
 
-      return normalizeDailyMeaningCandidate(JSON.parse(raw));
+      const legacyMeaning = normalizeDailyMeaningCandidate(
+        JSON.parse(legacyRaw),
+      );
+      if (!legacyMeaning) {
+        return null;
+      }
+
+      this.cacheMeaning(normalizedWord, legacyMeaning, normalizedDate);
+      return legacyMeaning;
     } catch {
       return null;
     }
@@ -118,20 +230,38 @@ class DailyWordClient {
 
   cacheMeaning(word: string, meaning: string, date?: string): void {
     const normalizedDate = normalizeDailyWordDate(date);
-    const normalizedWord = normalizeDailyWordCandidate(word);
     const normalizedMeaning = normalizeDailyMeaningCandidate(meaning);
 
-    if (!normalizedWord || !normalizedMeaning) {
+    if (!normalizedMeaning) {
       return;
     }
 
     try {
+      this.clearStaleDailyCacheEntries(normalizedDate);
+    } catch {
+      // Ignore stale-cache clear errors.
+    }
+
+    try {
       this.storage.setItem(
-        this.getMeaningStorageKey(normalizedDate, normalizedWord),
+        this.getMeaningStorageKey(normalizedDate),
         JSON.stringify(normalizedMeaning),
       );
     } catch {
       // Ignore storage write errors.
+    }
+
+    const normalizedWord = normalizeDailyWordCandidate(word);
+    if (!normalizedWord) {
+      return;
+    }
+
+    try {
+      this.storage.removeItem(
+        this.getLegacyMeaningStorageKey(normalizedDate, normalizedWord),
+      );
+    } catch {
+      // Ignore legacy cache clear errors.
     }
   }
 
@@ -153,19 +283,22 @@ class DailyWordClient {
       return null;
     }
 
-    this.cacheWord(dailyPayload.word, normalizedDate);
+    this.storeDailyPayload(dailyPayload, normalizedDate);
     if (!dailyPayload.meaning) {
       return null;
     }
 
-    this.cacheMeaning(dailyPayload.word, dailyPayload.meaning, normalizedDate);
+    if (dailyPayload.word && dailyPayload.word !== normalizedWord) {
+      return null;
+    }
 
-    return dailyPayload.word === normalizedWord ? dailyPayload.meaning : null;
+    return dailyPayload.meaning;
   }
 
   private async fetchDailyPayload(): Promise<{
-    word: string;
+    word: string | null;
     meaning: string | null;
+    reference: DailyWordReference | null;
   } | null> {
     if (!this.isOnline()) {
       return null;
@@ -185,8 +318,8 @@ class DailyWordClient {
 
       const payload = (await response.json()) as unknown;
       const remoteWord = extractDailyWordFromResponse(payload);
-
-      if (!remoteWord) {
+      const remoteReference = extractDailyReferenceFromResponse(payload);
+      if (!remoteWord && !remoteReference) {
         return null;
       }
 
@@ -195,24 +328,65 @@ class DailyWordClient {
       return {
         word: remoteWord,
         meaning: remoteMeaning,
+        reference: remoteReference,
       };
     } catch {
       return null;
     }
   }
 
-  private getStorageKey(date: string): string {
+  private storeDailyPayload(
+    payload: {
+      word: string | null;
+      meaning: string | null;
+      reference: DailyWordReference | null;
+    },
+    date: string,
+  ): void {
+    if (payload.reference) {
+      this.cacheReference(payload.reference, date);
+    }
+
+    if (payload.word) {
+      this.cacheWord(payload.word, date);
+    }
+
+    if (payload.meaning) {
+      this.cacheMeaning(payload.word ?? "", payload.meaning, date);
+    }
+  }
+
+  private resolveWordFromReference(date: string): string | null {
+    const reference = this.getCachedReference(date);
+    if (!reference) {
+      return null;
+    }
+
+    return normalizeDailyWordCandidate(
+      resolveAnswerFromGameReference(reference, getWordDictionary()),
+    );
+  }
+
+  private getLegacyWordStorageKey(date: string): string {
     return `${DAILY_WORD_STORAGE_KEY_PREFIX}:${date}`;
   }
 
-  private getMeaningStorageKey(date: string, word: string): string {
+  private getReferenceStorageKey(date: string): string {
+    return `${DAILY_REFERENCE_STORAGE_KEY_PREFIX}:${date}`;
+  }
+
+  private getMeaningStorageKey(date: string): string {
+    return `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${date}`;
+  }
+
+  private getLegacyMeaningStorageKey(date: string, word: string): string {
     return `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${date}:${word}`;
   }
 
   private clearStaleDailyCacheEntries(currentDate: string): void {
     const keysToClear: string[] = [];
-    const currentWordKey = this.getStorageKey(currentDate);
-    const currentMeaningPrefix = `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${currentDate}:`;
+    const currentReferenceKey = this.getReferenceStorageKey(currentDate);
+    const currentMeaningKey = this.getMeaningStorageKey(currentDate);
 
     for (let index = 0; index < this.storage.length; index += 1) {
       const key = this.storage.key(index);
@@ -220,9 +394,14 @@ class DailyWordClient {
         continue;
       }
 
+      if (key.startsWith(`${DAILY_WORD_STORAGE_KEY_PREFIX}:`)) {
+        keysToClear.push(key);
+        continue;
+      }
+
       if (
-        key.startsWith(`${DAILY_WORD_STORAGE_KEY_PREFIX}:`) &&
-        key !== currentWordKey
+        key.startsWith(`${DAILY_REFERENCE_STORAGE_KEY_PREFIX}:`) &&
+        key !== currentReferenceKey
       ) {
         keysToClear.push(key);
         continue;
@@ -230,7 +409,7 @@ class DailyWordClient {
 
       if (
         key.startsWith(`${DAILY_MEANING_STORAGE_KEY_PREFIX}:`) &&
-        !key.startsWith(currentMeaningPrefix)
+        key !== currentMeaningKey
       ) {
         keysToClear.push(key);
       }
@@ -238,6 +417,12 @@ class DailyWordClient {
 
     for (const key of keysToClear) {
       this.storage.removeItem(key);
+    }
+
+    for (const dateKey of [...this.wordMemoryByDate.keys()]) {
+      if (dateKey !== currentDate) {
+        this.wordMemoryByDate.delete(dateKey);
+      }
     }
   }
 

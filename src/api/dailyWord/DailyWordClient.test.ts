@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resolveAnswerFromGameReference } from "@domain/wordle";
+import { setWordDictionary } from "@utils/words";
 import { DailyWordClient } from "./DailyWordClient";
 import {
+  DAILY_REFERENCE_STORAGE_KEY_PREFIX,
   DAILY_MEANING_STORAGE_KEY_PREFIX,
   RAE_DAILY_WORD_API_URL,
   DAILY_WORD_STORAGE_KEY_PREFIX,
@@ -10,8 +13,8 @@ const DATE = "2026-04-22";
 const PREVIOUS_DATE = "2026-04-21";
 const WORD = "LECTURA";
 const STORAGE_KEY = `${DAILY_WORD_STORAGE_KEY_PREFIX}:${DATE}`;
-const MEANING_STORAGE_KEY =
-  `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${DATE}:${WORD}`;
+const REFERENCE_STORAGE_KEY = `${DAILY_REFERENCE_STORAGE_KEY_PREFIX}:${DATE}`;
+const MEANING_STORAGE_KEY = `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${DATE}`;
 const PREVIOUS_STORAGE_KEY =
   `${DAILY_WORD_STORAGE_KEY_PREFIX}:${PREVIOUS_DATE}`;
 const PREVIOUS_MEANING_STORAGE_KEY =
@@ -47,6 +50,7 @@ describe("DailyWordClient", () => {
 
   beforeEach(() => {
     storage = createStorage();
+    setWordDictionary(["lectura", "puente", "gatos", "perro", "cielo"]);
   });
 
   it("returns cached daily word without calling network", async () => {
@@ -58,9 +62,10 @@ describe("DailyWordClient", () => {
 
     expect(word).toBe("PUENTE");
     expect(fetchFn).not.toHaveBeenCalled();
+    expect(storage.getItem(STORAGE_KEY)).toBeNull();
   });
 
-  it("fetches word from RAE payload and caches it", async () => {
+  it("fetches word from RAE payload without persisting it in localStorage", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true, data: { word: "PÚENTE" } }),
@@ -70,7 +75,44 @@ describe("DailyWordClient", () => {
     const word = await client.getDailyWord(DATE);
 
     expect(word).toBe("PUENTE");
-    expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify("PUENTE"));
+    expect(storage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it("supports reference payloads and caches daily reference by date", async () => {
+    const reference = {
+      gameId: "daily:2026-04-22",
+      seed: 7,
+    };
+    const expectedWord = resolveAnswerFromGameReference(reference, [
+      "cielo",
+      "gatos",
+      "lectura",
+      "perro",
+      "puente",
+    ]);
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        data: {
+          gameId: reference.gameId,
+          seed: reference.seed,
+          meaning: "Descripción",
+        },
+      }),
+    });
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    const resolvedReference = await client.getDailyReference(DATE);
+    const resolvedWord = await client.getDailyWord(DATE);
+
+    expect(expectedWord).not.toBeNull();
+    expect(resolvedReference).toEqual(reference);
+    expect(storage.getItem(REFERENCE_STORAGE_KEY)).toBe(
+      JSON.stringify(reference),
+    );
+    expect(storage.getItem(STORAGE_KEY)).toBeNull();
+    expect(resolvedWord).toBe(expectedWord);
   });
 
   it("removes previous daily cache entries when a new day is cached", async () => {
@@ -94,7 +136,7 @@ describe("DailyWordClient", () => {
 
     expect(dailyWord).toBe(WORD);
     expect(dailyMeaning).toBe("Descripción");
-    expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify(WORD));
+    expect(storage.getItem(STORAGE_KEY)).toBeNull();
     expect(storage.getItem(MEANING_STORAGE_KEY)).toBe(
       JSON.stringify("Descripción"),
     );
@@ -141,7 +183,7 @@ describe("DailyWordClient", () => {
     expect(word).toBeNull();
   });
 
-  it("fetches daily meaning from daily payload, normalizes it and caches by day + word", async () => {
+  it("fetches daily meaning from daily payload and caches by date", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -243,5 +285,21 @@ describe("DailyWordClient", () => {
     expect(word).toBe("LECTURA");
     expect(meaning).toBe("Descripción");
     expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("migrates legacy meaning entries that include the word in the key", async () => {
+    const legacyMeaningKey = `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${DATE}:${WORD}`;
+    storage.setItem(legacyMeaningKey, JSON.stringify("Acción de leer"));
+    const fetchFn = vi.fn();
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    const meaning = client.getCachedMeaning(WORD, DATE);
+
+    expect(meaning).toBe("Acción de leer");
+    expect(storage.getItem(MEANING_STORAGE_KEY)).toBe(
+      JSON.stringify("Acción de leer"),
+    );
+    expect(storage.getItem(legacyMeaningKey)).toBeNull();
+    expect(fetchFn).not.toHaveBeenCalled();
   });
 });

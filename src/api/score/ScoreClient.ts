@@ -23,7 +23,12 @@ import {
   SCOREBOARD_MODE_IDS,
   resolveScoreboardModeId,
 } from "@domain/wordle";
-import type { PlayerLanguage, ScoreboardModeId } from "@domain/wordle";
+import type {
+  PlayerDifficulty,
+  PlayerLanguage,
+  RoundSyncWinProof,
+  ScoreboardModeId,
+} from "@domain/wordle";
 import type {
   RecordScoreInput,
   RemoteModeProgress,
@@ -245,16 +250,34 @@ class ScoreClient {
     const pending = this.readRoundEvents();
     const next = pending.filter((entry) => entry.id !== event.id);
     if (event.kind === "win") {
-      next.push({
+      const happenedAt =
+        Number.isFinite(event.happenedAt) && event.happenedAt > 0
+          ? Math.floor(event.happenedAt)
+          : Date.now();
+      const normalizedWinEventBase = {
         ...event,
         pointsDelta: this.normalizeScore(event.pointsDelta),
         modeId: safeModeId,
-        happenedAt:
-          Number.isFinite(event.happenedAt) && event.happenedAt > 0
-            ? Math.floor(event.happenedAt)
-            : Date.now(),
-        version: 2,
-      });
+        happenedAt,
+      };
+
+      if (event.version === 3) {
+        const normalizedProof = this.toRoundSyncWinProof(event.proof);
+        if (!normalizedProof) {
+          return;
+        }
+
+        next.push({
+          ...normalizedWinEventBase,
+          version: 3,
+          proof: normalizedProof,
+        });
+      } else {
+        next.push({
+          ...normalizedWinEventBase,
+          version: 2,
+        });
+      }
     } else {
       next.push({
         ...event,
@@ -983,6 +1006,22 @@ class ScoreClient {
     return Math.max(0, Math.floor(streak));
   }
 
+  private normalizeDifficulty(value: unknown): PlayerDifficulty {
+    if (value === "easy") {
+      return "easy";
+    }
+
+    if (value === "hard") {
+      return "hard";
+    }
+
+    if (value === "insane") {
+      return "insane";
+    }
+
+    return "normal";
+  }
+
   private normalizeLimit(limit: number): number {
     if (!Number.isFinite(limit)) {
       return DEFAULT_LIMIT;
@@ -1020,7 +1059,15 @@ class ScoreClient {
       return null;
     }
 
-    const candidate = value as Partial<StoredRoundSyncEvent>;
+    const candidate = value as {
+      id?: unknown;
+      kind?: unknown;
+      pointsDelta?: unknown;
+      modeId?: unknown;
+      happenedAt?: unknown;
+      version?: unknown;
+      proof?: unknown;
+    };
     if (
       typeof candidate.id !== "string" ||
       typeof candidate.kind !== "string"
@@ -1038,12 +1085,30 @@ class ScoreClient {
         return null;
       }
 
+      const safeHappenedAt = Math.floor(candidate.happenedAt);
+      if (candidate.version === 3) {
+        const normalizedProof = this.toRoundSyncWinProof(candidate.proof);
+        if (!normalizedProof) {
+          return null;
+        }
+
+        return {
+          id: candidate.id,
+          kind: "win",
+          pointsDelta: this.normalizeScore(candidate.pointsDelta),
+          modeId,
+          happenedAt: safeHappenedAt,
+          version: 3,
+          proof: normalizedProof,
+        };
+      }
+
       return {
         id: candidate.id,
         kind: "win",
         pointsDelta: this.normalizeScore(candidate.pointsDelta),
         modeId,
-        happenedAt: Math.floor(candidate.happenedAt),
+        happenedAt: safeHappenedAt,
         version: 2,
       };
     }
@@ -1064,6 +1129,58 @@ class ScoreClient {
     }
 
     return null;
+  }
+
+  private toRoundSyncWinProof(value: unknown): RoundSyncWinProof | null {
+    if (!value || typeof value !== "object") {
+      return null;
+    }
+
+    const candidate = value as Partial<RoundSyncWinProof>;
+    if (
+      typeof candidate.roundStartedAt !== "number" ||
+      typeof candidate.guessesUsed !== "number" ||
+      typeof candidate.hardModeEnabled !== "boolean" ||
+      typeof candidate.hardModeSecondsLeft !== "number" ||
+      !Array.isArray(candidate.guessWords)
+    ) {
+      return null;
+    }
+
+    const roundStartedAt = Math.floor(candidate.roundStartedAt);
+    if (!Number.isFinite(roundStartedAt) || roundStartedAt <= 0) {
+      return null;
+    }
+
+    const guessesUsed = Math.floor(candidate.guessesUsed);
+    if (!Number.isFinite(guessesUsed) || guessesUsed <= 0) {
+      return null;
+    }
+
+    const rawHardModeSecondsLeft = Math.floor(candidate.hardModeSecondsLeft);
+    if (!Number.isFinite(rawHardModeSecondsLeft)) {
+      return null;
+    }
+
+    const hardModeSecondsLeft = Math.max(0, rawHardModeSecondsLeft);
+
+    const guessWords = candidate.guessWords
+      .filter((entry): entry is string => typeof entry === "string")
+      .map((entry) => entry.trim().toUpperCase())
+      .filter((entry) => entry.length > 0);
+
+    if (guessWords.length === 0) {
+      return null;
+    }
+
+    return {
+      roundStartedAt,
+      guessesUsed,
+      difficulty: this.normalizeDifficulty(candidate.difficulty),
+      hardModeEnabled: candidate.hardModeEnabled,
+      hardModeSecondsLeft,
+      guessWords,
+    };
   }
 
   private toStoredScore(value: unknown): StoredScore | null {
