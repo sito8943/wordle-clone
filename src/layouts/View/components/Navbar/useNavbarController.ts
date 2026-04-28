@@ -80,6 +80,7 @@ const useNavbarController = () => {
     const playModeId = resolveNavbarPlayableModeId(currentModeId);
 
     return getModeRoute(playModeId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeModeId, location.pathname, location.search]);
 
   useEffect(() => {

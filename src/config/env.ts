@@ -57,8 +57,6 @@ const configuredDailyWordApiUrl = readString(
   DEFAULT_DAILY_WORD_API_PATH,
 );
 
-console.log(resolveDailyWordApiUrl(configuredDailyWordApiUrl, backendUrl));
-
 const env: RuntimeEnv = {
   appVersion: readString(import.meta.env.VITE_APP_VERSION, "0.0.0"),
   mode: runtimeMode,
