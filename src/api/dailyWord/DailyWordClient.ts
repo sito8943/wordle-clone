@@ -54,6 +54,12 @@ class DailyWordClient {
     }
 
     try {
+      this.clearStaleDailyCacheEntries(normalizedDate);
+    } catch {
+      // Ignore stale-cache clear errors.
+    }
+
+    try {
       this.storage.setItem(
         this.getStorageKey(normalizedDate),
         JSON.stringify(normalizedWord),
@@ -201,6 +207,38 @@ class DailyWordClient {
 
   private getMeaningStorageKey(date: string, word: string): string {
     return `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${date}:${word}`;
+  }
+
+  private clearStaleDailyCacheEntries(currentDate: string): void {
+    const keysToClear: string[] = [];
+    const currentWordKey = this.getStorageKey(currentDate);
+    const currentMeaningPrefix = `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${currentDate}:`;
+
+    for (let index = 0; index < this.storage.length; index += 1) {
+      const key = this.storage.key(index);
+      if (!key) {
+        continue;
+      }
+
+      if (
+        key.startsWith(`${DAILY_WORD_STORAGE_KEY_PREFIX}:`) &&
+        key !== currentWordKey
+      ) {
+        keysToClear.push(key);
+        continue;
+      }
+
+      if (
+        key.startsWith(`${DAILY_MEANING_STORAGE_KEY_PREFIX}:`) &&
+        !key.startsWith(currentMeaningPrefix)
+      ) {
+        keysToClear.push(key);
+      }
+    }
+
+    for (const key of keysToClear) {
+      this.storage.removeItem(key);
+    }
   }
 
   private isOnline(): boolean {

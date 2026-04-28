@@ -7,9 +7,15 @@ import {
 } from "./constants";
 
 const DATE = "2026-04-22";
+const PREVIOUS_DATE = "2026-04-21";
 const WORD = "LECTURA";
 const STORAGE_KEY = `${DAILY_WORD_STORAGE_KEY_PREFIX}:${DATE}`;
-const MEANING_STORAGE_KEY = `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${DATE}:${WORD}`;
+const MEANING_STORAGE_KEY =
+  `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${DATE}:${WORD}`;
+const PREVIOUS_STORAGE_KEY =
+  `${DAILY_WORD_STORAGE_KEY_PREFIX}:${PREVIOUS_DATE}`;
+const PREVIOUS_MEANING_STORAGE_KEY =
+  `${DAILY_MEANING_STORAGE_KEY_PREFIX}:${PREVIOUS_DATE}:PUENTE`;
 
 const createStorage = (): Storage => {
   const values = new Map<string, string>();
@@ -65,6 +71,35 @@ describe("DailyWordClient", () => {
 
     expect(word).toBe("PUENTE");
     expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify("PUENTE"));
+  });
+
+  it("removes previous daily cache entries when a new day is cached", async () => {
+    storage.setItem(PREVIOUS_STORAGE_KEY, JSON.stringify("PUENTE"));
+    storage.setItem(PREVIOUS_MEANING_STORAGE_KEY, JSON.stringify("Antiguo"));
+
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        data: {
+          word: WORD,
+          meaning: "Descripción",
+        },
+      }),
+    });
+    const client = new DailyWordClient({ storage, fetchFn });
+
+    const dailyWord = await client.getDailyWord(DATE);
+    const dailyMeaning = await client.getDailyMeaning(WORD, DATE);
+
+    expect(dailyWord).toBe(WORD);
+    expect(dailyMeaning).toBe("Descripción");
+    expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify(WORD));
+    expect(storage.getItem(MEANING_STORAGE_KEY)).toBe(
+      JSON.stringify("Descripción"),
+    );
+    expect(storage.getItem(PREVIOUS_STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(PREVIOUS_MEANING_STORAGE_KEY)).toBeNull();
   });
 
   it("uses configured daily endpoint by default", async () => {
