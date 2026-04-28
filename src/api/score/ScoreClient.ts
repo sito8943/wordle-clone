@@ -57,6 +57,7 @@ class ScoreClient {
   private readonly gateway: ConvexGateway;
   private readonly storage: Storage;
   private readonly clientId: string;
+  private static readonly PLAYER_STORAGE_KEY = "player";
 
   constructor(gateway: ConvexGateway, storage?: Storage) {
     this.gateway = gateway;
@@ -1389,14 +1390,7 @@ class ScoreClient {
     const today = new Date().toISOString().slice(0, 10);
 
     try {
-      const keysToCheck: string[] = [DAILY_MODE_STATUS_STORAGE_KEY_PREFIX];
-
-      for (let index = 0; index < this.storage.length; index += 1) {
-        const key = this.storage.key(index);
-        if (key && key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)) {
-          keysToCheck.push(key);
-        }
-      }
+      const keysToCheck = this.resolveDailyStatusStorageKeysForCurrentPlayer();
 
       for (const key of keysToCheck) {
         const raw = this.storage.getItem(key);
@@ -1429,14 +1423,8 @@ class ScoreClient {
     const today = new Date().toISOString().slice(0, 10);
 
     try {
-      const statusKeysToCheck: string[] = [DAILY_MODE_STATUS_STORAGE_KEY_PREFIX];
-
-      for (let index = 0; index < this.storage.length; index += 1) {
-        const key = this.storage.key(index);
-        if (key && key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)) {
-          statusKeysToCheck.push(key);
-        }
-      }
+      const statusKeysToCheck =
+        this.resolveDailyStatusStorageKeysForCurrentPlayer();
 
       for (const statusKey of statusKeysToCheck) {
         const statusRaw = this.storage.getItem(statusKey);
@@ -1490,6 +1478,37 @@ class ScoreClient {
     }
 
     return false;
+  }
+
+  private resolveDailyStatusStorageKeysForCurrentPlayer(): string[] {
+    const currentPlayerCode = this.readCurrentPlayerCode();
+    if (!currentPlayerCode) {
+      return [DAILY_MODE_STATUS_STORAGE_KEY_PREFIX];
+    }
+
+    return [
+      `${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:${currentPlayerCode}`,
+      DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
+    ];
+  }
+
+  private readCurrentPlayerCode(): string | null {
+    try {
+      const rawPlayer = this.storage.getItem(ScoreClient.PLAYER_STORAGE_KEY);
+      if (!rawPlayer) {
+        return null;
+      }
+
+      const parsed = JSON.parse(rawPlayer) as { code?: unknown };
+      if (typeof parsed.code !== "string") {
+        return null;
+      }
+
+      const normalizedCode = this.normalizeRecoveryCode(parsed.code);
+      return normalizedCode.length > 0 ? normalizedCode : null;
+    } catch {
+      return null;
+    }
   }
 
   private normalizeRecoveryCode(code: string): string {

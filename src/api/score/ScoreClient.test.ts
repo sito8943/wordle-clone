@@ -655,6 +655,52 @@ describe("ScoreClient", () => {
     expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
   });
 
+  it("prefers current player scoped shield usage over legacy unscoped daily status", async () => {
+    const clientId = "client-me";
+    const today = new Date().toISOString().slice(0, 10);
+    storage.setItem(SCOREBOARD_CLIENT_ID_KEY, clientId);
+    storage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Sito",
+        code: "AB12",
+      }),
+    );
+    storage.setItem(
+      "wordle:daily-mode-status",
+      JSON.stringify({ date: today, outcome: "won" }),
+    );
+    storage.setItem(
+      "wordle:daily-mode-status:AB12",
+      JSON.stringify({ date: today, outcome: "won" }),
+    );
+    storage.setItem(
+      "wordle:daily-shield-used:AB12",
+      JSON.stringify({ date: today, used: true }),
+    );
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "local-me",
+          clientId,
+          nick: "Sito",
+          language: "en",
+          modeId: "classic",
+          score: 12,
+          streak: 2,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    const client = new ScoreClient(createGateway(), storage);
+    const result = await client.listTopScores(10, "en", "classic");
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
+  });
+
   it("checks nick availability through remote query", async () => {
     const query = vi.fn().mockResolvedValue(true);
     const client = new ScoreClient(
