@@ -128,6 +128,7 @@ const createMockScoreClient = (
     syncPendingScores: vi.fn().mockResolvedValue({ flushed: false }),
     queueRoundEvent: vi.fn(),
     syncRoundEvents: vi.fn().mockResolvedValue(null),
+    consumeDailyShield: vi.fn().mockResolvedValue(null),
     getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
       score: 0,
       streak: 0,

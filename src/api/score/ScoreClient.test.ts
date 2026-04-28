@@ -557,6 +557,38 @@ describe("ScoreClient", () => {
     expect(result.scores[0].hasWonDailyToday).toBe(true);
   });
 
+  it("keeps the daily-shield availability flag from remote scores", async () => {
+    const query = vi.fn().mockResolvedValue({
+      scores: [
+        {
+          id: "remote-a",
+          nick: "ANA",
+          score: 20,
+          streak: 3,
+          createdAt: 1000,
+          hasWonDailyToday: true,
+          hasDailyShieldAvailableToday: false,
+        },
+      ],
+      currentClientRank: null,
+      currentClientEntry: null,
+    });
+
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    const result = await client.listTopScores(10);
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
+  });
+
   it("marks current local rows when daily was won today in storage", async () => {
     const clientId = "client-me";
     const today = new Date().toISOString().slice(0, 10);
@@ -586,6 +618,41 @@ describe("ScoreClient", () => {
 
     expect(result.scores).toHaveLength(1);
     expect(result.scores[0].hasWonDailyToday).toBe(true);
+  });
+
+  it("marks current local rows with unavailable shield after local shield consumption", async () => {
+    const clientId = "client-me";
+    const today = new Date().toISOString().slice(0, 10);
+    storage.setItem(SCOREBOARD_CLIENT_ID_KEY, clientId);
+    storage.setItem(
+      "wordle:daily-mode-status",
+      JSON.stringify({ date: today, outcome: "won" }),
+    );
+    storage.setItem(
+      "wordle:daily-shield-used",
+      JSON.stringify({ date: today, used: true }),
+    );
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "local-me",
+          clientId,
+          nick: "Sito",
+          language: "en",
+          modeId: "classic",
+          score: 12,
+          streak: 2,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    const client = new ScoreClient(createGateway(), storage);
+    const result = await client.listTopScores(10, "en", "classic");
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
   });
 
   it("checks nick availability through remote query", async () => {

@@ -1,6 +1,7 @@
 import { ConvexGateway } from "../convex/ConvexGateway";
 import {
   ADD_SCORE_MUTATION,
+  CONSUME_DAILY_SHIELD_MUTATION,
   DEFAULT_LIMIT,
   GET_CURRENT_PLAYER_PROFILE_QUERY,
   GET_PLAYER_BY_CODE_QUERY,
@@ -18,6 +19,7 @@ import {
 } from "./constants";
 import {
   DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
+  DAILY_SHIELD_USED_STORAGE_KEY_PREFIX,
   SCOREBOARD_MODE_IDS,
   resolveScoreboardModeId,
 } from "@domain/wordle";
@@ -36,6 +38,7 @@ import type {
   StoredRoundSyncEvent,
   SyncRoundEventsInput,
   SyncPendingScoresResult,
+  ConsumeDailyShieldInput,
   TopScoresResult,
   UpsertPlayerProfileInput,
 } from "./types";
@@ -172,6 +175,64 @@ class ScoreClient {
 
     this.adoptRecoveredIdentity(profile);
     return profile;
+  }
+
+  async consumeDailyShield(
+    input: ConsumeDailyShieldInput,
+  ): Promise<RemotePlayerProfile | null> {
+    const identity = this.readProfileIdentity();
+    const language = this.normalizeLanguage(input.language);
+    const safeHappenedAt =
+      typeof input.happenedAt === "number" &&
+      Number.isFinite(input.happenedAt) &&
+      input.happenedAt > 0
+        ? Math.floor(input.happenedAt)
+        : Date.now();
+
+    if (!this.gateway.isConfigured || !this.isOnline()) {
+      return null;
+    }
+
+    try {
+      const response = await this.gateway.mutation<unknown>(
+        CONSUME_DAILY_SHIELD_MUTATION,
+        {
+          clientId: this.clientId,
+          clientRecordId: identity?.clientRecordId,
+          nick: this.normalizeNick(input.nick),
+          language,
+          difficulty: input.difficulty,
+          keyboardPreference: input.keyboardPreference,
+          playerCode:
+            typeof input.playerCode === "string" &&
+            input.playerCode.trim().length > 0
+              ? this.normalizeRecoveryCode(input.playerCode)
+              : undefined,
+          happenedAt: safeHappenedAt,
+        },
+      );
+
+      const profile = this.parseRemotePlayerProfile(response, {
+        clientId: this.clientId,
+        clientRecordId: identity?.clientRecordId ?? this.createLocalId(),
+        nick: input.nick,
+        language,
+        score: 0,
+        streak: 0,
+        difficulty: input.difficulty,
+        keyboardPreference: input.keyboardPreference,
+        createdAt: safeHappenedAt,
+        playerCode:
+          typeof input.playerCode === "string" ? input.playerCode : "",
+      });
+
+      this.adoptRecoveredIdentity(profile);
+      return profile;
+    } catch {
+      // The mutation may not exist yet in older backends; local state remains
+      // source of truth until remote support is available.
+      return null;
+    }
   }
 
   queueRoundEvent(event: StoredRoundSyncEvent): void {
@@ -653,6 +714,9 @@ class ScoreClient {
       streak: entry.streak,
       hasWonDailyToday:
         isCurrentBrowserEntry && this.hasCurrentBrowserWonDailyTodayLocally(),
+      hasDailyShieldAvailableToday:
+        isCurrentBrowserEntry &&
+        this.hasCurrentBrowserDailyShieldAvailableTodayLocally(),
       createdAt: entry.createdAt,
       source: "local",
       isCurrentClient: !entry.clientId || entry.clientId === this.clientId,
@@ -669,6 +733,7 @@ class ScoreClient {
           | "language"
           | "modeId"
           | "hasWonDailyToday"
+          | "hasDailyShieldAvailableToday"
         >
       >,
     source: ScoreSource,
@@ -683,6 +748,10 @@ class ScoreClient {
       score: entry.score,
       streak: this.normalizeStreak(entry.streak ?? 0),
       hasWonDailyToday: Boolean(entry.hasWonDailyToday),
+      hasDailyShieldAvailableToday:
+        typeof entry.hasDailyShieldAvailableToday === "boolean"
+          ? entry.hasDailyShieldAvailableToday
+          : undefined,
       createdAt: entry.createdAt,
       source,
       isCurrentClient: Boolean(entry.isCurrentClient),
@@ -1118,6 +1187,30 @@ class ScoreClient {
 
   private dedupeScoreEntriesByNick(entries: ScoreEntry[]): ScoreEntry[] {
     const byNick = new Map<string, ScoreEntry>();
+    const mergeShieldAvailability = (
+      preferred: ScoreEntry,
+      candidate: ScoreEntry,
+    ): boolean | undefined => {
+      const preferredAvailability = preferred.hasDailyShieldAvailableToday;
+      const candidateAvailability = candidate.hasDailyShieldAvailableToday;
+
+      if (
+        typeof preferredAvailability === "boolean" &&
+        typeof candidateAvailability === "boolean"
+      ) {
+        return preferredAvailability && candidateAvailability;
+      }
+
+      if (typeof preferredAvailability === "boolean") {
+        return preferredAvailability;
+      }
+
+      if (typeof candidateAvailability === "boolean") {
+        return candidateAvailability;
+      }
+
+      return undefined;
+    };
 
     for (const entry of entries) {
       const key = this.nickLanguageModeKey(
@@ -1134,6 +1227,10 @@ class ScoreClient {
         hasWonDailyToday:
           Boolean(preferred.hasWonDailyToday) ||
           Boolean(candidate.hasWonDailyToday),
+        hasDailyShieldAvailableToday: mergeShieldAvailability(
+          preferred,
+          candidate,
+        ),
       });
 
       if (!current) {
@@ -1172,6 +1269,19 @@ class ScoreClient {
         byNick.set(key, {
           ...current,
           hasWonDailyToday: true,
+          hasDailyShieldAvailableToday: mergeShieldAvailability(entry, current),
+        });
+        continue;
+      }
+
+      const mergedShieldAvailability = mergeShieldAvailability(entry, current);
+      if (
+        typeof mergedShieldAvailability === "boolean" &&
+        mergedShieldAvailability !== current.hasDailyShieldAvailableToday
+      ) {
+        byNick.set(key, {
+          ...current,
+          hasDailyShieldAvailableToday: mergedShieldAvailability,
         });
       }
     }
@@ -1222,17 +1332,34 @@ class ScoreClient {
     const hasAnyDailyWinToday = currentClientEntries.some(
       (entry) => entry.hasWonDailyToday === true,
     );
+    const hasAnyShieldAvailabilitySignal = currentClientEntries.some(
+      (entry) => typeof entry.hasDailyShieldAvailableToday === "boolean",
+    );
+    const hasDailyShieldAvailableToday = hasAnyShieldAvailabilitySignal
+      ? currentClientEntries.every(
+          (entry) => entry.hasDailyShieldAvailableToday !== false,
+        ) &&
+        currentClientEntries.some(
+          (entry) => entry.hasDailyShieldAvailableToday === true,
+        )
+      : undefined;
 
     return entries
       .filter((entry) => !entry.isCurrentClient || entry === preferred)
-      .map((entry) =>
-        entry === preferred && hasAnyDailyWinToday
-          ? {
-              ...entry,
-              hasWonDailyToday: true,
-            }
-          : entry,
-      );
+      .map((entry) => {
+        if (entry !== preferred) {
+          return entry;
+        }
+
+        return {
+          ...entry,
+          hasWonDailyToday: hasAnyDailyWinToday ? true : entry.hasWonDailyToday,
+          hasDailyShieldAvailableToday:
+            typeof hasDailyShieldAvailableToday === "boolean"
+              ? hasDailyShieldAvailableToday
+              : entry.hasDailyShieldAvailableToday,
+        };
+      });
   }
 
   private isNickAvailableInLocalData(nick: string): boolean {
@@ -1288,6 +1415,73 @@ class ScoreClient {
         }
 
         if (parsed?.date === today && parsed?.outcome === "won") {
+          return true;
+        }
+      }
+    } catch {
+      return false;
+    }
+
+    return false;
+  }
+
+  private hasCurrentBrowserDailyShieldAvailableTodayLocally(): boolean {
+    const today = new Date().toISOString().slice(0, 10);
+
+    try {
+      const statusKeysToCheck: string[] = [DAILY_MODE_STATUS_STORAGE_KEY_PREFIX];
+
+      for (let index = 0; index < this.storage.length; index += 1) {
+        const key = this.storage.key(index);
+        if (key && key.startsWith(`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:`)) {
+          statusKeysToCheck.push(key);
+        }
+      }
+
+      for (const statusKey of statusKeysToCheck) {
+        const statusRaw = this.storage.getItem(statusKey);
+        if (!statusRaw) {
+          continue;
+        }
+
+        let statusParsed: { date?: unknown; outcome?: unknown } | null = null;
+        try {
+          statusParsed = JSON.parse(statusRaw) as {
+            date?: unknown;
+            outcome?: unknown;
+          };
+        } catch {
+          statusParsed = null;
+        }
+
+        if (statusParsed?.date !== today || statusParsed?.outcome !== "won") {
+          continue;
+        }
+
+        const keySuffix =
+          statusKey === DAILY_MODE_STATUS_STORAGE_KEY_PREFIX
+            ? ""
+            : statusKey.slice(DAILY_MODE_STATUS_STORAGE_KEY_PREFIX.length);
+        const shieldUsageKey = `${DAILY_SHIELD_USED_STORAGE_KEY_PREFIX}${keySuffix}`;
+        const shieldUsageRaw = this.storage.getItem(shieldUsageKey);
+
+        if (!shieldUsageRaw) {
+          return true;
+        }
+
+        let shieldUsageParsed: { date?: unknown; used?: unknown } | null = null;
+        try {
+          shieldUsageParsed = JSON.parse(shieldUsageRaw) as {
+            date?: unknown;
+            used?: unknown;
+          };
+        } catch {
+          shieldUsageParsed = null;
+        }
+
+        const shieldUsedToday =
+          shieldUsageParsed?.date === today && shieldUsageParsed?.used === true;
+        if (!shieldUsedToday) {
           return true;
         }
       }
@@ -1379,6 +1573,12 @@ class ScoreClient {
         typeof candidate.hasWonDailyToday === "boolean"
           ? candidate.hasWonDailyToday
           : Boolean(fallback.hasWonDailyToday),
+      hasDailyShieldAvailableToday:
+        typeof candidate.hasDailyShieldAvailableToday === "boolean"
+          ? candidate.hasDailyShieldAvailableToday
+          : typeof fallback.hasDailyShieldAvailableToday === "boolean"
+            ? fallback.hasDailyShieldAvailableToday
+            : undefined,
       difficulty:
         candidate.difficulty === "easy" ||
         candidate.difficulty === "normal" ||

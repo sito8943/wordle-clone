@@ -105,6 +105,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi
           .fn()
           .mockImplementation((_language: string, modeId?: string) => ({
@@ -247,6 +248,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,
@@ -332,6 +334,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,
@@ -429,6 +432,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,
@@ -635,6 +639,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi
           .fn()
           .mockImplementation((_language: string, modeId?: string) => ({
@@ -1532,7 +1537,16 @@ describe("usePlayController", () => {
 
   it("consumes daily shield and preserves streak loss handling when selected", () => {
     const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const consumeDailyShield = vi.fn().mockResolvedValue(null);
     const basePlayerState = mockUsePlayer();
+    const baseApiState = mockUseApi();
+    mockUseApi.mockReturnValue({
+      ...baseApiState,
+      scoreClient: {
+        ...baseApiState.scoreClient,
+        consumeDailyShield,
+      },
+    });
     mockUsePlayer.mockReturnValue({
       ...basePlayerState,
       commitLoss,
@@ -1561,6 +1575,13 @@ describe("usePlayController", () => {
     });
 
     expect(commitLoss).not.toHaveBeenCalled();
+    expect(consumeDailyShield).toHaveBeenCalledWith({
+      nick: "Player",
+      language: "en",
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      playerCode: "AB12",
+    });
     expect(result.current.showDefeatShieldActions).toBe(false);
     expect(hasDailyShieldAvailableForDate("AB12")).toBe(false);
   });
@@ -1985,6 +2006,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,

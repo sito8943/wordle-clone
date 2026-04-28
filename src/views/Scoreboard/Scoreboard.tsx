@@ -447,7 +447,10 @@ const Scoreboard = (): JSX.Element => {
                   scores.map((entry, index) => {
                     const rowKey = `${entry.id}-${entry.isPinnedCurrentClient ? "pinned" : "top"}`;
                     const isExpanded = expandedEntryId === entry.id;
-                    const showWinnerShield = entry.hasWonDailyToday === true;
+                    const showWinnerShield =
+                      typeof entry.hasDailyShieldAvailableToday === "boolean"
+                        ? entry.hasDailyShieldAvailableToday
+                        : entry.hasWonDailyToday === true;
 
                     const isClosing =
                       closingEntryId === entry.id && !isExpanded;

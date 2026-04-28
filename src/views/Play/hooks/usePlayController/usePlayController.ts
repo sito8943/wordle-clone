@@ -824,8 +824,23 @@ export default function usePlayController(
     consumeDailyShieldForDate({
       playerCode: player.code,
     });
+    void scoreClient.consumeDailyShield({
+      nick: player.name,
+      language: player.language,
+      difficulty: player.difficulty,
+      keyboardPreference: player.keyboardPreference,
+      playerCode: player.code,
+    });
     setDefeatShieldDecisionPending(false);
-  }, [defeatShieldDecisionPending, player.code]);
+  }, [
+    defeatShieldDecisionPending,
+    player.code,
+    player.difficulty,
+    player.keyboardPreference,
+    player.language,
+    player.name,
+    scoreClient,
+  ]);
 
   const skipDailyShieldForCurrentDefeat = useCallback(() => {
     if (!defeatShieldDecisionPending) {

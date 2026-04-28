@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { queryKeys } from "@hooks";
 import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  hasDailyShieldAvailableForDate,
   readDailyModeOutcomeForDate,
 } from "@domain/wordle";
 import { ApiContext } from "@providers/Api/ApiContext";
@@ -199,6 +200,34 @@ describe("PlayerProvider", () => {
     });
 
     expect(readDailyModeOutcomeForDate("AB12")).toBe("won");
+  });
+
+  it("updatePlayer applies backend shield availability for today", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      language: input.language,
+      playerCode: "AB12",
+      score: input.score ?? 0,
+      streak: input.streak ?? 0,
+      hasWonDailyToday: true,
+      hasDailyShieldAvailableToday: false,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ upsertPlayerProfile }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Carlos");
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBe("won");
+    expect(hasDailyShieldAvailableForDate("AB12")).toBe(false);
   });
 
   it("updatePlayer trims and normalizes the name", async () => {

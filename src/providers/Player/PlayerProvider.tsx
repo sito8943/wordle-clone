@@ -18,6 +18,8 @@ import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
   SCOREBOARD_MODE_IDS,
   clearAllPersistedGameStates,
+  clearDailyShieldUsage,
+  consumeDailyShieldForDate,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
   resolveScoreboardModeId,
@@ -62,19 +64,35 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     (
       remoteProfile: Pick<
         RemotePlayerProfile,
-        "playerCode" | "hasWonDailyToday"
+        "playerCode" | "hasWonDailyToday" | "hasDailyShieldAvailableToday"
       >,
     ) => {
+      const normalizedPlayerCode = remoteProfile.playerCode.trim();
+      if (normalizedPlayerCode.length === 0) {
+        return;
+      }
+
+      if (remoteProfile.hasWonDailyToday === true) {
+        writeDailyModeOutcomeForDate({
+          outcome: "won",
+          playerCode: normalizedPlayerCode,
+        });
+      }
+
       if (
-        remoteProfile.playerCode.trim().length === 0 ||
-        remoteProfile.hasWonDailyToday !== true
+        remoteProfile.hasWonDailyToday !== true ||
+        typeof remoteProfile.hasDailyShieldAvailableToday !== "boolean"
       ) {
         return;
       }
 
-      writeDailyModeOutcomeForDate({
-        outcome: "won",
-        playerCode: remoteProfile.playerCode,
+      if (remoteProfile.hasDailyShieldAvailableToday) {
+        clearDailyShieldUsage(normalizedPlayerCode);
+        return;
+      }
+
+      consumeDailyShieldForDate({
+        playerCode: normalizedPlayerCode,
       });
     },
     [],
