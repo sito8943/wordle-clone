@@ -915,17 +915,16 @@ describe("PlayerProvider", () => {
 
     await waitFor(() => {
       expect(recoverPlayerByCode).toHaveBeenCalledWith("RCV1");
+      expect(adoptRecoveredIdentity).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nick: "Recovered",
+          playerCode: "RCV1",
+        }),
+      );
+      expect(result.current.player.name).toBe("Recovered");
+      expect(result.current.player.code).toBe("RCV1");
+      expect(result.current.player.score).toBe(27);
     });
-
-    expect(adoptRecoveredIdentity).toHaveBeenCalledWith(
-      expect.objectContaining({
-        nick: "Recovered",
-        playerCode: "RCV1",
-      }),
-    );
-    expect(result.current.player.name).toBe("Recovered");
-    expect(result.current.player.code).toBe("RCV1");
-    expect(result.current.player.score).toBe(27);
   });
 
   it("refreshes the current player profile from remote data", async () => {

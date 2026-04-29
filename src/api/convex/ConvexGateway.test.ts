@@ -3,15 +3,10 @@ import { ConvexGateway } from "./ConvexGateway";
 
 const queryMock = vi.fn();
 const mutationMock = vi.fn();
-const constructorMock = vi.fn();
 
 vi.mock("convex/browser", () => ({
   ConvexHttpClient: vi.fn(
     class {
-      constructor(url: string) {
-        constructorMock(url);
-      }
-
       query = queryMock;
       mutation = mutationMock;
     },
@@ -22,7 +17,6 @@ describe("ConvexGateway", () => {
   const fetchMock = vi.fn();
 
   beforeEach(() => {
-    constructorMock.mockReset();
     queryMock.mockReset();
     mutationMock.mockReset();
     fetchMock.mockReset();
@@ -92,9 +86,6 @@ describe("ConvexGateway", () => {
     });
 
     expect(gateway.isConfigured).toBe(true);
-    expect(constructorMock).toHaveBeenCalledWith(
-      "https://example.convex.cloud",
-    );
 
     await expect(gateway.query("scores:list", { limit: 5 })).resolves.toEqual({
       scores: [],

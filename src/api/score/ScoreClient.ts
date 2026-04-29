@@ -1720,9 +1720,10 @@ class ScoreClient {
       },
     );
     const classicProgress = progressByMode[SCOREBOARD_MODE_IDS.CLASSIC];
-    const tutorialPromptSeenModes = this.normalizeTutorialPromptSeenModes(
-      candidate.tutorialPromptSeenModes,
-    ) ??
+    const tutorialPromptSeenModes =
+      this.normalizeTutorialPromptSeenModes(
+        candidate.tutorialPromptSeenModes,
+      ) ??
       this.normalizeTutorialPromptSeenModes(fallback.tutorialPromptSeenModes);
 
     return {

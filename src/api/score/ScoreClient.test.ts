@@ -778,8 +778,7 @@ describe("ScoreClient", () => {
           lightning: true,
         },
         createdAt: 1000,
-      },
-    )
+      })
       .mockResolvedValueOnce(undefined);
     const client = new ScoreClient(
       createGateway({
