@@ -230,11 +230,12 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           preserveLocalPreferences: true,
           preserveLocalProgress: true,
         });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
       }
 
       return syncedProfile;
     },
-    [applyRemoteProfile, scoreClient],
+    [applyRemoteProfile, queryClient, scoreClient],
   );
 
   const updatePlayer = useCallback(

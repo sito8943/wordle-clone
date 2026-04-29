@@ -591,6 +591,8 @@ describe("PlayerProvider", () => {
       await result.current.updatePlayer("Ana");
     });
 
+    syncRoundEvents.mockClear();
+
     await act(async () => {
       await result.current.commitVictory(10, 1000);
     });
@@ -602,6 +604,70 @@ describe("PlayerProvider", () => {
     });
     expect(result.current.player.score).toBe(10);
     expect(result.current.player.code).toBe("ZX90");
+  });
+
+  it("invalidates top scores after syncing a victory event", async () => {
+    const syncRoundEvents = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: "Ana",
+        language: "en",
+        playerCode: "ZX90",
+        score: 10,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      });
+    const queryClient = createTestQueryClient();
+    const invalidateQueriesSpy = vi
+      .spyOn(queryClient, "invalidateQueries")
+      .mockResolvedValue(undefined);
+    const apiValue = createTestApiContextValue({
+      scoreClient: createMockScoreClient(
+        vi.fn().mockResolvedValue({
+          scores: [],
+          source: "local",
+          currentClientRank: null,
+          currentClientEntry: null,
+        }),
+        {
+          syncRoundEvents,
+          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
+        },
+      ) as never,
+    });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>
+        <ApiContext.Provider value={apiValue}>
+          <PlayerProvider>{children}</PlayerProvider>
+        </ApiContext.Provider>
+      </QueryClientProvider>
+    );
+    const { result } = renderHook(() => usePlayer(), { wrapper });
+
+    await act(async () => {
+      await result.current.updatePlayer("Ana");
+    });
+
+    syncRoundEvents.mockClear();
+    invalidateQueriesSpy.mockClear();
+
+    await act(async () => {
+      await result.current.commitVictory(10, 1000);
+    });
+
+    await waitFor(() => {
+      expect(syncRoundEvents).toHaveBeenCalled();
+    });
+
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.topScores,
+    });
   });
 
   it("keeps local score and streak when sync returns stale profile snapshots", async () => {

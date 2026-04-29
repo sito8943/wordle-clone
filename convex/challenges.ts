@@ -7,6 +7,21 @@ import {
   isChallengeConditionKey,
 } from "./data/challenges";
 
+type SupportedLanguage = "en" | "es";
+
+type ScoreProfileRecord = {
+  _id: string;
+  language?: string;
+  score?: number;
+  scoreByLanguage?: Partial<Record<SupportedLanguage, number>>;
+  scoreByLanguageAndMode?: Partial<
+    Record<
+      SupportedLanguage,
+      Partial<Record<"classic" | "lightning" | "daily", number>>
+    >
+  >;
+};
+
 const SIMPLE_CHALLENGE_POINTS = 5;
 const COMPLEX_CHALLENGE_POINTS = 15;
 const WEEKLY_CHALLENGE_POINTS = 25;
@@ -97,6 +112,77 @@ const resolveProfileByClientId = async (
     .query("scores")
     .withIndex("by_client_id", (q) => q.eq("clientId", clientId))
     .first();
+};
+
+const normalizeLanguage = (value?: string): SupportedLanguage =>
+  value === "en" ? "en" : "es";
+
+const normalizeScore = (value: number): number =>
+  Math.max(0, Math.floor(value));
+
+const getLanguageScore = (
+  profile: ScoreProfileRecord,
+  language: SupportedLanguage,
+): number => {
+  const byLanguage = profile.scoreByLanguage?.[language];
+  if (typeof byLanguage === "number") {
+    return normalizeScore(byLanguage);
+  }
+
+  const legacyLanguage = normalizeLanguage(profile.language);
+  if (language === legacyLanguage) {
+    return normalizeScore(profile.score ?? 0);
+  }
+
+  return 0;
+};
+
+const getClassicModeScore = (
+  profile: ScoreProfileRecord,
+  language: SupportedLanguage,
+  fallback: number,
+): number => {
+  const byMode = profile.scoreByLanguageAndMode?.[language]?.classic;
+  if (typeof byMode === "number") {
+    return normalizeScore(byMode);
+  }
+
+  return normalizeScore(fallback);
+};
+
+const buildChallengeScorePatch = (
+  profile: ScoreProfileRecord,
+  pointsDelta: number,
+) => {
+  const language = normalizeLanguage(profile.language);
+  const currentLanguageScore = getLanguageScore(profile, language);
+  const currentClassicScore = getClassicModeScore(
+    profile,
+    language,
+    currentLanguageScore,
+  );
+  const safeDelta = Number.isFinite(pointsDelta) ? Math.floor(pointsDelta) : 0;
+  const nextLanguageScore = normalizeScore(currentLanguageScore + safeDelta);
+  const nextClassicScore = normalizeScore(currentClassicScore + safeDelta);
+  const nextScoreByLanguage: Partial<Record<SupportedLanguage, number>> = {
+    ...(profile.scoreByLanguage ?? {}),
+    [language]: nextLanguageScore,
+  };
+  const nextLanguageModeScores: Partial<
+    Record<"classic" | "lightning" | "daily", number>
+  > = {
+    ...(profile.scoreByLanguageAndMode?.[language] ?? {}),
+    classic: nextClassicScore,
+  };
+
+  return {
+    score: nextLanguageScore,
+    scoreByLanguage: nextScoreByLanguage,
+    scoreByLanguageAndMode: {
+      ...(profile.scoreByLanguageAndMode ?? {}),
+      [language]: nextLanguageModeScores,
+    },
+  };
 };
 
 const formatChallenge = (doc: {
@@ -472,7 +558,10 @@ export const completeChallenge = mutation({
   },
   handler: async (ctx, args) => {
     // Resolve player profile from clientId
-    const profile = await resolveProfileByClientId(ctx, args.clientId);
+    const profile = (await resolveProfileByClientId(
+      ctx,
+      args.clientId,
+    )) as ScoreProfileRecord | null;
     if (!profile) {
       throw new Error("Player profile not found.");
     }
@@ -536,11 +625,11 @@ export const completeChallenge = mutation({
       pointsAwarded,
     });
 
-    // Update player score
-    const currentScore = profile.score ?? 0;
-    await ctx.db.patch(profile._id, {
-      score: currentScore + pointsAwarded,
-    });
+    // Keep legacy score and mode-scoped scoreboard score aligned.
+    await ctx.db.patch(
+      profile._id,
+      buildChallengeScorePatch(profile, pointsAwarded),
+    );
 
     return { pointsAwarded, alreadyCompleted: false };
   },
@@ -552,7 +641,10 @@ export const resetPlayerChallengeProgressForDate = mutation({
     date: v.string(),
   },
   handler: async (ctx, args) => {
-    const profile = await resolveProfileByClientId(ctx, args.clientId);
+    const profile = (await resolveProfileByClientId(
+      ctx,
+      args.clientId,
+    )) as ScoreProfileRecord | null;
     if (!profile) {
       throw new Error("Player profile not found.");
     }
@@ -574,10 +666,10 @@ export const resetPlayerChallengeProgressForDate = mutation({
     }
 
     if (pointsReverted > 0) {
-      const currentScore = profile.score ?? 0;
-      await ctx.db.patch(profile._id, {
-        score: Math.max(0, currentScore - pointsReverted),
-      });
+      await ctx.db.patch(
+        profile._id,
+        buildChallengeScorePatch(profile, -pointsReverted),
+      );
     }
 
     return {
