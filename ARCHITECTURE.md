@@ -157,6 +157,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `sessionStorage`
 - `wordle:session-id`: tab session id used by wordle session handling.
 - `wordle:end-of-game-dialog-seen`: marks that this tab already showed the first-run hint for victory/defeat dialogs.
+- `wordle:home-menu-seen`: marks that this browser tab already rendered the home menu at least once.
 - `localStorage`
 - `wordle:game`: persisted in-progress game payload (managed in domain storage helpers).
   - It stores `{ sessionId, gameId, seed, startedAt, guesses, current, gameOver }`.

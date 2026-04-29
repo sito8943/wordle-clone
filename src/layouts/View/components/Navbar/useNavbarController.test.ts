@@ -31,6 +31,7 @@ describe("useNavbarController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
     env.lightningModeEnabled = defaultLightningModeEnabled;
     mockLocation.pathname = ROUTES.HOME;
     mockLocation.search = "";
@@ -137,6 +138,21 @@ describe("useNavbarController", () => {
     expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.LIGHTNING);
   });
 
+  it("uses game modes route as title route on active mode pages", () => {
+    mockLocation.pathname = ROUTES.ZEN;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.titleRoute).toBe(ROUTES.PLAY);
+  });
+
+  it("uses game modes route as title route on help pages with mode query", () => {
+    mockLocation.pathname = ROUTES.HELP;
+    mockLocation.search = "?mode=lightning";
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.titleRoute).toBe(ROUTES.PLAY);
+  });
+
   it("returns null activeModeId on routes without game mode context", () => {
     mockLocation.pathname = ROUTES.SCOREBOARD;
     mockLocation.search = "";
@@ -181,5 +197,19 @@ describe("useNavbarController", () => {
     const { result } = renderHook(() => useNavbarController());
 
     expect(result.current.playRoute).toBe(getModeRoute("classic"));
+  });
+
+  it("uses game modes route for title when already on home", () => {
+    mockLocation.pathname = ROUTES.HOME;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.titleRoute).toBe(ROUTES.PLAY);
+  });
+
+  it("uses game modes route for title on non-home routes", () => {
+    mockLocation.pathname = ROUTES.SCOREBOARD;
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.titleRoute).toBe(ROUTES.PLAY);
   });
 });

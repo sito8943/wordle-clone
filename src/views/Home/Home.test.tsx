@@ -2,6 +2,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
+import { HOME_MENU_SEEN_SESSION_STORAGE_KEY } from "@domain/wordle";
 import Home from "./Home";
 import {
   HOME_ENTRY_ANIMATION_SESSION_KEY,
@@ -69,6 +70,9 @@ describe("Home entry animation", () => {
     expect(sessionStorage.getItem(HOME_ENTRY_ANIMATION_SESSION_KEY)).toBe(
       "seen",
     );
+    expect(sessionStorage.getItem(HOME_MENU_SEEN_SESSION_STORAGE_KEY)).toBe(
+      "seen",
+    );
 
     await waitFor(() => {
       expect(heading.className).toContain("opacity-100");
@@ -114,6 +118,16 @@ describe("Home entry animation", () => {
     expect(heading.className).toContain("scale-100");
     expect(firstNavigationItem.className).toContain("translate-y-0");
     expect(firstNavigationItem.className).toContain("scale-100");
+  });
+
+  it("marks home menu as seen even when intro animation is skipped", () => {
+    sessionStorage.setItem(HOME_ENTRY_ANIMATION_SESSION_KEY, "seen");
+
+    renderHome();
+
+    expect(sessionStorage.getItem(HOME_MENU_SEEN_SESSION_STORAGE_KEY)).toBe(
+      "seen",
+    );
   });
 
   it("hides the donate button when paypal feature flag is disabled", () => {

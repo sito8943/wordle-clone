@@ -18,6 +18,7 @@ import {
 import { env } from "@config/env";
 import { ROUTES } from "@config/routes";
 import { faPaypal } from "@fortawesome/free-brands-svg-icons";
+import { HOME_MENU_SEEN_SESSION_STORAGE_KEY } from "@domain/wordle";
 import {
   hasSeenEntryAnimationInSession,
   markEntryAnimationAsSeenInSession,
@@ -35,6 +36,10 @@ const Home = () => {
     () => !shouldAnimateEntry,
   );
   const showDonationAlert = location.hash === HOME_DONATED_HASH;
+
+  useEffect(() => {
+    markEntryAnimationAsSeenInSession(HOME_MENU_SEEN_SESSION_STORAGE_KEY);
+  }, []);
 
   useEffect(() => {
     if (!shouldAnimateEntry) {
