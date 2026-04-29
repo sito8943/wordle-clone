@@ -105,6 +105,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi
           .fn()
           .mockImplementation((_language: string, modeId?: string) => ({
@@ -234,6 +235,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.CLASSIC,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      }),
     );
   });
 
@@ -247,6 +256,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,
@@ -332,6 +342,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,
@@ -429,6 +440,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,
@@ -635,6 +647,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi
           .fn()
           .mockImplementation((_language: string, modeId?: string) => ({
@@ -1022,6 +1035,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.CLASSIC,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 4,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "BRICK", "APPLE"],
+      }),
     );
   });
 
@@ -1114,6 +1135,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.CLASSIC,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 3,
+        difficulty: "insane",
+        hardModeEnabled: true,
+        hardModeSecondsLeft: 11,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      }),
     );
     expect(result.current.victoryScoreSummary?.total).toBe(
       getTotalPointsForWin(3, 7, 2, 2),
@@ -1160,6 +1189,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.LIGHTNING,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: true,
+        hardModeSecondsLeft: 11,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      }),
     );
     expect(result.current.victoryScoreSummary?.items).toEqual(
       expect.arrayContaining([{ key: "time", value: 2 }]),
@@ -1201,6 +1238,14 @@ describe("usePlayController", () => {
       undefined,
       1_000,
       WORDLE_MODE_IDS.DAILY,
+      expect.objectContaining({
+        roundStartedAt: 1_000,
+        guessesUsed: 2,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "APPLE"],
+      }),
     );
     expect(result.current.victoryScoreSummary).toEqual({
       items: [{ key: "base", value: 1 }],
@@ -1532,7 +1577,16 @@ describe("usePlayController", () => {
 
   it("consumes daily shield and preserves streak loss handling when selected", () => {
     const commitLoss = vi.fn().mockResolvedValue(undefined);
+    const consumeDailyShield = vi.fn().mockResolvedValue(null);
     const basePlayerState = mockUsePlayer();
+    const baseApiState = mockUseApi();
+    mockUseApi.mockReturnValue({
+      ...baseApiState,
+      scoreClient: {
+        ...baseApiState.scoreClient,
+        consumeDailyShield,
+      },
+    });
     mockUsePlayer.mockReturnValue({
       ...basePlayerState,
       commitLoss,
@@ -1561,6 +1615,13 @@ describe("usePlayController", () => {
     });
 
     expect(commitLoss).not.toHaveBeenCalled();
+    expect(consumeDailyShield).toHaveBeenCalledWith({
+      nick: "Player",
+      language: "en",
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      playerCode: "AB12",
+    });
     expect(result.current.showDefeatShieldActions).toBe(false);
     expect(hasDailyShieldAvailableForDate("AB12")).toBe(false);
   });
@@ -1985,6 +2046,7 @@ describe("usePlayController", () => {
     mockUseApi.mockReturnValue({
       scoreClient: {
         recordScore: vi.fn().mockResolvedValue(undefined),
+        consumeDailyShield: vi.fn().mockResolvedValue(null),
         getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
           score: 0,
           streak: 0,

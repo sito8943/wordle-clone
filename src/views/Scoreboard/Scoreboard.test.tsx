@@ -451,4 +451,27 @@ describe("Scoreboard", () => {
 
     expect(container.querySelector('svg[data-icon="shield-heart"]')).toBeNull();
   });
+
+  it("does not show shield icon when daily shield is marked as consumed", () => {
+    mockController({
+      scores: [
+        {
+          id: "1",
+          nick: "Sito",
+          score: 12,
+          streak: 2,
+          hasWonDailyToday: true,
+          hasDailyShieldAvailableToday: false,
+          formattedDate: "Jan 1",
+          displayRank: 1,
+          realRank: 1,
+          isCurrentClient: false,
+          isPinnedCurrentClient: false,
+        },
+      ],
+    });
+    const { container } = render(<Scoreboard />);
+
+    expect(container.querySelector('svg[data-icon="shield-heart"]')).toBeNull();
+  });
 });

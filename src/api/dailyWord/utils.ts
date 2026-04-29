@@ -3,6 +3,7 @@ import {
   DAILY_WORD_DATE_PATTERN,
 } from "./constants";
 import type {
+  DailyWordReference,
   DailyWordMeaningEntry,
   DailyWordMeaningResponse,
   DailyWordResponse,
@@ -59,6 +60,60 @@ export const extractDailyWordFromResponse = (
   const maybeResponse = payload as DailyWordResponse;
 
   return normalizeDailyWordCandidate(maybeResponse.data?.word);
+};
+
+export const normalizeDailyWordSeed = (value: unknown): number | null => {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  if (value < 0) {
+    return null;
+  }
+
+  return Math.floor(value) >>> 0;
+};
+
+export const normalizeDailyWordReferenceCandidate = (
+  value: unknown,
+): DailyWordReference | null => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const maybe = value as Partial<DailyWordReference>;
+  if (typeof maybe.gameId !== "string") {
+    return null;
+  }
+
+  const normalizedGameId = maybe.gameId.trim();
+  if (normalizedGameId.length === 0) {
+    return null;
+  }
+
+  const normalizedSeed = normalizeDailyWordSeed(maybe.seed);
+  if (normalizedSeed === null) {
+    return null;
+  }
+
+  return {
+    gameId: normalizedGameId,
+    seed: normalizedSeed,
+  };
+};
+
+export const extractDailyReferenceFromResponse = (
+  payload: unknown,
+): DailyWordReference | null => {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const maybeResponse = payload as DailyWordResponse;
+  return normalizeDailyWordReferenceCandidate({
+    gameId: maybeResponse.data?.gameId,
+    seed: maybeResponse.data?.seed,
+  });
 };
 
 export const normalizeDailyMeaningCandidate = (

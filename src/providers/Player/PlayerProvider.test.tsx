@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { queryKeys } from "@hooks";
 import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
+  hasDailyShieldAvailableForDate,
   readDailyModeOutcomeForDate,
 } from "@domain/wordle";
 import { ApiContext } from "@providers/Api/ApiContext";
@@ -201,6 +202,34 @@ describe("PlayerProvider", () => {
     expect(readDailyModeOutcomeForDate("AB12")).toBe("won");
   });
 
+  it("updatePlayer applies backend shield availability for today", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      language: input.language,
+      playerCode: "AB12",
+      score: input.score ?? 0,
+      streak: input.streak ?? 0,
+      hasWonDailyToday: true,
+      hasDailyShieldAvailableToday: false,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      createdAt: 1000,
+    }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ upsertPlayerProfile }),
+    });
+
+    await act(async () => {
+      await result.current.updatePlayer("Carlos");
+    });
+
+    expect(readDailyModeOutcomeForDate("AB12")).toBe("won");
+    expect(hasDailyShieldAvailableForDate("AB12")).toBe(false);
+  });
+
   it("updatePlayer trims and normalizes the name", async () => {
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper(),
@@ -251,6 +280,44 @@ describe("PlayerProvider", () => {
         modeId: "classic",
         happenedAt: 1234,
         version: 2,
+      }),
+    );
+  });
+
+  it("commitVictory enqueues a v3 event when round proof is provided", async () => {
+    const queueRoundEvent = vi.fn();
+    const roundStartedAt = 1_000;
+    const wonAt = roundStartedAt + MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS + 100;
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ queueRoundEvent }),
+    });
+
+    await act(async () => {
+      await result.current.commitVictory(5, wonAt, roundStartedAt, "classic", {
+        roundStartedAt,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      });
+    });
+
+    expect(queueRoundEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "win",
+        pointsDelta: 5,
+        modeId: "classic",
+        happenedAt: wonAt,
+        version: 3,
+        proof: {
+          roundStartedAt,
+          guessesUsed: 3,
+          difficulty: "normal",
+          hardModeEnabled: false,
+          hardModeSecondsLeft: 60,
+          guessWords: ["SLATE", "CRANE", "APPLE"],
+        },
       }),
     );
   });
@@ -520,6 +587,8 @@ describe("PlayerProvider", () => {
       await result.current.updatePlayer("Ana");
     });
 
+    syncRoundEvents.mockClear();
+
     await act(async () => {
       await result.current.commitVictory(10, 1000);
     });
@@ -531,6 +600,70 @@ describe("PlayerProvider", () => {
     });
     expect(result.current.player.score).toBe(10);
     expect(result.current.player.code).toBe("ZX90");
+  });
+
+  it("invalidates top scores after syncing a victory event", async () => {
+    const syncRoundEvents = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: "Ana",
+        language: "en",
+        playerCode: "ZX90",
+        score: 10,
+        streak: 1,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      });
+    const queryClient = createTestQueryClient();
+    const invalidateQueriesSpy = vi
+      .spyOn(queryClient, "invalidateQueries")
+      .mockResolvedValue(undefined);
+    const apiValue = createTestApiContextValue({
+      scoreClient: createMockScoreClient(
+        vi.fn().mockResolvedValue({
+          scores: [],
+          source: "local",
+          currentClientRank: null,
+          currentClientEntry: null,
+        }),
+        {
+          syncRoundEvents,
+          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
+        },
+      ) as never,
+    });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>
+        <ApiContext.Provider value={apiValue}>
+          <PlayerProvider>{children}</PlayerProvider>
+        </ApiContext.Provider>
+      </QueryClientProvider>
+    );
+    const { result } = renderHook(() => usePlayer(), { wrapper });
+
+    await act(async () => {
+      await result.current.updatePlayer("Ana");
+    });
+
+    syncRoundEvents.mockClear();
+    invalidateQueriesSpy.mockClear();
+
+    await act(async () => {
+      await result.current.commitVictory(10, 1000);
+    });
+
+    await waitFor(() => {
+      expect(syncRoundEvents).toHaveBeenCalled();
+    });
+
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.topScores,
+    });
   });
 
   it("keeps local score and streak when sync returns stale profile snapshots", async () => {

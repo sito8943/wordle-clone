@@ -18,6 +18,8 @@ import {
   MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS,
   SCOREBOARD_MODE_IDS,
   clearAllPersistedGameStates,
+  clearDailyShieldUsage,
+  consumeDailyShieldForDate,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
   resolveScoreboardModeId,
@@ -28,6 +30,7 @@ import {
   type PlayerKeyboardPreference,
   type PlayerLanguage,
   type RoundSyncEvent,
+  type RoundSyncWinProof,
   type ScoreboardModeId,
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
@@ -62,19 +65,35 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     (
       remoteProfile: Pick<
         RemotePlayerProfile,
-        "playerCode" | "hasWonDailyToday"
+        "playerCode" | "hasWonDailyToday" | "hasDailyShieldAvailableToday"
       >,
     ) => {
+      const normalizedPlayerCode = remoteProfile.playerCode.trim();
+      if (normalizedPlayerCode.length === 0) {
+        return;
+      }
+
+      if (remoteProfile.hasWonDailyToday === true) {
+        writeDailyModeOutcomeForDate({
+          outcome: "won",
+          playerCode: normalizedPlayerCode,
+        });
+      }
+
       if (
-        remoteProfile.playerCode.trim().length === 0 ||
-        remoteProfile.hasWonDailyToday !== true
+        remoteProfile.hasWonDailyToday !== true ||
+        typeof remoteProfile.hasDailyShieldAvailableToday !== "boolean"
       ) {
         return;
       }
 
-      writeDailyModeOutcomeForDate({
-        outcome: "won",
-        playerCode: remoteProfile.playerCode,
+      if (remoteProfile.hasDailyShieldAvailableToday) {
+        clearDailyShieldUsage(normalizedPlayerCode);
+        return;
+      }
+
+      consumeDailyShieldForDate({
+        playerCode: normalizedPlayerCode,
       });
     },
     [],
@@ -211,11 +230,12 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           preserveLocalPreferences: true,
           preserveLocalProgress: true,
         });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
       }
 
       return syncedProfile;
     },
-    [applyRemoteProfile, scoreClient],
+    [applyRemoteProfile, queryClient, scoreClient],
   );
 
   const updatePlayer = useCallback(
@@ -301,6 +321,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       wonAt = Date.now(),
       roundStartedAt?: number,
       modeId?: ScoreboardModeId,
+      roundSyncProof?: RoundSyncWinProof,
     ) => {
       const safePoints =
         Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
@@ -366,17 +387,28 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         overwriteExisting: true,
       });
 
-      const event: RoundSyncEvent = {
-        id:
-          typeof crypto !== "undefined" && "randomUUID" in crypto
-            ? crypto.randomUUID()
-            : `${safeWonAt}-${Math.random().toString(36).slice(2)}`,
-        kind: "win",
-        pointsDelta: safePoints,
-        modeId: safeModeId,
-        happenedAt: safeWonAt,
-        version: 2,
-      };
+      const eventId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${safeWonAt}-${Math.random().toString(36).slice(2)}`;
+      const event: RoundSyncEvent = roundSyncProof
+        ? {
+            id: eventId,
+            kind: "win",
+            pointsDelta: safePoints,
+            modeId: safeModeId,
+            happenedAt: safeWonAt,
+            version: 3,
+            proof: roundSyncProof,
+          }
+        : {
+            id: eventId,
+            kind: "win",
+            pointsDelta: safePoints,
+            modeId: safeModeId,
+            happenedAt: safeWonAt,
+            version: 2,
+          };
 
       scoreClient.queueRoundEvent(event);
 

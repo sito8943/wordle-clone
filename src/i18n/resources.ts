@@ -128,13 +128,13 @@ export const resources = {
             "No detailed changelog entries were found for this update range.",
           closeAction: "Got it",
           changes: {
-            v0019: [
-              "Added full Daily mode support: one daily round lock per profile and UTC day, with per-player persistence.",
-              "Added a daily shield flow: winning Daily grants one shield that can be consumed to avoid a streak reset after a non-daily defeat.",
-              "Integrated daily word + meaning loading from a single backend payload (`/api/daily`) with cached hydration and deterministic fallback.",
-              "Added a dedicated daily meaning dialog and toolbar shortcut so players can review the word definition from the Play screen.",
-              "Extended Scoreboard mode selection and score synchronization contracts to include Daily rankings end-to-end.",
-              "Polished mode-aware navigation and anti-fraud score-commit checks to reduce false streak resets while preserving protection rules.",
+            v0020: [
+              "Migrated Daily cache persistence to `wordle:daily-ref:<YYYY-MM-DD>` + `wordle:daily-meaning:<YYYY-MM-DD>`, stopping new clear-text `wordle:daily-word:*` writes while keeping legacy fallback reads during rollout.",
+              "Added server-authoritative `win` sync (`version: 3`) so backend score updates are recalculated from proof data instead of trusting client `pointsDelta`.",
+              "Hardened anti-fraud round validation and telemetry in backend sync flow, including minimum round-duration checks and rejection-reason tracking.",
+              "Fixed daily shield lifecycle synchronization so shield availability/consumption stays consistent across local cache, remote profile state, and post-loss cleanup.",
+              "Fixed challenge-related score calculations in backend progression updates to keep challenge counters aligned with applied score deltas.",
+              "Extended mode-aware Play navigation so Home and Navbar shortcuts reopen the latest persisted mode, including `zen`.",
             ],
             v0018beta: [
               "Split Scoreboard data by game mode so Classic and Lightning keep independent rankings.",
@@ -779,13 +779,13 @@ export const resources = {
             "No se han encontrado entradas detalladas para este rango de actualización.",
           closeAction: "Entendido",
           changes: {
-            v0019: [
-              "Se añadió soporte completo del modo Diario: bloqueo de una ronda diaria por perfil y día UTC, con persistencia por jugador.",
-              "Se añadió el flujo de escudo diario: ganar en Diario otorga un escudo que puede consumirse para evitar el reinicio de racha tras una derrota fuera de Diario.",
-              "Se integró la carga de palabra + significado diarios desde un único payload backend (`/api/daily`), con hidratación en caché y fallback determinista.",
-              "Se añadió un diálogo dedicado al significado diario y un acceso directo en la barra de herramientas para consultarlo desde Play.",
-              "Se amplió la selección de modos en la Clasificación y el contrato de sincronización de puntuación para incluir rankings de Diario de extremo a extremo.",
-              "Se pulieron la navegación contextual por modo y las validaciones anti-fraude al confirmar puntuaciones para reducir falsos reinicios de racha manteniendo las reglas de protección.",
+            v0020: [
+              "Se migró la persistencia de caché de Diario a `wordle:daily-ref:<YYYY-MM-DD>` + `wordle:daily-meaning:<YYYY-MM-DD>`, dejando de escribir nuevas entradas en texto plano `wordle:daily-word:*` y manteniendo lectura legacy durante el rollout.",
+              "Se añadió sincronización autoritativa de victorias (`version: 3`), de modo que el backend recalcula la puntuación desde datos de prueba y no confía en `pointsDelta` del cliente.",
+              "Se reforzaron las validaciones anti-fraude y la telemetría del flujo de sync backend, incluyendo control de duración mínima de ronda y registro de motivos de rechazo.",
+              "Se corrigió la sincronización del ciclo de vida del escudo diario para mantener coherente su disponibilidad/consumo entre caché local, estado remoto de perfil y limpieza tras derrota.",
+              "Se corrigieron cálculos de puntuación ligados a retos en la progresión backend para alinear los contadores de retos con los deltas de puntuación aplicados.",
+              "Se amplió la navegación contextual de Jugar para que los accesos de Home y Navbar reabran el último modo persistido, incluido `zen`.",
             ],
             v0018beta: [
               "Se separó la clasificación por modo de juego para que Clásico y Relámpago tengan rankings independientes.",

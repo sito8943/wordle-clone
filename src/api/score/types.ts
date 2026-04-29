@@ -16,6 +16,7 @@ export type ScoreEntry = {
   score: number;
   streak: number;
   hasWonDailyToday?: boolean;
+  hasDailyShieldAvailableToday?: boolean;
   createdAt: number;
   source: ScoreSource;
   isCurrentClient: boolean;
@@ -71,6 +72,7 @@ export type RemoteScore = {
   score: number;
   streak?: number;
   hasWonDailyToday?: boolean;
+  hasDailyShieldAvailableToday?: boolean;
   createdAt: number;
   isCurrentClient?: boolean;
 };
@@ -101,6 +103,7 @@ export type RemotePlayerProfile = {
   score: number;
   streak: number;
   hasWonDailyToday?: boolean;
+  hasDailyShieldAvailableToday?: boolean;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
   createdAt: number;
@@ -123,6 +126,15 @@ export type SyncRoundEventsInput = {
   language: PlayerLanguage;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
+};
+
+export type ConsumeDailyShieldInput = {
+  nick: string;
+  language: PlayerLanguage;
+  difficulty: PlayerDifficulty;
+  keyboardPreference: PlayerKeyboardPreference;
+  playerCode?: string | null;
+  happenedAt?: number;
 };
 
 export type StoredRoundSyncEvent = RoundSyncEvent;

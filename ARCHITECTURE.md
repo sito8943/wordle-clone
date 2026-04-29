@@ -157,6 +157,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `sessionStorage`
 - `wordle:session-id`: tab session id used by wordle session handling.
 - `wordle:end-of-game-dialog-seen`: marks that this tab already showed the first-run hint for victory/defeat dialogs.
+- `wordle:home-menu-seen`: marks that this browser tab already rendered the home menu at least once.
 - `localStorage`
 - `wordle:game`: persisted in-progress game payload (managed in domain storage helpers).
   - It stores `{ sessionId, gameId, seed, startedAt, guesses, current, gameOver }`.
@@ -172,12 +173,13 @@ This is an evolution of the current layered architecture, not a replacement for 
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - `wordle:tutorial-prompt-seen-modes`: tutorial prompt state by mode (`classic`, `lightning`, `zen`, `daily`) so each mode can show its first-run welcome independently.
 - The gameplay dictionary language is fixed to Spanish (`es`) in frontend game flow.
-- `wordle:sync-events`: local queue of pending round sync events (`win` with `pointsDelta`, `loss` with timestamp), each event scoped to a scoreboard mode (`classic`, `lightning`, or `daily`) for offline remote synchronization.
+- `wordle:sync-events`: local queue of pending round sync events (`win`/`loss`) scoped to scoreboard mode (`classic`, `lightning`, or `daily`) for offline synchronization; in `win` v3 the backend recalculates points from `proof` server-side and treats client `pointsDelta` as telemetry only (v2 remains transitional compatibility).
 - `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions to store completed rounds count, won rounds count, and consecutive wins count for the current UTC date.
 - `wordle:weekly-challenges:round-tracker:<playerCode>`: per-player weekly round tracker used by weekly challenge conditions to store completed rounds count, won rounds count, and lost rounds count for the current UTC week (Monday-start, UTC).
 - `wordle:dictionary:es`: cached dictionary words.
-- `wordle:daily-word:<YYYY-MM-DD>`: cached daily word fetched from the RAE daily endpoint for UTC date `<YYYY-MM-DD>`, with local deterministic fallback only when remote fetch fails or returns no usable word.
-- `wordle:daily-meaning:<YYYY-MM-DD>:<WORD>`: cached daily word meaning fetched from the same daily endpoint payload used for the word of the day during Daily mode prerequisites loading, before entering `/daily`.
+- `wordle:daily-ref:<YYYY-MM-DD>`: cached daily game reference (`gameId + seed`) for UTC date `<YYYY-MM-DD>`, used to resolve the daily answer locally without persisting the literal word.
+- `wordle:daily-meaning:<YYYY-MM-DD>`: cached daily word meaning fetched from the same daily endpoint payload used for Daily mode prerequisites loading, before entering `/daily`.
+- legacy compatibility: older clients may still read/remove `wordle:daily-word:<YYYY-MM-DD>` and `wordle:daily-meaning:<YYYY-MM-DD>:<WORD>` during transitional cleanup.
 - `wordle:daily-mode-status` (or `wordle:daily-mode-status:<PLAYER_CODE>` when player-scoped): stores today's daily mode resolution (`won` / `lost`) and UTC date to prevent replaying Daily after the round is resolved until the next UTC day.
 - `wordle:daily-shield-used` (or `wordle:daily-shield-used:<PLAYER_CODE>` when player-scoped): stores daily shield consumption for the current UTC date, allowing one shield from a daily win and consuming it when the player protects a loss streak.
 - `wordle:scoreboard:cache` and `wordle:scoreboard:pending`: local scoreboard caches segmented by `language` and `modeId` (`classic`, `lightning`, `daily`).

@@ -557,6 +557,38 @@ describe("ScoreClient", () => {
     expect(result.scores[0].hasWonDailyToday).toBe(true);
   });
 
+  it("keeps the daily-shield availability flag from remote scores", async () => {
+    const query = vi.fn().mockResolvedValue({
+      scores: [
+        {
+          id: "remote-a",
+          nick: "ANA",
+          score: 20,
+          streak: 3,
+          createdAt: 1000,
+          hasWonDailyToday: true,
+          hasDailyShieldAvailableToday: false,
+        },
+      ],
+      currentClientRank: null,
+      currentClientEntry: null,
+    });
+
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+
+    const result = await client.listTopScores(10);
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
+  });
+
   it("marks current local rows when daily was won today in storage", async () => {
     const clientId = "client-me";
     const today = new Date().toISOString().slice(0, 10);
@@ -586,6 +618,87 @@ describe("ScoreClient", () => {
 
     expect(result.scores).toHaveLength(1);
     expect(result.scores[0].hasWonDailyToday).toBe(true);
+  });
+
+  it("marks current local rows with unavailable shield after local shield consumption", async () => {
+    const clientId = "client-me";
+    const today = new Date().toISOString().slice(0, 10);
+    storage.setItem(SCOREBOARD_CLIENT_ID_KEY, clientId);
+    storage.setItem(
+      "wordle:daily-mode-status",
+      JSON.stringify({ date: today, outcome: "won" }),
+    );
+    storage.setItem(
+      "wordle:daily-shield-used",
+      JSON.stringify({ date: today, used: true }),
+    );
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "local-me",
+          clientId,
+          nick: "Sito",
+          language: "en",
+          modeId: "classic",
+          score: 12,
+          streak: 2,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    const client = new ScoreClient(createGateway(), storage);
+    const result = await client.listTopScores(10, "en", "classic");
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
+  });
+
+  it("prefers current player scoped shield usage over legacy unscoped daily status", async () => {
+    const clientId = "client-me";
+    const today = new Date().toISOString().slice(0, 10);
+    storage.setItem(SCOREBOARD_CLIENT_ID_KEY, clientId);
+    storage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Sito",
+        code: "AB12",
+      }),
+    );
+    storage.setItem(
+      "wordle:daily-mode-status",
+      JSON.stringify({ date: today, outcome: "won" }),
+    );
+    storage.setItem(
+      "wordle:daily-mode-status:AB12",
+      JSON.stringify({ date: today, outcome: "won" }),
+    );
+    storage.setItem(
+      "wordle:daily-shield-used:AB12",
+      JSON.stringify({ date: today, used: true }),
+    );
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "local-me",
+          clientId,
+          nick: "Sito",
+          language: "en",
+          modeId: "classic",
+          score: 12,
+          streak: 2,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    const client = new ScoreClient(createGateway(), storage);
+    const result = await client.listTopScores(10, "en", "classic");
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
   });
 
   it("checks nick availability through remote query", async () => {
@@ -915,6 +1028,77 @@ describe("ScoreClient", () => {
             modeId: "classic",
             happenedAt: 2000,
             version: 2,
+          },
+        ],
+      }),
+    );
+    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
+  });
+
+  it("syncs v3 win events with round proof metadata", async () => {
+    const mutation = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "remote-client",
+      clientRecordId: "remote-record",
+      nick: "Ana",
+      playerCode: "AB12",
+      score: 24,
+      streak: 1,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 2000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        mutation,
+      }),
+      storage,
+    );
+
+    client.queueRoundEvent({
+      id: "win-v3-1",
+      kind: "win",
+      pointsDelta: 8,
+      modeId: "classic",
+      happenedAt: 1000,
+      version: 3,
+      proof: {
+        roundStartedAt: 500,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      },
+    });
+
+    await client.syncRoundEvents({
+      nick: "Ana",
+      language: "en",
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+    });
+
+    expect(mutation).toHaveBeenCalledWith(
+      SYNC_ROUND_EVENTS_MUTATION,
+      expect.objectContaining({
+        events: [
+          {
+            id: "win-v3-1",
+            kind: "win",
+            pointsDelta: 8,
+            modeId: "classic",
+            happenedAt: 1000,
+            version: 3,
+            proof: {
+              roundStartedAt: 500,
+              guessesUsed: 3,
+              difficulty: "normal",
+              hardModeEnabled: false,
+              hardModeSecondsLeft: 60,
+              guessWords: ["SLATE", "CRANE", "APPLE"],
+            },
           },
         ],
       }),

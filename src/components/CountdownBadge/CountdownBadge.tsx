@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 import { formatCountdown } from "./utils";
@@ -15,10 +15,16 @@ const CountdownBadge = ({
 }: CountdownBadgeProps) => {
   const [remainingMs, setRemainingMs] = useState(millisUntilTarget);
   const [isTickAnimating, setIsTickAnimating] = useState(false);
+  const targetTimestampRef = useRef(
+    Date.now() + Math.max(0, millisUntilTarget),
+  );
   const countdown = useMemo(() => formatCountdown(remainingMs), [remainingMs]);
+  const hasTimeRemaining = millisUntilTarget > 0;
 
   useEffect(() => {
-    setRemainingMs(millisUntilTarget);
+    const nextRemainingMs = Math.max(0, millisUntilTarget);
+    targetTimestampRef.current = Date.now() + nextRemainingMs;
+    setRemainingMs(nextRemainingMs);
   }, [millisUntilTarget]);
 
   useEffect(() => {
@@ -26,16 +32,16 @@ const CountdownBadge = ({
       return;
     }
 
-    if (millisUntilTarget <= 0) {
+    if (!hasTimeRemaining) {
       setRemainingMs(0);
       return;
     }
 
-    const startedAt = Date.now();
-    const initialRemainingMs = millisUntilTarget;
     const interval = window.setInterval(() => {
-      const elapsedMs = Date.now() - startedAt;
-      const nextRemainingMs = Math.max(0, initialRemainingMs - elapsedMs);
+      const nextRemainingMs = Math.max(
+        0,
+        targetTimestampRef.current - Date.now(),
+      );
 
       setRemainingMs(nextRemainingMs);
       setIsTickAnimating(true);
@@ -46,7 +52,7 @@ const CountdownBadge = ({
     }, 1_000);
 
     return () => window.clearInterval(interval);
-  }, [millisUntilTarget, visible]);
+  }, [hasTimeRemaining, visible]);
 
   useEffect(() => {
     if (!isTickAnimating) {
@@ -66,7 +72,7 @@ const CountdownBadge = ({
 
   return (
     <div
-      className={`flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 ${className}`.trim()}
+      className={`flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-1 m-0 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 ${className}`.trim()}
     >
       {label ? (
         <span

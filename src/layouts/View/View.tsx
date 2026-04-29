@@ -233,7 +233,7 @@ const View = () => {
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
       <div className="mx-auto flex min-h-screen w-full flex-col max-sm:p-3 p-1">
-        <Navbar />
+        {!isHomeRoute ? <Navbar /> : null}
         <ErrorBoundary
           name="route-outlet"
           resetKeys={[pathname]}
@@ -250,7 +250,7 @@ const View = () => {
           <Outlet />
         </ErrorBoundary>
       </div>
-      <Footer alwaysVisible={isHomeRoute} />
+      {!isHomeRoute ? <Footer /> : null}
       <Suspense fallback={null}>
         {queuedVersionDialogVisible ? (
           <VersionUpdateDialog

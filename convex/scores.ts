@@ -9,6 +9,11 @@ const PLAYER_CODE_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const PLAYER_CODE_MAX_ATTEMPTS = 32;
 const DEFAULT_DIFFICULTY = "normal";
 const DEFAULT_KEYBOARD_PREFERENCE = "onscreen";
+const MAX_GUESSES = 6;
+const MAX_STREAK_FOR_SCORE_MULTIPLIER = 100;
+const STREAK_MODIFIER = 0.3;
+const HARD_MODE_SECONDS_BONUS = 4;
+const MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS = 5000;
 const NAME_UNAVAILABLE_ERROR = "Name is not available.";
 const PLAYER_CODE_NOT_FOUND_ERROR = "Recovery code was not found.";
 const PLAYER_CODE_GENERATION_ERROR =
@@ -29,6 +34,14 @@ const normalizeStreak = (value: number | undefined): number =>
 
 type SupportedLanguage = "en" | "es";
 type SupportedMode = "classic" | "lightning" | "daily";
+type SupportedDifficulty = "easy" | "normal" | "hard" | "insane";
+
+const DIFFICULTY_SCORE_MULTIPLIERS: Record<SupportedDifficulty, number> = {
+  easy: 1,
+  normal: 2,
+  hard: 5,
+  insane: 7,
+};
 
 const normalizeLanguage = (value?: string): SupportedLanguage =>
   value === "es" ? "es" : "en";
@@ -36,7 +49,7 @@ const normalizeLanguage = (value?: string): SupportedLanguage =>
 const normalizeModeId = (value?: string): SupportedMode =>
   value === "lightning" || value === "daily" ? value : "classic";
 
-const normalizeDifficulty = (value?: string): string =>
+const normalizeDifficulty = (value?: string): SupportedDifficulty =>
   value === "easy" ||
   value === "normal" ||
   value === "hard" ||
@@ -116,11 +129,55 @@ type ScoreEventRecord = {
   profileId: string;
   eventId: string;
   kind: string;
+  version?: number;
+  clientPointsDelta?: number;
   pointsDelta?: number;
+  rejectionReason?: string;
   modeId?: string;
   happenedAt: number;
   createdAt: number;
 };
+
+type RoundSyncWinProof = {
+  roundStartedAt: number;
+  guessesUsed: number;
+  difficulty: SupportedDifficulty;
+  hardModeEnabled: boolean;
+  hardModeSecondsLeft: number;
+  guessWords: string[];
+};
+
+type RoundSyncWinEventV2 = {
+  id: string;
+  kind: "win";
+  pointsDelta: number;
+  modeId?: string;
+  happenedAt: number;
+  version: 2;
+};
+
+type RoundSyncWinEventV3 = {
+  id: string;
+  kind: "win";
+  pointsDelta?: number;
+  modeId?: string;
+  happenedAt: number;
+  version: 3;
+  proof: RoundSyncWinProof;
+};
+
+type RoundSyncLossEvent = {
+  id: string;
+  kind: "loss";
+  modeId?: string;
+  happenedAt: number;
+  version: number;
+};
+
+type RoundSyncEvent =
+  | RoundSyncWinEventV2
+  | RoundSyncWinEventV3
+  | RoundSyncLossEvent;
 
 type ScoreIndexRangeBuilder = {
   eq: (field: string, value: string) => ScoreIndexRangeBuilder;
@@ -404,11 +461,130 @@ const hasWonDailyTodayFromEvents = (
 ): boolean =>
   events.some(
     (event) =>
-      event.kind === "win" &&
-      normalizeModeId(event.modeId) === "daily" &&
+      isDailyWinWithAppliedPoints(event) &&
       event.happenedAt >= range.startAt &&
       event.happenedAt < range.endAt,
   );
+
+const isDailyWinWithAppliedPoints = (event: ScoreEventRecord): boolean =>
+  event.kind === "win" &&
+  normalizeModeId(event.modeId) === "daily" &&
+  !event.rejectionReason &&
+  normalizeScore(event.pointsDelta ?? 0) > 0;
+
+const getUTCDayRangeForTimestamp = (
+  timestamp: number,
+): { startAt: number; endAt: number } => {
+  const date = new Date(timestamp);
+  const startAt = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+  );
+
+  return {
+    startAt,
+    endAt: startAt + 24 * 60 * 60 * 1000,
+  };
+};
+
+const toUTCDayKey = (timestamp: number): string => {
+  const range = getUTCDayRangeForTimestamp(timestamp);
+  return new Date(range.startAt).toISOString().slice(0, 10);
+};
+
+const isValidTimestamp = (value: number): boolean =>
+  Number.isFinite(value) && value > 0;
+
+const isValidGuessesUsed = (value: number): boolean =>
+  Number.isInteger(value) && value >= 1 && value <= MAX_GUESSES;
+
+const toSafeHardModeTimeBonus = (
+  hardModeEnabled: boolean,
+  hardModeSecondsLeft: number,
+): number => {
+  if (!hardModeEnabled || !Number.isFinite(hardModeSecondsLeft)) {
+    return 0;
+  }
+
+  if (hardModeSecondsLeft <= 1) {
+    return 0;
+  }
+
+  return Math.max(0, Math.floor(hardModeSecondsLeft / HARD_MODE_SECONDS_BONUS));
+};
+
+const toStreakMultiplier = (streak: number): number => {
+  const safeStreak = Math.min(
+    MAX_STREAK_FOR_SCORE_MULTIPLIER,
+    Math.max(0, Math.floor(streak)),
+  );
+
+  return 1 + STREAK_MODIFIER * Math.sqrt(safeStreak);
+};
+
+type V3WinValidationResult =
+  | {
+      ok: true;
+      authoritativePointsDelta: number;
+    }
+  | {
+      ok: false;
+      rejectionReason: string;
+    };
+
+const getAuthoritativeV3WinResult = (
+  event: RoundSyncWinEventV3,
+  modeId: SupportedMode,
+  modeStreakBeforeWin: number,
+): V3WinValidationResult => {
+  const roundStartedAt = event.proof.roundStartedAt;
+
+  if (!isValidGuessesUsed(event.proof.guessesUsed)) {
+    return { ok: false, rejectionReason: "invalid-guesses-used" };
+  }
+
+  if (
+    !isValidTimestamp(roundStartedAt) ||
+    !isValidTimestamp(event.happenedAt)
+  ) {
+    return { ok: false, rejectionReason: "invalid-event-timestamps" };
+  }
+
+  if (roundStartedAt > event.happenedAt) {
+    return { ok: false, rejectionReason: "round-start-after-event" };
+  }
+
+  if (
+    event.happenedAt - roundStartedAt <
+    MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS
+  ) {
+    return { ok: false, rejectionReason: "round-duration-too-short" };
+  }
+
+  if (modeId === "daily") {
+    return { ok: true, authoritativePointsDelta: 1 };
+  }
+
+  const basePoints = Math.max(0, MAX_GUESSES - event.proof.guessesUsed + 1);
+  const difficultyMultiplier =
+    DIFFICULTY_SCORE_MULTIPLIERS[event.proof.difficulty];
+  const timeBonus = toSafeHardModeTimeBonus(
+    event.proof.hardModeEnabled,
+    event.proof.hardModeSecondsLeft,
+  );
+  // Asuncion: streakActualDelModo es la racha del modo antes de aplicar este win.
+  const streakMultiplier = toStreakMultiplier(modeStreakBeforeWin);
+
+  return {
+    ok: true,
+    authoritativePointsDelta: normalizeScore(
+      Math.round(
+        (basePoints * difficultyMultiplier + timeBonus) * streakMultiplier,
+      ),
+    ),
+  };
+};
 
 const getDailyWinnersTodayByProfileId = async (
   ctx: ScoresCtx,
@@ -453,7 +629,28 @@ const roundSyncEventValidator = v.union(
     pointsDelta: v.number(),
     modeId: v.optional(v.string()),
     happenedAt: v.number(),
-    version: v.number(),
+    version: v.literal(2),
+  }),
+  v.object({
+    id: v.string(),
+    kind: v.literal("win"),
+    pointsDelta: v.optional(v.number()),
+    modeId: v.optional(v.string()),
+    happenedAt: v.number(),
+    version: v.literal(3),
+    proof: v.object({
+      roundStartedAt: v.number(),
+      guessesUsed: v.number(),
+      difficulty: v.union(
+        v.literal("easy"),
+        v.literal("normal"),
+        v.literal("hard"),
+        v.literal("insane"),
+      ),
+      hardModeEnabled: v.boolean(),
+      hardModeSecondsLeft: v.number(),
+      guessWords: v.array(v.string()),
+    }),
   }),
   v.object({
     id: v.string(),
@@ -868,7 +1065,10 @@ export const syncRoundEvents = mutation({
     const language = normalizeLanguage(args.language);
     const modeIds: SupportedMode[] = ["classic", "lightning", "daily"];
     const orderedEvents = [...args.events]
-      .filter((event) => event.version === 2)
+      .filter(
+        (event): event is RoundSyncEvent =>
+          event.version === 2 || event.version === 3,
+      )
       .sort((left, right) => left.happenedAt - right.happenedAt);
 
     const profile = await upsertProfileRecord(ctx, {
@@ -884,6 +1084,15 @@ export const syncRoundEvents = mutation({
     let nextScore = normalizeScore(profileLanguageStats.score);
     let nextStreak = normalizeStreak(profileLanguageStats.streak);
     let nextCreatedAt = profileLanguageStats.createdAt;
+    const profileEvents = (await ctx.db
+      .query("scoreEvents")
+      .withIndex("by_profile_id", (query) => query.eq("profileId", profile._id))
+      .collect()) as ScoreEventRecord[];
+    const awardedDailyWinDayKeys = new Set(
+      profileEvents
+        .filter((event) => isDailyWinWithAppliedPoints(event))
+        .map((event) => toUTCDayKey(event.happenedAt)),
+    );
     const modeStatsById = modeIds.reduce<Record<SupportedMode, LanguageStats>>(
       (accumulator, modeId) => {
         accumulator[modeId] = getModeStats(profile, language, modeId);
@@ -910,30 +1119,78 @@ export const syncRoundEvents = mutation({
 
       const modeId = normalizeModeId(event.modeId);
       const modeStats = modeStatsById[modeId];
+      const clientPointsDelta =
+        event.kind === "win" && typeof event.pointsDelta === "number"
+          ? normalizeScore(event.pointsDelta)
+          : undefined;
+      let authoritativePointsDelta: number | undefined =
+        event.kind === "win" && event.version === 2
+          ? normalizeScore(event.pointsDelta)
+          : undefined;
+      let rejectionReason: string | undefined;
 
       if (event.kind === "win") {
-        const pointsDelta = normalizeScore(event.pointsDelta);
-        nextScore = normalizeScore(nextScore + pointsDelta);
-        nextStreak += 1;
-        modeStats.score = normalizeScore(modeStats.score + pointsDelta);
-        modeStats.streak += 1;
+        if (event.version === 3) {
+          const v3Result = getAuthoritativeV3WinResult(
+            event,
+            modeId,
+            modeStats.streak,
+          );
+          if (!v3Result.ok) {
+            rejectionReason = v3Result.rejectionReason;
+            authoritativePointsDelta = 0;
+          } else {
+            authoritativePointsDelta = v3Result.authoritativePointsDelta;
+          }
+        }
+
+        if (
+          !rejectionReason &&
+          modeId === "daily" &&
+          authoritativePointsDelta !== undefined &&
+          authoritativePointsDelta > 0
+        ) {
+          const utcDayKey = toUTCDayKey(event.happenedAt);
+          if (awardedDailyWinDayKeys.has(utcDayKey)) {
+            rejectionReason = "daily-win-already-awarded";
+            authoritativePointsDelta = 0;
+          } else {
+            awardedDailyWinDayKeys.add(utcDayKey);
+          }
+        }
+
+        if (!rejectionReason) {
+          const safePoints = normalizeScore(authoritativePointsDelta ?? 0);
+          nextScore = normalizeScore(nextScore + safePoints);
+          nextStreak += 1;
+          modeStats.score = normalizeScore(modeStats.score + safePoints);
+          modeStats.streak += 1;
+          nextCreatedAt = Math.max(nextCreatedAt, event.happenedAt);
+          modeStats.createdAt = Math.max(modeStats.createdAt, event.happenedAt);
+          touchedModeIds.add(modeId);
+          hasChanges = true;
+        }
       } else {
         nextStreak = 0;
         modeStats.streak = 0;
+        nextCreatedAt = Math.max(nextCreatedAt, event.happenedAt);
+        modeStats.createdAt = Math.max(modeStats.createdAt, event.happenedAt);
+        touchedModeIds.add(modeId);
+        hasChanges = true;
       }
-
-      nextCreatedAt = Math.max(nextCreatedAt, event.happenedAt);
-      modeStats.createdAt = Math.max(modeStats.createdAt, event.happenedAt);
-      touchedModeIds.add(modeId);
-      hasChanges = true;
 
       await ctx.db.insert("scoreEvents", {
         profileId: profile._id,
         eventId: event.id,
         kind: event.kind,
+        version: event.version,
+        clientPointsDelta,
         modeId,
         pointsDelta:
-          event.kind === "win" ? normalizeScore(event.pointsDelta) : undefined,
+          event.kind === "win"
+            ? normalizeScore(authoritativePointsDelta ?? 0)
+            : undefined,
+        rejectionReason,
         happenedAt: event.happenedAt,
         createdAt: Date.now(),
       });

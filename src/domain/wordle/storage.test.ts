@@ -149,4 +149,48 @@ describe("per-mode persistence", () => {
     expect(readPersistedGameState(WORDLE_MODE_IDS.CLASSIC)).toBeNull();
     expect(readPersistedGameState(WORDLE_MODE_IDS.LIGHTNING)).toBeNull();
   });
+
+  it("keeps today's daily persisted state", () => {
+    const todayDailyState = makeState({
+      startedAt: Date.now(),
+      guesses: [
+        {
+          word: "CRANE",
+          statuses: ["correct", "correct", "correct", "correct", "correct"],
+        },
+      ],
+      gameOver: true,
+    });
+
+    localStorage.setItem(
+      `${CLASSIC_KEY}:daily`,
+      JSON.stringify(todayDailyState),
+    );
+
+    expect(readPersistedGameState(WORDLE_MODE_IDS.DAILY)).toMatchObject({
+      gameOver: true,
+      guesses: todayDailyState.guesses,
+    });
+  });
+
+  it("clears stale daily persisted state from previous UTC dates", () => {
+    const staleDailyState = makeState({
+      startedAt: Date.parse("2001-01-01T12:00:00.000Z"),
+      guesses: [
+        {
+          word: "ABOUT",
+          statuses: ["absent", "absent", "absent", "absent", "absent"],
+        },
+      ],
+      gameOver: true,
+    });
+
+    localStorage.setItem(
+      `${CLASSIC_KEY}:daily`,
+      JSON.stringify(staleDailyState),
+    );
+
+    expect(readPersistedGameState(WORDLE_MODE_IDS.DAILY)).toBeNull();
+    expect(localStorage.getItem(`${CLASSIC_KEY}:daily`)).toBeNull();
+  });
 });

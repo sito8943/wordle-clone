@@ -99,6 +99,23 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+describe("View layout chrome visibility", () => {
+  it("hides navbar and footer on home route", () => {
+    renderView("/");
+
+    expect(screen.queryByText("Navbar")).toBeNull();
+    expect(screen.queryByText("Footer")).toBeNull();
+    expect(screen.getByText("Home content")).toBeTruthy();
+  });
+
+  it("shows navbar and footer on non-home routes", () => {
+    renderView("/play");
+
+    expect(screen.getByText("Navbar")).toBeTruthy();
+    expect(screen.getByText("Footer")).toBeTruthy();
+  });
+});
+
 describe("View app version dialog", () => {
   it("stores the current app version when there is no previous one", async () => {
     renderView("/play");

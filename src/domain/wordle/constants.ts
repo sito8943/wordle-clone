@@ -10,7 +10,8 @@ export const WORDLE_START_ANIMATION_SESSION_KEY =
   "wordle:start-animation-session-seen";
 export const WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY =
   "wordle:keyboard-entry-animation-seen";
-export const MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS = 1;
+export const HOME_MENU_SEEN_SESSION_STORAGE_KEY = "wordle:home-menu-seen";
+export const MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS = 5000;
 
 export const DIFFICULTY_SCORE_MULTIPLIERS: Record<PlayerDifficulty, number> = {
   easy: 1,
