@@ -1586,9 +1586,7 @@ class ScoreClient {
 
         const shieldUsedToday =
           shieldUsageParsed?.date === today && shieldUsageParsed?.used === true;
-        if (!shieldUsedToday) {
-          return true;
-        }
+        return !shieldUsedToday;
       }
     } catch {
       return false;

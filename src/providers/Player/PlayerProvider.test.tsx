@@ -286,13 +286,15 @@ describe("PlayerProvider", () => {
 
   it("commitVictory enqueues a v3 event when round proof is provided", async () => {
     const queueRoundEvent = vi.fn();
+    const roundStartedAt = 1_000;
+    const wonAt = roundStartedAt + MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS + 100;
     const { result } = renderHook(() => usePlayer(), {
       wrapper: makeWrapper({ queueRoundEvent }),
     });
 
     await act(async () => {
-      await result.current.commitVictory(5, 1234, 1000, "classic", {
-        roundStartedAt: 1000,
+      await result.current.commitVictory(5, wonAt, roundStartedAt, "classic", {
+        roundStartedAt,
         guessesUsed: 3,
         difficulty: "normal",
         hardModeEnabled: false,
@@ -306,10 +308,10 @@ describe("PlayerProvider", () => {
         kind: "win",
         pointsDelta: 5,
         modeId: "classic",
-        happenedAt: 1234,
+        happenedAt: wonAt,
         version: 3,
         proof: {
-          roundStartedAt: 1000,
+          roundStartedAt,
           guessesUsed: 3,
           difficulty: "normal",
           hardModeEnabled: false,

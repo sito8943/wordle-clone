@@ -82,13 +82,11 @@ const DeveloperConsoleDialog = ({
       return;
     }
 
-    closeWithAction(() =>
-      submitDeveloperPlayer({
-        name,
-        score: Number(score),
-        streak: Number(streak),
-      }),
-    );
+    submitDeveloperPlayer({
+      name,
+      score: Number(score),
+      streak: Number(streak),
+    });
   };
 
   return (
