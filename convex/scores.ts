@@ -174,7 +174,10 @@ type RoundSyncLossEvent = {
   version: number;
 };
 
-type RoundSyncEvent = RoundSyncWinEventV2 | RoundSyncWinEventV3 | RoundSyncLossEvent;
+type RoundSyncEvent =
+  | RoundSyncWinEventV2
+  | RoundSyncWinEventV3
+  | RoundSyncLossEvent;
 
 type ScoreIndexRangeBuilder = {
   eq: (field: string, value: string) => ScoreIndexRangeBuilder;
@@ -541,7 +544,10 @@ const getAuthoritativeV3WinResult = (
     return { ok: false, rejectionReason: "invalid-guesses-used" };
   }
 
-  if (!isValidTimestamp(roundStartedAt) || !isValidTimestamp(event.happenedAt)) {
+  if (
+    !isValidTimestamp(roundStartedAt) ||
+    !isValidTimestamp(event.happenedAt)
+  ) {
     return { ok: false, rejectionReason: "invalid-event-timestamps" };
   }
 
@@ -549,7 +555,10 @@ const getAuthoritativeV3WinResult = (
     return { ok: false, rejectionReason: "round-start-after-event" };
   }
 
-  if (event.happenedAt - roundStartedAt < MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS) {
+  if (
+    event.happenedAt - roundStartedAt <
+    MIN_ROUND_DURATION_FOR_SCORE_COMMIT_MS
+  ) {
     return { ok: false, rejectionReason: "round-duration-too-short" };
   }
 

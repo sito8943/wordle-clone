@@ -186,4 +186,3 @@ Para v2 (transicional):
 3. Backend no incrementa score de eventos v3 manipulando `pointsDelta`.
 4. Un perfil no puede sumar más de una victoria daily por día UTC.
 5. Las pruebas de daily + score sync cubren v2 y v3 durante transición.
-

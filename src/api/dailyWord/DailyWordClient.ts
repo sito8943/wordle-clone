@@ -54,7 +54,9 @@ class DailyWordClient {
         if (legacyWord) {
           this.wordMemoryByDate.set(normalizedDate, legacyWord);
           try {
-            this.storage.removeItem(this.getLegacyWordStorageKey(normalizedDate));
+            this.storage.removeItem(
+              this.getLegacyWordStorageKey(normalizedDate),
+            );
           } catch {
             // Ignore legacy cache clear errors.
           }
@@ -116,8 +118,7 @@ class DailyWordClient {
 
   cacheReference(reference: DailyWordReference, date?: string): void {
     const normalizedDate = normalizeDailyWordDate(date);
-    const normalizedReference =
-      normalizeDailyWordReferenceCandidate(reference);
+    const normalizedReference = normalizeDailyWordReferenceCandidate(reference);
 
     if (!normalizedReference) {
       return;

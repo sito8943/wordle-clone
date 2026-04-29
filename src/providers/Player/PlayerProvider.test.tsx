@@ -291,20 +291,14 @@ describe("PlayerProvider", () => {
     });
 
     await act(async () => {
-      await result.current.commitVictory(
-        5,
-        1234,
-        1000,
-        "classic",
-        {
-          roundStartedAt: 1000,
-          guessesUsed: 3,
-          difficulty: "normal",
-          hardModeEnabled: false,
-          hardModeSecondsLeft: 60,
-          guessWords: ["SLATE", "CRANE", "APPLE"],
-        },
-      );
+      await result.current.commitVictory(5, 1234, 1000, "classic", {
+        roundStartedAt: 1000,
+        guessesUsed: 3,
+        difficulty: "normal",
+        hardModeEnabled: false,
+        hardModeSecondsLeft: 60,
+        guessWords: ["SLATE", "CRANE", "APPLE"],
+      });
     });
 
     expect(queueRoundEvent).toHaveBeenCalledWith(
