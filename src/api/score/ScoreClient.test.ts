@@ -773,8 +773,13 @@ describe("ScoreClient", () => {
         hasWonDailyToday: true,
         difficulty: "hard",
         keyboardPreference: "native",
+        tutorialPromptSeenModes: {
+          classic: true,
+          lightning: true,
+        },
         createdAt: 1000,
-      })
+      },
+    )
       .mockResolvedValueOnce(undefined);
     const client = new ScoreClient(
       createGateway({
@@ -791,10 +796,28 @@ describe("ScoreClient", () => {
       streak: 3,
       difficulty: "hard",
       keyboardPreference: "native",
+      tutorialPromptSeenModes: {
+        classic: true,
+        lightning: true,
+      },
     });
 
     expect(profile.playerCode).toBe("AB12");
     expect(profile.hasWonDailyToday).toBe(true);
+    expect(profile.tutorialPromptSeenModes).toEqual({
+      classic: true,
+      lightning: true,
+    });
+    expect(mutation).toHaveBeenNthCalledWith(
+      1,
+      "scores:upsertPlayerProfile",
+      expect.objectContaining({
+        tutorialPromptSeenModes: {
+          classic: true,
+          lightning: true,
+        },
+      }),
+    );
     expect(
       JSON.parse(storage.getItem(SCOREBOARD_PROFILE_IDENTITY_KEY) || "{}"),
     ).toEqual({

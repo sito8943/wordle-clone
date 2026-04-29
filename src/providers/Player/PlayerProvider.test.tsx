@@ -264,6 +264,49 @@ describe("PlayerProvider", () => {
     expect(result.current.player.name).toBe(DEFAULT_PLAYER.name);
   });
 
+  it("marks tutorial prompt as seen per mode and syncs it to backend", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      language: input.language,
+      playerCode: "AB12",
+      score: 12,
+      streak: 3,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      tutorialPromptSeenModes: input.tutorialPromptSeenModes,
+      createdAt: 1000,
+    }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ upsertPlayerProfile }),
+    });
+
+    act(() => {
+      result.current.replacePlayer({
+        name: "Ana",
+        code: "AB12",
+        score: 12,
+        streak: 3,
+      });
+    });
+
+    await act(async () => {
+      await result.current.markTutorialPromptSeenForMode("lightning");
+    });
+
+    expect(result.current.player.tutorialPromptSeenModes).toMatchObject({
+      lightning: true,
+    });
+    expect(upsertPlayerProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nick: "Ana",
+        tutorialPromptSeenModes: { lightning: true },
+      }),
+    );
+  });
+
   it("commitVictory adds points, increments streak and enqueues an event", async () => {
     const queueRoundEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {
@@ -927,6 +970,48 @@ describe("PlayerProvider", () => {
     expect(result.current.player.score).toBe(12);
     expect(result.current.player.difficulty).toBe("normal");
     expect(result.current.player.language).toBe("es");
+  });
+
+  it("hydrates tutorial prompt seen modes from remote profile", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Ana",
+        code: "ZX90",
+        score: 3,
+        streak: 1,
+        language: "es",
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+      }),
+    );
+
+    const getCurrentPlayerProfile = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      language: "es",
+      playerCode: "ZX90",
+      score: 12,
+      streak: 4,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      tutorialPromptSeenModes: { daily: true },
+      createdAt: 1000,
+    });
+
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ getCurrentPlayerProfile }),
+    });
+
+    await waitFor(() => {
+      expect(getCurrentPlayerProfile).toHaveBeenCalledWith("es");
+    });
+
+    expect(result.current.player.tutorialPromptSeenModes).toMatchObject({
+      daily: true,
+    });
   });
 
   it("keeps local language preferences after background remote hydration", async () => {

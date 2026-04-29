@@ -20,12 +20,14 @@ import {
 import {
   DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
   DAILY_SHIELD_USED_STORAGE_KEY_PREFIX,
+  WORDLE_MODE_IDS,
   SCOREBOARD_MODE_IDS,
   resolveScoreboardModeId,
 } from "@domain/wordle";
 import type {
   PlayerDifficulty,
   PlayerLanguage,
+  PlayerTutorialPromptSeenModes,
   RoundSyncWinProof,
   ScoreboardModeId,
 } from "@domain/wordle";
@@ -58,6 +60,12 @@ class ScoreClient {
     SCOREBOARD_MODE_IDS.LIGHTNING,
     SCOREBOARD_MODE_IDS.DAILY,
   ];
+  private static readonly TUTORIAL_MODE_IDS = [
+    WORDLE_MODE_IDS.CLASSIC,
+    WORDLE_MODE_IDS.LIGHTNING,
+    WORDLE_MODE_IDS.ZEN,
+    WORDLE_MODE_IDS.DAILY,
+  ] as const;
 
   private readonly gateway: ConvexGateway;
   private readonly storage: Storage;
@@ -83,6 +91,9 @@ class ScoreClient {
     const identity = this.readProfileIdentity();
     const normalizedScore = this.normalizeScore(input.score ?? 0);
     const normalizedStreak = this.normalizeStreak(input.streak ?? 0);
+    const tutorialPromptSeenModes = this.normalizeTutorialPromptSeenModes(
+      input.tutorialPromptSeenModes,
+    );
     const clientRecordId =
       identity?.clientRecordId ??
       currentRecord?.localId ??
@@ -99,6 +110,7 @@ class ScoreClient {
         streak: normalizedStreak,
         difficulty: input.difficulty,
         keyboardPreference: input.keyboardPreference,
+        tutorialPromptSeenModes,
       },
     );
 
@@ -111,6 +123,7 @@ class ScoreClient {
       streak: normalizedStreak,
       difficulty: input.difficulty,
       keyboardPreference: input.keyboardPreference,
+      tutorialPromptSeenModes,
       createdAt: Date.now(),
       playerCode: "",
     });
@@ -1022,6 +1035,27 @@ class ScoreClient {
     return "normal";
   }
 
+  private normalizeTutorialPromptSeenModes(
+    value: unknown,
+  ): PlayerTutorialPromptSeenModes | undefined {
+    if (!value || typeof value !== "object") {
+      return undefined;
+    }
+
+    const candidate = value as Partial<
+      Record<(typeof ScoreClient.TUTORIAL_MODE_IDS)[number], unknown>
+    >;
+    const normalized: PlayerTutorialPromptSeenModes = {};
+
+    for (const modeId of ScoreClient.TUTORIAL_MODE_IDS) {
+      if (candidate[modeId] === true) {
+        normalized[modeId] = true;
+      }
+    }
+
+    return Object.keys(normalized).length > 0 ? normalized : undefined;
+  }
+
   private normalizeLimit(limit: number): number {
     if (!Number.isFinite(limit)) {
       return DEFAULT_LIMIT;
@@ -1686,6 +1720,10 @@ class ScoreClient {
       },
     );
     const classicProgress = progressByMode[SCOREBOARD_MODE_IDS.CLASSIC];
+    const tutorialPromptSeenModes = this.normalizeTutorialPromptSeenModes(
+      candidate.tutorialPromptSeenModes,
+    ) ??
+      this.normalizeTutorialPromptSeenModes(fallback.tutorialPromptSeenModes);
 
     return {
       id: candidate.id,
@@ -1727,6 +1765,7 @@ class ScoreClient {
           : fallback.keyboardPreference,
       createdAt: classicProgress?.updatedAt ?? normalizedCandidateCreatedAt,
       progressByMode,
+      tutorialPromptSeenModes,
     };
   }
 

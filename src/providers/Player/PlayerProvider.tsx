@@ -29,6 +29,8 @@ import {
   type PlayerDifficulty,
   type PlayerKeyboardPreference,
   type PlayerLanguage,
+  type PlayerTutorialModeId,
+  type PlayerTutorialPromptSeenModes,
   type RoundSyncEvent,
   type RoundSyncWinProof,
   type ScoreboardModeId,
@@ -38,6 +40,22 @@ import type { RemotePlayerProfile } from "@api/score";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 
 const GAMEPLAY_LANGUAGE: PlayerLanguage = WORDS_DEFAULT_LANGUAGE;
+
+const mergeTutorialPromptSeenModes = (
+  previousModes: PlayerTutorialPromptSeenModes | undefined,
+  nextModes: PlayerTutorialPromptSeenModes | undefined,
+): PlayerTutorialPromptSeenModes | undefined => {
+  if (!previousModes && !nextModes) {
+    return undefined;
+  }
+
+  const merged: PlayerTutorialPromptSeenModes = {
+    ...(previousModes ?? {}),
+    ...(nextModes ?? {}),
+  };
+
+  return Object.keys(merged).length > 0 ? merged : undefined;
+};
 
 const PlayerProvider = ({ children }: ProviderProps) => {
   const { scoreClient } = useApi();
@@ -127,6 +145,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         const keyboardPreference = preserveLocalPreferences
           ? normalizedPrevious.keyboardPreference
           : remoteProfile.keyboardPreference;
+        const tutorialPromptSeenModes = mergeTutorialPromptSeenModes(
+          normalizedPrevious.tutorialPromptSeenModes,
+          remoteProfile.tutorialPromptSeenModes,
+        );
         const nextPlayer = {
           name: remoteProfile.nick,
           code: remoteProfile.playerCode,
@@ -140,6 +162,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           difficulty,
           keyboardPreference,
           declinedTutorial: normalizedPrevious.declinedTutorial,
+          tutorialPromptSeenModes,
           showEndOfGameDialogs: normalizedPrevious.showEndOfGameDialogs,
           manualTileSelection: normalizedPrevious.manualTileSelection,
           hackingBan: normalizedPrevious.hackingBan,
@@ -313,6 +336,45 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       );
     },
     [setStoredPlayer],
+  );
+
+  const markTutorialPromptSeenForMode = useCallback(
+    async (modeId: PlayerTutorialModeId) => {
+      const current = normalizePlayer(storedPlayer);
+      const nextTutorialPromptSeenModes = mergeTutorialPromptSeenModes(
+        current.tutorialPromptSeenModes,
+        { [modeId]: true },
+      );
+
+      setStoredPlayer((previous) =>
+        normalizePlayer({
+          ...normalizePlayer(previous),
+          tutorialPromptSeenModes: nextTutorialPromptSeenModes,
+        }),
+      );
+
+      if (current.name === DEFAULT_PLAYER.name && current.code.length === 0) {
+        return;
+      }
+
+      try {
+        const remoteProfile = await scoreClient.upsertPlayerProfile({
+          nick: current.name,
+          language: current.language,
+          difficulty: current.difficulty,
+          keyboardPreference: current.keyboardPreference,
+          tutorialPromptSeenModes: nextTutorialPromptSeenModes,
+        });
+
+        await applyRemoteProfile(remoteProfile, {
+          preserveLocalPreferences: true,
+          preserveLocalProgress: true,
+        });
+      } catch {
+        // Keep local tutorial state when remote sync is unavailable.
+      }
+    },
+    [applyRemoteProfile, scoreClient, setStoredPlayer, storedPlayer],
   );
 
   const commitVictory = useCallback(
@@ -575,6 +637,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerLanguage,
       updatePlayerShowEndOfGameDialogs,
       updatePlayerManualTileSelection,
+      markTutorialPromptSeenForMode,
       commitVictory,
       commitLoss,
     }),
@@ -589,6 +652,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerLanguage,
       updatePlayerShowEndOfGameDialogs,
       updatePlayerManualTileSelection,
+      markTutorialPromptSeenForMode,
       commitVictory,
       commitLoss,
     ],

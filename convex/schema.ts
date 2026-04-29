@@ -84,6 +84,14 @@ export default defineSchema({
     ),
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
+    tutorialPromptSeenModes: v.optional(
+      v.object({
+        classic: v.optional(v.boolean()),
+        lightning: v.optional(v.boolean()),
+        zen: v.optional(v.boolean()),
+        daily: v.optional(v.boolean()),
+      }),
+    ),
     createdAt: v.number(),
   })
     .index("by_client_id", ["clientId"])

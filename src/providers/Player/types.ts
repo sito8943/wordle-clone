@@ -3,6 +3,7 @@ import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
   PlayerLanguage,
+  PlayerTutorialModeId,
   RoundSyncWinProof,
   ScoreboardModeId,
 } from "@domain/wordle";
@@ -20,6 +21,9 @@ export type PlayerContextType = {
   updatePlayerLanguage: (language: PlayerLanguage) => void;
   updatePlayerShowEndOfGameDialogs: (showDialogs: boolean) => void;
   updatePlayerManualTileSelection: (enabled: boolean) => void;
+  markTutorialPromptSeenForMode: (
+    modeId: PlayerTutorialModeId,
+  ) => Promise<void>;
   commitVictory: (
     points: number,
     wonAt?: number,

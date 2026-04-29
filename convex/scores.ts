@@ -34,7 +34,14 @@ const normalizeStreak = (value: number | undefined): number =>
 
 type SupportedLanguage = "en" | "es";
 type SupportedMode = "classic" | "lightning" | "daily";
+type SupportedWordleMode = SupportedMode | "zen";
 type SupportedDifficulty = "easy" | "normal" | "hard" | "insane";
+const TUTORIAL_MODE_IDS: SupportedWordleMode[] = [
+  "classic",
+  "lightning",
+  "zen",
+  "daily",
+];
 
 const DIFFICULTY_SCORE_MULTIPLIERS: Record<SupportedDifficulty, number> = {
   easy: 1,
@@ -61,6 +68,35 @@ const normalizeKeyboardPreference = (value?: string): string =>
   value === "onscreen" || value === "native"
     ? value
     : DEFAULT_KEYBOARD_PREFERENCE;
+
+const normalizeTutorialPromptSeenModes = (
+  value: unknown,
+  existing?: Partial<Record<SupportedWordleMode, boolean>>,
+): Partial<Record<SupportedWordleMode, boolean>> | undefined => {
+  const normalized: Partial<Record<SupportedWordleMode, boolean>> = {
+    ...(existing ?? {}),
+  };
+
+  if (value && typeof value === "object") {
+    const candidate = value as Partial<Record<SupportedWordleMode, unknown>>;
+
+    for (const modeId of TUTORIAL_MODE_IDS) {
+      if (candidate[modeId] === true) {
+        normalized[modeId] = true;
+      }
+    }
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+};
+
+const areTutorialPromptSeenModesEqual = (
+  left: Partial<Record<SupportedWordleMode, boolean>> | undefined,
+  right: Partial<Record<SupportedWordleMode, boolean>> | undefined,
+): boolean =>
+  TUTORIAL_MODE_IDS.every(
+    (modeId) => (left?.[modeId] === true) === (right?.[modeId] === true),
+  );
 
 const normalizeCode = (value: string): string =>
   value
@@ -121,6 +157,7 @@ type ScoreRecord = {
   >;
   difficulty?: string;
   keyboardPreference?: string;
+  tutorialPromptSeenModes?: Partial<Record<SupportedWordleMode, boolean>>;
   createdAt: number;
 };
 
@@ -437,6 +474,9 @@ const buildPlayerProfile = (
     hasWonDailyToday: options?.hasWonDailyToday === true,
     difficulty: normalizeDifficulty(record.difficulty),
     keyboardPreference: normalizeKeyboardPreference(record.keyboardPreference),
+    tutorialPromptSeenModes: normalizeTutorialPromptSeenModes(
+      record.tutorialPromptSeenModes,
+    ),
     createdAt: stats.createdAt,
   };
 };
@@ -725,6 +765,7 @@ const upsertProfileRecord = async (
     language?: string;
     difficulty?: string;
     keyboardPreference?: string;
+    tutorialPromptSeenModes?: Partial<Record<SupportedWordleMode, boolean>>;
   },
 ) => {
   const nick = normalizeNick(args.nick);
@@ -745,6 +786,10 @@ const upsertProfileRecord = async (
 
   if (existing) {
     const languageStats = getLanguageStats(existing, language);
+    const tutorialPromptSeenModes = normalizeTutorialPromptSeenModes(
+      args.tutorialPromptSeenModes,
+      existing.tutorialPromptSeenModes,
+    );
     const patch = {
       clientId: args.clientId ?? existing.clientId,
       clientRecordId:
@@ -755,6 +800,7 @@ const upsertProfileRecord = async (
       keyboardPreference: normalizeKeyboardPreference(
         args.keyboardPreference ?? existing.keyboardPreference,
       ),
+      tutorialPromptSeenModes,
       playerCode: await ensurePlayerCode(ctx, existing.playerCode),
     };
 
@@ -768,6 +814,10 @@ const upsertProfileRecord = async (
       existing.createdAt !== patch.createdAt ||
       existing.difficulty !== patch.difficulty ||
       existing.keyboardPreference !== patch.keyboardPreference ||
+      !areTutorialPromptSeenModesEqual(
+        existing.tutorialPromptSeenModes,
+        patch.tutorialPromptSeenModes,
+      ) ||
       normalizeCode(existing.playerCode ?? "") !== patch.playerCode
     ) {
       await ctx.db.patch(existing._id, patch);
@@ -782,6 +832,9 @@ const upsertProfileRecord = async (
   const createdAt = Date.now();
   const clientRecordId = args.clientRecordId ?? createClientRecordId();
   const playerCode = await ensureUniquePlayerCode(ctx);
+  const tutorialPromptSeenModes = normalizeTutorialPromptSeenModes(
+    args.tutorialPromptSeenModes,
+  );
   const baseLanguageStats = withLanguageStats(
     {
       ...({
@@ -806,6 +859,7 @@ const upsertProfileRecord = async (
     ...baseLanguageStats,
     difficulty: normalizeDifficulty(args.difficulty),
     keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
+    tutorialPromptSeenModes,
   });
 
   return {
@@ -817,6 +871,7 @@ const upsertProfileRecord = async (
     ...baseLanguageStats,
     difficulty: normalizeDifficulty(args.difficulty),
     keyboardPreference: normalizeKeyboardPreference(args.keyboardPreference),
+    tutorialPromptSeenModes,
   };
 };
 
@@ -979,6 +1034,14 @@ export const upsertPlayerProfile = mutation({
     streak: v.optional(v.number()),
     difficulty: v.optional(v.string()),
     keyboardPreference: v.optional(v.string()),
+    tutorialPromptSeenModes: v.optional(
+      v.object({
+        classic: v.optional(v.boolean()),
+        lightning: v.optional(v.boolean()),
+        zen: v.optional(v.boolean()),
+        daily: v.optional(v.boolean()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const profileRecord = await upsertProfileRecord(ctx, {
@@ -988,6 +1051,7 @@ export const upsertPlayerProfile = mutation({
       language: args.language,
       difficulty: args.difficulty,
       keyboardPreference: args.keyboardPreference,
+      tutorialPromptSeenModes: args.tutorialPromptSeenModes,
     });
     const hasWonDailyToday = await hasProfileWonDailyToday(
       ctx,

@@ -7,6 +7,11 @@ export type PlayerHackingBan = {
   detectedRoundDurationMs: number;
 };
 
+export type PlayerTutorialModeId = "classic" | "lightning" | "zen" | "daily";
+export type PlayerTutorialPromptSeenModes = Partial<
+  Record<PlayerTutorialModeId, boolean>
+>;
+
 export type Player = {
   name: string;
   code: string;
@@ -16,6 +21,7 @@ export type Player = {
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
   declinedTutorial?: boolean;
+  tutorialPromptSeenModes?: PlayerTutorialPromptSeenModes;
   showEndOfGameDialogs: boolean;
   manualTileSelection: boolean;
   hackingBan: PlayerHackingBan | null;

@@ -46,6 +46,19 @@ describe("tutorial prompt visibility by mode", () => {
       false,
     );
   });
+
+  it("considers backend profile seen modes when local storage is empty", () => {
+    expect(
+      hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.ZEN, undefined, {
+        zen: true,
+      }),
+    ).toBe(true);
+    expect(
+      hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.DAILY, undefined, {
+        classic: true,
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("captureVictoryBoardImageFile", () => {

@@ -168,10 +168,12 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `player`: player profile and score/streak metadata, including recovery `code`.
   - It also stores local presentation preferences such as `difficulty`, `keyboardPreference`, `showEndOfGameDialogs`, and `manualTileSelection`.
   - It may include legacy `declinedTutorial` (`false` accepted, `true` declined) from older tutorial-prompt behavior.
+  - It may include `tutorialPromptSeenModes` (`classic`, `lightning`, `zen`, `daily`) as local cache for backend-synced tutorial visibility by mode.
   - It also stores local anti-fraud status (`hackingBan`) when a round is flagged as too short to be legitimate.
   - It also stores the selected `language` (`en` or `es`) used by i18n/UI localization.
   - `score` and `streak` are treated as local cache for UX and are rehydrated from remote profile sync when available.
 - `wordle:tutorial-prompt-seen-modes`: tutorial prompt state by mode (`classic`, `lightning`, `zen`, `daily`) so each mode can show its first-run welcome independently.
+  - The same state is also persisted in the remote player profile (`tutorialPromptSeenModes`) when profile sync is available.
 - The gameplay dictionary language is fixed to Spanish (`es`) in frontend game flow.
 - `wordle:sync-events`: local queue of pending round sync events (`win`/`loss`) scoped to scoreboard mode (`classic`, `lightning`, or `daily`) for offline synchronization; in `win` v3 the backend recalculates points from `proof` server-side and treats client `pointsDelta` as telemetry only (v2 remains transitional compatibility).
 - `wordle:daily-challenges:round-tracker:<playerCode>`: per-player daily round tracker used by daily challenge conditions to store completed rounds count, won rounds count, and consecutive wins count for the current UTC date.

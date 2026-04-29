@@ -5,6 +5,7 @@ import type {
   PlayerHackingBanReason,
   PlayerKeyboardPreference,
   PlayerLanguage,
+  PlayerTutorialPromptSeenModes,
 } from "@domain/wordle";
 import { DEFAULT_PLAYER } from "./constants";
 
@@ -190,6 +191,50 @@ const normalizeManualTileSelection = (value: unknown): boolean => {
   return value;
 };
 
+const PLAYER_TUTORIAL_MODE_IDS = [
+  "classic",
+  "lightning",
+  "zen",
+  "daily",
+] as const;
+
+const normalizeTutorialPromptSeenModes = (
+  value: unknown,
+): PlayerTutorialPromptSeenModes | undefined => {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const candidate = value as Partial<
+    Record<(typeof PLAYER_TUTORIAL_MODE_IDS)[number], unknown>
+  >;
+  const normalized: PlayerTutorialPromptSeenModes = {};
+
+  for (const modeId of PLAYER_TUTORIAL_MODE_IDS) {
+    if (candidate[modeId] === true) {
+      normalized[modeId] = true;
+    }
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+};
+
+const areTutorialPromptSeenModesEqual = (
+  left: PlayerTutorialPromptSeenModes | undefined,
+  right: PlayerTutorialPromptSeenModes | undefined,
+): boolean => {
+  for (const modeId of PLAYER_TUTORIAL_MODE_IDS) {
+    const leftSeen = left?.[modeId] === true;
+    const rightSeen = right?.[modeId] === true;
+
+    if (leftSeen !== rightSeen) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export const normalizePlayer = (value: Partial<Player> | null): Player => {
   if (!value) {
     return {
@@ -212,6 +257,9 @@ export const normalizePlayer = (value: Partial<Player> | null): Player => {
       value.keyboardPreference,
     ),
     declinedTutorial: normalizeDeclinedTutorial(value.declinedTutorial),
+    tutorialPromptSeenModes: normalizeTutorialPromptSeenModes(
+      value.tutorialPromptSeenModes,
+    ),
     showEndOfGameDialogs: normalizeShowEndOfGameDialogs(
       value.showEndOfGameDialogs,
     ),
@@ -243,6 +291,10 @@ export const arePlayersEqual = (
     normalizedLeft.difficulty === normalizedRight.difficulty &&
     normalizedLeft.keyboardPreference === normalizedRight.keyboardPreference &&
     normalizedLeft.declinedTutorial === normalizedRight.declinedTutorial &&
+    areTutorialPromptSeenModesEqual(
+      normalizedLeft.tutorialPromptSeenModes,
+      normalizedRight.tutorialPromptSeenModes,
+    ) &&
     normalizedLeft.showEndOfGameDialogs ===
       normalizedRight.showEndOfGameDialogs &&
     normalizedLeft.manualTileSelection ===
@@ -265,6 +317,10 @@ export const isStoredPlayerNormalized = (
     value?.difficulty === normalized.difficulty &&
     value?.keyboardPreference === normalized.keyboardPreference &&
     value?.declinedTutorial === normalized.declinedTutorial &&
+    areTutorialPromptSeenModesEqual(
+      value?.tutorialPromptSeenModes,
+      normalized.tutorialPromptSeenModes,
+    ) &&
     value?.showEndOfGameDialogs === normalized.showEndOfGameDialogs &&
     value?.manualTileSelection === normalized.manualTileSelection &&
     areHackingBansEqual(value?.hackingBan ?? null, normalized.hackingBan)

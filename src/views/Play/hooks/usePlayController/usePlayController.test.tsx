@@ -153,6 +153,7 @@ describe("usePlayController", () => {
       replacePlayer: vi.fn(),
       updatePlayerDifficulty: vi.fn(),
       updatePlayerManualTileSelection: vi.fn(),
+      markTutorialPromptSeenForMode: vi.fn().mockResolvedValue(undefined),
       commitVictory: vi.fn().mockResolvedValue(undefined),
       commitLoss: vi.fn().mockResolvedValue(undefined),
     });
@@ -749,6 +750,24 @@ describe("usePlayController", () => {
     expect(result.current.showTutorialPromptDialog).toBe(false);
   });
 
+  it("does not show the tutorial prompt when backend profile says the mode was seen", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        ...mockUsePlayer().player,
+        tutorialPromptSeenModes: {
+          lightning: true,
+        },
+      },
+    });
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showTutorialPromptDialog).toBe(false);
+  });
+
   it("shows lightning tutorial when only classic was seen before", () => {
     window.localStorage.setItem(
       TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
@@ -790,6 +809,7 @@ describe("usePlayController", () => {
 
   it("hides and persists tutorial rejection when the player declines it", () => {
     const replacePlayer = vi.fn();
+    const markTutorialPromptSeenForMode = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
       ...mockUsePlayer(),
       player: {
@@ -804,6 +824,7 @@ describe("usePlayController", () => {
         manualTileSelection: false,
       },
       replacePlayer,
+      markTutorialPromptSeenForMode,
     });
 
     const { result } = renderHook(() => usePlayController());
@@ -819,12 +840,14 @@ describe("usePlayController", () => {
           "{}",
       ),
     ).toMatchObject({ classic: true });
+    expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("classic");
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: true });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it("navigates to help when the player accepts the tutorial prompt", () => {
     const replacePlayer = vi.fn();
+    const markTutorialPromptSeenForMode = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
       ...mockUsePlayer(),
       player: {
@@ -839,6 +862,7 @@ describe("usePlayController", () => {
         manualTileSelection: false,
       },
       replacePlayer,
+      markTutorialPromptSeenForMode,
     });
 
     const { result } = renderHook(() => usePlayController());
@@ -854,12 +878,14 @@ describe("usePlayController", () => {
           "{}",
       ),
     ).toMatchObject({ classic: true });
+    expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("classic");
     expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("classic"));
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
   });
 
   it("navigates to mode-specific help for lightning tutorial acceptance", () => {
     const replacePlayer = vi.fn();
+    const markTutorialPromptSeenForMode = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
       ...mockUsePlayer(),
       player: {
@@ -874,6 +900,7 @@ describe("usePlayController", () => {
         manualTileSelection: false,
       },
       replacePlayer,
+      markTutorialPromptSeenForMode,
     });
 
     const { result } = renderHook(() =>
@@ -891,6 +918,7 @@ describe("usePlayController", () => {
           "{}",
       ),
     ).toMatchObject({ lightning: true });
+    expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("lightning");
     expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("lightning"));
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
   });

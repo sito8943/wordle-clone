@@ -2,6 +2,7 @@ import type {
   PlayerDifficulty,
   PlayerKeyboardPreference,
   PlayerLanguage,
+  PlayerTutorialPromptSeenModes,
   ScoreboardModeId,
   RoundSyncEvent,
 } from "@domain/wordle";
@@ -39,6 +40,7 @@ export type UpsertPlayerProfileInput = {
   streak?: number;
   difficulty: PlayerDifficulty;
   keyboardPreference: PlayerKeyboardPreference;
+  tutorialPromptSeenModes?: PlayerTutorialPromptSeenModes;
 };
 
 export type TopScoresResult = {
@@ -108,6 +110,7 @@ export type RemotePlayerProfile = {
   keyboardPreference: PlayerKeyboardPreference;
   createdAt: number;
   progressByMode?: RemoteProgressByMode;
+  tutorialPromptSeenModes?: PlayerTutorialPromptSeenModes;
 };
 
 export type StoredScoreIdentity = {

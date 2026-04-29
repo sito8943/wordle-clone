@@ -109,6 +109,7 @@ const createMockScoreClient = (
           streak: input.streak ?? 0,
           difficulty: input.difficulty,
           keyboardPreference: input.keyboardPreference,
+          tutorialPromptSeenModes: input.tutorialPromptSeenModes,
           createdAt: 1000,
         }) as RemotePlayerProfile,
     ),

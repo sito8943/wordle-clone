@@ -1,5 +1,6 @@
 import html2canvas from "html2canvas";
 import {
+  type PlayerTutorialPromptSeenModes,
   resolveBoardRoundConfig,
   WORDLE_MODE_IDS,
   type WordleModeId,
@@ -247,10 +248,15 @@ const readTutorialPromptSeenModes = (): TutorialPromptSeenModes => {
 export const hasSeenTutorialPromptForMode = (
   modeId: WordleModeId,
   legacyDeclinedTutorial?: boolean,
+  playerTutorialPromptSeenModes?: PlayerTutorialPromptSeenModes,
 ): boolean => {
   const seenModes = readTutorialPromptSeenModes();
 
   if (seenModes[modeId] === true) {
+    return true;
+  }
+
+  if (playerTutorialPromptSeenModes?.[modeId] === true) {
     return true;
   }
 

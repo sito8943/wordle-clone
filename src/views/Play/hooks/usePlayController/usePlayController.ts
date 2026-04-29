@@ -90,6 +90,7 @@ export default function usePlayController(
     commitLoss,
     updatePlayerDifficulty,
     updatePlayerManualTileSelection,
+    markTutorialPromptSeenForMode,
   } = usePlayer();
   const { hintsEnabled, challengesEnabled, timerAutoPauseEnabled } =
     useFeatureFlags();
@@ -203,7 +204,12 @@ export default function usePlayController(
     useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showTutorialPromptDialog, setShowTutorialPromptDialog] = useState(
-    () => !hasSeenTutorialPromptForMode(activeModeId, player.declinedTutorial),
+    () =>
+      !hasSeenTutorialPromptForMode(
+        activeModeId,
+        player.declinedTutorial,
+        player.tutorialPromptSeenModes,
+      ),
   );
   const [pendingDifficulty, setPendingDifficulty] =
     useState<PlayerDifficulty | null>(null);
@@ -323,9 +329,13 @@ export default function usePlayController(
 
   useEffect(() => {
     setShowTutorialPromptDialog(
-      !hasSeenTutorialPromptForMode(activeModeId, player.declinedTutorial),
+      !hasSeenTutorialPromptForMode(
+        activeModeId,
+        player.declinedTutorial,
+        player.tutorialPromptSeenModes,
+      ),
     );
-  }, [activeModeId, player.declinedTutorial]);
+  }, [activeModeId, player.declinedTutorial, player.tutorialPromptSeenModes]);
 
   const completeEligibleChallenges = useCallback(async () => {
     if (
@@ -901,16 +911,18 @@ export default function usePlayController(
 
   const acceptTutorialPrompt = useCallback(() => {
     markTutorialPromptAsSeenForMode(activeModeId);
+    void markTutorialPromptSeenForMode(activeModeId);
     replacePlayer({ declinedTutorial: false });
     setShowTutorialPromptDialog(false);
     navigate(getHelpRoute(activeModeId));
-  }, [activeModeId, navigate, replacePlayer]);
+  }, [activeModeId, markTutorialPromptSeenForMode, navigate, replacePlayer]);
 
   const declineTutorialPrompt = useCallback(() => {
     markTutorialPromptAsSeenForMode(activeModeId);
+    void markTutorialPromptSeenForMode(activeModeId);
     setShowTutorialPromptDialog(false);
     replacePlayer({ declinedTutorial: true });
-  }, [activeModeId, replacePlayer]);
+  }, [activeModeId, markTutorialPromptSeenForMode, replacePlayer]);
 
   useEffect(() => {
     manualTileSelectionRef.current = player.manualTileSelection === true;
