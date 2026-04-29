@@ -1,5 +1,6 @@
 import { env } from "@config";
 import { hasInProgressGame } from "./state";
+import { getTodayDateUTC } from "./daily";
 import { WORDLE_MODE_IDS } from "./modeConfig";
 import type {
   PersistedGameRef,
@@ -25,18 +26,59 @@ const resolveStorageKey = (modeId?: WordleModeId): string => {
   return `${env.wordleGameStorageKey}:${modeId}`;
 };
 
+const resolveUtcDateFromTimestamp = (value: unknown): string | null => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  const timestamp = Math.floor(value);
+  return new Date(timestamp).toISOString().slice(0, 10);
+};
+
+const shouldClearStaleDailyState = (
+  modeId: WordleModeId | undefined,
+  parsed: unknown,
+): boolean => {
+  if (
+    modeId !== WORDLE_MODE_IDS.DAILY ||
+    !parsed ||
+    typeof parsed !== "object"
+  ) {
+    return false;
+  }
+
+  const startedAt = resolveUtcDateFromTimestamp(
+    (parsed as { startedAt?: unknown }).startedAt,
+  );
+
+  if (!startedAt) {
+    return false;
+  }
+
+  return startedAt !== getTodayDateUTC();
+};
+
 export const readPersistedGameState = (modeId?: WordleModeId): unknown => {
   if (typeof window === "undefined") {
     return null;
   }
 
+  const key = resolveStorageKey(modeId);
+
   try {
-    const raw = localStorage.getItem(resolveStorageKey(modeId));
+    const raw = localStorage.getItem(key);
     if (!raw) {
       return null;
     }
 
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+
+    if (shouldClearStaleDailyState(modeId, parsed)) {
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    return parsed;
   } catch {
     return null;
   }
