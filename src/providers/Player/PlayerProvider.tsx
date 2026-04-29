@@ -595,7 +595,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   );
 
   useEffect(() => {
-    if (player.name === DEFAULT_PLAYER.name) {
+    const isAnonymousPlayer = player.name === DEFAULT_PLAYER.name;
+    const hasRecoveryCode = player.code.length > 0;
+
+    if (isAnonymousPlayer && !hasRecoveryCode) {
       previousPreferencesRef.current = {
         language: player.language,
         difficulty: player.difficulty,
@@ -609,6 +612,18 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     }
 
     didHydrateRemoteRef.current = true;
+
+    if (isAnonymousPlayer && hasRecoveryCode) {
+      void scoreClient
+        .recoverPlayerByCode(player.code)
+        .then(async (remoteProfile) => {
+          scoreClient.adoptRecoveredIdentity(remoteProfile);
+          await applyRemoteProfile(remoteProfile);
+          hydrateDailyModeOutcomeFromProfile(remoteProfile);
+        })
+        .catch(() => undefined);
+      return;
+    }
 
     void syncQueuedRoundEvents(player)
       .then(async (syncedProfile) => {
@@ -631,6 +646,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     applyRemoteProfile,
     hydrateDailyModeOutcomeFromProfile,
     player,
+    player.code,
     player.name,
     scoreClient,
     syncQueuedRoundEvents,

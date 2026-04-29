@@ -53,6 +53,7 @@ const makeWrapper =
       keyboardPreference: "native",
       createdAt: 1000,
     }),
+    adoptRecoveredIdentity = vi.fn(),
     getCurrentPlayerProfile = vi.fn().mockResolvedValue(null),
     queueRoundEvent = vi.fn(),
     syncRoundEvents = vi.fn().mockResolvedValue(null),
@@ -63,6 +64,7 @@ const makeWrapper =
   }: {
     upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
     recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
+    adoptRecoveredIdentity?: ApiContextType["scoreClient"]["adoptRecoveredIdentity"];
     getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
     queueRoundEvent?: ApiContextType["scoreClient"]["queueRoundEvent"];
     syncRoundEvents?: ApiContextType["scoreClient"]["syncRoundEvents"];
@@ -80,6 +82,7 @@ const makeWrapper =
         {
           upsertPlayerProfile,
           recoverPlayerByCode,
+          adoptRecoveredIdentity,
           getCurrentPlayerProfile,
           queueRoundEvent,
           syncRoundEvents,
@@ -838,6 +841,48 @@ describe("PlayerProvider", () => {
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
       queryKey: queryKeys.topScores,
     });
+  });
+
+  it("hydrates player data from stored recovery code on mount", async () => {
+    localStorage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Player",
+        code: "rcv1",
+      }),
+    );
+    const recoverPlayerByCode = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "recovered-record",
+      nick: "Recovered",
+      language: "en",
+      playerCode: "RCV1",
+      score: 27,
+      streak: 4,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+    const adoptRecoveredIdentity = vi.fn();
+
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ recoverPlayerByCode, adoptRecoveredIdentity }),
+    });
+
+    await waitFor(() => {
+      expect(recoverPlayerByCode).toHaveBeenCalledWith("RCV1");
+    });
+
+    expect(adoptRecoveredIdentity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nick: "Recovered",
+        playerCode: "RCV1",
+      }),
+    );
+    expect(result.current.player.name).toBe("Recovered");
+    expect(result.current.player.code).toBe("RCV1");
+    expect(result.current.player.score).toBe(27);
   });
 
   it("refreshes the current player profile from remote data", async () => {

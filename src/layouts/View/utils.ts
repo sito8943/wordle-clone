@@ -12,10 +12,11 @@ export const shouldAskForInitialPlayerName = (): boolean => {
     const userData = JSON.parse(
       localStorage.getItem(PLAYER_STORAGE_KEY) ?? "",
     ) as unknown as Player;
+    const hasRecoveryCode = normalizeStoredPlayerCode(userData.code).length > 0;
 
     return (
       localStorage.getItem(PLAYER_STORAGE_KEY) === null ||
-      userData.name === DEFAULT_PLAYER.name
+      (userData.name === DEFAULT_PLAYER.name && !hasRecoveryCode)
     );
   } catch {
     return false;
@@ -100,6 +101,54 @@ const clearBrowserStorages = (): void => {
     window.sessionStorage.clear();
   } catch {
     // Ignore sessionStorage errors.
+  }
+};
+
+const normalizeStoredPlayerCode = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 4);
+};
+
+const readStoredPlayerCode = (): string => {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  try {
+    const raw = localStorage.getItem(PLAYER_STORAGE_KEY);
+    if (!raw) {
+      return "";
+    }
+
+    const parsed = JSON.parse(raw) as Partial<Player>;
+    return normalizeStoredPlayerCode(parsed.code);
+  } catch {
+    return "";
+  }
+};
+
+const restoreStoredPlayerCode = (code: string): void => {
+  if (typeof window === "undefined" || code.length === 0) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(
+      PLAYER_STORAGE_KEY,
+      JSON.stringify({
+        name: DEFAULT_PLAYER.name,
+        code,
+      }),
+    );
+  } catch {
+    // Ignore localStorage errors.
   }
 };
 
@@ -206,7 +255,9 @@ export const resetBrowserStorageOnAppUpdate = (
     return null;
   }
 
+  const preservedPlayerCode = readStoredPlayerCode();
   clearBrowserStorages();
+  restoreStoredPlayerCode(preservedPlayerCode);
   storeAppVersion(currentVersion);
   storePendingPreviousAppVersion(previousVersion);
   return previousVersion;

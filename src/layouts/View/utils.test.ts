@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   APP_VERSION_STORAGE_KEY,
+  PLAYER_STORAGE_KEY,
   PREVIOUS_APP_VERSION_STORAGE_KEY,
   VIEW_VERSION_HISTORY,
 } from "./constants";
@@ -12,6 +13,7 @@ import {
   getVersionHistoryEntriesForUpdate,
   isVersionNewer,
   resetBrowserStorageOnAppUpdate,
+  shouldAskForInitialPlayerName,
   storeAppVersion,
 } from "./utils";
 
@@ -42,19 +44,60 @@ describe("View version helpers", () => {
     expect(getStoredAppVersion()).toBe("0.0.16-beta");
   });
 
-  it("resets localStorage and sessionStorage when a newer app version is detected", () => {
+  it("does not ask for initial player name when default name has a recovery code", () => {
+    localStorage.setItem(
+      PLAYER_STORAGE_KEY,
+      JSON.stringify({
+        name: "Player",
+        code: "ab12",
+      }),
+    );
+
+    expect(shouldAskForInitialPlayerName()).toBe(false);
+  });
+
+  it("resets storage and keeps the stored player recovery code on app update", () => {
     localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.15");
+    localStorage.setItem(
+      PLAYER_STORAGE_KEY,
+      JSON.stringify({
+        name: "Ana",
+        code: "ab12",
+        score: 120,
+      }),
+    );
     localStorage.setItem("wordle:test-local", "value");
     sessionStorage.setItem("wordle:test-session", "value");
 
     resetBrowserStorageOnAppUpdate("0.0.16-beta");
 
+    const storedPlayer = JSON.parse(
+      localStorage.getItem(PLAYER_STORAGE_KEY) ?? "{}",
+    ) as { name?: string; code?: string; score?: number };
+
+    expect(storedPlayer.name).toBe("Player");
+    expect(storedPlayer.code).toBe("AB12");
     expect(localStorage.getItem("wordle:test-local")).toBeNull();
     expect(sessionStorage.getItem("wordle:test-session")).toBeNull();
     expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.16-beta");
     expect(localStorage.getItem(PREVIOUS_APP_VERSION_STORAGE_KEY)).toBe(
       "0.0.15",
     );
+  });
+
+  it("does not recreate player storage on update when there is no recovery code", () => {
+    localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.15");
+    localStorage.setItem(
+      PLAYER_STORAGE_KEY,
+      JSON.stringify({
+        name: "Ana",
+        code: "",
+      }),
+    );
+
+    resetBrowserStorageOnAppUpdate("0.0.16-beta");
+
+    expect(localStorage.getItem(PLAYER_STORAGE_KEY)).toBeNull();
   });
 
   it("does not reset storage when app version has not changed", () => {
