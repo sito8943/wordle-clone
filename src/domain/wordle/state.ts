@@ -253,9 +253,11 @@ export const removeLetterAt = (
     return state;
   }
 
-  const nextCurrent =
-    (state.current.slice(0, index) + " " + state.current.slice(index + 1))
-      .trimEnd();
+  const nextCurrent = (
+    state.current.slice(0, index) +
+    " " +
+    state.current.slice(index + 1)
+  ).trimEnd();
 
   return {
     ...state,

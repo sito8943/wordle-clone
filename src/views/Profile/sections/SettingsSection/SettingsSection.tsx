@@ -72,9 +72,7 @@ const SettingsSection = () => {
         <SwitcherField
           id={PROFILE_END_OF_GAME_DIALOGS_INPUT_ID}
           checked={showEndOfGameDialogs}
-          onChange={(event) =>
-            changeShowEndOfGameDialogs(event.target.checked)
-          }
+          onChange={(event) => changeShowEndOfGameDialogs(event.target.checked)}
           label={t("profile.labels.endOfGameDialogs")}
           description={t("profile.endOfGameDialogsDescription")}
         />
@@ -94,9 +92,7 @@ const SettingsSection = () => {
         <SwitcherField
           id={PROFILE_MANUAL_TILE_SELECTION_INPUT_ID}
           checked={manualTileSelection}
-          onChange={(event) =>
-            changeManualTileSelection(event.target.checked)
-          }
+          onChange={(event) => changeManualTileSelection(event.target.checked)}
           label={t("profile.labels.manualTileSelection")}
           description={t("profile.manualTileSelectionDescription")}
         />

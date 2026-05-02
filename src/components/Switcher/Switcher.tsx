@@ -1,10 +1,22 @@
 import type { SwitcherProps } from "./types";
 
 const Switcher = ({
+  id,
+  name,
   className,
   checked,
   disabled,
-  ...props
+  required,
+  autoFocus,
+  tabIndex,
+  onChange,
+  onBlur,
+  onFocus,
+  onKeyDown,
+  onClick,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+  "aria-describedby": ariaDescribedBy,
 }: SwitcherProps) => {
   const wrapperClassName = [
     "relative inline-flex h-5 w-10 shrink-0 items-center",
@@ -21,13 +33,25 @@ const Switcher = ({
     .join(" ");
 
   return (
-    <span className={wrapperClassName}>
+    <label className={wrapperClassName}>
       <input
         type="checkbox"
+        id={id}
+        name={name}
         checked={checked}
         disabled={disabled}
+        required={required}
+        autoFocus={autoFocus}
+        tabIndex={tabIndex}
+        onChange={onChange}
+        onBlur={onBlur}
+        onFocus={onFocus}
+        onKeyDown={onKeyDown}
+        onClick={onClick}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        aria-describedby={ariaDescribedBy}
         className={inputClassName}
-        {...props}
       />
       <span
         aria-hidden="true"
@@ -37,7 +61,7 @@ const Switcher = ({
         aria-hidden="true"
         className="pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5 dark:bg-neutral-100"
       />
-    </span>
+    </label>
   );
 };
 
