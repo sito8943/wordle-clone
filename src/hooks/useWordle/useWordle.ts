@@ -513,6 +513,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
         return previous;
       });
+      setActiveTileIndex(Math.max(removedIndex - 1, 0));
       playSound("letter_delete");
       return;
     }
@@ -577,11 +578,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
       setHintRevealTileIndex((previous) =>
         previous === targetIndex ? null : previous,
       );
+      setActiveTileIndex(Math.min(targetIndex + 1, maxSelectableTileIndex));
       playSound("letter_put");
     },
     [
       current.length,
       manualTileSelection,
+      maxSelectableTileIndex,
       playSound,
       resolvedRoundConfig,
       selectedTileIndex,
