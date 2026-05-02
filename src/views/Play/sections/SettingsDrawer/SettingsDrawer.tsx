@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { WORDLE_MODE_IDS, type PlayerDifficulty } from "@domain/wordle";
-import { Button } from "@components";
+import { Button, SwitcherField } from "@components";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import {
@@ -189,30 +189,15 @@ const SettingsDrawer = (): JSX.Element | null => {
               ) : null}
 
               <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-700">
-                <div className="flex items-start gap-3">
-                  <input
-                    id={PLAY_SETTINGS_PANEL_MANUAL_TILE_SELECTION_INPUT_ID}
-                    type="checkbox"
-                    checked={player.manualTileSelection}
-                    onChange={(event) =>
-                      changeManualTileSelection(event.target.checked)
-                    }
-                    className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div>
-                    <label
-                      htmlFor={
-                        PLAY_SETTINGS_PANEL_MANUAL_TILE_SELECTION_INPUT_ID
-                      }
-                      className="profile-field-label"
-                    >
-                      {t("profile.labels.manualTileSelection")}
-                    </label>
-                    <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                      {t("profile.manualTileSelectionDescription")}
-                    </p>
-                  </div>
-                </div>
+                <SwitcherField
+                  id={PLAY_SETTINGS_PANEL_MANUAL_TILE_SELECTION_INPUT_ID}
+                  checked={player.manualTileSelection}
+                  onChange={(event) =>
+                    changeManualTileSelection(event.target.checked)
+                  }
+                  label={t("profile.labels.manualTileSelection")}
+                  description={t("profile.manualTileSelectionDescription")}
+                />
               </div>
             </div>
           </div>

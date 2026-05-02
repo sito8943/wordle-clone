@@ -1,4 +1,4 @@
-import { Button } from "@components";
+import { Button, SwitcherField } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
 import { useTranslation } from "@i18n";
 import { useFeatureFlags } from "@providers/FeatureFlags";
@@ -69,76 +69,37 @@ const SettingsSection = () => {
         </Button>
       </div>
       <div id="end-dialogs" className="mt-4 max-w-xl">
-        <div className="flex items-start gap-3">
-          <input
-            id={PROFILE_END_OF_GAME_DIALOGS_INPUT_ID}
-            type="checkbox"
-            checked={showEndOfGameDialogs}
-            onChange={(event) =>
-              changeShowEndOfGameDialogs(event.target.checked)
-            }
-            className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
-          />
-          <div>
-            <label
-              htmlFor={PROFILE_END_OF_GAME_DIALOGS_INPUT_ID}
-              className="profile-field-label"
-            >
-              {t("profile.labels.endOfGameDialogs")}
-            </label>
-            <p className="text-xs text-neutral-600 dark:text-neutral-300">
-              {t("profile.endOfGameDialogsDescription")}
-            </p>
-          </div>
-        </div>
+        <SwitcherField
+          id={PROFILE_END_OF_GAME_DIALOGS_INPUT_ID}
+          checked={showEndOfGameDialogs}
+          onChange={(event) =>
+            changeShowEndOfGameDialogs(event.target.checked)
+          }
+          label={t("profile.labels.endOfGameDialogs")}
+          description={t("profile.endOfGameDialogsDescription")}
+        />
       </div>
       {soundFeatureEnabled ? (
         <div id="sound-enabled" className="mt-4 max-w-xl">
-          <div className="flex items-start gap-3">
-            <input
-              id={PROFILE_SOUND_ENABLED_INPUT_ID}
-              type="checkbox"
-              checked={soundEnabled}
-              onChange={(event) => changeSoundEnabled(event.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
-            />
-            <div>
-              <label
-                htmlFor={PROFILE_SOUND_ENABLED_INPUT_ID}
-                className="profile-field-label"
-              >
-                {t("profile.labels.sound")}
-              </label>
-              <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                {t("profile.soundEnabledDescription")}
-              </p>
-            </div>
-          </div>
+          <SwitcherField
+            id={PROFILE_SOUND_ENABLED_INPUT_ID}
+            checked={soundEnabled}
+            onChange={(event) => changeSoundEnabled(event.target.checked)}
+            label={t("profile.labels.sound")}
+            description={t("profile.soundEnabledDescription")}
+          />
         </div>
       ) : null}
       <div id="manual-tile-selection" className="mt-4 max-w-xl">
-        <div className="flex items-start gap-3">
-          <input
-            id={PROFILE_MANUAL_TILE_SELECTION_INPUT_ID}
-            type="checkbox"
-            checked={manualTileSelection}
-            onChange={(event) =>
-              changeManualTileSelection(event.target.checked)
-            }
-            className="mt-1 h-4 w-4 rounded border-neutral-400 text-blue-600 focus:ring-blue-500"
-          />
-          <div>
-            <label
-              htmlFor={PROFILE_MANUAL_TILE_SELECTION_INPUT_ID}
-              className="profile-field-label"
-            >
-              {t("profile.labels.manualTileSelection")}
-            </label>
-            <p className="text-xs text-neutral-600 dark:text-neutral-300">
-              {t("profile.manualTileSelectionDescription")}
-            </p>
-          </div>
-        </div>
+        <SwitcherField
+          id={PROFILE_MANUAL_TILE_SELECTION_INPUT_ID}
+          checked={manualTileSelection}
+          onChange={(event) =>
+            changeManualTileSelection(event.target.checked)
+          }
+          label={t("profile.labels.manualTileSelection")}
+          description={t("profile.manualTileSelectionDescription")}
+        />
       </div>
       <DifficultySection />
     </section>
