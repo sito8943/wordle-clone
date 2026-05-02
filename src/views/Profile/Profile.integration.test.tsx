@@ -107,6 +107,15 @@ describe("Profile integration", () => {
     });
   });
 
+  it("keeps bottom safe spacing to avoid footer overlap", async () => {
+    renderProfile();
+
+    const main = await screen.findByRole("main");
+    expect(main.className).toContain(
+      "pb-[calc(env(safe-area-inset-bottom)+6rem)]",
+    );
+  });
+
   it("recovers a profile from the profile view using a recovery code", async () => {
     localStorage.setItem(
       "player",
