@@ -49,7 +49,6 @@ import {
   isEditableKeyboardTarget,
   hasVisibleModalDialog,
   markStartAnimationAsSeen,
-  shiftHintStatusesLeftFromIndex,
   shouldAnimateKeyboardEntryOnSession,
   shouldAnimateOnFirstSessionView,
 } from "./utils";
@@ -494,9 +493,15 @@ export default function useWordle(options: UseWordleOptions = {}) {
       }
 
       setGameStateWithPersistence((prev) => removeLetterAt(prev, removedIndex));
-      setActiveRowHintStatuses((previous) =>
-        shiftHintStatusesLeftFromIndex(previous, removedIndex),
-      );
+      setActiveRowHintStatuses((previous) => {
+        if (!(removedIndex in previous)) {
+          return previous;
+        }
+
+        const next = { ...previous };
+        delete next[removedIndex];
+        return next;
+      });
       setHintRevealTileIndex((previous) => {
         if (previous === null) {
           return null;
@@ -504,10 +509,6 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
         if (previous === removedIndex) {
           return null;
-        }
-
-        if (previous > removedIndex) {
-          return previous - 1;
         }
 
         return previous;

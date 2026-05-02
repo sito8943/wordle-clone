@@ -389,7 +389,7 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.current).toBe("Ñ");
   });
 
-  it("removes the selected letter with backspace in manual mode", () => {
+  it("clears the selected letter with backspace in manual mode without shifting", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
@@ -421,7 +421,8 @@ describe("useWordle dictionary query integration", () => {
     act(() => {
       result.current.handleKey("BACKSPACE");
     });
-    expect(result.current.current).toBe("B");
+    expect(result.current.current).toBe(" B");
+    expect(result.current.current[1]).toBe("B");
     expect(result.current.activeTileIndex).toBe(0);
   });
 

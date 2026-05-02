@@ -2,7 +2,6 @@ import {
   WORDLE_START_ANIMATION_SESSION_KEY,
   WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
 } from "@domain/wordle";
-import type { HintTileStatus } from "./types";
 
 export const hasSeenStartAnimationInSession = (): boolean => {
   if (typeof window === "undefined") {
@@ -153,34 +152,4 @@ export const getFirstEmptyTileIndex = (
   }
 
   return null;
-};
-
-export const shiftHintStatusesLeftFromIndex = (
-  previous: Record<number, HintTileStatus>,
-  removedIndex: number,
-): Record<number, HintTileStatus> => {
-  let changed = false;
-  const next: Record<number, HintTileStatus> = {};
-
-  for (const [rawIndex, status] of Object.entries(previous)) {
-    const index = Number(rawIndex);
-    if (!Number.isInteger(index)) {
-      continue;
-    }
-
-    if (index === removedIndex) {
-      changed = true;
-      continue;
-    }
-
-    if (index > removedIndex) {
-      next[index - 1] = status;
-      changed = true;
-      continue;
-    }
-
-    next[index] = status;
-  }
-
-  return changed ? next : previous;
 };
