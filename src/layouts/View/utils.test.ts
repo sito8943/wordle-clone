@@ -3,8 +3,8 @@ import {
   APP_VERSION_STORAGE_KEY,
   PLAYER_STORAGE_KEY,
   PREVIOUS_APP_VERSION_STORAGE_KEY,
-  VIEW_VERSION_HISTORY,
 } from "./constants";
+import { VIEW_VERSION_HISTORY } from "./changelog";
 import {
   clearPendingPreviousAppVersion,
   compareAppVersions,

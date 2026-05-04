@@ -119,56 +119,25 @@ export const resources = {
           "Thanks for supporting Wordle with your donation.",
         versionUpdateDialog: {
           title: "Updated to {{version}}",
-          description:
-            "You were on {{previousVersion}}. Review the latest changelog and version history.",
-          changelogTitle: "Latest changelog",
+          description: "Congratulations, a new version has been published.",
+          previousVersionLabel: "Previous version: {{previousVersion}}.",
           historyTitle: "Version history",
           releaseLabel: "Version {{version}} · {{date}}",
-          emptyChangelog:
-            "No detailed changelog entries were found for this update range.",
-          closeAction: "Got it",
-          changes: {
-            v0020: [
-              "Migrated Daily cache persistence to `wordle:daily-ref:<YYYY-MM-DD>` + `wordle:daily-meaning:<YYYY-MM-DD>`, stopping new clear-text `wordle:daily-word:*` writes while keeping legacy fallback reads during rollout.",
-              "Added server-authoritative `win` sync (`version: 3`) so backend score updates are recalculated from proof data instead of trusting client `pointsDelta`.",
-              "Hardened anti-fraud round validation and telemetry in backend sync flow, including minimum round-duration checks and rejection-reason tracking.",
-              "Fixed daily shield lifecycle synchronization so shield availability/consumption stays consistent across local cache, remote profile state, and post-loss cleanup.",
-              "Fixed challenge-related score calculations in backend progression updates to keep challenge counters aligned with applied score deltas.",
-              "Extended mode-aware Play navigation so Home and Navbar shortcuts reopen the latest persisted mode, including `zen`.",
-            ],
-            v0018beta: [
-              "Split Scoreboard data by game mode so Classic and Lightning keep independent rankings.",
-              "Added a mode switcher in Scoreboard to toggle between Classic and Lightning tables.",
-              "Extended local/remote score sync contracts with mode-aware stats and event payloads.",
-              "Updated Help navigation/content to support mode-aware guidance (`/ayuda?mode=<modeId>`) from tutorial and navbar entry points.",
-              "Updated Help rules/scoring copy rendering to respect difficulty feature flags, hiding disabled difficulty sections and adjusting formula copy when Insane is unavailable.",
-              "Persisted the current game mode in local storage (`wordle:current-mode`) so Home/Navbar Play shortcuts reopen your latest mode, with fallback to Classic when the stored mode is gated.",
-            ],
-            v0017beta: [
-              "Added a Game Modes hub with a new Lightning mode that challenges players against a countdown timer.",
-              "Introduced the Green challenge alongside per-difficulty feature flags to tune which modes appear in-app.",
-              "Polished scoring and in-game UX with refined dictionary-bonus logic and streak-aware score summaries.",
-            ],
-            v0016beta: [
-              "Added local app-version tracking to detect when a newer frontend build is available in this browser.",
-              "Introduced an update dialog that explains the latest changes and includes a complete in-app version history.",
-              "Improved release communication flow to make post-update context visible right after loading Home.",
-            ],
-            v0016: [
-              "Expanded gameplay settings and quality-of-life controls in Profile for a more configurable experience.",
-              "Refined core Home and Play interactions with additional UX polish and state consistency fixes.",
-            ],
-            v0015: [
-              "Improved dictionary and validation behavior across difficulty levels to align accepted guesses with configured rules.",
-              "Extended scoring and round feedback coverage to keep wins/losses more transparent for players.",
-            ],
-            v0014: [
-              "Optimized startup and route loading to reduce initial bundle pressure and improve perceived load times.",
-              "Enhanced result dialogs with richer round summaries and tighter integration with replay/profile flows.",
-              "Hardened storage contracts to reduce sensitive persistence exposure while keeping resume behavior stable.",
-            ],
-          },
+          historyAction: "View changelog",
+          closeAction: "Close dialog",
+          currentVersionAction: "View current changelog",
         },
+      },
+      changelog: {
+        pageTitle: "Changelog",
+        versionTitle: "Version {{version}}",
+        releaseLabel: "Released on {{date}}",
+        notFoundTitle: "Version not found",
+        notFoundDescription: "No changelog was found for this version.",
+        latestAction: "Open current version ({{version}})",
+        historyTitle: "Version history",
+        historyAction: "View changelog",
+        backHomeAction: "Back to home",
       },
       footer: {
         madeBy: "Made by @sito8943",
@@ -770,56 +739,26 @@ export const resources = {
         donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
         versionUpdateDialog: {
           title: "Actualizado a {{version}}",
-          description:
-            "Estabas en {{previousVersion}}. Revisa el changelog más reciente y el historial de versiones.",
-          changelogTitle: "Últimos cambios",
+          description: "Enhorabuena, se ha publicado una nueva versión.",
+          previousVersionLabel: "Versión anterior: {{previousVersion}}.",
           historyTitle: "Historial de versiones",
           releaseLabel: "Versión {{version}} · {{date}}",
-          emptyChangelog:
-            "No se han encontrado entradas detalladas para este rango de actualización.",
-          closeAction: "Entendido",
-          changes: {
-            v0020: [
-              "Se migró la persistencia de caché de Diario a `wordle:daily-ref:<YYYY-MM-DD>` + `wordle:daily-meaning:<YYYY-MM-DD>`, dejando de escribir nuevas entradas en texto plano `wordle:daily-word:*` y manteniendo lectura legacy durante el rollout.",
-              "Se añadió sincronización autoritativa de victorias (`version: 3`), de modo que el backend recalcula la puntuación desde datos de prueba y no confía en `pointsDelta` del cliente.",
-              "Se reforzaron las validaciones anti-fraude y la telemetría del flujo de sync backend, incluyendo control de duración mínima de ronda y registro de motivos de rechazo.",
-              "Se corrigió la sincronización del ciclo de vida del escudo diario para mantener coherente su disponibilidad/consumo entre caché local, estado remoto de perfil y limpieza tras derrota.",
-              "Se corrigieron cálculos de puntuación ligados a retos en la progresión backend para alinear los contadores de retos con los deltas de puntuación aplicados.",
-              "Se amplió la navegación contextual de Jugar para que los accesos de Home y Navbar reabran el último modo persistido, incluido `zen`.",
-            ],
-            v0018beta: [
-              "Se separó la clasificación por modo de juego para que Clásico y Relámpago tengan rankings independientes.",
-              "Se añadió un selector de modo en Clasificación para alternar entre las tablas de Clásico y Relámpago.",
-              "Se amplió el contrato de sincronización local/remota de puntuación con estadísticas y eventos por modo.",
-              "Se actualizó la navegación y contenido de Ayuda para soportar guía contextual por modo (`/ayuda?mode=<modeId>`) desde el tutorial y el navbar.",
-              "Se ajustó el render de reglas/puntuación de Ayuda para respetar feature flags de dificultad, ocultando secciones deshabilitadas y adaptando la fórmula cuando Insano no está disponible.",
-              "Se persistió el modo de juego actual en local storage (`wordle:current-mode`) para que los accesos de Jugar en Home/Navbar reabran el último modo usado, con fallback a Clásico cuando el modo guardado esté bloqueado por feature flag.",
-            ],
-            v0017beta: [
-              "Se añadió un hub de Modos de juego con el nuevo modo Relámpago que reta al jugador contra un temporizador.",
-              "Se incorporó el reto Green junto con feature flags por dificultad para ajustar qué modos aparecen en la app.",
-              "Se pulió la puntuación y la UX en partida con lógica refinada de bonus de diccionario y resúmenes por racha.",
-            ],
-            v0016beta: [
-              "Se añadió seguimiento de la versión de la app en local para detectar builds más nuevas del frontend en este navegador.",
-              "Se incorporó un diálogo de actualización con los cambios recientes y un historial completo de versiones dentro de la app.",
-              "Se mejoró el flujo de comunicación de releases para mostrar contexto de la actualización al cargar Home.",
-            ],
-            v0016: [
-              "Se ampliaron ajustes del juego y controles de calidad de vida en Perfil para una experiencia más configurable.",
-              "Se refinaron interacciones clave de Home y Play con mejoras de UX y mayor consistencia de estado.",
-            ],
-            v0015: [
-              "Se mejoró el comportamiento del diccionario y las validaciones por dificultad para alinear intentos válidos con las reglas activas.",
-              "Se amplió la cobertura de puntuación y feedback de rondas para hacer victorias y derrotas más transparentes.",
-            ],
-            v0014: [
-              "Se optimizó la carga inicial y de rutas para reducir el peso del bundle de arranque y mejorar el tiempo percibido de inicio.",
-              "Se mejoraron los diálogos de resultado con resúmenes de ronda más completos e integración más sólida con rejugar/perfil.",
-              "Se reforzaron contratos de almacenamiento para reducir exposición de datos sensibles manteniendo estable la reanudación de partida.",
-            ],
-          },
+          historyAction: "Ver changelog",
+          closeAction: "Cerrar diálogo",
+          currentVersionAction: "Ver changelog actual",
         },
+      },
+      changelog: {
+        pageTitle: "Changelog",
+        versionTitle: "Versión {{version}}",
+        releaseLabel: "Publicado el {{date}}",
+        notFoundTitle: "Versión no encontrada",
+        notFoundDescription:
+          "No se encontró un changelog para esta versión.",
+        latestAction: "Abrir versión actual ({{version}})",
+        historyTitle: "Historial de versiones",
+        historyAction: "Ver changelog",
+        backHomeAction: "Volver al inicio",
       },
       footer: {
         madeBy: "Hecho por @sito8943",

@@ -8,6 +8,7 @@ import GameModes from "./GameModes";
 import Lighting from "./GameModes/Lightning";
 import Zen from "./GameModes/Zen";
 import Daily from "./GameModes/Daily";
+import Changelog from "./Changelog";
 export {
   Home,
   Help,
@@ -19,4 +20,5 @@ export {
   Lighting,
   Zen,
   Daily,
+  Changelog,
 };
