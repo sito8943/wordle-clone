@@ -125,12 +125,14 @@ const Changelog = (): JSX.Element => {
                     date: formatReleaseDate(entry.releasedAt),
                   })}
                 </p>
-                <Link
-                  to={getChangelogRoute(entry.version)}
-                  className="text-sm font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
-                >
-                  {t("changelog.historyAction")}
-                </Link>
+                {isCurrentVersion ? null : (
+                  <Link
+                    to={getChangelogRoute(entry.version)}
+                    className="text-sm font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
+                  >
+                    {t("changelog.historyAction")}
+                  </Link>
+                )}
               </li>
             );
           })}
