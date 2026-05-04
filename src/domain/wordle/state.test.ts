@@ -218,9 +218,20 @@ describe("setLetterAt", () => {
 });
 
 describe("removeLetterAt", () => {
-  it("removes the letter at the provided index", () => {
+  it("clears the letter at the provided index without shifting others", () => {
     const next = removeLetterAt(makeState({ current: "CRANE" }), 2);
-    expect(next.current).toBe("CRNE");
+    expect(next.current).toBe("CR NE");
+  });
+
+  it("trims trailing empty cells after clearing the last letter", () => {
+    const next = removeLetterAt(makeState({ current: "CRA" }), 2);
+    expect(next.current).toBe("CR");
+  });
+
+  it("does nothing when the selected cell is already empty", () => {
+    const state = makeState({ current: "C A" });
+    const next = removeLetterAt(state, 1);
+    expect(next.current).toBe("C A");
   });
 
   it("ignores out-of-range indexes", () => {

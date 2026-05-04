@@ -5,7 +5,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router";
+import { MemoryRouter, Route, Routes, useParams } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
 import { DialogQueueProvider } from "@providers";
@@ -58,6 +58,12 @@ const updatePlayerMock = vi.fn().mockResolvedValue(undefined);
 const recoverPlayerMock = vi.fn().mockResolvedValue(undefined);
 const isNickAvailableMock = vi.fn().mockResolvedValue(true);
 
+const ChangelogRouteProbe = () => {
+  const { version } = useParams();
+
+  return <div>{`Changelog content ${version ?? ""}`}</div>;
+};
+
 vi.mock("@providers", async () => {
   const actual =
     await vi.importActual<typeof import("@providers")>("@providers");
@@ -86,6 +92,10 @@ const renderView = (initialEntry = "/") =>
             <Route index element={<div>Home content</div>} />
             <Route path="play" element={<div>Play content</div>} />
             <Route path="scoreboard" element={<div>Scoreboard content</div>} />
+            <Route
+              path="changelog/:version"
+              element={<ChangelogRouteProbe />}
+            />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -136,18 +146,19 @@ describe("View app version dialog", () => {
     expect(screen.getByText("Scoreboard content")).toBeTruthy();
     expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
     expect(
-      screen.getByText(
-        "You were on 0.0.15. Review the latest changelog and version history.",
-      ),
+      screen.getByText("Congratulations, a new version has been published."),
     ).toBeTruthy();
-    expect(screen.getByText("Latest changelog")).toBeTruthy();
+    expect(screen.getByText("Version history")).toBeTruthy();
     expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.15");
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Close" })[0]);
+    fireEvent.click(
+      screen.getByRole("button", { name: "View current changelog" }),
+    );
 
     await waitFor(() => {
       expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.16-beta");
     });
+    expect(screen.getByText("Changelog content 0.0.16-beta")).toBeTruthy();
   });
 
   it("shows pending update dialog details when previous app version is preserved after storage reset", async () => {
@@ -159,12 +170,11 @@ describe("View app version dialog", () => {
 
     expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
     expect(
-      screen.getByText(
-        "You were on 0.0.15. Review the latest changelog and version history.",
-      ),
+      screen.getByText("Congratulations, a new version has been published."),
     ).toBeTruthy();
+    expect(screen.getByText("Previous version: 0.0.15.")).toBeTruthy();
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Close" })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Close dialog" }));
 
     await waitFor(() => {
       expect(localStorage.getItem(PREVIOUS_APP_VERSION_STORAGE_KEY)).toBeNull();

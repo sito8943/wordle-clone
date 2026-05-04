@@ -248,9 +248,20 @@ export const removeLetterAt = (
     return state;
   }
 
+  const letterAtIndex = state.current[index];
+  if (!letterAtIndex || letterAtIndex.trim() === "") {
+    return state;
+  }
+
+  const nextCurrent = (
+    state.current.slice(0, index) +
+    " " +
+    state.current.slice(index + 1)
+  ).trimEnd();
+
   return {
     ...state,
-    current: state.current.slice(0, index) + state.current.slice(index + 1),
+    current: nextCurrent,
   };
 };
 

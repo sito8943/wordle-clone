@@ -930,6 +930,11 @@ export default function usePlayController(
 
   const changeManualTileSelection = useCallback(
     (enabled: boolean) => {
+      console.log(
+        "Toggling manual tile selection to",
+        enabled,
+        manualTileSelectionRef.current,
+      );
       if (enabled === manualTileSelectionRef.current) {
         return;
       }

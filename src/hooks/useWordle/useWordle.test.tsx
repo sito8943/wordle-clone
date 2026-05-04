@@ -237,7 +237,7 @@ describe("useWordle dictionary query integration", () => {
     dialog.remove();
   });
 
-  it("supports manual tile selection without automatic cursor advance", () => {
+  it("supports manual tile selection with automatic cursor advance", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
@@ -258,13 +258,13 @@ describe("useWordle dictionary query integration", () => {
       result.current.handleKey("A");
     });
     expect(result.current.current).toBe("A");
-    expect(result.current.activeTileIndex).toBe(0);
+    expect(result.current.activeTileIndex).toBe(1);
 
     act(() => {
       result.current.handleKey("B");
     });
-    expect(result.current.current).toBe("B");
-    expect(result.current.activeTileIndex).toBe(0);
+    expect(result.current.current).toBe("AB");
+    expect(result.current.activeTileIndex).toBe(2);
 
     act(() => {
       result.current.selectActiveTile(1);
@@ -272,8 +272,8 @@ describe("useWordle dictionary query integration", () => {
     act(() => {
       result.current.handleKey("C");
     });
-    expect(result.current.current).toBe("BC");
-    expect(result.current.activeTileIndex).toBe(1);
+    expect(result.current.current).toBe("AC");
+    expect(result.current.activeTileIndex).toBe(2);
   });
 
   it("respects custom round config limits for row length", () => {
@@ -389,7 +389,7 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.current).toBe("Ñ");
   });
 
-  it("removes the selected letter with backspace in manual mode", () => {
+  it("clears the selected letter with backspace in manual mode and moves cursor left", () => {
     const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
@@ -416,12 +416,18 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.current).toBe("AB");
 
     act(() => {
-      result.current.selectActiveTile(0);
+      result.current.selectActiveTile(1);
     });
     act(() => {
       result.current.handleKey("BACKSPACE");
     });
-    expect(result.current.current).toBe("B");
+    expect(result.current.current).toBe("A");
+    expect(result.current.activeTileIndex).toBe(0);
+
+    act(() => {
+      result.current.handleKey("BACKSPACE");
+    });
+    expect(result.current.current).toBe("");
     expect(result.current.activeTileIndex).toBe(0);
   });
 
@@ -450,25 +456,25 @@ describe("useWordle dictionary query integration", () => {
       result.current.handleKey("B");
     });
     expect(result.current.current).toBe("AB");
-    expect(result.current.activeTileIndex).toBe(1);
+    expect(result.current.activeTileIndex).toBe(2);
 
     act(() => {
       result.current.handleKey("ARROWLEFT");
     });
-    expect(result.current.activeTileIndex).toBe(0);
-
-    act(() => {
-      result.current.handleKey("ARROWRIGHT");
-    });
     expect(result.current.activeTileIndex).toBe(1);
 
     act(() => {
       result.current.handleKey("ARROWRIGHT");
     });
+    expect(result.current.activeTileIndex).toBe(2);
+
     act(() => {
       result.current.handleKey("ARROWRIGHT");
     });
-    expect(result.current.activeTileIndex).toBe(3);
+    act(() => {
+      result.current.handleKey("ARROWRIGHT");
+    });
+    expect(result.current.activeTileIndex).toBe(4);
   });
 
   it("plays keyboard sounds when adding and deleting letters", () => {

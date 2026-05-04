@@ -1,13 +1,16 @@
 import { Button, Dialog } from "@components";
+import { getChangelogRoute } from "@config/routes";
 import { useTranslation } from "@i18n";
+import { Link } from "react-router";
 import type { VersionUpdateDialogProps } from "./types";
 
 const VersionUpdateDialog = ({
   visible,
   onClose,
+  onOpenCurrentChangelog,
+  onOpenVersionChangelog,
   currentVersion,
   previousVersion,
-  changelogEntries,
   versionHistory,
 }: VersionUpdateDialogProps) => {
   const { t, i18n } = useTranslation();
@@ -18,7 +21,10 @@ const VersionUpdateDialog = ({
       return value;
     }
 
-    const locale = i18n.language === "es" ? "es-ES" : "en-US";
+    const locale =
+      i18n.language === "es" || i18n.language.startsWith("es-")
+        ? "es-ES"
+        : "en-US";
     return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
       parsedDate,
     );
@@ -30,47 +36,18 @@ const VersionUpdateDialog = ({
       onClose={onClose}
       titleId="app-version-update-dialog-title"
       title={t("home.versionUpdateDialog.title", { version: currentVersion })}
-      description={
-        previousVersion
-          ? t("home.versionUpdateDialog.description", { previousVersion })
-          : undefined
-      }
-      panelClassName="max-w-2xl"
+      description={t("home.versionUpdateDialog.description")}
+      headerAction={<span aria-hidden="true" />}
+      panelClassName="max-w-xl"
     >
       <div className="mt-4 flex max-h-[65vh] flex-col gap-5 overflow-y-auto pr-1">
-        <section>
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-            {t("home.versionUpdateDialog.changelogTitle")}
-          </h3>
-          {changelogEntries.length > 0 ? (
-            <ol className="mt-3 flex flex-col gap-3">
-              {changelogEntries.map((entry) => (
-                <li
-                  key={`changelog-${entry.version}`}
-                  className="rounded-md border border-primary bg-primary/10 p-3 dark:border-primary dark:bg-primary/20"
-                >
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                    {t("home.versionUpdateDialog.releaseLabel", {
-                      version: entry.version,
-                      date: formatReleaseDate(entry.releasedAt),
-                    })}
-                  </p>
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-                    {entry.changeKeys.map((changeKey) => (
-                      <li key={`${entry.version}-${changeKey}`}>
-                        {t(changeKey)}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="mt-3 text-sm text-neutral-700 dark:text-neutral-300">
-              {t("home.versionUpdateDialog.emptyChangelog")}
-            </p>
-          )}
-        </section>
+        {previousVersion ? (
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">
+            {t("home.versionUpdateDialog.previousVersionLabel", {
+              previousVersion,
+            })}
+          </p>
+        ) : null}
         <section>
           <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
             {t("home.versionUpdateDialog.historyTitle")}
@@ -94,21 +71,27 @@ const VersionUpdateDialog = ({
                       date: formatReleaseDate(entry.releasedAt),
                     })}
                   </p>
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-                    {entry.changeKeys.map((changeKey) => (
-                      <li key={`${entry.version}-${changeKey}`}>
-                        {t(changeKey)}
-                      </li>
-                    ))}
-                  </ul>
+                  <Link
+                    to={getChangelogRoute(entry.version)}
+                    className="mt-2 text-sm font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onOpenVersionChangelog(entry.version);
+                    }}
+                  >
+                    {t("home.versionUpdateDialog.historyAction")}
+                  </Link>
                 </li>
               );
             })}
           </ol>
         </section>
-        <div className="flex justify-end">
-          <Button onClick={onClose}>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button variant="outline" color="neutral" onClick={onClose}>
             {t("home.versionUpdateDialog.closeAction")}
+          </Button>
+          <Button onClick={onOpenCurrentChangelog}>
+            {t("home.versionUpdateDialog.currentVersionAction")}
           </Button>
         </div>
       </div>

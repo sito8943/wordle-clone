@@ -161,6 +161,7 @@ const preloadAppRoutes = async () => {
     import("@views/GameModes/Zen"),
     import("@views/GameModes/Lightning"),
     import("@views/GameModes/Daily"),
+    import("@views/Changelog"),
     import("@views/Help"),
     import("@views/Scoreboard"),
     import("@views/Profile"),

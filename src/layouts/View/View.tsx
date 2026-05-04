@@ -1,12 +1,5 @@
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { Outlet, useLocation } from "react-router";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
 import { Navbar, Footer } from "./components";
@@ -19,13 +12,13 @@ import {
 } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
 import { env } from "@config/env";
-import { ROUTES } from "@config/routes";
-import { VIEW_DIALOG_IDS, VIEW_VERSION_HISTORY } from "./constants";
+import { ROUTES, getChangelogRoute } from "@config/routes";
+import { VIEW_DIALOG_IDS } from "./constants";
+import { VIEW_VERSION_HISTORY } from "./changelog";
 import {
   clearPendingPreviousAppVersion,
   getPendingPreviousAppVersion,
   getStoredAppVersion,
-  getVersionHistoryEntriesForUpdate,
   isVersionNewer,
   shouldAskForInitialPlayerName,
   storeAppVersion,
@@ -42,6 +35,8 @@ const View = () => {
   const { scoreClient } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
   const { pathname, hash } = useLocation();
+  const navigate = useNavigate();
+  const appVersion = env.appVersion;
   const isHomeRoute = pathname === ROUTES.HOME;
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
@@ -63,11 +58,28 @@ const View = () => {
     DIALOG_QUEUE_PRIORITIES.VIEW,
   );
 
+  const markVersionDialogAsSeen = useCallback(() => {
+    storeAppVersion(appVersion);
+    clearPendingPreviousAppVersion();
+  }, [appVersion]);
+
   const closeVersionDialog = useCallback(() => {
     setVersionDialogVisible(false);
-    storeAppVersion(env.appVersion);
-    clearPendingPreviousAppVersion();
-  }, []);
+    markVersionDialogAsSeen();
+  }, [markVersionDialogAsSeen]);
+
+  const openVersionChangelog = useCallback(
+    (version: string) => {
+      setVersionDialogVisible(false);
+      markVersionDialogAsSeen();
+      navigate(getChangelogRoute(version));
+    },
+    [markVersionDialogAsSeen, navigate],
+  );
+
+  const openCurrentVersionChangelog = useCallback(() => {
+    openVersionChangelog(appVersion);
+  }, [appVersion, openVersionChangelog]);
 
   const confirmInitialPlayerName = useCallback(
     async (name: string): Promise<string | null> => {
@@ -118,7 +130,7 @@ const View = () => {
   );
 
   useEffect(() => {
-    const currentVersion = env.appVersion;
+    const currentVersion = appVersion;
     const pendingPreviousVersion = getPendingPreviousAppVersion();
 
     if (pendingPreviousVersion) {
@@ -145,27 +157,7 @@ const View = () => {
       setVersionDialogVisible(true);
       return;
     }
-  }, []);
-
-  const changelogEntries = useMemo(() => {
-    if (!previousAppVersion) {
-      const currentVersionEntry = VIEW_VERSION_HISTORY.find(
-        (entry) => entry.version === env.appVersion,
-      );
-
-      if (currentVersionEntry) {
-        return [currentVersionEntry];
-      }
-
-      return VIEW_VERSION_HISTORY.slice(0, 1);
-    }
-
-    return getVersionHistoryEntriesForUpdate(
-      VIEW_VERSION_HISTORY,
-      previousAppVersion,
-      env.appVersion,
-    );
-  }, [previousAppVersion]);
+  }, [appVersion]);
 
   useEffect(() => {
     if (hash.length <= 1) {
@@ -256,9 +248,10 @@ const View = () => {
           <VersionUpdateDialog
             visible={queuedVersionDialogVisible}
             onClose={closeVersionDialog}
-            currentVersion={env.appVersion}
+            onOpenCurrentChangelog={openCurrentVersionChangelog}
+            onOpenVersionChangelog={openVersionChangelog}
+            currentVersion={appVersion}
             previousVersion={previousAppVersion}
-            changelogEntries={changelogEntries}
             versionHistory={VIEW_VERSION_HISTORY}
           />
         ) : null}

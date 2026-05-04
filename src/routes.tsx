@@ -11,6 +11,7 @@ const Play = lazy(() => import("@views/Play"));
 const Help = lazy(() => import("@views/Help"));
 const Scoreboard = lazy(() => import("@views/Scoreboard"));
 const Profile = lazy(() => import("@views/Profile"));
+const Changelog = lazy(() => import("@views/Changelog"));
 const NotFound = lazy(() => import("@views/NotFound"));
 const Zen = lazy(() => import("@views/GameModes/Zen"));
 const Lightning = lazy(() => import("@views/GameModes/Lightning"));
@@ -30,6 +31,7 @@ const routes = createBrowserRouter(
         },
         { path: ROUTES.LIGHTING, element: <Lightning /> },
         { path: ROUTES.DAILY, element: <Daily /> },
+        { path: ROUTES.CHANGELOG, element: <Changelog /> },
         { path: ROUTES.ZEN, element: <Zen /> },
         { path: ROUTES.HELP, element: <Help /> },
         { path: ROUTES.SCOREBOARD, element: <Scoreboard /> },

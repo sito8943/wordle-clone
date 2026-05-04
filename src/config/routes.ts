@@ -7,6 +7,7 @@ export const ROUTES = {
   ZEN: "/zen",
   LIGHTING: "/relampago",
   DAILY: "/palabra-diaria",
+  CHANGELOG: "/changelog/:version",
   HELP: "/ayuda",
   SETTINGS: "/ajustes",
   PROFILE: "/perfil",
@@ -47,3 +48,6 @@ export const getHelpRoute = (modeId?: string | null): string => {
 
   return `${ROUTES.HELP}?${searchParams.toString()}`;
 };
+
+export const getChangelogRoute = (version: string): string =>
+  ROUTES.CHANGELOG.replace(":version", encodeURIComponent(version));
