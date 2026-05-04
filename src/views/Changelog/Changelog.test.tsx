@@ -1,13 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { ROUTES } from "@config/routes";
 import { i18n, initI18n } from "@i18n";
 import Changelog from "./Changelog";

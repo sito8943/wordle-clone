@@ -92,7 +92,10 @@ const renderView = (initialEntry = "/") =>
             <Route index element={<div>Home content</div>} />
             <Route path="play" element={<div>Play content</div>} />
             <Route path="scoreboard" element={<div>Scoreboard content</div>} />
-            <Route path="changelog/:version" element={<ChangelogRouteProbe />} />
+            <Route
+              path="changelog/:version"
+              element={<ChangelogRouteProbe />}
+            />
           </Route>
         </Routes>
       </MemoryRouter>

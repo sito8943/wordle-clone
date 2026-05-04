@@ -54,7 +54,9 @@ export const getResolvedVersionChangelog = (
   const fallbackLanguage: ViewChangelogLanguage =
     normalizedLanguage === "es" ? "en" : "es";
   const changes =
-    entry.language[normalizedLanguage] ?? entry.language[fallbackLanguage] ?? [];
+    entry.language[normalizedLanguage] ??
+    entry.language[fallbackLanguage] ??
+    [];
 
   return {
     version,

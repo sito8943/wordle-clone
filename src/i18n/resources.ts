@@ -753,8 +753,7 @@ export const resources = {
         versionTitle: "Versión {{version}}",
         releaseLabel: "Publicado el {{date}}",
         notFoundTitle: "Versión no encontrada",
-        notFoundDescription:
-          "No se encontró un changelog para esta versión.",
+        notFoundDescription: "No se encontró un changelog para esta versión.",
         latestAction: "Abrir versión actual ({{version}})",
         historyTitle: "Historial de versiones",
         historyAction: "Ver changelog",
