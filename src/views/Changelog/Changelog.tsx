@@ -48,7 +48,7 @@ const Changelog = (): JSX.Element => {
             onClick={() => {
               navigate(ROUTES.HOME);
             }}
-            className="!p-0"
+            className="p-0!"
           ></Button>
           <h2 className="page-title">{t("changelog.pageTitle")}</h2>
         </div>
