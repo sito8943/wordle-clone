@@ -1,20 +1,24 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ScoreClient } from "@api/score";
 import { env } from "@config";
+import { getChangelogRoute } from "@config/routes";
 import { ApiProvider, FeatureFlagsProvider, PlayerProvider } from "@providers";
 import { renderWithQueryClient } from "../../test/utils";
 import Profile from "./Profile";
 
 const renderProfile = () =>
   renderWithQueryClient(
-    <FeatureFlagsProvider>
-      <ApiProvider>
-        <PlayerProvider>
-          <Profile />
-        </PlayerProvider>
-      </ApiProvider>
-    </FeatureFlagsProvider>,
+    <MemoryRouter>
+      <FeatureFlagsProvider>
+        <ApiProvider>
+          <PlayerProvider>
+            <Profile />
+          </PlayerProvider>
+        </ApiProvider>
+      </FeatureFlagsProvider>
+    </MemoryRouter>,
   );
 
 describe("Profile integration", () => {
@@ -113,6 +117,17 @@ describe("Profile integration", () => {
     const main = await screen.findByRole("main");
     expect(main.className).toContain(
       "pb-[calc(env(safe-area-inset-bottom)+6rem)]",
+    );
+  });
+
+  it("renders app version as a changelog link", async () => {
+    renderProfile();
+
+    const versionLink = await screen.findByRole("link", {
+      name: env.appVersion,
+    });
+    expect(versionLink.getAttribute("href")).toBe(
+      getChangelogRoute(env.appVersion),
     );
   });
 

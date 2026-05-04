@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-05-04
+
+### Branch `0.0.21`
+
+- Bumped package version to `0.0.21`.
+- Added a dedicated changelog page route (`/changelog/:version`) and wired it into app routing.
+- Moved changelog content to a typed JSON source (`src/layouts/View/changelog.json`) with entries keyed by `version` and localized by `language` (`en`/`es`), plus helper resolvers/history derivation in `src/layouts/View/changelog.ts`.
+- Simplified the version-update dialog flow: release announcement copy, linkable version history, and direct CTA to open the current changelog page.
+- Added a full changelog view with release metadata, per-version navigation links, not-found fallback, and a two-column version-history grid.
+- Introduced reusable `Switcher` and `SwitcherField` components and replaced checkbox toggles in Profile Settings and Play Settings Drawer with the new switch UI.
+- Hardened Switcher typing/accessibility by explicitly supporting common input props and ARIA attributes through the component API.
+- Fixed manual tile selection editing so letter insertion in manual mode now advances the active tile index after writing.
+- Fixed manual-mode backspace behavior so it clears the selected tile and moves the cursor left, allowing consecutive deletions.
+- Fixed selected-index deletion behavior so remaining letters no longer shift left unexpectedly (`removeLetterAt` now clears in-place and trims trailing blanks).
+- Fixed Profile page bottom spacing to avoid footer overlap by adding safe-area aware bottom padding.
+
 ## 2026-04-29
 
 ### Branch `0.0.20`

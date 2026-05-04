@@ -3,16 +3,30 @@
     "releasedAt": "2026-05-04",
     "language": {
       "en": [
-        "Moved the full changelog out of the update dialog into a dedicated route: `/changelog/:version`.",
-        "Simplified the app-update dialog to a release announcement with two CTAs: view current changelog or close dialog.",
-        "Added version history links in the update dialog so each listed version opens its own changelog page.",
-        "Centralized release notes in a JSON contract keyed by `version` and `language` (`en`/`es`) for consistent rendering."
+        "Bumped package version to `0.0.21`.",
+        "Added a dedicated changelog page route (`/changelog/:version`) and wired it into app routing.",
+        "Moved changelog content to a typed JSON source (`src/layouts/View/changelog.json`) with entries keyed by `version` and localized by `language` (`en`/`es`), plus helper resolvers/history derivation in `src/layouts/View/changelog.ts`.",
+        "Simplified the version-update dialog flow: release announcement copy, linkable version history, and direct CTA to open the current changelog page.",
+        "Added a full changelog view with release metadata, per-version navigation links, not-found fallback, and a two-column version-history grid.",
+        "Introduced reusable `Switcher` and `SwitcherField` components and replaced checkbox toggles in Profile Settings and Play Settings Drawer with the new switch UI.",
+        "Hardened Switcher typing/accessibility by explicitly supporting common input props and ARIA attributes through the component API.",
+        "Fixed manual tile selection editing so letter insertion in manual mode now advances the active tile index after writing.",
+        "Fixed manual-mode backspace behavior so it clears the selected tile and moves the cursor left, allowing consecutive deletions.",
+        "Fixed selected-index deletion behavior so remaining letters no longer shift left unexpectedly (`removeLetterAt` now clears in-place and trims trailing blanks).",
+        "Fixed Profile page bottom spacing to avoid footer overlap by adding safe-area aware bottom padding."
       ],
       "es": [
-        "Se movió el changelog completo fuera del diálogo de actualización a una ruta dedicada: `/changelog/:version`.",
-        "Se simplificó el diálogo de actualización a un aviso de nueva versión con dos CTAs: ver changelog actual o cerrar diálogo.",
-        "Se añadieron enlaces en el historial de versiones del diálogo para que cada versión abra su página de changelog.",
-        "Se centralizaron las notas de versión en un contrato JSON con clave por `version` y `language` (`en`/`es`) para un render consistente."
+        "Se actualizó la versión del paquete a `0.0.21`.",
+        "Se añadió una ruta dedicada para changelog (`/changelog/:version`) y se integró en el enrutado de la app.",
+        "Se movió el contenido del changelog a una fuente JSON tipada (`src/layouts/View/changelog.json`) con entradas por `version` e idioma (`en`/`es`), junto con helpers de resolución/historial en `src/layouts/View/changelog.ts`.",
+        "Se simplificó el flujo del diálogo de actualización: mensaje de release, historial enlazable y CTA directo para abrir el changelog actual.",
+        "Se añadió una vista completa de changelog con metadatos de release, enlaces por versión, fallback de versión no encontrada y grid de historial en dos columnas.",
+        "Se introdujeron los componentes reutilizables `Switcher` y `SwitcherField`, sustituyendo checkboxes en Ajustes de Perfil y en el panel de ajustes de Play.",
+        "Se reforzó el tipado/accesibilidad de Switcher soportando props comunes del input y atributos ARIA de forma explícita en la API.",
+        "Se corrigió la edición con selección manual de casillas para que insertar letras avance el índice activo en modo manual.",
+        "Se corrigió el comportamiento de backspace en modo manual para borrar la casilla seleccionada y mover el cursor a la izquierda, permitiendo borrados consecutivos.",
+        "Se corrigió el borrado por índice seleccionado para que el resto de letras no se desplacen inesperadamente (`removeLetterAt` ahora limpia en sitio y recorta espacios finales).",
+        "Se corrigió el espaciado inferior de la vista de Perfil para evitar solapamiento con el footer añadiendo padding adaptado a safe area."
       ]
     }
   },
