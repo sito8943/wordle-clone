@@ -20,6 +20,7 @@ export const HardModeTimerIndicator = memo(
     return (
       <div
         role="status"
+        data-tour="hard-mode-timer"
         aria-live="polite"
         aria-label={t("play.toolbar.insaneTimerAriaLabel", {
           seconds: hardModeSecondsLeft,

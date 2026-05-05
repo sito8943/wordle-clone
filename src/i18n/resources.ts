@@ -378,6 +378,8 @@ export const resources = {
           wordListUnavailable: "Word list unavailable.",
           hintAriaLabel: "Hint",
           hintButton: "Hint ({{count}})",
+          tourAriaLabel: "Tutorial",
+          tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Daily word meaning",
           dailyMeaningButton: "Meaning",
           helpAriaLabel: "Help",
@@ -431,9 +433,54 @@ export const resources = {
         },
         tutorialPromptDialog: {
           title: "Welcome to {{gameMode}}",
-          description: "We can open the Help page so you can review the rules.",
-          confirm: "Yes, open Help",
+          description:
+            "We can guide you with a quick tour of the most important controls.",
+          confirm: "Yes, start tutorial",
           cancel: "No, skip tutorial",
+        },
+        gameplayTour: {
+          progress: "{{current}} / {{total}}",
+          fallbackNotice:
+            "This control is not visible right now, but the explanation still applies.",
+          actions: {
+            help: "Open Help",
+            skip: "Skip",
+            back: "Back",
+            next: "Next",
+            finish: "Finish",
+          },
+          steps: {
+            board: {
+              title: "Board",
+              description:
+                "This is your board. Guess the hidden word before you run out of rows.",
+            },
+            keyboard: {
+              title: "Keyboard",
+              description:
+                "Type letters here and press Enter to submit each guess.",
+            },
+            hint: {
+              title: "Hints",
+              description:
+                "Use this button for a yellow hint. Availability depends on mode and difficulty.",
+            },
+            refresh: {
+              title: "Refresh round",
+              description:
+                "Refresh starts a new round. If you already have progress, you'll be asked to confirm.",
+            },
+            timer: {
+              title: "Lightning timer",
+              description:
+                "In Lightning mode you have limited time. If it reaches zero, the round ends.",
+            },
+            dailyMeaning: {
+              title: "Daily meaning",
+              description:
+                "In Daily mode you can open the meaning of today's word from here.",
+            },
+          },
         },
         sessionResumeDialog: {
           title: "Resume previous game?",
@@ -1000,6 +1047,8 @@ export const resources = {
           wordListUnavailable: "La lista de palabras no está disponible.",
           hintAriaLabel: "Pista",
           hintButton: "Pista ({{count}})",
+          tourAriaLabel: "Tutorial",
+          tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Significado de la palabra del día",
           dailyMeaningButton: "Significado",
           helpAriaLabel: "Ayuda",
@@ -1054,9 +1103,53 @@ export const resources = {
         tutorialPromptDialog: {
           title: "Bienvenido a {{gameMode}}",
           description:
-            "Podemos abrir la ayuda para que repases las reglas del juego.",
-          confirm: "Sí, abrir ayuda",
+            "Podemos guiarte con un tour rápido de los controles más importantes.",
+          confirm: "Sí, iniciar tutorial",
           cancel: "No, omitir tutorial",
+        },
+        gameplayTour: {
+          progress: "{{current}} / {{total}}",
+          fallbackNotice:
+            "Este control no está visible ahora mismo, pero la explicación sigue aplicando.",
+          actions: {
+            help: "Abrir ayuda",
+            skip: "Omitir",
+            back: "Atrás",
+            next: "Siguiente",
+            finish: "Finalizar",
+          },
+          steps: {
+            board: {
+              title: "Tablero",
+              description:
+                "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas.",
+            },
+            keyboard: {
+              title: "Teclado",
+              description:
+                "Escribe letras aquí y pulsa Enter para enviar cada intento.",
+            },
+            hint: {
+              title: "Pistas",
+              description:
+                "Usa este botón para pedir una pista amarilla. La disponibilidad depende del modo y la dificultad.",
+            },
+            refresh: {
+              title: "Actualizar ronda",
+              description:
+                "Actualizar inicia una ronda nueva. Si ya tienes progreso, te pediremos confirmación.",
+            },
+            timer: {
+              title: "Temporizador relámpago",
+              description:
+                "En el modo Relámpago tienes tiempo limitado. Si llega a cero, la ronda termina.",
+            },
+            dailyMeaning: {
+              title: "Significado diario",
+              description:
+                "En modo Diario puedes abrir desde aquí el significado de la palabra de hoy.",
+            },
+          },
         },
         sessionResumeDialog: {
           title: "¿Reanudar partida anterior?",

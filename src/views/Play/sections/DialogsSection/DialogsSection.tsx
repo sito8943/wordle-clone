@@ -23,6 +23,9 @@ const TutorialPromptDialog = lazy(
   () =>
     import("../../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
 );
+const GameplayTourDialog = lazy(
+  () => import("../../components/Dialogs/GameplayTourDialog/GameplayTourDialog"),
+);
 const WordListDialog = lazy(
   () => import("../../components/Dialogs/WordListDialog/WordListDialog"),
 );
@@ -70,6 +73,14 @@ const DialogsSection = (): JSX.Element => {
     showDictionaryChecksumDialog,
     showRefreshDialog,
     showTutorialPromptDialog,
+    showGameplayTourDialog,
+    gameplayTourSteps,
+    gameplayTourStepIndex,
+    canGoToPreviousGameplayTourStep,
+    closeGameplayTour,
+    goToNextGameplayTourStep,
+    goToPreviousGameplayTourStep,
+    openModeHelpFromGameplayTour,
     showWordsDialog,
     showDailyMeaningDialog,
     isLoadingDailyMeaning,
@@ -200,6 +211,11 @@ const DialogsSection = (): JSX.Element => {
     showTutorialPromptDialog,
     DIALOG_QUEUE_PRIORITIES.PLAY,
   );
+  const gameplayTourDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.GAMEPLAY_TOUR,
+    showGameplayTourDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
+  );
 
   const changeDifficulty = () => {
     if (!settingsDrawerEnabled) {
@@ -218,6 +234,7 @@ const DialogsSection = (): JSX.Element => {
         showDictionaryChecksumDialog,
         showRefreshDialog,
         showTutorialPromptDialog,
+        showGameplayTourDialog,
         showWordsDialog,
         showDailyMeaningDialog,
         showDeveloperConsoleDialog,
@@ -386,6 +403,18 @@ const DialogsSection = (): JSX.Element => {
               gameMode={gameMode}
               onClose={declineTutorialPrompt}
               onConfirm={acceptTutorialPrompt}
+            />
+          ) : null}
+          {gameplayTourDialogVisible ? (
+            <GameplayTourDialog
+              visible
+              steps={gameplayTourSteps}
+              stepIndex={gameplayTourStepIndex}
+              canGoPrevious={canGoToPreviousGameplayTourStep}
+              onClose={closeGameplayTour}
+              onNextStep={goToNextGameplayTourStep}
+              onPreviousStep={goToPreviousGameplayTourStep}
+              onOpenHelp={openModeHelpFromGameplayTour}
             />
           ) : null}
         </Suspense>

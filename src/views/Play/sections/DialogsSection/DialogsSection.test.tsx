@@ -15,6 +15,19 @@ const controllerMock = vi.hoisted(() => ({
   showDictionaryChecksumDialog: false,
   showRefreshDialog: false,
   showTutorialPromptDialog: false,
+  showGameplayTourDialog: false,
+  gameplayTourSteps: [] as Array<{
+    id: string;
+    selector: string | null;
+    titleKey: string;
+    descriptionKey: string;
+  }>,
+  gameplayTourStepIndex: 0,
+  canGoToPreviousGameplayTourStep: false,
+  closeGameplayTour: vi.fn(),
+  goToNextGameplayTourStep: vi.fn(),
+  goToPreviousGameplayTourStep: vi.fn(),
+  openModeHelpFromGameplayTour: vi.fn(),
   showWordsDialog: false,
   showDailyMeaningDialog: false,
   isLoadingDailyMeaning: false,

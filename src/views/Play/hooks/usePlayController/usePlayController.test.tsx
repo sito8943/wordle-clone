@@ -845,7 +845,7 @@ describe("usePlayController", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("navigates to help when the player accepts the tutorial prompt", () => {
+  it("opens gameplay tour when the player accepts the tutorial prompt", () => {
     const replacePlayer = vi.fn();
     const markTutorialPromptSeenForMode = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
@@ -872,6 +872,7 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(result.current.showGameplayTourDialog).toBe(true);
     expect(
       JSON.parse(
         window.localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY) ??
@@ -879,11 +880,11 @@ describe("usePlayController", () => {
       ),
     ).toMatchObject({ classic: true });
     expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("classic");
-    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("classic"));
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
   });
 
-  it("navigates to mode-specific help for lightning tutorial acceptance", () => {
+  it("opens mode-specific gameplay tour for lightning tutorial acceptance", () => {
     const replacePlayer = vi.fn();
     const markTutorialPromptSeenForMode = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
@@ -912,6 +913,7 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(result.current.showGameplayTourDialog).toBe(true);
     expect(
       JSON.parse(
         window.localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY) ??
@@ -919,8 +921,25 @@ describe("usePlayController", () => {
       ),
     ).toMatchObject({ lightning: true });
     expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("lightning");
-    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("lightning"));
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
+  });
+
+  it("navigates to mode-specific help from the gameplay tour", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    act(() => {
+      result.current.acceptTutorialPrompt();
+    });
+
+    act(() => {
+      result.current.openModeHelpFromGameplayTour();
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("lightning"));
+    expect(result.current.showGameplayTourDialog).toBe(false);
   });
 
   it("updates the manual tile selection preference from quick settings", () => {

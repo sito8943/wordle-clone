@@ -4,6 +4,7 @@ import { DailyCompletedDialog } from "./DailyCompletedDialog";
 import { RefreshConfirmationDialog } from "./RefreshConfirmationDialog";
 import { SessionResumeDialog } from "./SessionResumeDialog";
 import { TutorialPromptDialog } from "./TutorialPromptDialog";
+import { GameplayTourDialog } from "./GameplayTourDialog";
 import { WordListDialog } from "./WordListDialog";
 import { VictoryDialog } from "./VictoryDialog";
 import { DefeatDialog } from "./DefeatDialog";
@@ -14,6 +15,7 @@ export {
   DailyMeaningDialog,
   DictionaryChecksumDialog,
   DefeatDialog,
+  GameplayTourDialog,
   RefreshConfirmationDialog,
   SessionResumeDialog,
   TutorialPromptDialog,

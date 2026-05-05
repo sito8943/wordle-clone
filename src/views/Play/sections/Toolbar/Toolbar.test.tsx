@@ -22,6 +22,8 @@ const playViewMock = vi.hoisted(() => ({
     hintsRemaining: 0,
     canReopenEndOfGameDialog: false,
     reopenEndOfGameDialog: vi.fn(),
+    showGameplayTourDialog: false,
+    openGameplayTour: vi.fn(),
     openDeveloperConsoleDialog: vi.fn(),
     showRefreshAttention: false,
     refreshAttentionPulse: 0,

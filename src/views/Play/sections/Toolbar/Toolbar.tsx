@@ -1,6 +1,7 @@
 import { memo, useState, type JSX } from "react";
 import {
   faCircleInfo,
+  faCircleQuestion,
   faCode,
   faLightbulb,
   faList,
@@ -45,6 +46,8 @@ const Toolbar = (): JSX.Element => {
     hintsRemaining,
     canReopenEndOfGameDialog,
     reopenEndOfGameDialog,
+    showGameplayTourDialog,
+    openGameplayTour,
     openDeveloperConsoleDialog,
     showRefreshAttention,
     refreshAttentionPulse,
@@ -83,6 +86,7 @@ const Toolbar = (): JSX.Element => {
             <Button
               onClick={useHint}
               aria-label={t("play.toolbar.hintAriaLabel")}
+              data-tour="hint-button"
               variant="ghost"
               color={!hintButtonDisabled ? "primary" : "secondary"}
               icon={faLightbulb}
@@ -94,10 +98,23 @@ const Toolbar = (): JSX.Element => {
               {t("play.toolbar.hintButton", { count: hintsRemaining })}
             </Button>
           )}
+          <Button
+            onClick={openGameplayTour}
+            aria-label={t("play.toolbar.tourAriaLabel")}
+            variant="ghost"
+            icon={faCircleQuestion}
+            iconClassName={toolbarIconClassName}
+            className="mobile-compact-button"
+            hideLabelOnMobile
+            disabled={showGameplayTourDialog}
+          >
+            {t("play.toolbar.tourButton")}
+          </Button>
           {showDailyMeaningButton ? (
             <Button
               onClick={openDailyMeaningDialog}
               aria-label={t("play.toolbar.dailyMeaningAriaLabel")}
+              data-tour="daily-meaning-button"
               variant="ghost"
               icon={faCircleInfo}
               iconClassName={toolbarIconClassName}

@@ -40,6 +40,7 @@ import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
+import { useTourController } from "../useTourController";
 import { getHintsUsedForGame } from "../useHintController/utils";
 import type {
   ComboFlash,
@@ -113,6 +114,16 @@ export default function usePlayController(
     () => resolveRoundConfigForMode(activeModeId),
     [activeModeId],
   );
+  const {
+    showGameplayTourDialog,
+    steps: gameplayTourSteps,
+    stepIndex: gameplayTourStepIndex,
+    canGoPrevious: canGoToPreviousGameplayTourStep,
+    openTour: openGameplayTour,
+    closeTour: closeGameplayTour,
+    goToNextStep: goToNextGameplayTourStep,
+    goToPreviousStep: goToPreviousGameplayTourStep,
+  } = useTourController({ modeId: activeModeId });
 
   const wordle = useWordle({
     allowUnknownWords:
@@ -914,8 +925,13 @@ export default function usePlayController(
     void markTutorialPromptSeenForMode(activeModeId);
     replacePlayer({ declinedTutorial: false });
     setShowTutorialPromptDialog(false);
-    navigate(getHelpRoute(activeModeId));
-  }, [activeModeId, markTutorialPromptSeenForMode, navigate, replacePlayer]);
+    openGameplayTour();
+  }, [
+    activeModeId,
+    markTutorialPromptSeenForMode,
+    openGameplayTour,
+    replacePlayer,
+  ]);
 
   const declineTutorialPrompt = useCallback(() => {
     markTutorialPromptAsSeenForMode(activeModeId);
@@ -923,6 +939,11 @@ export default function usePlayController(
     setShowTutorialPromptDialog(false);
     replacePlayer({ declinedTutorial: true });
   }, [activeModeId, markTutorialPromptSeenForMode, replacePlayer]);
+
+  const openModeHelpFromGameplayTour = useCallback(() => {
+    closeGameplayTour();
+    navigate(getHelpRoute(activeModeId));
+  }, [activeModeId, closeGameplayTour, navigate]);
 
   useEffect(() => {
     manualTileSelectionRef.current = player.manualTileSelection === true;
@@ -1378,6 +1399,25 @@ export default function usePlayController(
     gameOver &&
     endOfGameSnapshot !== null &&
     endOfGameDialogDismissed;
+  const hasBlockingPlayDialog =
+    showResumeDialog ||
+    showDictionaryChecksumDialog ||
+    showRefreshDialog ||
+    isDifficultyChangeConfirmationOpen ||
+    showWordsDialog ||
+    showDailyMeaningDialog ||
+    showDeveloperConsoleDialog ||
+    showVictoryDialog ||
+    showDefeatDialog ||
+    showDailyCompletedDialog;
+
+  useEffect(() => {
+    if (!showGameplayTourDialog || !hasBlockingPlayDialog) {
+      return;
+    }
+
+    closeGameplayTour();
+  }, [closeGameplayTour, hasBlockingPlayDialog, showGameplayTourDialog]);
 
   const shareVictoryBoard = useCallback(async () => {
     if (
@@ -1495,6 +1535,15 @@ export default function usePlayController(
     modeEnabled,
     manualTileSelection: player.manualTileSelection === true,
     showTutorialPromptDialog,
+    showGameplayTourDialog,
+    gameplayTourSteps,
+    gameplayTourStepIndex,
+    canGoToPreviousGameplayTourStep,
+    openGameplayTour,
+    closeGameplayTour,
+    goToNextGameplayTourStep,
+    goToPreviousGameplayTourStep,
+    openModeHelpFromGameplayTour,
     acceptTutorialPrompt,
     declineTutorialPrompt,
     goToPlayRoute,
