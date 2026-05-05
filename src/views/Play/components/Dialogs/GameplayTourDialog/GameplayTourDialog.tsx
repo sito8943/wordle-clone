@@ -14,6 +14,7 @@ const HIGHLIGHT_BOX_SHADOW = "0 0 0 9999px rgba(0, 0, 0, 0.62)";
 const HIGHLIGHT_BORDER_COLOR = "rgba(59, 130, 246, 0.9)";
 const HIGHLIGHT_PADDING_PX = 10;
 const HIGHLIGHT_VIEWPORT_MARGIN_PX = 8;
+const TOUR_DIALOG_VIEWPORT_MARGIN_PX = 16;
 const GAMEPLAY_TOUR_DIALOG_TITLE_ID = "play-gameplay-tour-dialog-title";
 
 const clamp = (value: number, minValue: number, maxValue: number): number =>
@@ -145,6 +146,7 @@ const GameplayTourDialog = ({
     return null;
   }
 
+  const showDialogAboveKeyboard = activeStep.id === "keyboard";
   const isLastStep = stepIndex >= steps.length - 1;
 
   const advanceStep = () => {
@@ -175,7 +177,14 @@ const GameplayTourDialog = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby={GAMEPLAY_TOUR_DIALOG_TITLE_ID}
-        className="fixed inset-x-0 bottom-0 z-40 mx-auto mb-4 w-[min(92vw,36rem)] rounded-2xl border border-neutral-300 bg-white p-5 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
+        className={`fixed inset-x-0 z-40 mx-auto w-[min(92vw,36rem)] rounded-2xl border border-neutral-300 bg-white p-5 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900 ${
+          showDialogAboveKeyboard ? "top-4 bottom-auto" : "bottom-0 mb-4"
+        }`}
+        style={{
+          top: showDialogAboveKeyboard
+            ? `calc(env(safe-area-inset-top) + ${TOUR_DIALOG_VIEWPORT_MARGIN_PX}px)`
+            : undefined,
+        }}
       >
         <p className="text-xs font-semibold uppercase tracking-wide text-primary">
           {t("play.gameplayTour.progress", {

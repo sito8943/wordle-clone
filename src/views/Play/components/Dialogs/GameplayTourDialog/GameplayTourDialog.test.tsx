@@ -154,4 +154,30 @@ describe("GameplayTourDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: "Finish" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it("shows the tour dialog above the keyboard on keyboard step", () => {
+    render(
+      <GameplayTourDialog
+        visible
+        steps={[
+          {
+            id: "keyboard",
+            selector: null,
+            titleKey: "tour.step.two.title",
+            descriptionKey: "tour.step.two.description",
+          },
+        ]}
+        stepIndex={0}
+        canGoPrevious={false}
+        onClose={() => undefined}
+        onNextStep={() => undefined}
+        onPreviousStep={() => undefined}
+        onOpenHelp={() => undefined}
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.className).toContain("top-4");
+    expect(dialog.className).toContain("bottom-auto");
+  });
 });
