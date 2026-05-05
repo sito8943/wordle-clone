@@ -26,6 +26,10 @@ const ToolbarRefreshButton = (): JSX.Element | null => {
     return null;
   }
 
+  const refreshIconClassName = showRefreshAttention
+    ? "text-lg"
+    : TOOLBAR_ICON_CLASS_NAME;
+
   return (
     <span
       key={showRefreshAttention ? refreshAttentionPulse : "idle"}
@@ -44,7 +48,7 @@ const ToolbarRefreshButton = (): JSX.Element | null => {
         data-wordle-refresh="true"
         icon={faRotateRight}
         variant="ghost"
-        iconClassName={TOOLBAR_ICON_CLASS_NAME}
+        iconClassName={refreshIconClassName}
         className={
           showRefreshAttention
             ? `${TOOLBAR_COMPACT_BUTTON_CLASS_NAME} text-amber-700 dark:text-amber-300`
