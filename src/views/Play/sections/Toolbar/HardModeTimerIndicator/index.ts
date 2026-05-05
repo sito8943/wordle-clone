@@ -1,1 +1,0 @@
-export { HardModeTimerIndicator } from "./HardModeTimerIndicator";

@@ -72,10 +72,6 @@ vi.mock("@i18n", () => ({
   }),
 }));
 
-vi.mock("./HardModeTimerIndicator", () => ({
-  HardModeTimerIndicator: () => null,
-}));
-
 describe("Toolbar", () => {
   beforeEach(() => {
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.CLASSIC;
