@@ -11,6 +11,7 @@ import {
   ApiProvider,
   DialogQueueProvider,
   FeatureFlagsProvider,
+  PopupProvider,
   PlayerProvider,
   SoundProvider,
 } from "@providers";
@@ -46,9 +47,11 @@ void initI18n().then(() => {
             <FeatureFlagsProvider>
               <ApiProvider>
                 <PlayerProvider>
-                  <DialogQueueProvider>
-                    <App />
-                  </DialogQueueProvider>
+                  <PopupProvider>
+                    <DialogQueueProvider>
+                      <App />
+                    </DialogQueueProvider>
+                  </PopupProvider>
                 </PlayerProvider>
               </ApiProvider>
             </FeatureFlagsProvider>

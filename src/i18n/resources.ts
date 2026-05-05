@@ -44,6 +44,8 @@ export const resources = {
         score: "Score",
         streak: "Streak",
         streakLabel: "Streak: {{count}}",
+        streakScoreBonusTooltip:
+          "Streak bonus: +{{bonusPercent}}% points on your next win.",
         loading: "Loading...",
       },
       nav: {
@@ -710,6 +712,8 @@ export const resources = {
         score: "Puntuación",
         streak: "Racha",
         streakLabel: "Racha: {{count}}",
+        streakScoreBonusTooltip:
+          "Bonus de racha: +{{bonusPercent}}% de puntos en tu próxima victoria.",
         loading: "Cargando...",
       },
       nav: {

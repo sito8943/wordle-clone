@@ -9,6 +9,7 @@ export type FireStreakProps = {
   size?: "sm" | "md";
   className?: string;
   noLabel?: boolean;
+  showScoreBonusPopup?: boolean;
 };
 
 export type FireVisualState = 0 | 1 | 2 | 3;
