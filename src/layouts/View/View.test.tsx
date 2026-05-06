@@ -94,7 +94,10 @@ const renderView = (initialEntry: string = ROUTES.HOME) =>
         <Routes>
           <Route path={ROUTES.HOME} element={<View />}>
             <Route index element={<div>Home content</div>} />
-            <Route path={toChildPath(ROUTES.PLAY)} element={<div>Play content</div>} />
+            <Route
+              path={toChildPath(ROUTES.PLAY)}
+              element={<div>Play content</div>}
+            />
             <Route
               path={toChildPath(ROUTES.SCOREBOARD)}
               element={<div>Scoreboard content</div>}

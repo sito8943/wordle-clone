@@ -29,7 +29,9 @@ const NavLink = ({
         ].join(" ")
       }
     >
-      {extraLabel && <span className="inline-flex items-center text-sm">{extraLabel}</span>}
+      {extraLabel && (
+        <span className="inline-flex items-center text-sm">{extraLabel}</span>
+      )}
       <FontAwesomeIcon
         icon={icon}
         aria-hidden="true"

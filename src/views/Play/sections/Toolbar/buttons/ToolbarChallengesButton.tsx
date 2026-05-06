@@ -17,7 +17,9 @@ const ToolbarChallengesButton = (): JSX.Element | null => {
   }
 
   const completedIds = new Set(
-    challenges.progress.filter((progress) => progress.completed).map((progress) => progress.challengeId),
+    challenges.progress
+      .filter((progress) => progress.completed)
+      .map((progress) => progress.challengeId),
   );
   const allChallengesCompleted =
     completedIds.has(challenges.challenges.simple.id) &&

@@ -170,9 +170,7 @@ const Popup = ({
     openedAtRef.current = Date.now();
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (
-        Date.now() - openedAtRef.current < POPUP_IMMEDIATE_DISMISS_GUARD_MS
-      ) {
+      if (Date.now() - openedAtRef.current < POPUP_IMMEDIATE_DISMISS_GUARD_MS) {
         return;
       }
 
@@ -203,9 +201,7 @@ const Popup = ({
     };
 
     const handleFocusIn = (event: FocusEvent) => {
-      if (
-        Date.now() - openedAtRef.current < POPUP_IMMEDIATE_DISMISS_GUARD_MS
-      ) {
+      if (Date.now() - openedAtRef.current < POPUP_IMMEDIATE_DISMISS_GUARD_MS) {
         return;
       }
 

@@ -13,8 +13,12 @@ const ToolbarHintButton = (): JSX.Element | null => {
   const { t } = useTranslation();
   const { hintsEnabled } = useFeatureFlags();
   const { controller } = usePlayView();
-  const { hintsEnabledForDifficulty, useHint, hintButtonDisabled, hintsRemaining } =
-    controller;
+  const {
+    hintsEnabledForDifficulty,
+    useHint,
+    hintButtonDisabled,
+    hintsRemaining,
+  } = controller;
 
   if (!hintsEnabled || !hintsEnabledForDifficulty) {
     return null;

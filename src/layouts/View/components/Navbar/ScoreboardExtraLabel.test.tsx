@@ -53,7 +53,9 @@ describe("ScoreboardExtraLabel", () => {
     const rankNode = screen.getByTestId("scoreboard-mobile-rank-label");
     const crownNode = screen.getByTestId("scoreboard-mobile-crown-label");
 
-    expect(screen.getAllByTestId("scoreboard-rank-spinner").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByTestId("scoreboard-rank-spinner").length,
+    ).toBeGreaterThan(0);
     expect(rankNode.className).toContain("opacity-100");
     expect(crownNode.className).toContain("opacity-0");
 

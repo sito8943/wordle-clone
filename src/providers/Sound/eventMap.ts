@@ -16,9 +16,7 @@ export const WORDLE_SOUND_EVENT_MAP: SoundEventMap<SoundEvent> = {
   letter_delete: {
     type: "tone",
     channelId: "sfx",
-    tones: [
-      { frequency: 260, durationMs: 36, gain: 0.03, waveform: "square" },
-    ],
+    tones: [{ frequency: 260, durationMs: 36, gain: 0.03, waveform: "square" }],
   },
   line_change: {
     type: "tone",
@@ -101,9 +99,7 @@ export const WORDLE_SOUND_EVENT_MAP: SoundEventMap<SoundEvent> = {
   tile_present: {
     type: "tone",
     channelId: "sfx",
-    tones: [
-      { frequency: 520, durationMs: 46, gain: 0.03, waveform: "square" },
-    ],
+    tones: [{ frequency: 520, durationMs: 46, gain: 0.03, waveform: "square" }],
   },
   tile_correct: {
     type: "tone",
@@ -115,9 +111,7 @@ export const WORDLE_SOUND_EVENT_MAP: SoundEventMap<SoundEvent> = {
   tile_absent: {
     type: "tone",
     channelId: "sfx",
-    tones: [
-      { frequency: 180, durationMs: 58, gain: 0.025, waveform: "sine" },
-    ],
+    tones: [{ frequency: 180, durationMs: 58, gain: 0.025, waveform: "sine" }],
   },
   round_win: {
     type: "tone",

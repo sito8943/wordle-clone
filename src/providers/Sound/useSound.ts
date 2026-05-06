@@ -13,8 +13,7 @@ const useSound = (): SoundContextType => {
     }
 
     return sound.channels.filter(
-      (channel) =>
-        channel.kind === "sfx" || channel.id === "sfx",
+      (channel) => channel.kind === "sfx" || channel.id === "sfx",
     );
   }, [masterAndMusicChannelsEnabled, sound.channels]);
 

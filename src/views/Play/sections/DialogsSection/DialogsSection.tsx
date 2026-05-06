@@ -24,7 +24,8 @@ const TutorialPromptDialog = lazy(
     import("../../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
 );
 const GameplayTourDialog = lazy(
-  () => import("../../components/Dialogs/GameplayTourDialog/GameplayTourDialog"),
+  () =>
+    import("../../components/Dialogs/GameplayTourDialog/GameplayTourDialog"),
 );
 const WordListDialog = lazy(
   () => import("../../components/Dialogs/WordListDialog/WordListDialog"),

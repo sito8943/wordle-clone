@@ -6,10 +6,7 @@ import {
   faVolumeXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { VOLUME_DIALOG_CHANNEL_LABEL_KEYS } from "./constants";
-import type {
-  VolumeDialogChannel,
-  VolumeDialogTranslate,
-} from "./types";
+import type { VolumeDialogChannel, VolumeDialogTranslate } from "./types";
 
 export const getVolumeIcon = (
   volume: number,

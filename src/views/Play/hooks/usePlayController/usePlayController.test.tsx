@@ -37,8 +37,7 @@ const mockUseHardModeTimer = vi.fn();
 const mockUseSound = vi.fn();
 const mockNavigate = vi.fn();
 const defaultTimerAutoPauseEnabled = env.timerAutoPauseEnabled;
-const defaultMasterAndMusicChannelsEnabled =
-  env.masterAndMusicChannelsEnabled;
+const defaultMasterAndMusicChannelsEnabled = env.masterAndMusicChannelsEnabled;
 const defaultLightningStartCueAndAutoTimerEnabled =
   env.lightningStartCueAndAutoTimerEnabled;
 
@@ -1486,9 +1485,7 @@ describe("usePlayController", () => {
       }),
     );
 
-    renderHook(() =>
-      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
-    );
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }));
 
     expect(playMusic).not.toHaveBeenCalled();
     expect(stopMusic).toHaveBeenCalledWith(
@@ -1508,9 +1505,7 @@ describe("usePlayController", () => {
       }),
     );
 
-    renderHook(() =>
-      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
-    );
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }));
 
     expect(playMusic).not.toHaveBeenCalled();
     expect(stopMusic).toHaveBeenCalledWith(

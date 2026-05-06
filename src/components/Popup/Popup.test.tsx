@@ -46,7 +46,9 @@ describe("Popup", () => {
 
     fireEvent.click(trigger);
     await waitFor(() => {
-      expect(screen.getByRole("tooltip").textContent).toContain("Popup content");
+      expect(screen.getByRole("tooltip").textContent).toContain(
+        "Popup content",
+      );
     });
 
     fireEvent.click(trigger);
@@ -66,7 +68,9 @@ describe("Popup", () => {
 
     fireEvent.click(trigger);
     await waitFor(() => {
-      expect(screen.getByRole("tooltip").textContent).toContain("Popup content");
+      expect(screen.getByRole("tooltip").textContent).toContain(
+        "Popup content",
+      );
     });
 
     await new Promise<void>((resolve) => {

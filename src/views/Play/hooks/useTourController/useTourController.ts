@@ -3,7 +3,9 @@ import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { GAMEPLAY_TOUR_STEPS_BY_MODE } from "./constants";
 import type { UseTourControllerParams, UseTourControllerResult } from "./types";
 
-const useTourController = ({ modeId }: UseTourControllerParams): UseTourControllerResult => {
+const useTourController = ({
+  modeId,
+}: UseTourControllerParams): UseTourControllerResult => {
   const [showGameplayTourDialog, setShowGameplayTourDialog] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 

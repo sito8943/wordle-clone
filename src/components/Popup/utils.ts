@@ -24,7 +24,9 @@ export const shouldSkipPopupMotion = (): boolean => {
   }
 
   if (
-    document.documentElement.classList.contains(POPUP_ANIMATIONS_DISABLED_CLASSNAME)
+    document.documentElement.classList.contains(
+      POPUP_ANIMATIONS_DISABLED_CLASSNAME,
+    )
   ) {
     return true;
   }

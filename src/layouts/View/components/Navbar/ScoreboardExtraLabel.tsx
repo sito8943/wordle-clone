@@ -48,7 +48,9 @@ const ScoreboardExtraLabel = ({
           data-testid="scoreboard-mobile-rank-label"
           aria-hidden={!rankIsVisible}
           className={`absolute inset-0 inline-flex items-center justify-center transition-all duration-500 ease-out ${
-            rankIsVisible ? "opacity-100 blur-0 translate-x-0" : "opacity-0 blur-[2px] translate-x-2"
+            rankIsVisible
+              ? "opacity-100 blur-0 translate-x-0"
+              : "opacity-0 blur-[2px] translate-x-2"
           }`}
         >
           {rankLabel}
@@ -57,10 +59,16 @@ const ScoreboardExtraLabel = ({
           data-testid="scoreboard-mobile-crown-label"
           aria-hidden={rankIsVisible}
           className={`absolute inset-0 inline-flex items-center justify-center transition-all duration-500 ease-out ${
-            rankIsVisible ? "opacity-0 blur-[2px] translate-x-2" : "opacity-100 blur-0 translate-x-0"
+            rankIsVisible
+              ? "opacity-0 blur-[2px] translate-x-2"
+              : "opacity-100 blur-0 translate-x-0"
           }`}
         >
-          <FontAwesomeIcon icon={faCrown} aria-hidden="true" className="text-lg" />
+          <FontAwesomeIcon
+            icon={faCrown}
+            aria-hidden="true"
+            className="text-lg"
+          />
         </span>
       </span>
       <span className="hidden sm:inline">{rankLabel}</span>

@@ -33,7 +33,9 @@ const ToolbarRefreshButton = (): JSX.Element | null => {
   return (
     <span
       key={showRefreshAttention ? refreshAttentionPulse : "idle"}
-      className={showRefreshAttention ? "boost-animation inline-flex" : "inline-flex"}
+      className={
+        showRefreshAttention ? "boost-animation inline-flex" : "inline-flex"
+      }
       style={
         showRefreshAttention
           ? ({

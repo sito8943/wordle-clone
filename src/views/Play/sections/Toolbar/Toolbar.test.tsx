@@ -126,7 +126,9 @@ describe("Toolbar", () => {
     rerender(<Toolbar />);
 
     await waitFor(() => {
-      const secondTimerIcon = screen.getByTestId("toolbar-hard-mode-timer-icon");
+      const secondTimerIcon = screen.getByTestId(
+        "toolbar-hard-mode-timer-icon",
+      );
       expect(secondTimerIcon).toBe(firstTimerIcon);
       expect(secondTimerIcon.parentElement?.className).toContain(
         "boost-animation",
