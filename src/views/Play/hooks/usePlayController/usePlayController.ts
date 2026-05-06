@@ -51,6 +51,8 @@ import {
   canShareVictoryBoardFile,
   captureVictoryBoardImageFile,
   getGuessWords,
+  isMusicChannelEnabled,
+  resolveModeMusicTrack,
   getTileStatusSoundEvent,
   getVictoryBoardShareCaptureElement,
   hasSeenTutorialPromptForMode,
@@ -63,6 +65,8 @@ import { i18n } from "@i18n";
 import {
   CHALLENGE_COMPLETION_ALERT_VISIBILITY_DURATION_MS,
   COMBO_FLASH_VISIBILITY_DURATION_MS,
+  MUSIC_CHANNEL_ID,
+  MUSIC_TRANSITION_FADE_MS,
 } from "./constants";
 import {
   TILE_STATUS_SOUND_INITIAL_DELAY_MS,
@@ -95,7 +99,7 @@ export default function usePlayController(
   } = usePlayer();
   const { hintsEnabled, challengesEnabled, timerAutoPauseEnabled } =
     useFeatureFlags();
-  const { playSound } = useSound();
+  const { playSound, playMusic, stopMusic, channels } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
   const modeId = useMemo(
     () => resolveWordleModeId(options.modeId),
@@ -192,6 +196,14 @@ export default function usePlayController(
   const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
   const hardModeEnabled = lightningModeActive || player.difficulty === "insane";
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
+  const modeMusicTrack = useMemo(
+    () => resolveModeMusicTrack(activeModeId),
+    [activeModeId],
+  );
+  const musicChannelEnabled = useMemo(
+    () => isMusicChannelEnabled(channels, MUSIC_CHANNEL_ID),
+    [channels],
+  );
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
@@ -650,6 +662,24 @@ export default function usePlayController(
       playSound("hint_use");
     }
   }, [consumeHintControllerAction, hintsEnabled, playSound]);
+
+  useEffect(() => {
+    if (!musicChannelEnabled) {
+      stopMusic(MUSIC_CHANNEL_ID, MUSIC_TRANSITION_FADE_MS);
+      return;
+    }
+
+    playMusic(modeMusicTrack, {
+      channelId: MUSIC_CHANNEL_ID,
+      fadeMs: MUSIC_TRANSITION_FADE_MS,
+    });
+  }, [modeMusicTrack, musicChannelEnabled, playMusic, stopMusic]);
+
+  useEffect(() => {
+    return () => {
+      stopMusic(MUSIC_CHANNEL_ID, MUSIC_TRANSITION_FADE_MS);
+    };
+  }, [stopMusic]);
 
   useEffect(() => {
     if (!didMountRoundStartSoundRef.current) {

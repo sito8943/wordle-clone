@@ -85,7 +85,7 @@ const Navbar = () => {
         </h1>
       </Link>
       <nav>
-        <ul className="m-auto flex items-center justify-center gap-4 max-sm:gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-300">
+        <ul className="m-auto flex items-center justify-center gap-4 max-sm:gap-1 text-sm font-medium text-neutral-600 dark:text-neutral-300">
           {links.map((link) => (
             <li key={link.to}>
               <NavLink

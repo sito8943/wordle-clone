@@ -1,5 +1,7 @@
 import type { SoundStorageKeys } from "./types";
 
+export const WORDLE_SOUND_STORAGE_KEY_PREFIX = "wordle";
+
 export const WORDLE_SOUND_STORAGE_KEYS: SoundStorageKeys = {
   soundEnabled: "wordle:sound-enabled",
   soundVolume: "wordle:sound-volume",

@@ -4,9 +4,11 @@ import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import { TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY } from "./constants";
 import {
   captureVictoryBoardImageFile,
+  isMusicChannelEnabled,
   hasSeenTutorialPromptForMode,
   getVictoryBoardShareCaptureElement,
   markTutorialPromptAsSeenForMode,
+  resolveModeMusicTrack,
 } from "./utils";
 
 const html2canvasMock = vi.hoisted(() => vi.fn());
@@ -57,6 +59,77 @@ describe("tutorial prompt visibility by mode", () => {
       hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.DAILY, undefined, {
         classic: true,
       }),
+    ).toBe(false);
+  });
+});
+
+describe("resolveModeMusicTrack", () => {
+  it("returns classic for classic and daily", () => {
+    expect(resolveModeMusicTrack(WORDLE_MODE_IDS.CLASSIC)).toBe("classic");
+    expect(resolveModeMusicTrack(WORDLE_MODE_IDS.DAILY)).toBe("classic");
+  });
+
+  it("returns lightning for lightning mode", () => {
+    expect(resolveModeMusicTrack(WORDLE_MODE_IDS.LIGHTNING)).toBe("lightning");
+  });
+
+  it("returns zen for zen mode", () => {
+    expect(resolveModeMusicTrack(WORDLE_MODE_IDS.ZEN)).toBe("zen");
+  });
+});
+
+describe("isMusicChannelEnabled", () => {
+  it("returns true when no music channel is present", () => {
+    expect(
+      isMusicChannelEnabled(
+        [
+          {
+            id: "master",
+            label: "Master",
+            kind: "master",
+            enabled: true,
+            volume: 100,
+            muted: false,
+          },
+        ],
+        "music",
+      ),
+    ).toBe(true);
+  });
+
+  it("uses channel id match first", () => {
+    expect(
+      isMusicChannelEnabled(
+        [
+          {
+            id: "music",
+            label: "Music",
+            kind: "custom",
+            enabled: false,
+            volume: 100,
+            muted: false,
+          },
+        ],
+        "music",
+      ),
+    ).toBe(false);
+  });
+
+  it("falls back to kind match when id differs", () => {
+    expect(
+      isMusicChannelEnabled(
+        [
+          {
+            id: "background-track",
+            label: "Background",
+            kind: "music",
+            enabled: false,
+            volume: 100,
+            muted: false,
+          },
+        ],
+        "music",
+      ),
     ).toBe(false);
   });
 });

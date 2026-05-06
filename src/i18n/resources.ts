@@ -408,6 +408,16 @@ export const resources = {
           muteAriaLabel: "Mute",
           unmuteAriaLabel: "Unmute",
           volumeSliderAriaLabel: "Volume level",
+          enabledLabel: "Enabled",
+          channelEnabledAriaLabel: "Enable {{channel}} channel",
+          muteChannelAriaLabel: "Mute {{channel}}",
+          unmuteChannelAriaLabel: "Unmute {{channel}}",
+          channelVolumeSliderAriaLabel: "{{channel}} volume level",
+          channels: {
+            master: "Master",
+            music: "Music",
+            sfx: "Sound effects",
+          },
         },
         dailyMeaningDialog: {
           title: "Daily word meaning",
@@ -1079,6 +1089,16 @@ export const resources = {
           muteAriaLabel: "Silenciar",
           unmuteAriaLabel: "Activar sonido",
           volumeSliderAriaLabel: "Nivel de volumen",
+          enabledLabel: "Activo",
+          channelEnabledAriaLabel: "Activar canal {{channel}}",
+          muteChannelAriaLabel: "Silenciar {{channel}}",
+          unmuteChannelAriaLabel: "Activar {{channel}}",
+          channelVolumeSliderAriaLabel: "Nivel de volumen de {{channel}}",
+          channels: {
+            master: "General",
+            music: "Música",
+            sfx: "Efectos",
+          },
         },
         dailyMeaningDialog: {
           title: "Significado de la palabra del día",

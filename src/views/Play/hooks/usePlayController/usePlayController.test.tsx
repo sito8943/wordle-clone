@@ -23,6 +23,8 @@ import usePlayController from "./usePlayController";
 import {
   COMBO_FLASH_VISIBILITY_DURATION_MS,
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  MUSIC_CHANNEL_ID,
+  MUSIC_TRANSITION_FADE_MS,
   TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
 } from "./constants";
 
@@ -34,6 +36,41 @@ const mockUseHardModeTimer = vi.fn();
 const mockUseSound = vi.fn();
 const mockNavigate = vi.fn();
 const defaultTimerAutoPauseEnabled = env.timerAutoPauseEnabled;
+
+const defaultMockSoundChannels = [
+  {
+    id: "master",
+    label: "Master",
+    kind: "master",
+    enabled: true,
+    volume: 100,
+    muted: false,
+  },
+  {
+    id: "music",
+    label: "Music",
+    kind: "music",
+    enabled: true,
+    volume: 80,
+    muted: false,
+  },
+  {
+    id: "sfx",
+    label: "Sound Effects",
+    kind: "sfx",
+    enabled: true,
+    volume: 100,
+    muted: false,
+  },
+] as const;
+
+const createMockSoundValue = (overrides: Record<string, unknown> = {}) => ({
+  playSound: vi.fn(),
+  playMusic: vi.fn(),
+  stopMusic: vi.fn(),
+  channels: defaultMockSoundChannels,
+  ...overrides,
+});
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -176,9 +213,7 @@ describe("usePlayController", () => {
       boardShakePulse: 0,
       resetHardModeTimer: vi.fn(),
     });
-    mockUseSound.mockReturnValue({
-      playSound: vi.fn(),
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue());
   });
 
   afterEach(() => {
@@ -1345,9 +1380,7 @@ describe("usePlayController", () => {
 
   it("plays line and tile-status sounds when a new guess is added", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
 
     const { rerender } = renderHook(() => usePlayController());
     playSound.mockClear();
@@ -1381,11 +1414,63 @@ describe("usePlayController", () => {
     });
   });
 
+  it("plays mode music on mount and stops it on unmount", () => {
+    const playMusic = vi.fn();
+    const stopMusic = vi.fn();
+    mockUseSound.mockReturnValue(
+      createMockSoundValue({
+        playMusic,
+        stopMusic,
+      }),
+    );
+
+    const { unmount } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(playMusic).toHaveBeenCalledWith("lightning", {
+      channelId: MUSIC_CHANNEL_ID,
+      fadeMs: MUSIC_TRANSITION_FADE_MS,
+    });
+
+    unmount();
+
+    expect(stopMusic).toHaveBeenCalledWith(
+      MUSIC_CHANNEL_ID,
+      MUSIC_TRANSITION_FADE_MS,
+    );
+  });
+
+  it("does not play mode music when music channel is disabled", () => {
+    const playMusic = vi.fn();
+    const stopMusic = vi.fn();
+
+    mockUseSound.mockReturnValue(
+      createMockSoundValue({
+        playMusic,
+        stopMusic,
+        channels: defaultMockSoundChannels.map((channel) =>
+          channel.id === MUSIC_CHANNEL_ID
+            ? { ...channel, enabled: false }
+            : channel,
+        ),
+      }),
+    );
+
+    renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(playMusic).not.toHaveBeenCalled();
+    expect(stopMusic).toHaveBeenCalledWith(
+      MUSIC_CHANNEL_ID,
+      MUSIC_TRANSITION_FADE_MS,
+    );
+  });
+
   it("plays round-start sound on mount and when a new board version is loaded", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
 
     const { rerender } = renderHook(() => usePlayController());
 
@@ -1405,9 +1490,7 @@ describe("usePlayController", () => {
 
   it("does not play round-start sound while resume dialog is visible", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
     wordleState = {
       ...wordleState,
       showResumeDialog: true,
@@ -1420,9 +1503,7 @@ describe("usePlayController", () => {
 
   it("plays win and loss sounds only when the game transitions to game over", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
 
     const { rerender } = renderHook(() => usePlayController());
 
@@ -1462,9 +1543,7 @@ describe("usePlayController", () => {
   it("plays hint sound when a hint is consumed", () => {
     const playSound = vi.fn();
     const useHint = vi.fn().mockReturnValue(true);
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
     mockUseHintController.mockReturnValue({
       hintsRemaining: 1,
       hintsEnabledForDifficulty: true,
@@ -1486,9 +1565,7 @@ describe("usePlayController", () => {
   it("does not play hint sound when hint usage is rejected", () => {
     const playSound = vi.fn();
     const useHint = vi.fn().mockReturnValue(false);
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
     mockUseHintController.mockReturnValue({
       hintsRemaining: 1,
       hintsEnabledForDifficulty: true,

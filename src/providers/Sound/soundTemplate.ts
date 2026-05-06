@@ -1,4 +1,4 @@
 import { createSoundTemplate } from "sito-sound-provider";
-import type { SoundEvent } from "./types";
+import type { SoundEvent, SoundMusicTrack } from "./types";
 
-export const soundTemplate = createSoundTemplate<SoundEvent>();
+export const soundTemplate = createSoundTemplate<SoundEvent, SoundMusicTrack>();

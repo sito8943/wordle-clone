@@ -5,6 +5,7 @@ import {
   WORDLE_MODE_IDS,
   type WordleModeId,
 } from "@domain/wordle";
+import type { SoundChannelState, SoundMusicTrack } from "@providers/Sound";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
@@ -80,6 +81,43 @@ export const getTileStatusSoundEvent = (
   }
 
   return null;
+};
+
+export const resolveModeMusicTrack = (
+  modeId: WordleModeId,
+): SoundMusicTrack => {
+  if (modeId === WORDLE_MODE_IDS.LIGHTNING) {
+    return "lightning";
+  }
+
+  if (modeId === WORDLE_MODE_IDS.ZEN) {
+    return "zen";
+  }
+
+  return "classic";
+};
+
+export const isMusicChannelEnabled = (
+  channels: SoundChannelState[] | undefined,
+  musicChannelId: string,
+): boolean => {
+  if (!Array.isArray(channels)) {
+    return true;
+  }
+
+  const channel = channels.find((candidate) => {
+    if (candidate.id === musicChannelId) {
+      return true;
+    }
+
+    return candidate.kind === "music";
+  });
+
+  if (!channel) {
+    return true;
+  }
+
+  return channel.enabled;
 };
 
 export const getGuessWords = (guesses: unknown[]): string[] =>

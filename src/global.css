@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+html,
+body {
+  /* Desactiva el rebote/pull-to-refresh en todos los navegadores modernos */
+  overscroll-behavior-y: none;
+
+  /* Evita también el efecto de rebote horizontal si es necesario */
+  overscroll-behavior-x: none;
+}
+
 @font-face {
   font-family: "Roboto Variable";
   font-style: normal;
@@ -689,8 +698,7 @@ h1,
 }
 
 .popup-enter-bottom {
-  animation: popup-enter-bottom 0.22s cubic-bezier(0.22, 1, 0.36, 1)
-    forwards;
+  animation: popup-enter-bottom 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .popup-enter-top {
