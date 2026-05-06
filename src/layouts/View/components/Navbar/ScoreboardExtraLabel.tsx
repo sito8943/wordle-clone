@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState, type JSX } from "react";
 import { faCrown, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { TOGGLE_INTERVAL_MS } from "./constants";
 import type { ScoreboardExtraLabelProps } from "./types";
-
-const TOGGLE_INTERVAL_MS = 5000;
 
 const ScoreboardExtraLabel = ({
   currentClientRank,

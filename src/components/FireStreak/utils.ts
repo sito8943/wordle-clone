@@ -1,5 +1,15 @@
 import type { FireVisualState } from "./types";
 
+export const toTooltipNumber = (value: number): string => {
+  const roundedValue = Math.round(value * 10) / 10;
+  const minimumFractionDigits = Number.isInteger(roundedValue) ? 0 : 1;
+
+  return new Intl.NumberFormat(undefined, {
+    minimumFractionDigits,
+    maximumFractionDigits: 1,
+  }).format(roundedValue);
+};
+
 export const sanitizeCounter = (value: number): number => {
   if (!Number.isFinite(value)) {
     return 0;

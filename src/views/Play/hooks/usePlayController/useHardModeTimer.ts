@@ -7,12 +7,10 @@ import {
   getHardModeClockBoostScale,
   getHardModeFinalStretchProgressPercent,
   getInitialHardModeTimerSnapshot,
+  isDocumentVisible,
   isWithinHardModeFinalStretch,
   setHardModeTimerSnapshot,
 } from "./utils";
-
-const isDocumentVisible = (): boolean =>
-  typeof document === "undefined" || document.visibilityState !== "hidden";
 
 export const useHardModeTimer = ({
   sessionId,

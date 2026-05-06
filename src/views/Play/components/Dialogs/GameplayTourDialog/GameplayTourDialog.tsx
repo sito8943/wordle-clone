@@ -1,86 +1,13 @@
 import { Button } from "@components";
 import { useTranslation } from "@i18n";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-  type JSX,
-} from "react";
+import { useEffect, useMemo, useState, type JSX } from "react";
 import { createPortal } from "react-dom";
 import type { GameplayTourDialogProps } from "./types";
-
-const HIGHLIGHT_BOX_SHADOW = "0 0 0 9999px rgba(0, 0, 0, 0.62)";
-const HIGHLIGHT_BORDER_COLOR = "rgba(59, 130, 246, 0.9)";
-const HIGHLIGHT_PADDING_PX = 10;
-const HIGHLIGHT_VIEWPORT_MARGIN_PX = 8;
-const TOUR_DIALOG_VIEWPORT_MARGIN_PX = 16;
-const GAMEPLAY_TOUR_DIALOG_TITLE_ID = "play-gameplay-tour-dialog-title";
-
-const clamp = (value: number, minValue: number, maxValue: number): number =>
-  Math.min(maxValue, Math.max(minValue, value));
-
-const resolveHighlightStyle = (targetRect: DOMRect | null): CSSProperties | null => {
-  if (!targetRect || typeof window === "undefined") {
-    return null;
-  }
-
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-
-  const left = clamp(
-    targetRect.left - HIGHLIGHT_PADDING_PX,
-    HIGHLIGHT_VIEWPORT_MARGIN_PX,
-    Math.max(HIGHLIGHT_VIEWPORT_MARGIN_PX, viewportWidth - HIGHLIGHT_VIEWPORT_MARGIN_PX),
-  );
-  const top = clamp(
-    targetRect.top - HIGHLIGHT_PADDING_PX,
-    HIGHLIGHT_VIEWPORT_MARGIN_PX,
-    Math.max(HIGHLIGHT_VIEWPORT_MARGIN_PX, viewportHeight - HIGHLIGHT_VIEWPORT_MARGIN_PX),
-  );
-  const right = clamp(
-    targetRect.right + HIGHLIGHT_PADDING_PX,
-    HIGHLIGHT_VIEWPORT_MARGIN_PX,
-    Math.max(HIGHLIGHT_VIEWPORT_MARGIN_PX, viewportWidth - HIGHLIGHT_VIEWPORT_MARGIN_PX),
-  );
-  const bottom = clamp(
-    targetRect.bottom + HIGHLIGHT_PADDING_PX,
-    HIGHLIGHT_VIEWPORT_MARGIN_PX,
-    Math.max(HIGHLIGHT_VIEWPORT_MARGIN_PX, viewportHeight - HIGHLIGHT_VIEWPORT_MARGIN_PX),
-  );
-
-  return {
-    left,
-    top,
-    width: Math.max(0, right - left),
-    height: Math.max(0, bottom - top),
-    boxShadow: HIGHLIGHT_BOX_SHADOW,
-    borderColor: HIGHLIGHT_BORDER_COLOR,
-  };
-};
-
-const resolveTargetRect = (selector: string | null): DOMRect | null => {
-  if (!selector || typeof document === "undefined") {
-    return null;
-  }
-
-  const targetElement = document.querySelector<HTMLElement>(selector);
-  if (!targetElement) {
-    return null;
-  }
-
-  const style = window.getComputedStyle(targetElement);
-  if (style.display === "none" || style.visibility === "hidden") {
-    return null;
-  }
-
-  const targetRect = targetElement.getBoundingClientRect();
-  if (targetRect.width <= 0 || targetRect.height <= 0) {
-    return null;
-  }
-
-  return targetRect;
-};
+import {
+  GAMEPLAY_TOUR_DIALOG_TITLE_ID,
+  TOUR_DIALOG_VIEWPORT_MARGIN_PX,
+} from "./constants";
+import { resolveHighlightStyle, resolveTargetRect } from "./utils";
 
 const GameplayTourDialog = ({
   visible,

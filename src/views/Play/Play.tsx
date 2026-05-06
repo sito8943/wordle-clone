@@ -5,16 +5,12 @@ import {
   persistCurrentWordleModeId,
   resolveWordleModeId,
   WORDLE_MODE_IDS,
-  type WordleModeId,
 } from "@domain/wordle";
 import { PlayViewProvider } from "./providers";
 import { PlayOfflineState } from "./sections/Offline";
 import { PlayContent } from "./sections/PlayContent";
 import ModeGatePlaceholder from "./components/ModeGatePlaceholder";
-
-type PlayProps = {
-  modeId?: WordleModeId;
-};
+import type { PlayProps } from "./types";
 
 const Play = ({ modeId }: PlayProps): JSX.Element => {
   const resolvedModeId = resolveWordleModeId(modeId);

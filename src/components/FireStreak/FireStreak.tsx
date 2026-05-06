@@ -3,17 +3,7 @@ import { Popup } from "@components/Popup";
 import Fire from "./Fire";
 import { useTranslation } from "@i18n";
 import type { FireStreakProps } from "./types";
-import { sanitizeCounter } from "./utils";
-
-const toTooltipNumber = (value: number): string => {
-  const roundedValue = Math.round(value * 10) / 10;
-  const minimumFractionDigits = Number.isInteger(roundedValue) ? 0 : 1;
-
-  return new Intl.NumberFormat(undefined, {
-    minimumFractionDigits,
-    maximumFractionDigits: 1,
-  }).format(roundedValue);
-};
+import { sanitizeCounter, toTooltipNumber } from "./utils";
 
 const FireStreak = ({
   streak,

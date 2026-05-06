@@ -8,6 +8,7 @@ import {
 import { MemoryRouter, Route, Routes, useParams } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
+import { ROUTES } from "@config/routes";
 import { DialogQueueProvider } from "@providers";
 import View from "./View";
 import {
@@ -64,6 +65,9 @@ const ChangelogRouteProbe = () => {
   return <div>{`Changelog content ${version ?? ""}`}</div>;
 };
 
+const toChildPath = (path: string): string =>
+  path.startsWith("/") ? path.slice(1) : path;
+
 vi.mock("@providers", async () => {
   const actual =
     await vi.importActual<typeof import("@providers")>("@providers");
@@ -83,17 +87,20 @@ vi.mock("@providers", async () => {
   };
 });
 
-const renderView = (initialEntry = "/") =>
+const renderView = (initialEntry = ROUTES.HOME) =>
   render(
     <DialogQueueProvider>
       <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
-          <Route path="/" element={<View />}>
+          <Route path={ROUTES.HOME} element={<View />}>
             <Route index element={<div>Home content</div>} />
-            <Route path="play" element={<div>Play content</div>} />
-            <Route path="scoreboard" element={<div>Scoreboard content</div>} />
+            <Route path={toChildPath(ROUTES.PLAY)} element={<div>Play content</div>} />
             <Route
-              path="changelog/:version"
+              path={toChildPath(ROUTES.SCOREBOARD)}
+              element={<div>Scoreboard content</div>}
+            />
+            <Route
+              path={toChildPath(ROUTES.CHANGELOG)}
               element={<ChangelogRouteProbe />}
             />
           </Route>
@@ -111,7 +118,7 @@ afterEach(() => {
 
 describe("View layout chrome visibility", () => {
   it("hides navbar and footer on home route", () => {
-    renderView("/");
+    renderView(ROUTES.HOME);
 
     expect(screen.queryByText("Navbar")).toBeNull();
     expect(screen.queryByText("Footer")).toBeNull();
@@ -119,7 +126,7 @@ describe("View layout chrome visibility", () => {
   });
 
   it("shows navbar and footer on non-home routes", () => {
-    renderView("/play");
+    renderView(ROUTES.PLAY);
 
     expect(screen.getByText("Navbar")).toBeTruthy();
     expect(screen.getByText("Footer")).toBeTruthy();
@@ -128,7 +135,7 @@ describe("View layout chrome visibility", () => {
 
 describe("View app version dialog", () => {
   it("stores the current app version when there is no previous one", async () => {
-    renderView("/play");
+    renderView(ROUTES.PLAY);
 
     await waitFor(() => {
       expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe(
@@ -141,7 +148,7 @@ describe("View app version dialog", () => {
     env.appVersion = "0.0.16-beta";
     localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.15");
 
-    renderView("/scoreboard");
+    renderView(ROUTES.SCOREBOARD);
 
     expect(screen.getByText("Scoreboard content")).toBeTruthy();
     expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
@@ -166,7 +173,7 @@ describe("View app version dialog", () => {
     localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.16-beta");
     localStorage.setItem(PREVIOUS_APP_VERSION_STORAGE_KEY, "0.0.15");
 
-    renderView("/scoreboard");
+    renderView(ROUTES.SCOREBOARD);
 
     expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
     expect(
@@ -185,7 +192,7 @@ describe("View app version dialog", () => {
     env.appVersion = "0.0.15";
     localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.16-beta");
 
-    renderView("/scoreboard");
+    renderView(ROUTES.SCOREBOARD);
 
     expect(screen.queryByText("Updated to 0.0.15")).toBeNull();
   });
@@ -198,7 +205,7 @@ describe("View app version dialog", () => {
       JSON.stringify({ name: "Player" }),
     );
 
-    renderView("/play");
+    renderView(ROUTES.PLAY);
 
     await waitFor(() => {
       expect(screen.getByText("Initial player dialog")).toBeTruthy();

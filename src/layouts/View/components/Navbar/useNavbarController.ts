@@ -10,42 +10,18 @@ import {
 } from "@config/routes";
 import {
   readCurrentWordleModeId,
-  readDailyModeOutcomeForDate,
   resolveWordleModeId,
-  resolvePlayableWordleModeId,
   SCOREBOARD_MODE_IDS,
   WORDLE_MODE_IDS,
   type WordleModeId,
 } from "@domain/wordle";
 import { useApi, usePlayer } from "@providers";
-import { NAVBAR_TOP_TEN_LIMIT } from "./constants";
-
-const HELP_MODE_BY_PATHNAME: Record<string, WordleModeId> = {
-  [ROUTES.CLASSIC]: WORDLE_MODE_IDS.CLASSIC,
-  [ROUTES.LIGHTING]: WORDLE_MODE_IDS.LIGHTNING,
-  [ROUTES.ZEN]: WORDLE_MODE_IDS.ZEN,
-  [ROUTES.DAILY]: WORDLE_MODE_IDS.DAILY,
-};
-
-const normalizePathname = (pathname: string): string => {
-  if (pathname.length <= 1) {
-    return pathname;
-  }
-
-  return pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
-};
-
-const resolveNavbarPlayableModeId = (modeId: WordleModeId): WordleModeId => {
-  if (modeId === WORDLE_MODE_IDS.LIGHTNING && !env.lightningModeEnabled) {
-    return WORDLE_MODE_IDS.CLASSIC;
-  }
-
-  return resolvePlayableWordleModeId(modeId);
-};
-
-const hasResolvedDailyOutcomeForToday = (playerCode?: string | null): boolean =>
-  readDailyModeOutcomeForDate(playerCode) !== null ||
-  readDailyModeOutcomeForDate() !== null;
+import { HELP_MODE_BY_PATHNAME, NAVBAR_TOP_TEN_LIMIT } from "./constants";
+import {
+  hasResolvedDailyOutcomeForToday,
+  normalizePathname,
+  resolveNavbarPlayableModeId,
+} from "./utils";
 
 const useNavbarController = () => {
   const { scoreClient } = useApi();

@@ -21,6 +21,9 @@ import type {
   VictoryBoardShareCaptureSnapshot,
 } from "./types";
 
+export const isDocumentVisible = (): boolean =>
+  typeof document === "undefined" || document.visibilityState !== "hidden";
+
 const resolveHardModeTimerStorageKey = (modeId: WordleModeId): string =>
   modeId === WORDLE_MODE_IDS.CLASSIC
     ? HARD_MODE_TIMER_STORAGE_KEY

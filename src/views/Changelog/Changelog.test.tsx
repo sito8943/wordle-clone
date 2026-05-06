@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { ROUTES } from "@config/routes";
+import { getChangelogRoute, ROUTES } from "@config/routes";
 import { i18n, initI18n } from "@i18n";
 import Changelog from "./Changelog";
 
@@ -26,7 +26,7 @@ beforeEach(async () => {
 
 describe("Changelog", () => {
   it("renders the selected version changelog", () => {
-    renderChangelog("/changelog/0.0.16-beta");
+    renderChangelog(getChangelogRoute("0.0.16-beta"));
 
     expect(
       screen.getByRole("heading", { name: "Changelog", level: 2 }),
@@ -40,7 +40,7 @@ describe("Changelog", () => {
   });
 
   it("renders not found content when version does not exist", () => {
-    renderChangelog("/changelog/9.9.9");
+    renderChangelog(getChangelogRoute("9.9.9"));
 
     expect(screen.getByText("Version not found")).toBeTruthy();
     expect(
@@ -53,7 +53,7 @@ describe("Changelog", () => {
 
   it("renders localized changelog entries in spanish", async () => {
     await i18n.changeLanguage("es");
-    renderChangelog("/changelog/0.0.16-beta");
+    renderChangelog(getChangelogRoute("0.0.16-beta"));
 
     expect(screen.getByText("Versión 0.0.16-beta")).toBeTruthy();
     expect(
