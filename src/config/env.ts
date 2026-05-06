@@ -126,6 +126,11 @@ const env: RuntimeEnv = {
       rawEnv.LIGHTNING_MODE_ENABLED,
     true,
   ),
+  lightningStartCueAndAutoTimerEnabled: readBoolean(
+    import.meta.env.VITE_LIGHTNING_START_CUE_AND_AUTO_TIMER_ENABLED ??
+      rawEnv.LIGHTNING_START_CUE_AND_AUTO_TIMER_ENABLED,
+    false,
+  ),
   timerAutoPauseEnabled: readBoolean(
     import.meta.env.VITE_TIMER_AUTO_PAUSE_ENABLED ??
       rawEnv.TIMER_AUTO_PAUSE_ENABLED,

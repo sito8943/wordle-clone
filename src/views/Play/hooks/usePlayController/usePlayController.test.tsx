@@ -39,6 +39,8 @@ const mockNavigate = vi.fn();
 const defaultTimerAutoPauseEnabled = env.timerAutoPauseEnabled;
 const defaultMasterAndMusicChannelsEnabled =
   env.masterAndMusicChannelsEnabled;
+const defaultLightningStartCueAndAutoTimerEnabled =
+  env.lightningStartCueAndAutoTimerEnabled;
 
 const defaultMockSoundChannels = [
   {
@@ -119,6 +121,7 @@ describe("usePlayController", () => {
     window.sessionStorage.clear();
     window.localStorage.clear();
     env.masterAndMusicChannelsEnabled = true;
+    env.lightningStartCueAndAutoTimerEnabled = true;
     document.body.innerHTML = "";
     originalNavigatorShare = navigator.share;
     originalNavigatorCanShare = navigator.canShare;
@@ -238,6 +241,8 @@ describe("usePlayController", () => {
     });
     env.timerAutoPauseEnabled = defaultTimerAutoPauseEnabled;
     env.masterAndMusicChannelsEnabled = defaultMasterAndMusicChannelsEnabled;
+    env.lightningStartCueAndAutoTimerEnabled =
+      defaultLightningStartCueAndAutoTimerEnabled;
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -1537,6 +1542,39 @@ describe("usePlayController", () => {
     );
 
     expect(result.current.showLightningModeStartCue).toBe(true);
+  });
+
+  it("hides lightning start cue and disables timer auto-start when feature flag is off", () => {
+    env.lightningStartCueAndAutoTimerEnabled = false;
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    const handleKey = vi.fn();
+    wordleState = {
+      ...wordleState,
+      handleKey,
+      guesses: [],
+      current: "",
+      gameOver: false,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showLightningModeStartCue).toBe(false);
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lightningAutoStartEnabled: false,
+      }),
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(handleKey).toHaveBeenCalledWith("A");
   });
 
   it("blocks key input while lightning start cue is visible", () => {

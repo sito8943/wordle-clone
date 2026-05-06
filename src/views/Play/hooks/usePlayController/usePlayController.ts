@@ -103,6 +103,7 @@ export default function usePlayController(
     challengesEnabled,
     timerAutoPauseEnabled,
     masterAndMusicChannelsEnabled,
+    lightningStartCueAndAutoTimerEnabled,
   } = useFeatureFlags();
   const { playSound, playMusic, stopMusic, channels } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
@@ -351,6 +352,7 @@ export default function usePlayController(
     gameOver,
     guessesLength: guesses.length,
     currentLength: current.length,
+    lightningAutoStartEnabled: lightningStartCueAndAutoTimerEnabled,
     forceLoss,
     modeId: activeModeId,
   });
@@ -358,6 +360,7 @@ export default function usePlayController(
 
   useEffect(() => {
     if (
+      !lightningStartCueAndAutoTimerEnabled ||
       !lightningModeActive ||
       showResumeDialog ||
       showDictionaryChecksumDialog ||
@@ -383,6 +386,7 @@ export default function usePlayController(
     current.length,
     gameOver,
     guesses.length,
+    lightningStartCueAndAutoTimerEnabled,
     lightningModeActive,
     showDictionaryChecksumDialog,
     showResumeDialog,

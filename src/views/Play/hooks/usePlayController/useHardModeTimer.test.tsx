@@ -75,7 +75,7 @@ describe("useHardModeTimer", () => {
     expect(forceLoss).not.toHaveBeenCalled();
   });
 
-  it("starts immediately in lightning mode when entering the screen", () => {
+  it("starts immediately in lightning mode when auto-start is enabled", () => {
     const forceLoss = vi.fn();
 
     const { result } = renderHook(() =>
@@ -88,6 +88,7 @@ describe("useHardModeTimer", () => {
         gameOver: false,
         guessesLength: 0,
         currentLength: 0,
+        lightningAutoStartEnabled: true,
         forceLoss,
         modeId: LIGHTNING_MODE_ID,
       }),
@@ -101,6 +102,46 @@ describe("useHardModeTimer", () => {
 
     expect(result.current.hardModeSecondsLeft).toBe(59);
     expect(forceLoss).not.toHaveBeenCalled();
+  });
+
+  it("does not auto-start in lightning mode when auto-start is disabled", () => {
+    const forceLoss = vi.fn();
+    const { result, rerender } = renderHook(
+      ({
+        guessesLength,
+        currentLength,
+      }: {
+        guessesLength: number;
+        currentLength: number;
+      }) =>
+        useHardModeTimer({
+          sessionId: "session-1",
+          hardModeEnabled: true,
+          hasInProgressGameAtMount: false,
+          boardVersion: 1,
+          showResumeDialog: false,
+          gameOver: false,
+          guessesLength,
+          currentLength,
+          forceLoss,
+          modeId: LIGHTNING_MODE_ID,
+        }),
+      {
+        initialProps: {
+          guessesLength: 0,
+          currentLength: 0,
+        },
+      },
+    );
+
+    expect(result.current.hardModeTimerStarted).toBe(false);
+
+    rerender({
+      guessesLength: 0,
+      currentLength: 1,
+    });
+
+    expect(result.current.hardModeTimerStarted).toBe(true);
   });
 
   it("forces a loss when the timer reaches zero", () => {

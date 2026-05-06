@@ -19,6 +19,7 @@ export type RuntimeEnv = {
   settingsDrawerEnabled: boolean;
   playOfflineStateEnabled: boolean;
   lightningModeEnabled: boolean;
+  lightningStartCueAndAutoTimerEnabled: boolean;
   timerAutoPauseEnabled: boolean;
   difficultyEasyEnabled: boolean;
   difficultyNormalEnabled: boolean;

@@ -24,6 +24,7 @@ export const useHardModeTimer = ({
   gameOver,
   guessesLength,
   currentLength,
+  lightningAutoStartEnabled = false,
   forceLoss,
   modeId,
 }: UseHardModeTimerParams): UseHardModeTimerResult => {
@@ -141,12 +142,15 @@ export const useHardModeTimer = ({
   }, []);
 
   useEffect(() => {
-    const lightningModeActive = modeId === WORDLE_MODE_IDS.LIGHTNING;
+    const lightningModeAutoStartEnabled =
+      lightningAutoStartEnabled && modeId === WORDLE_MODE_IDS.LIGHTNING;
 
     if (
       hardModeTimerStarted ||
       !hardModeTimerActive ||
-      (!lightningModeActive && guessesLength === 0 && currentLength === 0)
+      (!lightningModeAutoStartEnabled &&
+        guessesLength === 0 &&
+        currentLength === 0)
     ) {
       return;
     }
@@ -157,6 +161,7 @@ export const useHardModeTimer = ({
     guessesLength,
     hardModeTimerActive,
     hardModeTimerStarted,
+    lightningAutoStartEnabled,
     modeId,
   ]);
 

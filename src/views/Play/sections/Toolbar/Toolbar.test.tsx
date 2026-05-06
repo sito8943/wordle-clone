@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
 import Toolbar from "./Toolbar";
@@ -83,6 +83,10 @@ vi.mock("@i18n", () => ({
 describe("Toolbar", () => {
   beforeEach(() => {
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.CLASSIC;
+    playViewMock.controller.showHardModeTimer = false;
+    playViewMock.controller.hardModeSecondsLeft = 0;
+    playViewMock.controller.hardModeTickPulse = 0;
+    playViewMock.controller.hardModeClockBoostScale = 1;
   });
 
   afterEach(() => {
@@ -105,5 +109,28 @@ describe("Toolbar", () => {
     expect(
       screen.queryByRole("button", { name: "play.toolbar.refreshAriaLabel" }),
     ).toBeNull();
+  });
+
+  it("keeps hard mode timer icon mounted across ticks", async () => {
+    playViewMock.controller.showHardModeTimer = true;
+    playViewMock.controller.hardModeSecondsLeft = 60;
+    playViewMock.controller.hardModeTickPulse = 0;
+    playViewMock.controller.hardModeClockBoostScale = 1.08;
+
+    const { rerender } = render(<Toolbar />);
+
+    const firstTimerIcon = screen.getByTestId("toolbar-hard-mode-timer-icon");
+
+    playViewMock.controller.hardModeSecondsLeft = 59;
+    playViewMock.controller.hardModeTickPulse = 1;
+    rerender(<Toolbar />);
+
+    await waitFor(() => {
+      const secondTimerIcon = screen.getByTestId("toolbar-hard-mode-timer-icon");
+      expect(secondTimerIcon).toBe(firstTimerIcon);
+      expect(secondTimerIcon.parentElement?.className).toContain(
+        "boost-animation",
+      );
+    });
   });
 });

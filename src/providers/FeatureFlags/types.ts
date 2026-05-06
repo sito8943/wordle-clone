@@ -11,6 +11,7 @@ export type FeatureFlags = {
   challengesEnabled: boolean;
   settingsDrawerEnabled: boolean;
   lightningModeEnabled: boolean;
+  lightningStartCueAndAutoTimerEnabled: boolean;
   timerAutoPauseEnabled: boolean;
   difficultyEasyEnabled: boolean;
   difficultyNormalEnabled: boolean;
