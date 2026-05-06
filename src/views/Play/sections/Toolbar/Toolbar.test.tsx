@@ -57,8 +57,16 @@ vi.mock("@providers/FeatureFlags", () => ({
 
 vi.mock("@providers/Sound", () => ({
   useSound: () => ({
-    volume: 1,
-    muted: false,
+    channels: [
+      {
+        id: "master",
+        label: "Master",
+        kind: "master",
+        enabled: true,
+        volume: 1,
+        muted: false,
+      },
+    ],
   }),
 }));
 

@@ -79,8 +79,17 @@ describe("useProfileController", () => {
       setThemePreference: vi.fn(),
     });
     mockUseSound.mockReturnValue({
-      soundEnabled: true,
-      setSoundEnabled: vi.fn(),
+      channels: [
+        {
+          id: "master",
+          label: "Master",
+          kind: "master",
+          enabled: true,
+          volume: 100,
+          muted: false,
+        },
+      ],
+      setChannelEnabled: vi.fn(),
     });
     mockReadPersistedGameState.mockReturnValue(null);
     mockClearPersistedGameState.mockReset();
@@ -251,10 +260,19 @@ describe("useProfileController", () => {
   });
 
   it("updates the sound preference", () => {
-    const setSoundEnabled = vi.fn();
+    const setChannelEnabled = vi.fn();
     mockUseSound.mockReturnValue({
-      soundEnabled: true,
-      setSoundEnabled,
+      channels: [
+        {
+          id: "master",
+          label: "Master",
+          kind: "master",
+          enabled: true,
+          volume: 100,
+          muted: false,
+        },
+      ],
+      setChannelEnabled,
     });
 
     const { result } = renderHook(() => useProfileController());
@@ -263,6 +281,6 @@ describe("useProfileController", () => {
       result.current.changeSoundEnabled(false);
     });
 
-    expect(setSoundEnabled).toHaveBeenCalledWith(false);
+    expect(setChannelEnabled).toHaveBeenCalledWith("master", false);
   });
 });
