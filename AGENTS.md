@@ -7,6 +7,16 @@ This file defines how agents should work inside this repository.
 - This guide applies to the full project root.
 - Architecture details live in `ARCHITECTURE.md` and are the source of truth.
 
+## Mandatory Architecture Gate (Blocking)
+
+- Before any code change, read and apply `ARCHITECTURE_RULES.md`.
+- If a requested change conflicts with `ARCHITECTURE_RULES.md`, stop and report the conflict before editing files.
+- Do not proceed with an architecture exception unless the user explicitly approves it.
+- Every final response must include:
+- Files changed.
+- Which architecture rules were applied.
+- Any exception taken and why.
+
 ## Non-Negotiable Rules
 
 - Keep business rules in `src/domain/wordle/*`; avoid embedding game logic in views.
