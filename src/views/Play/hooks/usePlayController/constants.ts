@@ -12,3 +12,4 @@ export const HARD_MODE_CLOCK_BOOST_SCALES = [0.28, 0.2, 0.14, 0.1];
 export const HARD_MODE_CLOCK_BOOST_THRESHOLDS = [30, 45];
 export const MUSIC_CHANNEL_ID = "music";
 export const MUSIC_TRANSITION_FADE_MS = 320;
+export const LIGHTNING_MODE_MUSIC_PREROLL_MS = 4_000;

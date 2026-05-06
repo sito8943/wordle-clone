@@ -65,6 +65,7 @@ import { i18n } from "@i18n";
 import {
   CHALLENGE_COMPLETION_ALERT_VISIBILITY_DURATION_MS,
   COMBO_FLASH_VISIBILITY_DURATION_MS,
+  LIGHTNING_MODE_MUSIC_PREROLL_MS,
   MUSIC_CHANNEL_ID,
   MUSIC_TRANSITION_FADE_MS,
 } from "./constants";
@@ -154,6 +155,7 @@ export default function usePlayController(
     gameOver,
     refresh,
     forceLoss,
+    handleKey: handleWordleKey,
     showResumeDialog,
     showDictionaryChecksumDialog,
     acknowledgeDictionaryChecksumChange,
@@ -226,6 +228,8 @@ export default function usePlayController(
   const [showDeveloperConsoleDialog, setShowDeveloperConsoleDialog] =
     useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showLightningModeStartCue, setShowLightningModeStartCue] =
+    useState(false);
   const [showTutorialPromptDialog, setShowTutorialPromptDialog] = useState(
     () =>
       !hasSeenTutorialPromptForMode(
@@ -345,6 +349,41 @@ export default function usePlayController(
     modeId: activeModeId,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
+
+  useEffect(() => {
+    if (
+      !lightningModeActive ||
+      showResumeDialog ||
+      showDictionaryChecksumDialog ||
+      showTutorialPromptDialog ||
+      gameOver ||
+      hardModeTimerStarted ||
+      guesses.length > 0 ||
+      current.length > 0
+    ) {
+      setShowLightningModeStartCue(false);
+      return;
+    }
+
+    setShowLightningModeStartCue(true);
+    const timeoutId = window.setTimeout(() => {
+      setShowLightningModeStartCue(false);
+    }, LIGHTNING_MODE_MUSIC_PREROLL_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    boardVersion,
+    current.length,
+    gameOver,
+    guesses.length,
+    hardModeTimerStarted,
+    lightningModeActive,
+    showDictionaryChecksumDialog,
+    showResumeDialog,
+    showTutorialPromptDialog,
+  ]);
 
   useEffect(() => {
     setDailyModeOutcomeAtEntry(resolveDailyModeOutcomeForToday());
@@ -662,6 +701,20 @@ export default function usePlayController(
       playSound("hint_use");
     }
   }, [consumeHintControllerAction, hintsEnabled, playSound]);
+  const handleKey = useCallback(
+    (key: string) => {
+      if (showLightningModeStartCue) {
+        return;
+      }
+
+      if (typeof handleWordleKey !== "function") {
+        return;
+      }
+
+      handleWordleKey(key);
+    },
+    [handleWordleKey, showLightningModeStartCue],
+  );
 
   useEffect(() => {
     if (!musicChannelEnabled) {
@@ -1560,6 +1613,7 @@ export default function usePlayController(
 
   return {
     ...wordle,
+    handleKey,
     modeId,
     activeModeId,
     modeEnabled,
@@ -1663,6 +1717,7 @@ export default function usePlayController(
     dailyModeDeveloperMessage,
     dailyModeDeveloperMessageKind,
     challengeCompletionMessage,
+    showLightningModeStartCue,
     confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,
     cancelRefreshBoard,

@@ -169,6 +169,18 @@ h1,
   }
 }
 
+@keyframes toolbar-enter-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-120%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes tile-enter-with-delay {
   from {
     opacity: 0;
@@ -403,6 +415,11 @@ h1,
   animation: keyboard-enter-from-bottom 440ms ease-out 120ms both;
 }
 
+.toolbar-entry-from-top-animation {
+  opacity: 0;
+  animation: toolbar-enter-from-top 440ms ease-out 120ms both;
+}
+
 .tile-entry-animation {
   opacity: 0;
   animation: tile-enter-with-delay 260ms ease-out both;
@@ -515,6 +532,7 @@ h1,
 }
 
 .wordle-animations-disabled .keyboard-entry-animation,
+.wordle-animations-disabled .toolbar-entry-from-top-animation,
 .wordle-animations-disabled .tile-entry-animation {
   opacity: 1 !important;
   transform: none !important;
@@ -727,6 +745,7 @@ h1,
 @media (prefers-reduced-motion: reduce) {
   .board-entry-animation,
   .keyboard-entry-animation,
+  .toolbar-entry-from-top-animation,
   .tile-entry-animation,
   .tile-hint-reveal-animation,
   .board-shake-pulse-animation,

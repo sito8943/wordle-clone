@@ -16,9 +16,11 @@ const KeyboardSection = (): JSX.Element => {
     won,
     keyboardEntryAnimationEnabled,
     showResumeDialog,
+    showLightningModeStartCue,
   } = controller;
 
-  const nativeKeyboardBlocked = showResumeDialog || gameOver;
+  const nativeKeyboardBlocked =
+    showResumeDialog || showLightningModeStartCue || gameOver;
   const {
     nativeKeyboardInputRef,
     focusNativeKeyboardInput,

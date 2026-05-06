@@ -23,6 +23,7 @@ import usePlayController from "./usePlayController";
 import {
   COMBO_FLASH_VISIBILITY_DURATION_MS,
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  LIGHTNING_MODE_MUSIC_PREROLL_MS,
   MUSIC_CHANNEL_ID,
   MUSIC_TRANSITION_FADE_MS,
   TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
@@ -130,6 +131,7 @@ describe("usePlayController", () => {
       gameOver: false,
       refresh: vi.fn(),
       forceLoss: vi.fn(),
+      handleKey: vi.fn(),
       showResumeDialog: false,
       showDictionaryChecksumDialog: false,
       acknowledgeDictionaryChecksumChange: vi.fn(),
@@ -1466,6 +1468,60 @@ describe("usePlayController", () => {
       MUSIC_CHANNEL_ID,
       MUSIC_TRANSITION_FADE_MS,
     );
+  });
+
+  it("shows lightning start cue during preroll and hides it after timeout", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showLightningModeStartCue).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(LIGHTNING_MODE_MUSIC_PREROLL_MS);
+    });
+
+    expect(result.current.showLightningModeStartCue).toBe(false);
+  });
+
+  it("blocks key input while lightning start cue is visible", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    const handleKey = vi.fn();
+    wordleState = {
+      ...wordleState,
+      handleKey,
+      guesses: [],
+      current: "",
+      gameOver: false,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(handleKey).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(LIGHTNING_MODE_MUSIC_PREROLL_MS);
+    });
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(handleKey).toHaveBeenCalledWith("A");
   });
 
   it("plays round-start sound on mount and when a new board version is loaded", () => {

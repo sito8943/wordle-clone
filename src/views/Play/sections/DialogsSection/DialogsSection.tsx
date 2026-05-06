@@ -69,6 +69,7 @@ const DialogsSection = (): JSX.Element => {
   const gameMode = t(`play.gameModes.${controller.activeModeId}`);
   const {
     message,
+    showLightningModeStartCue,
     showResumeDialog,
     showDictionaryChecksumDialog,
     showRefreshDialog,
@@ -264,6 +265,20 @@ const DialogsSection = (): JSX.Element => {
             {message}
           </div>
         )}
+        {showLightningModeStartCue ? (
+          <div
+            role="status"
+            aria-live="assertive"
+            className="pointer-events-none fixed left-1/2 top-20 z-20 -translate-x-1/2 rounded-xl border border-amber-200/70 bg-amber-100/95 px-5 py-3 text-center shadow-xl dark:border-amber-500/50 dark:bg-amber-900/85"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-amber-950 dark:text-amber-100">
+              {gameMode}
+            </p>
+            <p className="mt-1 text-base font-extrabold uppercase tracking-[0.12em] text-amber-900 dark:text-amber-50">
+              {t("play.lightningStartCue.begin")}
+            </p>
+          </div>
+        ) : null}
         <Suspense fallback={null}>
           {resumeDialogVisible ? (
             <SessionResumeDialog

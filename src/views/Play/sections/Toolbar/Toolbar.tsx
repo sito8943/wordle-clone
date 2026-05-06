@@ -26,7 +26,7 @@ const Toolbar = (): JSX.Element => {
   } = controller;
   return (
     <>
-      <div className="w-full flex items-center justify-between sm:px-4 toolbar-icon-entry-animation">
+      <div className="w-full flex items-center justify-between sm:px-4 toolbar-entry-from-top-animation">
         <FireStreak streak={currentWinStreak} showScoreBonusPopup />
         <div className="flex items-center justify-end gap-2 sm:gap-4 ">
           <ToolbarWordListButton />

@@ -11,6 +11,7 @@ const featureFlagsMock = vi.hoisted(() => ({
 const controllerMock = vi.hoisted(() => ({
   activeModeId: "classic",
   message: "",
+  showLightningModeStartCue: false,
   showResumeDialog: false,
   showDictionaryChecksumDialog: false,
   showRefreshDialog: false,

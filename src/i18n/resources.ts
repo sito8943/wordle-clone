@@ -398,6 +398,9 @@ export const resources = {
           loadingWordList: "Loading word list...",
           volumeAriaLabel: "Volume",
         },
+        lightningStartCue: {
+          begin: "Starts now",
+        },
         settingsPanel: {
           title: "Quick settings",
           description:
@@ -1078,6 +1081,9 @@ export const resources = {
           refreshAriaLabel: "Actualizar",
           loadingWordList: "Cargando lista de palabras...",
           volumeAriaLabel: "Volumen",
+        },
+        lightningStartCue: {
+          begin: "Comienza",
         },
         settingsPanel: {
           title: "Ajustes rápidos",
