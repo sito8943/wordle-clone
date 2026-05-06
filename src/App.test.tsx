@@ -16,7 +16,6 @@ import { ROUTES } from "@config/routes";
 import {
   MAX_STREAK_FOR_SCORE_MULTIPLIER,
   WORDLE_ANIMATIONS_DISABLED_STORAGE_KEY,
-  WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY,
   WORDLE_START_ANIMATION_SESSION_KEY,
 } from "@domain/wordle";
 import { i18n } from "@i18n";
@@ -2631,7 +2630,7 @@ describe("App", () => {
     ).toBe(false);
   });
 
-  it("animates the keyboard only once per tab session", async () => {
+  it("animates the keyboard when entering a fresh game", async () => {
     window.history.pushState({}, "", ROUTES.CLASSIC);
     window.dispatchEvent(new PopStateEvent("popstate"));
     renderApp();
@@ -2640,9 +2639,6 @@ describe("App", () => {
       name: "On-screen keyboard",
     });
     expect(firstKeyboard.className).toContain("keyboard-entry-animation");
-    expect(
-      sessionStorage.getItem(WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY),
-    ).toBe("seen");
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
     window.history.pushState({}, "", ROUTES.CLASSIC);
@@ -2651,11 +2647,26 @@ describe("App", () => {
     const secondKeyboard = await screen.findByRole("group", {
       name: "On-screen keyboard",
     });
-    expect(secondKeyboard.className).not.toContain("keyboard-entry-animation");
+    expect(secondKeyboard.className).toContain("keyboard-entry-animation");
   });
 
-  it("replays tile entry animation on refresh even when keyboard animation is disabled", async () => {
-    sessionStorage.setItem(WORDLE_KEYBOARD_ENTRY_ANIMATION_SESSION_KEY, "seen");
+  it("replays tile entry animation on refresh after restoring an in-progress board", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-a");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
     sessionStorage.setItem(WORDLE_START_ANIMATION_SESSION_KEY, "seen");
 
     renderApp();
@@ -2776,6 +2787,91 @@ describe("App", () => {
         screen.queryByRole("dialog", { name: "Resume previous game?" }),
       ).toBeNull();
     });
+  });
+
+  it("does not animate keyboard when continuing a resumed board", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-b");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    renderApp();
+
+    const keyboardBeforeResume = await screen.findByRole("group", {
+      name: "On-screen keyboard",
+    });
+    expect(keyboardBeforeResume.className).not.toContain(
+      "keyboard-entry-animation",
+    );
+
+    await screen.findByRole("dialog", { name: "Resume previous game?" });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue previous board" }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Resume previous game?" }),
+      ).toBeNull();
+    });
+
+    const keyboardAfterResume = await screen.findByRole("group", {
+      name: "On-screen keyboard",
+    });
+    expect(keyboardAfterResume.className).not.toContain(
+      "keyboard-entry-animation",
+    );
+  });
+
+  it("animates keyboard when starting a new board from resume dialog", async () => {
+    sessionStorage.setItem("wordle:session-id", "session-b");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+    window.history.pushState({}, "", ROUTES.CLASSIC);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    renderApp();
+
+    await screen.findByRole("dialog", { name: "Resume previous game?" });
+    fireEvent.click(screen.getByRole("button", { name: "Start new game" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Resume previous game?" }),
+      ).toBeNull();
+    });
+
+    const keyboard = await screen.findByRole("group", {
+      name: "On-screen keyboard",
+    });
+    expect(keyboard.className).toContain("keyboard-entry-animation");
   });
 
   it("clears consumed hints when starting a new game from resume dialog", async () => {

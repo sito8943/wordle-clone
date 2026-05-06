@@ -1489,6 +1489,30 @@ describe("usePlayController", () => {
     expect(result.current.showLightningModeStartCue).toBe(false);
   });
 
+  it("keeps lightning start cue visible during preroll even when timer already started", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    mockUseHardModeTimer.mockReturnValue({
+      showHardModeTimer: true,
+      showHardModeFinalStretchBar: false,
+      hardModeSecondsLeft: 60,
+      hardModeTimerStarted: true,
+      hardModeTickPulse: 0,
+      hardModeClockBoostScale: 0.1,
+      hardModeFinalStretchProgressPercent: 100,
+      boardShakePulse: 0,
+      resetHardModeTimer: vi.fn(),
+    });
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showLightningModeStartCue).toBe(true);
+  });
+
   it("blocks key input while lightning start cue is visible", () => {
     window.localStorage.setItem(
       TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,

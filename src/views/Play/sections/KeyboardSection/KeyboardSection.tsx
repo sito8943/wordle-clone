@@ -15,6 +15,7 @@ const KeyboardSection = (): JSX.Element => {
     gameOver,
     won,
     keyboardEntryAnimationEnabled,
+    handleKeyboardEntryAnimationEnd,
     showResumeDialog,
     showLightningModeStartCue,
   } = controller;
@@ -52,6 +53,7 @@ const KeyboardSection = (): JSX.Element => {
           onKey={handleKey}
           language={controller.currentLanguage}
           animateEntry={keyboardEntryAnimationEnabled}
+          onEntryAnimationEnd={handleKeyboardEntryAnimationEnd}
         />
       ) : (
         <>
@@ -86,6 +88,7 @@ const KeyboardSection = (): JSX.Element => {
               onKey={handleKey}
               language={controller.currentLanguage}
               animateEntry={keyboardEntryAnimationEnabled}
+              onEntryAnimationEnd={handleKeyboardEntryAnimationEnd}
             />
           </div>
         </>

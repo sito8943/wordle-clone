@@ -357,7 +357,6 @@ export default function usePlayController(
       showDictionaryChecksumDialog ||
       showTutorialPromptDialog ||
       gameOver ||
-      hardModeTimerStarted ||
       guesses.length > 0 ||
       current.length > 0
     ) {
@@ -378,7 +377,6 @@ export default function usePlayController(
     current.length,
     gameOver,
     guesses.length,
-    hardModeTimerStarted,
     lightningModeActive,
     showDictionaryChecksumDialog,
     showResumeDialog,

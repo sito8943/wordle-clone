@@ -5,6 +5,7 @@ import { clearHardModeTimerSnapshot, setHardModeTimerSnapshot } from "./utils";
 import { useHardModeTimer } from "./useHardModeTimer";
 
 const TEST_MODE_ID = WORDLE_MODE_IDS.CLASSIC;
+const LIGHTNING_MODE_ID = WORDLE_MODE_IDS.LIGHTNING;
 const setDocumentVisibilityState = (state: DocumentVisibilityState): void => {
   Object.defineProperty(document, "visibilityState", {
     configurable: true,
@@ -71,6 +72,34 @@ describe("useHardModeTimer", () => {
 
     expect(result.current.hardModeSecondsLeft).toBe(59);
     expect(result.current.hardModeTickPulse).toBe(1);
+    expect(forceLoss).not.toHaveBeenCalled();
+  });
+
+  it("starts immediately in lightning mode when entering the screen", () => {
+    const forceLoss = vi.fn();
+
+    const { result } = renderHook(() =>
+      useHardModeTimer({
+        sessionId: "session-1",
+        hardModeEnabled: true,
+        hasInProgressGameAtMount: false,
+        boardVersion: 1,
+        showResumeDialog: false,
+        gameOver: false,
+        guessesLength: 0,
+        currentLength: 0,
+        forceLoss,
+        modeId: LIGHTNING_MODE_ID,
+      }),
+    );
+
+    expect(result.current.hardModeTimerStarted).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.hardModeSecondsLeft).toBe(59);
     expect(forceLoss).not.toHaveBeenCalled();
   });
 

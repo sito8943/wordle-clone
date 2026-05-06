@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { HARD_MODE_FINAL_STRETCH_SECONDS } from "./constants";
 import type { UseHardModeTimerParams, UseHardModeTimerResult } from "./types";
 import {
@@ -140,16 +141,24 @@ export const useHardModeTimer = ({
   }, []);
 
   useEffect(() => {
+    const lightningModeActive = modeId === WORDLE_MODE_IDS.LIGHTNING;
+
     if (
       hardModeTimerStarted ||
       !hardModeTimerActive ||
-      (guessesLength === 0 && currentLength === 0)
+      (!lightningModeActive && guessesLength === 0 && currentLength === 0)
     ) {
       return;
     }
 
     setHardModeTimerStarted(true);
-  }, [currentLength, guessesLength, hardModeTimerActive, hardModeTimerStarted]);
+  }, [
+    currentLength,
+    guessesLength,
+    hardModeTimerActive,
+    hardModeTimerStarted,
+    modeId,
+  ]);
 
   useEffect(() => {
     if (!hardModeTimerRunning) {

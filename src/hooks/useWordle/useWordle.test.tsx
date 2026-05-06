@@ -6,7 +6,7 @@ import {
   WORDS_DEFAULT_LANGUAGE,
 } from "@api/words";
 import { env } from "@config";
-import { WORDLE_MODE_IDS } from "@domain/wordle";
+import { WORDLE_MODE_IDS, WORDLE_SESSION_STORAGE_KEY } from "@domain/wordle";
 import { i18n } from "@i18n";
 import useWordle from "./useWordle";
 import {
@@ -700,5 +700,69 @@ describe("useWordle dictionary query integration", () => {
     expect(result.current.roundConfig.lettersPerRow).toBe(
       result.current.answer.length,
     );
+  });
+
+  it("re-triggers keyboard entry animation when starting a new board", () => {
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+
+    expect(result.current.keyboardEntryAnimationEnabled).toBe(true);
+
+    act(() => {
+      result.current.handleKeyboardEntryAnimationEnd();
+    });
+    expect(result.current.keyboardEntryAnimationEnabled).toBe(false);
+
+    act(() => {
+      result.current.startNewBoard();
+    });
+    expect(result.current.keyboardEntryAnimationEnabled).toBe(true);
+  });
+
+  it("keeps keyboard entry animation disabled while resuming a previous board", () => {
+    sessionStorage.setItem(WORDLE_SESSION_STORAGE_KEY, "session-b");
+    localStorage.setItem(
+      env.wordleGameStorageKey,
+      JSON.stringify({
+        sessionId: "session-a",
+        answer: "APPLE",
+        guesses: [
+          {
+            word: "BRICK",
+            statuses: ["absent", "absent", "absent", "absent", "absent"],
+          },
+        ],
+        current: "AP",
+        gameOver: false,
+      }),
+    );
+
+    const loadWords = vi.fn().mockReturnValue(new Promise<string[]>(() => {}));
+    const queryClient = createTestQueryClient();
+    const wrapper = createHookWrapper(
+      queryClient,
+      createTestApiContextValue({
+        wordDictionaryClient: createMockWordDictionaryClient(loadWords),
+      }),
+    );
+
+    const { result } = renderHook(() => useWordle(), { wrapper });
+
+    expect(result.current.showResumeDialog).toBe(true);
+    expect(result.current.keyboardEntryAnimationEnabled).toBe(false);
+
+    act(() => {
+      result.current.continuePreviousBoard();
+    });
+    expect(result.current.showResumeDialog).toBe(false);
+    expect(result.current.keyboardEntryAnimationEnabled).toBe(false);
   });
 });
