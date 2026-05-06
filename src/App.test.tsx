@@ -29,6 +29,10 @@ import {
   PlayerProvider,
   SoundProvider,
 } from "@providers";
+import {
+  WORDLE_SOUND_EVENT_MAP,
+  WORDLE_SOUND_STORAGE_KEYS,
+} from "@providers/Sound";
 import { renderWithQueryClient } from "./test/utils";
 import { HINT_USAGE_STORAGE_KEY } from "@views/Play/hooks/useHintController";
 import {
@@ -66,7 +70,11 @@ vi.mock("@providers/FeatureFlags", async () => {
 
 const renderApp = () =>
   renderWithQueryClient(
-    <SoundProvider>
+    <SoundProvider
+      featureEnabled={env.soundEnabled}
+      eventMap={WORDLE_SOUND_EVENT_MAP}
+      storageKeys={WORDLE_SOUND_STORAGE_KEYS}
+    >
       <FeatureFlagsProvider>
         <ApiProvider>
           <PlayerProvider>

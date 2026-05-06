@@ -1,3 +1,12 @@
+import type {
+  PlaySoundOptions as BasePlaySoundOptions,
+  SoundContextType as BaseSoundContextType,
+  SoundEventMap as BaseSoundEventMap,
+  SoundStorageKeys as BaseSoundStorageKeys,
+  SoundTemplateProviderProps,
+  ToneDefinition as BaseToneDefinition,
+} from "sito-sound-provider";
+
 export type SoundEvent =
   | "letter_put"
   | "letter_delete"
@@ -11,26 +20,16 @@ export type SoundEvent =
   | "round_loss"
   | "round_win";
 
-export type PlaySoundOptions = {
-  delayMs?: number;
-};
+export type PlaySoundOptions = BasePlaySoundOptions;
 
-export type SoundContextType = {
-  soundEnabled: boolean;
-  setSoundEnabled: (enabled: boolean) => void;
-  volume: number;
-  setVolume: (volume: number) => void;
-  muted: boolean;
-  setMuted: (muted: boolean) => void;
-  playSound: (event: SoundEvent, options?: PlaySoundOptions) => void;
-};
+export type SoundContextType<TEvent extends string = SoundEvent> =
+  BaseSoundContextType<TEvent>;
 
-export type ToneDefinition = {
-  frequency: number;
-  durationMs: number;
-  gain: number;
-  waveform: OscillatorType;
-  delayMs?: number;
-  attackMs?: number;
-  releaseMs?: number;
-};
+export type ToneDefinition = BaseToneDefinition;
+
+export type SoundEventMap<TEvent extends string> = BaseSoundEventMap<TEvent>;
+
+export type SoundStorageKeys = BaseSoundStorageKeys;
+
+export type SoundProviderProps<TEvent extends string> =
+  SoundTemplateProviderProps<TEvent>;

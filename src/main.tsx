@@ -15,6 +15,10 @@ import {
   PlayerProvider,
   SoundProvider,
 } from "@providers";
+import {
+  WORDLE_SOUND_EVENT_MAP,
+  WORDLE_SOUND_STORAGE_KEYS,
+} from "@providers/Sound";
 import { queryClient } from "./queryClient";
 
 resetBrowserStorageOnAppUpdate(env.appVersion);
@@ -43,7 +47,11 @@ void initI18n().then(() => {
         )}
       >
         <QueryClientProvider client={queryClient}>
-          <SoundProvider>
+          <SoundProvider
+            featureEnabled={env.soundEnabled}
+            eventMap={WORDLE_SOUND_EVENT_MAP}
+            storageKeys={WORDLE_SOUND_STORAGE_KEYS}
+          >
             <FeatureFlagsProvider>
               <ApiProvider>
                 <PlayerProvider>
