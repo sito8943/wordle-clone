@@ -36,6 +36,7 @@ const Popup = ({
   const portalTarget = usePopupPortalTarget();
   const triggerRef = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const openedAtRef = useRef<number>(0);
   const [isPinned, setIsPinned] = useState(false);
   const [coordinates, setCoordinates] = useState<PopupCoordinates>({
     top: 0,
@@ -44,7 +45,14 @@ const Popup = ({
   });
   const [motionState, setMotionState] = useState<PopupMotionState>("hidden");
   const isOpen = !disabled && isPinned;
-  console.log("Popup state:", { isOpen, disabled, isPinned });
+
+  const setTriggerReference = (node: HTMLElement | null) => {
+    if (!node) {
+      return;
+    }
+
+    triggerRef.current = node;
+  };
 
   const updateCoordinates = useCallback(() => {
     if (typeof window === "undefined") {
@@ -148,16 +156,25 @@ const Popup = ({
       return;
     }
 
+    openedAtRef.current = Date.now();
+
     const handlePointerDown = (event: PointerEvent) => {
+      if (Date.now() - openedAtRef.current < 80) {
+        return;
+      }
+
       const target = event.target;
       if (!(target instanceof Node)) {
         return;
       }
 
-      if (
-        triggerRef.current?.contains(target) ||
-        panelRef.current?.contains(target)
-      ) {
+      const triggerElement = triggerRef.current;
+      const panelElement = panelRef.current;
+      if (!triggerElement || !panelElement) {
+        return;
+      }
+
+      if (triggerElement.contains(target) || panelElement.contains(target)) {
         return;
       }
 
@@ -196,7 +213,7 @@ const Popup = ({
 
   const triggerElement = cloneElement(children, {
     ref: (node: HTMLElement | null) => {
-      triggerRef.current = node;
+      setTriggerReference(node);
 
       if (!childRef) {
         return;
@@ -212,8 +229,13 @@ const Popup = ({
     "aria-describedby": isOpen ? popupId : undefined,
     tabIndex: children.props.tabIndex ?? 0,
     onClick: (event) => {
-      console.log("Trigger clicked. Current pinned state:", isPinned);
       children.props.onClick?.(event);
+
+      if (event.defaultPrevented || disabled) {
+        return;
+      }
+
+      setTriggerReference(event.currentTarget);
       togglePinned();
     },
     onKeyDown: (event) => {
@@ -227,6 +249,7 @@ const Popup = ({
       }
 
       event.preventDefault();
+      setTriggerReference(event.currentTarget);
       togglePinned();
     },
   });

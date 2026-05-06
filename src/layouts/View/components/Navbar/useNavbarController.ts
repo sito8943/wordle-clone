@@ -10,6 +10,7 @@ import {
 } from "@config/routes";
 import {
   readCurrentWordleModeId,
+  readDailyModeOutcomeForDate,
   resolveWordleModeId,
   resolvePlayableWordleModeId,
   SCOREBOARD_MODE_IDS,
@@ -41,6 +42,10 @@ const resolveNavbarPlayableModeId = (modeId: WordleModeId): WordleModeId => {
 
   return resolvePlayableWordleModeId(modeId);
 };
+
+const hasResolvedDailyOutcomeForToday = (playerCode?: string | null): boolean =>
+  readDailyModeOutcomeForDate(playerCode) !== null ||
+  readDailyModeOutcomeForDate() !== null;
 
 const useNavbarController = () => {
   const { scoreClient } = useApi();
@@ -78,10 +83,17 @@ const useNavbarController = () => {
   const playRoute = useMemo(() => {
     const currentModeId = activeModeId ?? readCurrentWordleModeId();
     const playModeId = resolveNavbarPlayableModeId(currentModeId);
+    if (
+      activeModeId === null &&
+      playModeId === WORDLE_MODE_IDS.DAILY &&
+      hasResolvedDailyOutcomeForToday(player.code)
+    ) {
+      return ROUTES.PLAY;
+    }
 
     return getModeRoute(playModeId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeModeId, location.pathname, location.search]);
+  }, [activeModeId, location.pathname, location.search, player.code]);
   const titleRoute = ROUTES.PLAY;
 
   useEffect(() => {
