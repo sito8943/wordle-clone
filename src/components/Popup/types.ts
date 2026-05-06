@@ -20,6 +20,10 @@ export type PopupTriggerProps = {
   onClick?: MouseEventHandler<HTMLElement>;
   onKeyDown?: KeyboardEventHandler<HTMLElement>;
   tabIndex?: number;
+  role?: string;
+  "aria-controls"?: string;
+  "aria-expanded"?: boolean;
+  "aria-haspopup"?: "dialog";
   "aria-describedby"?: string;
 };
 

@@ -22,7 +22,7 @@ import type {
   PopupProps,
   PopupTriggerProps,
 } from "./types";
-import { clamp } from "./utils";
+import { clamp, isInteractiveTagName, shouldSkipPopupMotion } from "./utils";
 
 const Popup = ({
   content,
@@ -131,6 +131,16 @@ const Popup = ({
 
     const nextState: PopupMotionState =
       motionState === "entering" ? "open" : "hidden";
+    if (shouldSkipPopupMotion()) {
+      setMotionState(nextState);
+      if (nextState === "hidden") {
+        setCoordinates((current) =>
+          current.visible ? { ...current, visible: false } : current,
+        );
+      }
+      return;
+    }
+
     const timeoutMs =
       motionState === "entering"
         ? POPUP_ENTER_DURATION_MS
@@ -189,12 +199,33 @@ const Popup = ({
       setIsPinned(false);
     };
 
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      const triggerElement = triggerRef.current;
+      const panelElement = panelRef.current;
+      if (!triggerElement || !panelElement) {
+        return;
+      }
+
+      if (triggerElement.contains(target) || panelElement.contains(target)) {
+        return;
+      }
+
+      setIsPinned(false);
+    };
+
     window.addEventListener("pointerdown", handlePointerDown, true);
     window.addEventListener("keydown", handleEscape);
+    window.addEventListener("focusin", handleFocusIn);
 
     return () => {
       window.removeEventListener("pointerdown", handlePointerDown, true);
       window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("focusin", handleFocusIn);
     };
   }, [isOpen]);
 
@@ -210,6 +241,22 @@ const Popup = ({
     ref?: PopupTriggerProps["ref"];
   };
   const childRef = childWithRef.ref;
+  const childRole = children.props.role;
+  const hasExplicitInteractiveRole =
+    typeof childRole === "string" &&
+    [
+      "button",
+      "checkbox",
+      "link",
+      "menuitem",
+      "option",
+      "switch",
+      "tab",
+    ].includes(childRole);
+  const hasNativeInteractiveSemantics =
+    typeof children.type === "string" && isInteractiveTagName(children.type);
+  const shouldSetButtonRole =
+    !hasNativeInteractiveSemantics && !hasExplicitInteractiveRole;
 
   const triggerElement = cloneElement(children, {
     ref: (node: HTMLElement | null) => {
@@ -226,6 +273,10 @@ const Popup = ({
 
       (childRef as { current: HTMLElement | null }).current = node;
     },
+    role: shouldSetButtonRole ? "button" : childRole,
+    "aria-controls": isOpen ? popupId : undefined,
+    "aria-expanded": isOpen,
+    "aria-haspopup": "dialog",
     "aria-describedby": isOpen ? popupId : undefined,
     tabIndex: children.props.tabIndex ?? 0,
     onClick: (event) => {
@@ -280,7 +331,7 @@ const Popup = ({
               id={popupId}
               role="tooltip"
               className={[
-                "pointer-events-none fixed z-50 w-max max-w-[min(24rem,calc(100vw-1rem))] rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium leading-5 text-neutral-800 shadow-xl dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100",
+                "pointer-events-auto fixed z-50 w-max max-w-[min(24rem,calc(100vw-1rem))] rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium leading-5 text-neutral-800 shadow-xl dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100",
                 originClassName,
                 motionClassName,
                 panelClassName,

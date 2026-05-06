@@ -127,9 +127,9 @@ describe("FireStreak", () => {
 
   it("does not open popup on hover when enabled", async () => {
     render(<FireStreak streak={4} showScoreBonusPopup />);
-    const label = screen.getByRole("generic", {
-      name: i18n.t("common.streakLabel", { count: 4 }),
-    });
+    const label = screen.getByLabelText(
+      i18n.t("common.streakLabel", { count: 4 }),
+    );
 
     fireEvent.mouseEnter(label);
 
@@ -140,9 +140,9 @@ describe("FireStreak", () => {
 
   it("toggles score bonus popup on click when enabled", async () => {
     render(<FireStreak streak={1} showScoreBonusPopup />);
-    const label = screen.getByRole("generic", {
-      name: i18n.t("common.streakLabel", { count: 1 }),
-    });
+    const label = screen.getByLabelText(
+      i18n.t("common.streakLabel", { count: 1 }),
+    );
 
     fireEvent.click(label);
     await waitFor(() => {
@@ -159,10 +159,20 @@ describe("FireStreak", () => {
 
   it("adds hover styling when popup is enabled", () => {
     render(<FireStreak streak={2} showScoreBonusPopup />);
+    const label = screen.getByLabelText(
+      i18n.t("common.streakLabel", { count: 2 }),
+    );
+
+    expect(label.className).toContain("hover:bg-amber-500/10");
+  });
+
+  it("prevents text selection and applies horizontal padding", () => {
+    render(<FireStreak streak={2} />);
     const label = screen.getByRole("generic", {
       name: i18n.t("common.streakLabel", { count: 2 }),
     });
 
-    expect(label.className).toContain("hover:bg-amber-500/10");
+    expect(label.className).toContain("select-none");
+    expect(label.className).toContain("px-2");
   });
 });

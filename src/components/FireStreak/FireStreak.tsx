@@ -32,7 +32,7 @@ const FireStreak = ({
     bonusPercent: toTooltipNumber(streakBonusPercent),
   });
 
-  const sizeClassName = size === "sm" ? "py-0.5 text-xs" : "py-1";
+  const sizeClassName = size === "sm" ? "px-1.5 py-0.5 text-xs" : "px-2 py-1";
   const iconSize = size === "sm" ? 16 : 20;
   const label = noLabel
     ? String(safeStreak)
@@ -43,7 +43,7 @@ const FireStreak = ({
       title={showScoreBonusPopup ? undefined : label}
       aria-label={label}
       className={[
-        "inline-flex items-center cursor-help gap-1.5 rounded-full font-semibold tabular-nums",
+        "inline-flex items-center cursor-help gap-1.5 rounded-full font-semibold tabular-nums select-none",
         showScoreBonusPopup ? "outline-none" : "",
         showScoreBonusPopup
           ? "transition-colors hover:bg-amber-500/10 dark:hover:bg-amber-300/10 focus-visible:ring-2 focus-visible:ring-primary/40"
