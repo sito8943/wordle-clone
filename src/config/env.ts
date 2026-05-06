@@ -94,6 +94,11 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_SOUND_ENABLED ?? rawEnv.SOUND_ENABLED,
     true,
   ),
+  masterAndMusicChannelsEnabled: readBoolean(
+    import.meta.env.VITE_MASTER_AND_MUSIC_CHANNELS_ENABLED ??
+      rawEnv.MASTER_AND_MUSIC_CHANNELS_ENABLED,
+    false,
+  ),
   hintsEnabled: readBoolean(
     import.meta.env.VITE_HINTS_ENABLED ?? rawEnv.HINTS_ENABLED,
     true,
@@ -120,6 +125,11 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_LIGHTNING_MODE_ENABLED ??
       rawEnv.LIGHTNING_MODE_ENABLED,
     true,
+  ),
+  lightningStartCueAndAutoTimerEnabled: readBoolean(
+    import.meta.env.VITE_LIGHTNING_START_CUE_AND_AUTO_TIMER_ENABLED ??
+      rawEnv.LIGHTNING_START_CUE_AND_AUTO_TIMER_ENABLED,
+    false,
   ),
   timerAutoPauseEnabled: readBoolean(
     import.meta.env.VITE_TIMER_AUTO_PAUSE_ENABLED ??

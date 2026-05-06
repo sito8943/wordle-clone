@@ -14,8 +14,8 @@ vi.mock("@i18n", () => ({
       const dictionary: Record<string, string> = {
         "play.tutorialPromptDialog.title": "Welcome to {{gameMode}}",
         "play.tutorialPromptDialog.description":
-          "We can open the Help page so you can review the rules.",
-        "play.tutorialPromptDialog.confirm": "Yes, open Help",
+          "We can guide you with a quick tour of the most important controls.",
+        "play.tutorialPromptDialog.confirm": "Yes, start tutorial",
         "play.tutorialPromptDialog.cancel": "No, skip tutorial",
       };
 
@@ -54,7 +54,9 @@ describe("TutorialPromptDialog", () => {
 
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("Welcome to Classic")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Yes, open Help" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Yes, start tutorial" }),
+    ).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "No, skip tutorial" }),
     ).toBeTruthy();
@@ -71,7 +73,9 @@ describe("TutorialPromptDialog", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Yes, open Help" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Yes, start tutorial" }),
+    );
     act(() => {
       vi.runAllTimers();
     });

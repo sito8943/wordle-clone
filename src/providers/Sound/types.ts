@@ -1,3 +1,15 @@
+import type {
+  AudioChannelDefinition as BaseAudioChannelDefinition,
+  AudioChannelState as BaseAudioChannelState,
+  MusicTrackMap as BaseMusicTrackMap,
+  PlaySoundOptions as BasePlaySoundOptions,
+  SoundContextType as BaseSoundContextType,
+  SoundEventMap as BaseSoundEventMap,
+  SoundStorageKeys as BaseSoundStorageKeys,
+  SoundTemplateProviderProps,
+  ToneDefinition as BaseToneDefinition,
+} from "sito-sound-provider";
+
 export type SoundEvent =
   | "letter_put"
   | "letter_delete"
@@ -11,26 +23,26 @@ export type SoundEvent =
   | "round_loss"
   | "round_win";
 
-export type PlaySoundOptions = {
-  delayMs?: number;
-};
+export type SoundMusicTrack = "classic" | "lightning" | "zen";
 
-export type SoundContextType = {
-  soundEnabled: boolean;
-  setSoundEnabled: (enabled: boolean) => void;
-  volume: number;
-  setVolume: (volume: number) => void;
-  muted: boolean;
-  setMuted: (muted: boolean) => void;
-  playSound: (event: SoundEvent, options?: PlaySoundOptions) => void;
-};
+export type PlaySoundOptions = BasePlaySoundOptions;
 
-export type ToneDefinition = {
-  frequency: number;
-  durationMs: number;
-  gain: number;
-  waveform: OscillatorType;
-  delayMs?: number;
-  attackMs?: number;
-  releaseMs?: number;
-};
+export type SoundContextType<
+  TEvent extends string = SoundEvent,
+  TMusicTrack extends string = SoundMusicTrack,
+> = BaseSoundContextType<TEvent, TMusicTrack>;
+
+export type ToneDefinition = BaseToneDefinition;
+
+export type SoundEventMap<TEvent extends string> = BaseSoundEventMap<TEvent>;
+export type SoundMusicMap<TMusicTrack extends string = SoundMusicTrack> =
+  BaseMusicTrackMap<TMusicTrack>;
+
+export type SoundStorageKeys = BaseSoundStorageKeys;
+export type SoundChannelDefinition = BaseAudioChannelDefinition;
+export type SoundChannelState = BaseAudioChannelState;
+
+export type SoundProviderProps<
+  TEvent extends string = SoundEvent,
+  TMusicTrack extends string = SoundMusicTrack,
+> = SoundTemplateProviderProps<TEvent, TMusicTrack>;

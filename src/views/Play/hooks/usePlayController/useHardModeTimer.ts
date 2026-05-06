@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { HARD_MODE_FINAL_STRETCH_SECONDS } from "./constants";
 import type { UseHardModeTimerParams, UseHardModeTimerResult } from "./types";
 import {
@@ -7,12 +8,10 @@ import {
   getHardModeClockBoostScale,
   getHardModeFinalStretchProgressPercent,
   getInitialHardModeTimerSnapshot,
+  isDocumentVisible,
   isWithinHardModeFinalStretch,
   setHardModeTimerSnapshot,
 } from "./utils";
-
-const isDocumentVisible = (): boolean =>
-  typeof document === "undefined" || document.visibilityState !== "hidden";
 
 export const useHardModeTimer = ({
   sessionId,
@@ -25,6 +24,7 @@ export const useHardModeTimer = ({
   gameOver,
   guessesLength,
   currentLength,
+  lightningAutoStartEnabled = false,
   forceLoss,
   modeId,
 }: UseHardModeTimerParams): UseHardModeTimerResult => {
@@ -142,16 +142,28 @@ export const useHardModeTimer = ({
   }, []);
 
   useEffect(() => {
+    const lightningModeAutoStartEnabled =
+      lightningAutoStartEnabled && modeId === WORDLE_MODE_IDS.LIGHTNING;
+
     if (
       hardModeTimerStarted ||
       !hardModeTimerActive ||
-      (guessesLength === 0 && currentLength === 0)
+      (!lightningModeAutoStartEnabled &&
+        guessesLength === 0 &&
+        currentLength === 0)
     ) {
       return;
     }
 
     setHardModeTimerStarted(true);
-  }, [currentLength, guessesLength, hardModeTimerActive, hardModeTimerStarted]);
+  }, [
+    currentLength,
+    guessesLength,
+    hardModeTimerActive,
+    hardModeTimerStarted,
+    lightningAutoStartEnabled,
+    modeId,
+  ]);
 
   useEffect(() => {
     if (!hardModeTimerRunning) {

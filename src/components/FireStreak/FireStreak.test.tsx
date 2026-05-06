@@ -1,9 +1,17 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@i18n", () => {
   const dictionary: Record<string, string> = {
     "common.streakLabel": "Streak: {{count}}",
+    "common.streakScoreBonusTooltip":
+      "Streak bonus: +{{bonusPercent}}% points on your next win.",
   };
 
   const translate = (
@@ -115,5 +123,56 @@ describe("FireStreak", () => {
     expect(screen.getByText(/0/)).toBeTruthy();
     const label = screen.getByRole("generic", { name: /0/ });
     expect(label.className).toContain("text-neutral-600");
+  });
+
+  it("does not open popup on hover when enabled", async () => {
+    render(<FireStreak streak={4} showScoreBonusPopup />);
+    const label = screen.getByLabelText(
+      i18n.t("common.streakLabel", { count: 4 }),
+    );
+
+    fireEvent.mouseEnter(label);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("tooltip")).toBeNull();
+    });
+  });
+
+  it("toggles score bonus popup on click when enabled", async () => {
+    render(<FireStreak streak={1} showScoreBonusPopup />);
+    const label = screen.getByLabelText(
+      i18n.t("common.streakLabel", { count: 1 }),
+    );
+
+    fireEvent.click(label);
+    await waitFor(() => {
+      expect(
+        screen.getByText("Streak bonus: +30% points on your next win."),
+      ).toBeTruthy();
+    });
+
+    fireEvent.click(label);
+    await waitFor(() => {
+      expect(screen.queryByRole("tooltip")).toBeNull();
+    });
+  });
+
+  it("adds hover styling when popup is enabled", () => {
+    render(<FireStreak streak={2} showScoreBonusPopup />);
+    const label = screen.getByLabelText(
+      i18n.t("common.streakLabel", { count: 2 }),
+    );
+
+    expect(label.className).toContain("hover:bg-amber-500/10");
+  });
+
+  it("prevents text selection and applies horizontal padding", () => {
+    render(<FireStreak streak={2} />);
+    const label = screen.getByRole("generic", {
+      name: i18n.t("common.streakLabel", { count: 2 }),
+    });
+
+    expect(label.className).toContain("select-none");
+    expect(label.className).toContain("px-2");
   });
 });

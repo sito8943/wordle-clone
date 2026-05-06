@@ -5,11 +5,13 @@ export type FeatureFlags = {
   shareButtonEnabled: boolean;
   devConsoleEnabled: boolean;
   soundEnabled: boolean;
+  masterAndMusicChannelsEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
   challengesEnabled: boolean;
   settingsDrawerEnabled: boolean;
   lightningModeEnabled: boolean;
+  lightningStartCueAndAutoTimerEnabled: boolean;
   timerAutoPauseEnabled: boolean;
   difficultyEasyEnabled: boolean;
   difficultyNormalEnabled: boolean;

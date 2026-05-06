@@ -23,6 +23,10 @@ const TutorialPromptDialog = lazy(
   () =>
     import("../../components/Dialogs/TutorialPromptDialog/TutorialPromptDialog"),
 );
+const GameplayTourDialog = lazy(
+  () =>
+    import("../../components/Dialogs/GameplayTourDialog/GameplayTourDialog"),
+);
 const WordListDialog = lazy(
   () => import("../../components/Dialogs/WordListDialog/WordListDialog"),
 );
@@ -66,10 +70,19 @@ const DialogsSection = (): JSX.Element => {
   const gameMode = t(`play.gameModes.${controller.activeModeId}`);
   const {
     message,
+    showLightningModeStartCue,
     showResumeDialog,
     showDictionaryChecksumDialog,
     showRefreshDialog,
     showTutorialPromptDialog,
+    showGameplayTourDialog,
+    gameplayTourSteps,
+    gameplayTourStepIndex,
+    canGoToPreviousGameplayTourStep,
+    closeGameplayTour,
+    goToNextGameplayTourStep,
+    goToPreviousGameplayTourStep,
+    openModeHelpFromGameplayTour,
     showWordsDialog,
     showDailyMeaningDialog,
     isLoadingDailyMeaning,
@@ -200,6 +213,11 @@ const DialogsSection = (): JSX.Element => {
     showTutorialPromptDialog,
     DIALOG_QUEUE_PRIORITIES.PLAY,
   );
+  const gameplayTourDialogVisible = useDialogQueueItem(
+    PLAY_DIALOG_IDS.GAMEPLAY_TOUR,
+    showGameplayTourDialog,
+    DIALOG_QUEUE_PRIORITIES.PLAY,
+  );
 
   const changeDifficulty = () => {
     if (!settingsDrawerEnabled) {
@@ -218,6 +236,7 @@ const DialogsSection = (): JSX.Element => {
         showDictionaryChecksumDialog,
         showRefreshDialog,
         showTutorialPromptDialog,
+        showGameplayTourDialog,
         showWordsDialog,
         showDailyMeaningDialog,
         showDeveloperConsoleDialog,
@@ -247,6 +266,20 @@ const DialogsSection = (): JSX.Element => {
             {message}
           </div>
         )}
+        {showLightningModeStartCue ? (
+          <div
+            role="status"
+            aria-live="assertive"
+            className="pointer-events-none fixed left-1/2 top-20 z-20 -translate-x-1/2 rounded-xl border border-amber-200/70 bg-amber-100/95 px-5 py-3 text-center shadow-xl dark:border-amber-500/50 dark:bg-amber-900/85"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-amber-950 dark:text-amber-100">
+              {gameMode}
+            </p>
+            <p className="mt-1 text-base font-extrabold uppercase tracking-[0.12em] text-amber-900 dark:text-amber-50">
+              {t("play.lightningStartCue.begin")}
+            </p>
+          </div>
+        ) : null}
         <Suspense fallback={null}>
           {resumeDialogVisible ? (
             <SessionResumeDialog
@@ -386,6 +419,18 @@ const DialogsSection = (): JSX.Element => {
               gameMode={gameMode}
               onClose={declineTutorialPrompt}
               onConfirm={acceptTutorialPrompt}
+            />
+          ) : null}
+          {gameplayTourDialogVisible ? (
+            <GameplayTourDialog
+              visible
+              steps={gameplayTourSteps}
+              stepIndex={gameplayTourStepIndex}
+              canGoPrevious={canGoToPreviousGameplayTourStep}
+              onClose={closeGameplayTour}
+              onNextStep={goToNextGameplayTourStep}
+              onPreviousStep={goToPreviousGameplayTourStep}
+              onOpenHelp={openModeHelpFromGameplayTour}
             />
           ) : null}
         </Suspense>

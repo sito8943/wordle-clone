@@ -40,6 +40,7 @@ import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
+import { useTourController } from "../useTourController";
 import { getHintsUsedForGame } from "../useHintController/utils";
 import type {
   ComboFlash,
@@ -50,6 +51,8 @@ import {
   canShareVictoryBoardFile,
   captureVictoryBoardImageFile,
   getGuessWords,
+  isMusicChannelEnabled,
+  resolveModeMusicTrack,
   getTileStatusSoundEvent,
   getVictoryBoardShareCaptureElement,
   hasSeenTutorialPromptForMode,
@@ -62,6 +65,9 @@ import { i18n } from "@i18n";
 import {
   CHALLENGE_COMPLETION_ALERT_VISIBILITY_DURATION_MS,
   COMBO_FLASH_VISIBILITY_DURATION_MS,
+  LIGHTNING_MODE_MUSIC_PREROLL_MS,
+  MUSIC_CHANNEL_ID,
+  MUSIC_TRANSITION_FADE_MS,
 } from "./constants";
 import {
   TILE_STATUS_SOUND_INITIAL_DELAY_MS,
@@ -92,9 +98,14 @@ export default function usePlayController(
     updatePlayerManualTileSelection,
     markTutorialPromptSeenForMode,
   } = usePlayer();
-  const { hintsEnabled, challengesEnabled, timerAutoPauseEnabled } =
-    useFeatureFlags();
-  const { playSound } = useSound();
+  const {
+    hintsEnabled,
+    challengesEnabled,
+    timerAutoPauseEnabled,
+    masterAndMusicChannelsEnabled,
+    lightningStartCueAndAutoTimerEnabled,
+  } = useFeatureFlags();
+  const { playSound, playMusic, stopMusic, channels } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
   const modeId = useMemo(
     () => resolveWordleModeId(options.modeId),
@@ -113,6 +124,16 @@ export default function usePlayController(
     () => resolveRoundConfigForMode(activeModeId),
     [activeModeId],
   );
+  const {
+    showGameplayTourDialog,
+    steps: gameplayTourSteps,
+    stepIndex: gameplayTourStepIndex,
+    canGoPrevious: canGoToPreviousGameplayTourStep,
+    openTour: openGameplayTour,
+    closeTour: closeGameplayTour,
+    goToNextStep: goToNextGameplayTourStep,
+    goToPreviousStep: goToPreviousGameplayTourStep,
+  } = useTourController({ modeId: activeModeId });
 
   const wordle = useWordle({
     allowUnknownWords:
@@ -139,6 +160,7 @@ export default function usePlayController(
     gameOver,
     refresh,
     forceLoss,
+    handleKey: handleWordleKey,
     showResumeDialog,
     showDictionaryChecksumDialog,
     acknowledgeDictionaryChecksumChange,
@@ -181,6 +203,16 @@ export default function usePlayController(
   const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
   const hardModeEnabled = lightningModeActive || player.difficulty === "insane";
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
+  const modeMusicTrack = useMemo(
+    () => resolveModeMusicTrack(activeModeId),
+    [activeModeId],
+  );
+  const musicChannelEnabled = useMemo(
+    () => isMusicChannelEnabled(channels, MUSIC_CHANNEL_ID),
+    [channels],
+  );
+  const musicPlaybackEnabled =
+    masterAndMusicChannelsEnabled && musicChannelEnabled;
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
@@ -203,6 +235,8 @@ export default function usePlayController(
   const [showDeveloperConsoleDialog, setShowDeveloperConsoleDialog] =
     useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showLightningModeStartCue, setShowLightningModeStartCue] =
+    useState(false);
   const [showTutorialPromptDialog, setShowTutorialPromptDialog] = useState(
     () =>
       !hasSeenTutorialPromptForMode(
@@ -318,10 +352,46 @@ export default function usePlayController(
     gameOver,
     guessesLength: guesses.length,
     currentLength: current.length,
+    lightningAutoStartEnabled: lightningStartCueAndAutoTimerEnabled,
     forceLoss,
     modeId: activeModeId,
   });
   const boardShakePulse = hardModeBoardShakePulse + invalidGuessShakePulse;
+
+  useEffect(() => {
+    if (
+      !lightningStartCueAndAutoTimerEnabled ||
+      !lightningModeActive ||
+      showResumeDialog ||
+      showDictionaryChecksumDialog ||
+      showTutorialPromptDialog ||
+      gameOver ||
+      guesses.length > 0 ||
+      current.length > 0
+    ) {
+      setShowLightningModeStartCue(false);
+      return;
+    }
+
+    setShowLightningModeStartCue(true);
+    const timeoutId = window.setTimeout(() => {
+      setShowLightningModeStartCue(false);
+    }, LIGHTNING_MODE_MUSIC_PREROLL_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    boardVersion,
+    current.length,
+    gameOver,
+    guesses.length,
+    lightningStartCueAndAutoTimerEnabled,
+    lightningModeActive,
+    showDictionaryChecksumDialog,
+    showResumeDialog,
+    showTutorialPromptDialog,
+  ]);
 
   useEffect(() => {
     setDailyModeOutcomeAtEntry(resolveDailyModeOutcomeForToday());
@@ -639,6 +709,38 @@ export default function usePlayController(
       playSound("hint_use");
     }
   }, [consumeHintControllerAction, hintsEnabled, playSound]);
+  const handleKey = useCallback(
+    (key: string) => {
+      if (showLightningModeStartCue) {
+        return;
+      }
+
+      if (typeof handleWordleKey !== "function") {
+        return;
+      }
+
+      handleWordleKey(key);
+    },
+    [handleWordleKey, showLightningModeStartCue],
+  );
+
+  useEffect(() => {
+    if (!musicPlaybackEnabled) {
+      stopMusic(MUSIC_CHANNEL_ID, MUSIC_TRANSITION_FADE_MS);
+      return;
+    }
+
+    playMusic(modeMusicTrack, {
+      channelId: MUSIC_CHANNEL_ID,
+      fadeMs: MUSIC_TRANSITION_FADE_MS,
+    });
+  }, [modeMusicTrack, musicPlaybackEnabled, playMusic, stopMusic]);
+
+  useEffect(() => {
+    return () => {
+      stopMusic(MUSIC_CHANNEL_ID, MUSIC_TRANSITION_FADE_MS);
+    };
+  }, [stopMusic]);
 
   useEffect(() => {
     if (!didMountRoundStartSoundRef.current) {
@@ -914,8 +1016,13 @@ export default function usePlayController(
     void markTutorialPromptSeenForMode(activeModeId);
     replacePlayer({ declinedTutorial: false });
     setShowTutorialPromptDialog(false);
-    navigate(getHelpRoute(activeModeId));
-  }, [activeModeId, markTutorialPromptSeenForMode, navigate, replacePlayer]);
+    openGameplayTour();
+  }, [
+    activeModeId,
+    markTutorialPromptSeenForMode,
+    openGameplayTour,
+    replacePlayer,
+  ]);
 
   const declineTutorialPrompt = useCallback(() => {
     markTutorialPromptAsSeenForMode(activeModeId);
@@ -923,6 +1030,11 @@ export default function usePlayController(
     setShowTutorialPromptDialog(false);
     replacePlayer({ declinedTutorial: true });
   }, [activeModeId, markTutorialPromptSeenForMode, replacePlayer]);
+
+  const openModeHelpFromGameplayTour = useCallback(() => {
+    closeGameplayTour();
+    navigate(getHelpRoute(activeModeId));
+  }, [activeModeId, closeGameplayTour, navigate]);
 
   useEffect(() => {
     manualTileSelectionRef.current = player.manualTileSelection === true;
@@ -1378,6 +1490,25 @@ export default function usePlayController(
     gameOver &&
     endOfGameSnapshot !== null &&
     endOfGameDialogDismissed;
+  const hasBlockingPlayDialog =
+    showResumeDialog ||
+    showDictionaryChecksumDialog ||
+    showRefreshDialog ||
+    isDifficultyChangeConfirmationOpen ||
+    showWordsDialog ||
+    showDailyMeaningDialog ||
+    showDeveloperConsoleDialog ||
+    showVictoryDialog ||
+    showDefeatDialog ||
+    showDailyCompletedDialog;
+
+  useEffect(() => {
+    if (!showGameplayTourDialog || !hasBlockingPlayDialog) {
+      return;
+    }
+
+    closeGameplayTour();
+  }, [closeGameplayTour, hasBlockingPlayDialog, showGameplayTourDialog]);
 
   const shareVictoryBoard = useCallback(async () => {
     if (
@@ -1490,11 +1621,21 @@ export default function usePlayController(
 
   return {
     ...wordle,
+    handleKey,
     modeId,
     activeModeId,
     modeEnabled,
     manualTileSelection: player.manualTileSelection === true,
     showTutorialPromptDialog,
+    showGameplayTourDialog,
+    gameplayTourSteps,
+    gameplayTourStepIndex,
+    canGoToPreviousGameplayTourStep,
+    openGameplayTour,
+    closeGameplayTour,
+    goToNextGameplayTourStep,
+    goToPreviousGameplayTourStep,
+    openModeHelpFromGameplayTour,
     acceptTutorialPrompt,
     declineTutorialPrompt,
     goToPlayRoute,
@@ -1584,6 +1725,7 @@ export default function usePlayController(
     dailyModeDeveloperMessage,
     dailyModeDeveloperMessageKind,
     challengeCompletionMessage,
+    showLightningModeStartCue,
     confirmDictionaryChecksumRefresh,
     confirmRefreshBoard,
     cancelRefreshBoard,

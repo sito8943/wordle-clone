@@ -49,7 +49,8 @@ import {
   isEditableKeyboardTarget,
   hasVisibleModalDialog,
   markStartAnimationAsSeen,
-  shouldAnimateKeyboardEntryOnSession,
+  shouldAnimateKeyboardEntryOnBoardLoad,
+  shouldAnimateKeyboardEntryOnNewBoard,
   shouldAnimateOnFirstSessionView,
 } from "./utils";
 
@@ -127,9 +128,33 @@ export default function useWordle(options: UseWordleOptions = {}) {
       ? 1
       : 0,
   );
-  const [keyboardEntryAnimationEnabled] = useState(() =>
-    shouldAnimateKeyboardEntryOnSession(animationsDisabled),
-  );
+  const [keyboardEntryAnimationEnabled, setKeyboardEntryAnimationEnabled] =
+    useState(() =>
+      shouldAnimateKeyboardEntryOnBoardLoad(
+        animationsDisabled,
+        hasInProgressGame(initialGameState),
+      ),
+    );
+  const handleKeyboardEntryAnimationEnd = useCallback(() => {
+    setKeyboardEntryAnimationEnabled(false);
+  }, []);
+  const showKeyboardEntryAnimationForNewBoard = useCallback(() => {
+    setKeyboardEntryAnimationEnabled(
+      shouldAnimateKeyboardEntryOnNewBoard(animationsDisabled),
+    );
+  }, [animationsDisabled]);
+
+  useEffect(() => {
+    if (!animationsDisabled) {
+      return;
+    }
+
+    setKeyboardEntryAnimationEnabled(false);
+  }, [animationsDisabled]);
+
+  const hideKeyboardEntryAnimation = useCallback(() => {
+    setKeyboardEntryAnimationEnabled(false);
+  }, []);
 
   const [gameState, setGameState] = useState(initialGameState);
   const [boardVersion, setBoardVersion] = useState(0);
@@ -749,7 +774,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
     );
     setShowResumeDialog(false);
     resetActiveHints();
-  }, [currentSessionId, resetActiveHints, setGameStateWithPersistence]);
+    hideKeyboardEntryAnimation();
+  }, [
+    currentSessionId,
+    hideKeyboardEntryAnimation,
+    resetActiveHints,
+    setGameStateWithPersistence,
+  ]);
 
   const triggerStartAnimation = useCallback(() => {
     if (animationsDisabled) {
@@ -787,11 +818,13 @@ export default function useWordle(options: UseWordleOptions = {}) {
     resetActiveHints();
     setInvalidGuessShakePulse(0);
     triggerStartAnimation();
+    showKeyboardEntryAnimationForNewBoard();
   }, [
     currentSessionId,
     resetActiveHints,
     resolveNextBoardAnswer,
     setGameStateWithPersistence,
+    showKeyboardEntryAnimationForNewBoard,
     triggerStartAnimation,
   ]);
 
@@ -895,6 +928,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
     startAnimationSeed,
     startAnimationsEnabled: !animationsDisabled,
     keyboardEntryAnimationEnabled,
+    handleKeyboardEntryAnimationEnd,
     boardVersion,
     forceLoss,
     showResumeDialog,

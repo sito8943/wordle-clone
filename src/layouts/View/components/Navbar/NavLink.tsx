@@ -6,6 +6,7 @@ const NavLink = ({
   to,
   label,
   icon,
+  iconClassName,
   ariaLabel,
   extraLabel,
   toneClassName,
@@ -28,8 +29,14 @@ const NavLink = ({
         ].join(" ")
       }
     >
-      {extraLabel && <span className="text-sm sm:inline">{extraLabel}</span>}
-      <FontAwesomeIcon icon={icon} aria-hidden="true" className="text-lg" />
+      {extraLabel && (
+        <span className="inline-flex items-center text-sm">{extraLabel}</span>
+      )}
+      <FontAwesomeIcon
+        icon={icon}
+        aria-hidden="true"
+        className={iconClassName ?? "text-lg"}
+      />
       <span className="hidden text-sm sm:inline">{label}</span>
     </RouterNavLink>
   );

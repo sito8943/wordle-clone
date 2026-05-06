@@ -44,6 +44,8 @@ export const resources = {
         score: "Score",
         streak: "Streak",
         streakLabel: "Streak: {{count}}",
+        streakScoreBonusTooltip:
+          "Streak bonus: +{{bonusPercent}}% points on your next win.",
         loading: "Loading...",
       },
       nav: {
@@ -378,6 +380,8 @@ export const resources = {
           wordListUnavailable: "Word list unavailable.",
           hintAriaLabel: "Hint",
           hintButton: "Hint ({{count}})",
+          tourAriaLabel: "Tutorial",
+          tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Daily word meaning",
           dailyMeaningButton: "Meaning",
           helpAriaLabel: "Help",
@@ -394,6 +398,9 @@ export const resources = {
           loadingWordList: "Loading word list...",
           volumeAriaLabel: "Volume",
         },
+        lightningStartCue: {
+          begin: "Starts now",
+        },
         settingsPanel: {
           title: "Quick settings",
           description:
@@ -404,6 +411,16 @@ export const resources = {
           muteAriaLabel: "Mute",
           unmuteAriaLabel: "Unmute",
           volumeSliderAriaLabel: "Volume level",
+          enabledLabel: "Enabled",
+          channelEnabledAriaLabel: "Enable {{channel}} channel",
+          muteChannelAriaLabel: "Mute {{channel}}",
+          unmuteChannelAriaLabel: "Unmute {{channel}}",
+          channelVolumeSliderAriaLabel: "{{channel}} volume level",
+          channels: {
+            master: "Master",
+            music: "Music",
+            sfx: "Sound effects",
+          },
         },
         dailyMeaningDialog: {
           title: "Daily word meaning",
@@ -431,9 +448,64 @@ export const resources = {
         },
         tutorialPromptDialog: {
           title: "Welcome to {{gameMode}}",
-          description: "We can open the Help page so you can review the rules.",
-          confirm: "Yes, open Help",
+          description:
+            "We can guide you with a quick tour of the most important controls.",
+          confirm: "Yes, start tutorial",
           cancel: "No, skip tutorial",
+        },
+        gameplayTour: {
+          progress: "{{current}} / {{total}}",
+          fallbackNotice:
+            "This control is not visible right now, but the explanation still applies.",
+          actions: {
+            help: "Open Help",
+            skip: "Skip",
+            back: "Back",
+            next: "Next",
+            finish: "Finish",
+          },
+          steps: {
+            board: {
+              title: "Board",
+              description:
+                "This is your board. Guess the hidden word before you run out of rows.",
+            },
+            keyboard: {
+              title: "Keyboard",
+              description:
+                "Type letters here and press Enter to submit each guess.",
+            },
+            streak: {
+              title: "Streak",
+              description:
+                "Here you can track your win streak. A higher streak increases your next-win score bonus.",
+            },
+            hint: {
+              title: "Hints",
+              description:
+                "Use this button for a yellow hint. Availability depends on mode and difficulty.",
+            },
+            challenges: {
+              title: "Challenges",
+              description:
+                "Open daily challenges here to check progress and complete bonus objectives.",
+            },
+            refresh: {
+              title: "Refresh round",
+              description:
+                "Refresh starts a new round. If you already have progress, you'll be asked to confirm.",
+            },
+            timer: {
+              title: "Lightning timer",
+              description:
+                "In Lightning mode you have limited time. If it reaches zero, the round ends.",
+            },
+            dailyMeaning: {
+              title: "Daily meaning",
+              description:
+                "In Daily mode you can open the meaning of today's word from here.",
+            },
+          },
         },
         sessionResumeDialog: {
           title: "Resume previous game?",
@@ -663,6 +735,8 @@ export const resources = {
         score: "Puntuación",
         streak: "Racha",
         streakLabel: "Racha: {{count}}",
+        streakScoreBonusTooltip:
+          "Bonus de racha: +{{bonusPercent}}% de puntos en tu próxima victoria.",
         loading: "Cargando...",
       },
       nav: {
@@ -1000,6 +1074,8 @@ export const resources = {
           wordListUnavailable: "La lista de palabras no está disponible.",
           hintAriaLabel: "Pista",
           hintButton: "Pista ({{count}})",
+          tourAriaLabel: "Tutorial",
+          tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Significado de la palabra del día",
           dailyMeaningButton: "Significado",
           helpAriaLabel: "Ayuda",
@@ -1016,6 +1092,9 @@ export const resources = {
           loadingWordList: "Cargando lista de palabras...",
           volumeAriaLabel: "Volumen",
         },
+        lightningStartCue: {
+          begin: "Comienza",
+        },
         settingsPanel: {
           title: "Ajustes rápidos",
           description:
@@ -1026,6 +1105,16 @@ export const resources = {
           muteAriaLabel: "Silenciar",
           unmuteAriaLabel: "Activar sonido",
           volumeSliderAriaLabel: "Nivel de volumen",
+          enabledLabel: "Activo",
+          channelEnabledAriaLabel: "Activar canal {{channel}}",
+          muteChannelAriaLabel: "Silenciar {{channel}}",
+          unmuteChannelAriaLabel: "Activar {{channel}}",
+          channelVolumeSliderAriaLabel: "Nivel de volumen de {{channel}}",
+          channels: {
+            master: "General",
+            music: "Música",
+            sfx: "Efectos",
+          },
         },
         dailyMeaningDialog: {
           title: "Significado de la palabra del día",
@@ -1054,9 +1143,63 @@ export const resources = {
         tutorialPromptDialog: {
           title: "Bienvenido a {{gameMode}}",
           description:
-            "Podemos abrir la ayuda para que repases las reglas del juego.",
-          confirm: "Sí, abrir ayuda",
+            "Podemos guiarte con un tour rápido de los controles más importantes.",
+          confirm: "Sí, iniciar tutorial",
           cancel: "No, omitir tutorial",
+        },
+        gameplayTour: {
+          progress: "{{current}} / {{total}}",
+          fallbackNotice:
+            "Este control no está visible ahora mismo, pero la explicación sigue aplicando.",
+          actions: {
+            help: "Abrir ayuda",
+            skip: "Omitir",
+            back: "Atrás",
+            next: "Siguiente",
+            finish: "Finalizar",
+          },
+          steps: {
+            board: {
+              title: "Tablero",
+              description:
+                "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas.",
+            },
+            keyboard: {
+              title: "Teclado",
+              description:
+                "Escribe letras aquí y pulsa Enter para enviar cada intento.",
+            },
+            streak: {
+              title: "Racha",
+              description:
+                "Aquí puedes ver tu racha de victorias. Cuanto más alta sea, mayor será el bonus de puntos en tu próxima victoria.",
+            },
+            hint: {
+              title: "Pistas",
+              description:
+                "Usa este botón para pedir una pista amarilla. La disponibilidad depende del modo y la dificultad.",
+            },
+            challenges: {
+              title: "Retos",
+              description:
+                "Abre aquí los retos diarios para revisar tu progreso y completar objetivos con bonus.",
+            },
+            refresh: {
+              title: "Actualizar ronda",
+              description:
+                "Actualizar inicia una ronda nueva. Si ya tienes progreso, te pediremos confirmación.",
+            },
+            timer: {
+              title: "Temporizador relámpago",
+              description:
+                "En el modo Relámpago tienes tiempo limitado. Si llega a cero, la ronda termina.",
+            },
+            dailyMeaning: {
+              title: "Significado diario",
+              description:
+                "En modo Diario puedes abrir desde aquí el significado de la palabra de hoy.",
+            },
+          },
         },
         sessionResumeDialog: {
           title: "¿Reanudar partida anterior?",

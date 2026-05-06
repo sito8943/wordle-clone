@@ -188,6 +188,10 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:scoreboard:cache` and `wordle:scoreboard:pending`: local scoreboard caches segmented by `language` and `modeId` (`classic`, `lightning`, `daily`).
 - `wordle:scoreboard:profile-identity`: adopted remote profile identity (`clientRecordId`) used after recovery or remote profile creation.
 - `wordle:sound-enabled`: user preference toggle for enabling/disabling gameplay sounds.
+- `wordle:sound-volume`: persisted master channel volume for audio output.
+- `wordle:sound-muted`: persisted master channel mute toggle for audio output.
+- `wordle:channel:music:enabled`, `wordle:channel:music:volume`, `wordle:channel:music:muted`: persisted music channel controls used by the sound provider.
+- `wordle:channel:sfx:enabled`, `wordle:channel:sfx:volume`, `wordle:channel:sfx:muted`: persisted SFX channel controls used by the sound provider.
 - `wordle:app-version`: last frontend app version seen by this browser. On startup, if `env.appVersion` is newer than this value, the app clears both `localStorage` and `sessionStorage` before providers mount, but preserves the normalized `player.code` (recovery code) by restoring a minimal `player` payload (`name: "Player"` + `code`) after the reset; then it stores the current version.
 - `wordle:app-version:previous`: temporary previous version marker used to keep the version-update dialog context after the storage reset.
 - additional feature keys for theme/animations/scoreboard caches.

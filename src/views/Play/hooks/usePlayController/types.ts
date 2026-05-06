@@ -56,6 +56,7 @@ export type UseHardModeTimerParams = {
   gameOver: boolean;
   guessesLength: number;
   currentLength: number;
+  lightningAutoStartEnabled?: boolean;
   forceLoss: () => void;
   modeId: WordleModeId;
 };

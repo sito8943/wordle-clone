@@ -168,12 +168,14 @@ Feature flags (all default `true` unless noted):
 - `VITE_SHARE_BUTTON_ENABLED`: enables the victory share action.
 - `VITE_DEV_CONSOLE_ENABLED`: enables the developer console (only in dev mode at runtime).
 - `VITE_SOUND_ENABLED`: enables procedural sound effects.
+- `VITE_MASTER_AND_MUSIC_CHANNELS_ENABLED` (default `false`): enables the `master` and `music` channels. When `false`, the app runs with SFX-only channel controls and disables music playback.
 - `VITE_HINTS_ENABLED`: enables the hint system.
 - `VITE_HELP_BUTTON_ENABLED`: enables the help button.
 - `VITE_CHALLENGES_ENABLED`: enables daily challenges.
 - `VITE_SETTINGS_DRAWER_ENABLED`: enables the in-game settings drawer.
 - `VITE_PLAY_OFFLINE_STATE_ENABLED` (default `false`): shows the offline state in Play view.
 - `VITE_LIGHTNING_MODE_ENABLED`: enables the lightning/insane timer mode.
+- `VITE_LIGHTNING_START_CUE_AND_AUTO_TIMER_ENABLED` (default `false`): enables the lightning start cue (`Begin`) and starts the lightning timer immediately on screen entry. When `false`, cue is hidden and timer starts on first input.
 - `VITE_TIMER_AUTO_PAUSE_ENABLED` (default `false`): pauses the hard-mode timer when Play dialogs are open or the browser tab is hidden.
 - `VITE_DIFFICULTY_EASY_ENABLED` / `VITE_DIFFICULTY_NORMAL_ENABLED` / `VITE_DIFFICULTY_HARD_ENABLED` / `VITE_DIFFICULTY_INSANE_ENABLED`: individual difficulty toggles.
 

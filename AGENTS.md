@@ -7,11 +7,22 @@ This file defines how agents should work inside this repository.
 - This guide applies to the full project root.
 - Architecture details live in `ARCHITECTURE.md` and are the source of truth.
 
+## Mandatory Architecture Gate (Blocking)
+
+- Before any code change, read and apply `ARCHITECTURE_RULES.md`.
+- If a requested change conflicts with `ARCHITECTURE_RULES.md`, stop and report the conflict before editing files.
+- Do not proceed with an architecture exception unless the user explicitly approves it.
+- Every final response must include:
+- Files changed.
+- Which architecture rules were applied.
+- Any exception taken and why.
+
 ## Non-Negotiable Rules
 
 - Keep business rules in `src/domain/wordle/*`; avoid embedding game logic in views.
 - Keep orchestration in controller hooks (`src/hooks/useHomeController`, `src/hooks/useWordle`, `src/hooks/useProfileController`).
-- Keep UI components presentational when possible (`src/components/*`).
+- Shared UI components in `src/components/*` should stay presentational when possible.
+- Feature/view components may contain UI orchestration logic and can bind directly to controllers/providers when it improves readability.
 - Keep type declarations in `types.ts` files for each module/folder.
 - Do not declare reusable module-level `type`/`interface` blocks inside implementation files when a `types.ts` exists.
 - Do not bypass providers:
@@ -27,8 +38,8 @@ This file defines how agents should work inside this repository.
 2. Locate the owning layer first:
 
 - Domain/state logic -> `src/domain/wordle/*`
-- UI flow + side effects -> controller hooks
-- Pure rendering -> `src/views/*` or `src/components/*`
+- UI flow + side effects -> controller hooks and/or feature/view components when it improves clarity
+- Pure rendering -> `src/components/*` (especially shared components)
 
 3. Implement the smallest valid change.
 4. Run targeted tests first, then broader validation if needed.

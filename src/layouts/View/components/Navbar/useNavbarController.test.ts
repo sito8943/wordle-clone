@@ -4,6 +4,7 @@ import { env } from "@config";
 import { getHelpRoute, getModeRoute, ROUTES } from "@config/routes";
 import {
   CURRENT_WORDLE_MODE_STORAGE_KEY,
+  writeDailyModeOutcomeForDate,
   WORDLE_MODE_IDS,
 } from "@domain/wordle";
 
@@ -169,6 +170,47 @@ describe("useNavbarController", () => {
     const { result } = renderHook(() => useNavbarController());
 
     expect(result.current.playRoute).toBe(getModeRoute("lightning"));
+  });
+
+  it("keeps Daily as Play route when daily is not resolved yet", () => {
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.DAILY,
+    );
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.playRoute).toBe(getModeRoute("daily"));
+  });
+
+  it("uses game modes route when stored mode is daily and today is already resolved for the current player", () => {
+    mockPlayer.code = "AB12";
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.DAILY,
+    );
+    writeDailyModeOutcomeForDate({
+      outcome: "won",
+      playerCode: mockPlayer.code,
+    });
+
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.playRoute).toBe(ROUTES.PLAY);
+  });
+
+  it("uses game modes route when stored mode is daily and today is resolved in legacy daily status", () => {
+    mockPlayer.code = "AB12";
+    localStorage.setItem(
+      CURRENT_WORDLE_MODE_STORAGE_KEY,
+      WORDLE_MODE_IDS.DAILY,
+    );
+    writeDailyModeOutcomeForDate({
+      outcome: "lost",
+    });
+
+    const { result } = renderHook(() => useNavbarController());
+
+    expect(result.current.playRoute).toBe(ROUTES.PLAY);
   });
 
   it("prioritizes active mode route over stale stored mode", () => {

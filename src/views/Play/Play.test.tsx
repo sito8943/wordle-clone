@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
+import { ROUTES } from "@config/routes";
 import { CURRENT_WORDLE_MODE_STORAGE_KEY } from "@domain/wordle";
 import Play from "./Play";
 
@@ -99,7 +100,7 @@ describe("Play", () => {
     expect(screen.getByTestId("play-mode-gate-placeholder")).toBeTruthy();
     expect(screen.queryByTestId("play-provider")).toBeNull();
     expect(screen.queryByText("PlayContent Stub")).toBeNull();
-    expect(screen.getByRole("link").getAttribute("href")).toBe("/clasico");
+    expect(screen.getByRole("link").getAttribute("href")).toBe(ROUTES.CLASSIC);
     expect(localStorage.getItem(CURRENT_WORDLE_MODE_STORAGE_KEY)).toBeNull();
   });
 });

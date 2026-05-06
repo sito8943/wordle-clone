@@ -23,6 +23,9 @@ import usePlayController from "./usePlayController";
 import {
   COMBO_FLASH_VISIBILITY_DURATION_MS,
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
+  LIGHTNING_MODE_MUSIC_PREROLL_MS,
+  MUSIC_CHANNEL_ID,
+  MUSIC_TRANSITION_FADE_MS,
   TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
 } from "./constants";
 
@@ -34,6 +37,44 @@ const mockUseHardModeTimer = vi.fn();
 const mockUseSound = vi.fn();
 const mockNavigate = vi.fn();
 const defaultTimerAutoPauseEnabled = env.timerAutoPauseEnabled;
+const defaultMasterAndMusicChannelsEnabled = env.masterAndMusicChannelsEnabled;
+const defaultLightningStartCueAndAutoTimerEnabled =
+  env.lightningStartCueAndAutoTimerEnabled;
+
+const defaultMockSoundChannels = [
+  {
+    id: "master",
+    label: "Master",
+    kind: "master",
+    enabled: true,
+    volume: 100,
+    muted: false,
+  },
+  {
+    id: "music",
+    label: "Music",
+    kind: "music",
+    enabled: true,
+    volume: 80,
+    muted: false,
+  },
+  {
+    id: "sfx",
+    label: "Sound Effects",
+    kind: "sfx",
+    enabled: true,
+    volume: 100,
+    muted: false,
+  },
+] as const;
+
+const createMockSoundValue = (overrides: Record<string, unknown> = {}) => ({
+  playSound: vi.fn(),
+  playMusic: vi.fn(),
+  stopMusic: vi.fn(),
+  channels: defaultMockSoundChannels,
+  ...overrides,
+});
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -78,6 +119,8 @@ describe("usePlayController", () => {
     mockNavigate.mockClear();
     window.sessionStorage.clear();
     window.localStorage.clear();
+    env.masterAndMusicChannelsEnabled = true;
+    env.lightningStartCueAndAutoTimerEnabled = true;
     document.body.innerHTML = "";
     originalNavigatorShare = navigator.share;
     originalNavigatorCanShare = navigator.canShare;
@@ -93,6 +136,7 @@ describe("usePlayController", () => {
       gameOver: false,
       refresh: vi.fn(),
       forceLoss: vi.fn(),
+      handleKey: vi.fn(),
       showResumeDialog: false,
       showDictionaryChecksumDialog: false,
       acknowledgeDictionaryChecksumChange: vi.fn(),
@@ -176,9 +220,7 @@ describe("usePlayController", () => {
       boardShakePulse: 0,
       resetHardModeTimer: vi.fn(),
     });
-    mockUseSound.mockReturnValue({
-      playSound: vi.fn(),
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue());
   });
 
   afterEach(() => {
@@ -197,6 +239,9 @@ describe("usePlayController", () => {
       writable: true,
     });
     env.timerAutoPauseEnabled = defaultTimerAutoPauseEnabled;
+    env.masterAndMusicChannelsEnabled = defaultMasterAndMusicChannelsEnabled;
+    env.lightningStartCueAndAutoTimerEnabled =
+      defaultLightningStartCueAndAutoTimerEnabled;
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -768,6 +813,24 @@ describe("usePlayController", () => {
     expect(result.current.showTutorialPromptDialog).toBe(false);
   });
 
+  it("shows classic tutorial when profile seen modes do not include classic", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        ...mockUsePlayer().player,
+        declinedTutorial: false,
+        tutorialPromptSeenModes: {
+          lightning: true,
+          daily: true,
+        },
+      },
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.showTutorialPromptDialog).toBe(true);
+  });
+
   it("shows lightning tutorial when only classic was seen before", () => {
     window.localStorage.setItem(
       TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
@@ -845,7 +908,7 @@ describe("usePlayController", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("navigates to help when the player accepts the tutorial prompt", () => {
+  it("opens gameplay tour when the player accepts the tutorial prompt", () => {
     const replacePlayer = vi.fn();
     const markTutorialPromptSeenForMode = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
@@ -872,6 +935,7 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(result.current.showGameplayTourDialog).toBe(true);
     expect(
       JSON.parse(
         window.localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY) ??
@@ -879,11 +943,11 @@ describe("usePlayController", () => {
       ),
     ).toMatchObject({ classic: true });
     expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("classic");
-    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("classic"));
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
   });
 
-  it("navigates to mode-specific help for lightning tutorial acceptance", () => {
+  it("opens mode-specific gameplay tour for lightning tutorial acceptance", () => {
     const replacePlayer = vi.fn();
     const markTutorialPromptSeenForMode = vi.fn().mockResolvedValue(undefined);
     mockUsePlayer.mockReturnValue({
@@ -912,6 +976,7 @@ describe("usePlayController", () => {
     });
 
     expect(result.current.showTutorialPromptDialog).toBe(false);
+    expect(result.current.showGameplayTourDialog).toBe(true);
     expect(
       JSON.parse(
         window.localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY) ??
@@ -919,8 +984,25 @@ describe("usePlayController", () => {
       ),
     ).toMatchObject({ lightning: true });
     expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("lightning");
-    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("lightning"));
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
+  });
+
+  it("navigates to mode-specific help from the gameplay tour", () => {
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    act(() => {
+      result.current.acceptTutorialPrompt();
+    });
+
+    act(() => {
+      result.current.openModeHelpFromGameplayTour();
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith(getHelpRoute("lightning"));
+    expect(result.current.showGameplayTourDialog).toBe(false);
   });
 
   it("updates the manual tile selection preference from quick settings", () => {
@@ -1326,9 +1408,7 @@ describe("usePlayController", () => {
 
   it("plays line and tile-status sounds when a new guess is added", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
 
     const { rerender } = renderHook(() => usePlayController());
     playSound.mockClear();
@@ -1362,11 +1442,192 @@ describe("usePlayController", () => {
     });
   });
 
+  it("plays mode music on mount and stops it on unmount", () => {
+    const playMusic = vi.fn();
+    const stopMusic = vi.fn();
+    mockUseSound.mockReturnValue(
+      createMockSoundValue({
+        playMusic,
+        stopMusic,
+      }),
+    );
+
+    const { unmount } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(playMusic).toHaveBeenCalledWith("lightning", {
+      channelId: MUSIC_CHANNEL_ID,
+      fadeMs: MUSIC_TRANSITION_FADE_MS,
+    });
+
+    unmount();
+
+    expect(stopMusic).toHaveBeenCalledWith(
+      MUSIC_CHANNEL_ID,
+      MUSIC_TRANSITION_FADE_MS,
+    );
+  });
+
+  it("does not play mode music when music channel is disabled", () => {
+    const playMusic = vi.fn();
+    const stopMusic = vi.fn();
+
+    mockUseSound.mockReturnValue(
+      createMockSoundValue({
+        playMusic,
+        stopMusic,
+        channels: defaultMockSoundChannels.map((channel) =>
+          channel.id === MUSIC_CHANNEL_ID
+            ? { ...channel, enabled: false }
+            : channel,
+        ),
+      }),
+    );
+
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }));
+
+    expect(playMusic).not.toHaveBeenCalled();
+    expect(stopMusic).toHaveBeenCalledWith(
+      MUSIC_CHANNEL_ID,
+      MUSIC_TRANSITION_FADE_MS,
+    );
+  });
+
+  it("does not play mode music when master/music channels feature flag is disabled", () => {
+    env.masterAndMusicChannelsEnabled = false;
+    const playMusic = vi.fn();
+    const stopMusic = vi.fn();
+    mockUseSound.mockReturnValue(
+      createMockSoundValue({
+        playMusic,
+        stopMusic,
+      }),
+    );
+
+    renderHook(() => usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }));
+
+    expect(playMusic).not.toHaveBeenCalled();
+    expect(stopMusic).toHaveBeenCalledWith(
+      MUSIC_CHANNEL_ID,
+      MUSIC_TRANSITION_FADE_MS,
+    );
+  });
+
+  it("shows lightning start cue during preroll and hides it after timeout", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showLightningModeStartCue).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(LIGHTNING_MODE_MUSIC_PREROLL_MS);
+    });
+
+    expect(result.current.showLightningModeStartCue).toBe(false);
+  });
+
+  it("keeps lightning start cue visible during preroll even when timer already started", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    mockUseHardModeTimer.mockReturnValue({
+      showHardModeTimer: true,
+      showHardModeFinalStretchBar: false,
+      hardModeSecondsLeft: 60,
+      hardModeTimerStarted: true,
+      hardModeTickPulse: 0,
+      hardModeClockBoostScale: 0.1,
+      hardModeFinalStretchProgressPercent: 100,
+      boardShakePulse: 0,
+      resetHardModeTimer: vi.fn(),
+    });
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showLightningModeStartCue).toBe(true);
+  });
+
+  it("hides lightning start cue and disables timer auto-start when feature flag is off", () => {
+    env.lightningStartCueAndAutoTimerEnabled = false;
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    const handleKey = vi.fn();
+    wordleState = {
+      ...wordleState,
+      handleKey,
+      guesses: [],
+      current: "",
+      gameOver: false,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(result.current.showLightningModeStartCue).toBe(false);
+    expect(mockUseHardModeTimer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lightningAutoStartEnabled: false,
+      }),
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(handleKey).toHaveBeenCalledWith("A");
+  });
+
+  it("blocks key input while lightning start cue is visible", () => {
+    window.localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ lightning: true }),
+    );
+    const handleKey = vi.fn();
+    wordleState = {
+      ...wordleState,
+      handleKey,
+      guesses: [],
+      current: "",
+      gameOver: false,
+    };
+
+    const { result } = renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(handleKey).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(LIGHTNING_MODE_MUSIC_PREROLL_MS);
+    });
+
+    act(() => {
+      result.current.handleKey("A");
+    });
+
+    expect(handleKey).toHaveBeenCalledWith("A");
+  });
+
   it("plays round-start sound on mount and when a new board version is loaded", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
 
     const { rerender } = renderHook(() => usePlayController());
 
@@ -1386,9 +1647,7 @@ describe("usePlayController", () => {
 
   it("does not play round-start sound while resume dialog is visible", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
     wordleState = {
       ...wordleState,
       showResumeDialog: true,
@@ -1401,9 +1660,7 @@ describe("usePlayController", () => {
 
   it("plays win and loss sounds only when the game transitions to game over", () => {
     const playSound = vi.fn();
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
 
     const { rerender } = renderHook(() => usePlayController());
 
@@ -1443,9 +1700,7 @@ describe("usePlayController", () => {
   it("plays hint sound when a hint is consumed", () => {
     const playSound = vi.fn();
     const useHint = vi.fn().mockReturnValue(true);
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
     mockUseHintController.mockReturnValue({
       hintsRemaining: 1,
       hintsEnabledForDifficulty: true,
@@ -1467,9 +1722,7 @@ describe("usePlayController", () => {
   it("does not play hint sound when hint usage is rejected", () => {
     const playSound = vi.fn();
     const useHint = vi.fn().mockReturnValue(false);
-    mockUseSound.mockReturnValue({
-      playSound,
-    });
+    mockUseSound.mockReturnValue(createMockSoundValue({ playSound }));
     mockUseHintController.mockReturnValue({
       hintsRemaining: 1,
       hintsEnabledForDifficulty: true,

@@ -11,9 +11,17 @@ import {
   ApiProvider,
   DialogQueueProvider,
   FeatureFlagsProvider,
+  PopupProvider,
   PlayerProvider,
   SoundProvider,
 } from "@providers";
+import {
+  WORDLE_MUSIC_MAP,
+  WORDLE_SFX_ONLY_SOUND_CHANNELS,
+  WORDLE_SOUND_EVENT_MAP,
+  WORDLE_SOUND_STORAGE_KEY_PREFIX,
+  WORDLE_SOUND_STORAGE_KEYS,
+} from "@providers/Sound";
 import { queryClient } from "./queryClient";
 
 resetBrowserStorageOnAppUpdate(env.appVersion);
@@ -42,13 +50,29 @@ void initI18n().then(() => {
         )}
       >
         <QueryClientProvider client={queryClient}>
-          <SoundProvider>
+          <SoundProvider
+            featureEnabled={env.soundEnabled}
+            eventMap={WORDLE_SOUND_EVENT_MAP}
+            musicMap={
+              env.masterAndMusicChannelsEnabled ? WORDLE_MUSIC_MAP : undefined
+            }
+            channels={
+              env.masterAndMusicChannelsEnabled
+                ? undefined
+                : WORDLE_SFX_ONLY_SOUND_CHANNELS
+            }
+            includeDefaultChannels={env.masterAndMusicChannelsEnabled}
+            storageKeyPrefix={WORDLE_SOUND_STORAGE_KEY_PREFIX}
+            storageKeys={WORDLE_SOUND_STORAGE_KEYS}
+          >
             <FeatureFlagsProvider>
               <ApiProvider>
                 <PlayerProvider>
-                  <DialogQueueProvider>
-                    <App />
-                  </DialogQueueProvider>
+                  <PopupProvider>
+                    <DialogQueueProvider>
+                      <App />
+                    </DialogQueueProvider>
+                  </PopupProvider>
                 </PlayerProvider>
               </ApiProvider>
             </FeatureFlagsProvider>

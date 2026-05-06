@@ -15,6 +15,7 @@ export const PLAY_DIALOG_IDS = {
   CHALLENGES: "play:challenges",
   DEVELOPER_CONSOLE: "play:developer-console",
   TUTORIAL_PROMPT: "play:tutorial-prompt",
+  GAMEPLAY_TOUR: "play:gameplay-tour",
 } as const;
 export const PLAY_BOARD_SHARE_CAPTURE_ID = "play-board-share-capture";
 export const PLAY_SETTINGS_PANEL_ID = "play-settings-panel";

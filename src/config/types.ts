@@ -12,12 +12,14 @@ export type RuntimeEnv = {
   shareButtonEnabled: boolean;
   devConsoleEnabled: boolean;
   soundEnabled: boolean;
+  masterAndMusicChannelsEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
   challengesEnabled: boolean;
   settingsDrawerEnabled: boolean;
   playOfflineStateEnabled: boolean;
   lightningModeEnabled: boolean;
+  lightningStartCueAndAutoTimerEnabled: boolean;
   timerAutoPauseEnabled: boolean;
   difficultyEasyEnabled: boolean;
   difficultyNormalEnabled: boolean;

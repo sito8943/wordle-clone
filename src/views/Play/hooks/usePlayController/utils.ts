@@ -5,6 +5,7 @@ import {
   WORDLE_MODE_IDS,
   type WordleModeId,
 } from "@domain/wordle";
+import type { SoundChannelState, SoundMusicTrack } from "@providers/Sound";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import {
   END_OF_GAME_DIALOG_SEEN_SESSION_STORAGE_KEY,
@@ -20,6 +21,9 @@ import type {
   HardModeTimerSnapshot,
   VictoryBoardShareCaptureSnapshot,
 } from "./types";
+
+export const isDocumentVisible = (): boolean =>
+  typeof document === "undefined" || document.visibilityState !== "hidden";
 
 const resolveHardModeTimerStorageKey = (modeId: WordleModeId): string =>
   modeId === WORDLE_MODE_IDS.CLASSIC
@@ -77,6 +81,43 @@ export const getTileStatusSoundEvent = (
   }
 
   return null;
+};
+
+export const resolveModeMusicTrack = (
+  modeId: WordleModeId,
+): SoundMusicTrack => {
+  if (modeId === WORDLE_MODE_IDS.LIGHTNING) {
+    return "lightning";
+  }
+
+  if (modeId === WORDLE_MODE_IDS.ZEN) {
+    return "zen";
+  }
+
+  return "classic";
+};
+
+export const isMusicChannelEnabled = (
+  channels: SoundChannelState[] | undefined,
+  musicChannelId: string,
+): boolean => {
+  if (!Array.isArray(channels)) {
+    return true;
+  }
+
+  const channel = channels.find((candidate) => {
+    if (candidate.id === musicChannelId) {
+      return true;
+    }
+
+    return candidate.kind === "music";
+  });
+
+  if (!channel) {
+    return true;
+  }
+
+  return channel.enabled;
 };
 
 export const getGuessWords = (guesses: unknown[]): string[] =>
@@ -261,6 +302,12 @@ export const hasSeenTutorialPromptForMode = (
   }
 
   // Backward compatibility: old versions tracked a single global tutorial flag.
+  // If we already have mode-scoped visibility from the profile, do not infer
+  // Classic as seen from the legacy global flag.
+  if (playerTutorialPromptSeenModes !== undefined) {
+    return false;
+  }
+
   return (
     modeId === WORDLE_MODE_IDS.CLASSIC &&
     typeof legacyDeclinedTutorial === "boolean"

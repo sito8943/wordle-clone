@@ -11,6 +11,7 @@ import {
 import { useApi, usePlayer } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
 import { useSound } from "@providers/Sound";
+import { SOUND_MASTER_CHANNEL_ID } from "@providers/Sound/constants";
 
 import { PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS } from "./constants";
 import { hasActivePersistedGame } from "./utils";
@@ -33,7 +34,14 @@ export default function useProfileController() {
   const { startAnimationsEnabled, toggleAnimationsDisabled } =
     useAnimationsPreference();
   const { themePreference, setThemePreference } = useThemePreference();
-  const { soundEnabled, setSoundEnabled } = useSound();
+  const { channels, setChannelEnabled } = useSound();
+  const masterSoundChannel =
+    channels.find((channel) => channel.kind === "master") ??
+    channels.find((channel) => channel.id === SOUND_MASTER_CHANNEL_ID) ??
+    channels[0];
+  const soundEnabled = masterSoundChannel?.enabled ?? true;
+  const masterSoundChannelId =
+    masterSoundChannel?.id ?? SOUND_MASTER_CHANNEL_ID;
 
   const [editing, setEditing] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
@@ -162,9 +170,9 @@ export default function useProfileController() {
         return;
       }
 
-      setSoundEnabled(enabled);
+      setChannelEnabled(masterSoundChannelId, enabled);
     },
-    [setSoundEnabled, soundEnabled],
+    [masterSoundChannelId, setChannelEnabled, soundEnabled],
   );
 
   const openLanguageDialog = useCallback(() => {

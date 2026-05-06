@@ -9,6 +9,7 @@ import {
 import { FeatureFlagsProvider, useFeatureFlags } from "./FeatureFlags";
 import { PlayerProvider, usePlayer } from "./Player";
 import { SoundProvider, useSound } from "./Sound";
+import { PopupProvider, usePopupPortalTarget } from "./Popup";
 
 export { ApiProvider, useApi };
 export {
@@ -21,3 +22,4 @@ export {
 export { FeatureFlagsProvider, useFeatureFlags };
 export { PlayerProvider, usePlayer };
 export { SoundProvider, useSound };
+export { PopupProvider, usePopupPortalTarget };

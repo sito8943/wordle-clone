@@ -6,8 +6,14 @@ export type NavLinkPropsType = {
   label: string;
   extraLabel?: ReactNode;
   icon: IconProp;
+  iconClassName?: string;
   ariaLabel?: string;
   toneClassName?: string;
+};
+
+export type ScoreboardExtraLabelProps = {
+  currentClientRank: number | null;
+  isCurrentClientRankLoading: boolean;
 };
 
 export type NavbarPropsType = {

@@ -1,25 +1,31 @@
-import { useContext } from "react";
-import { SoundContext } from "./SoundContext";
+import { useMemo } from "react";
+import { useFeatureFlags } from "@providers/FeatureFlags";
 import type { SoundContextType } from "./types";
-
-const fallbackSoundContextValue: SoundContextType = {
-  soundEnabled: true,
-  setSoundEnabled: () => undefined,
-  volume: 100,
-  setVolume: () => undefined,
-  muted: false,
-  setMuted: () => undefined,
-  playSound: () => undefined,
-};
+import { soundTemplate } from "./soundTemplate";
 
 const useSound = (): SoundContextType => {
-  const context = useContext(SoundContext);
+  const sound = soundTemplate.useSound();
+  const { masterAndMusicChannelsEnabled } = useFeatureFlags();
 
-  if (context === undefined) {
-    return fallbackSoundContextValue;
+  const visibleChannels = useMemo(() => {
+    if (masterAndMusicChannelsEnabled) {
+      return sound.channels;
+    }
+
+    return sound.channels.filter(
+      (channel) => channel.kind === "sfx" || channel.id === "sfx",
+    );
+  }, [masterAndMusicChannelsEnabled, sound.channels]);
+
+  if (masterAndMusicChannelsEnabled) {
+    return sound;
   }
 
-  return context;
+  return {
+    ...sound,
+    channels: visibleChannels,
+    getChannels: () => visibleChannels,
+  };
 };
 
 export { useSound };

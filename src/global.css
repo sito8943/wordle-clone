@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+html,
+body {
+  /* Desactiva el rebote/pull-to-refresh en todos los navegadores modernos */
+  overscroll-behavior-y: none;
+
+  /* Evita también el efecto de rebote horizontal si es necesario */
+  overscroll-behavior-x: none;
+}
+
 @font-face {
   font-family: "Roboto Variable";
   font-style: normal;
@@ -152,6 +161,18 @@ h1,
   from {
     opacity: 0;
     transform: translateY(120%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toolbar-enter-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-120%);
   }
 
   to {
@@ -394,6 +415,11 @@ h1,
   animation: keyboard-enter-from-bottom 440ms ease-out 120ms both;
 }
 
+.toolbar-entry-from-top-animation {
+  opacity: 0;
+  animation: toolbar-enter-from-top 440ms ease-out 120ms both;
+}
+
 .tile-entry-animation {
   opacity: 0;
   animation: tile-enter-with-delay 260ms ease-out both;
@@ -506,6 +532,7 @@ h1,
 }
 
 .wordle-animations-disabled .keyboard-entry-animation,
+.wordle-animations-disabled .toolbar-entry-from-top-animation,
 .wordle-animations-disabled .tile-entry-animation {
   opacity: 1 !important;
   transform: none !important;
@@ -630,8 +657,86 @@ h1,
     forwards;
 }
 
+@keyframes popup-enter-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.92);
+  }
+
+  68% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.06);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popup-enter-top {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+
+  68% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.06);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popup-exit-bottom {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+
+@keyframes popup-exit-top {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+}
+
+.popup-enter-bottom {
+  animation: popup-enter-bottom 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.popup-enter-top {
+  animation: popup-enter-top 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.popup-exit-bottom {
+  animation: popup-exit-bottom 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.popup-exit-top {
+  animation: popup-exit-top 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
 .wordle-animations-disabled .scoreboard-date-dropdown-enter,
-.wordle-animations-disabled .scoreboard-date-dropdown-exit {
+.wordle-animations-disabled .scoreboard-date-dropdown-exit,
+.wordle-animations-disabled .popup-enter-bottom,
+.wordle-animations-disabled .popup-enter-top,
+.wordle-animations-disabled .popup-exit-bottom,
+.wordle-animations-disabled .popup-exit-top {
   opacity: 1 !important;
   transform: none !important;
   animation: none !important;
@@ -640,6 +745,7 @@ h1,
 @media (prefers-reduced-motion: reduce) {
   .board-entry-animation,
   .keyboard-entry-animation,
+  .toolbar-entry-from-top-animation,
   .tile-entry-animation,
   .tile-hint-reveal-animation,
   .board-shake-pulse-animation,
@@ -680,6 +786,10 @@ h1,
   .scoreboard-row-entrance,
   .scoreboard-date-dropdown-enter,
   .scoreboard-date-dropdown-exit,
+  .popup-enter-bottom,
+  .popup-enter-top,
+  .popup-exit-bottom,
+  .popup-exit-top,
   .alert-enter,
   .alert-exit {
     animation: none;
