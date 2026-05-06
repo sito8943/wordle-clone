@@ -1,4 +1,4 @@
-import { memo, type JSX } from "react";
+import { type JSX } from "react";
 import { FireStreak, Alert } from "@components";
 import { useTranslation } from "@i18n";
 import { usePlayView } from "@views/Play/providers";
@@ -57,4 +57,4 @@ const Toolbar = (): JSX.Element => {
   );
 };
 
-export default memo(Toolbar);
+export default Toolbar;

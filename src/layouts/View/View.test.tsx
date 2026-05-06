@@ -87,7 +87,7 @@ vi.mock("@providers", async () => {
   };
 });
 
-const renderView = (initialEntry = ROUTES.HOME) =>
+const renderView = (initialEntry: string = ROUTES.HOME) =>
   render(
     <DialogQueueProvider>
       <MemoryRouter initialEntries={[initialEntry]}>
