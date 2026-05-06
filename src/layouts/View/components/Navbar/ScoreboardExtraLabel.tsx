@@ -43,7 +43,7 @@ const ScoreboardExtraLabel = ({
 
   return (
     <>
-      <span className="relative inline-flex h-5 sm:w-10 max-sm:w-5 items-center justify-center overflow-hidden sm:hidden">
+      <span className="relative inline-flex h-5 sm:w-10 max-sm:w-7 items-center justify-center overflow-hidden sm:hidden">
         <span
           data-testid="scoreboard-mobile-rank-label"
           aria-hidden={!rankIsVisible}

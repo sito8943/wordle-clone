@@ -302,6 +302,12 @@ export const hasSeenTutorialPromptForMode = (
   }
 
   // Backward compatibility: old versions tracked a single global tutorial flag.
+  // If we already have mode-scoped visibility from the profile, do not infer
+  // Classic as seen from the legacy global flag.
+  if (playerTutorialPromptSeenModes !== undefined) {
+    return false;
+  }
+
   return (
     modeId === WORDLE_MODE_IDS.CLASSIC &&
     typeof legacyDeclinedTutorial === "boolean"

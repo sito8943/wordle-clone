@@ -814,6 +814,24 @@ describe("usePlayController", () => {
     expect(result.current.showTutorialPromptDialog).toBe(false);
   });
 
+  it("shows classic tutorial when profile seen modes do not include classic", () => {
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      player: {
+        ...mockUsePlayer().player,
+        declinedTutorial: false,
+        tutorialPromptSeenModes: {
+          lightning: true,
+          daily: true,
+        },
+      },
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    expect(result.current.showTutorialPromptDialog).toBe(true);
+  });
+
   it("shows lightning tutorial when only classic was seen before", () => {
     window.localStorage.setItem(
       TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,

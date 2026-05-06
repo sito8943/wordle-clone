@@ -47,7 +47,7 @@ describe("Changelog", () => {
       screen.getByText("No changelog was found for this version."),
     ).toBeTruthy();
     expect(
-      screen.getByRole("link", { name: "Open current version (0.0.21)" }),
+      screen.getByRole("link", { name: "Open current version (0.0.22)" }),
     ).toBeTruthy();
   });
 

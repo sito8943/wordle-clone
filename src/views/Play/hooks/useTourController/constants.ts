@@ -4,7 +4,9 @@ import type { GameplayTourStepMap } from "./types";
 export const TOUR_TARGET_SELECTORS = {
   BOARD: "#board",
   KEYBOARD: '[data-tour="keyboard"]',
+  STREAK_BADGE: '[data-tour="streak-badge"]',
   HINT_BUTTON: '[data-tour="hint-button"]',
+  CHALLENGES_BUTTON: '[data-tour="challenges-button"]',
   REFRESH_BUTTON: '[data-wordle-refresh="true"]',
   HARD_MODE_TIMER: '[data-tour="hard-mode-timer"]',
   DAILY_MEANING_BUTTON: '[data-tour="daily-meaning-button"]',
@@ -25,10 +27,22 @@ export const GAMEPLAY_TOUR_STEPS_BY_MODE: GameplayTourStepMap = {
       descriptionKey: "play.gameplayTour.steps.keyboard.description",
     },
     {
+      id: "streak",
+      selector: TOUR_TARGET_SELECTORS.STREAK_BADGE,
+      titleKey: "play.gameplayTour.steps.streak.title",
+      descriptionKey: "play.gameplayTour.steps.streak.description",
+    },
+    {
       id: "hint",
       selector: TOUR_TARGET_SELECTORS.HINT_BUTTON,
       titleKey: "play.gameplayTour.steps.hint.title",
       descriptionKey: "play.gameplayTour.steps.hint.description",
+    },
+    {
+      id: "challenges",
+      selector: TOUR_TARGET_SELECTORS.CHALLENGES_BUTTON,
+      titleKey: "play.gameplayTour.steps.challenges.title",
+      descriptionKey: "play.gameplayTour.steps.challenges.description",
     },
     {
       id: "refresh",
@@ -49,6 +63,18 @@ export const GAMEPLAY_TOUR_STEPS_BY_MODE: GameplayTourStepMap = {
       selector: TOUR_TARGET_SELECTORS.KEYBOARD,
       titleKey: "play.gameplayTour.steps.keyboard.title",
       descriptionKey: "play.gameplayTour.steps.keyboard.description",
+    },
+    {
+      id: "streak",
+      selector: TOUR_TARGET_SELECTORS.STREAK_BADGE,
+      titleKey: "play.gameplayTour.steps.streak.title",
+      descriptionKey: "play.gameplayTour.steps.streak.description",
+    },
+    {
+      id: "hint",
+      selector: TOUR_TARGET_SELECTORS.HINT_BUTTON,
+      titleKey: "play.gameplayTour.steps.hint.title",
+      descriptionKey: "play.gameplayTour.steps.hint.description",
     },
     {
       id: "timer",
@@ -95,6 +121,12 @@ export const GAMEPLAY_TOUR_STEPS_BY_MODE: GameplayTourStepMap = {
       selector: TOUR_TARGET_SELECTORS.KEYBOARD,
       titleKey: "play.gameplayTour.steps.keyboard.title",
       descriptionKey: "play.gameplayTour.steps.keyboard.description",
+    },
+    {
+      id: "hint",
+      selector: TOUR_TARGET_SELECTORS.HINT_BUTTON,
+      titleKey: "play.gameplayTour.steps.hint.title",
+      descriptionKey: "play.gameplayTour.steps.hint.description",
     },
     {
       id: "daily-meaning",

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-07
+
+### Branch `0.0.22`
+
+- Added a guided in-game tutorial tour with mode-specific steps (board, keyboard, hints, refresh, lightning timer, and daily meaning).
+- Updated the first-run tutorial prompt to launch the guided tour directly, with an in-tour shortcut to open Help.
+- Added an optional Lightning start cue (`VITE_LIGHTNING_START_CUE_AND_AUTO_TIMER_ENABLED`) that can show a "Starts now" overlay and start the timer immediately on round entry.
+- Refined gameplay transitions: keyboard entry animation now plays on fresh boards and stays off when resuming an in-progress game.
+- Introduced a reusable popup system and added a streak-bonus tooltip on the fire streak badge to explain next-win bonus percentage.
+- Expanded audio architecture to use `sito-sound-provider` with typed event/music maps and optional per-mode background music tracks (`classic`, `lightning`, `zen`).
+- Upgraded volume settings to channel-based controls (enable, mute, and volume per channel) with feature-flagged master/music support.
+- Improved navbar behavior after Daily completion so `Play` goes back to mode selection when today's Daily is already resolved.
+- Polished scoreboard/mobile navbar rank label transitions and refreshed toolbar interaction animations.
+
 ## 2026-05-04
 
 ### Branch `0.0.21`

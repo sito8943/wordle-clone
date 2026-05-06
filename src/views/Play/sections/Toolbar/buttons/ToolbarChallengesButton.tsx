@@ -26,6 +26,7 @@ const ToolbarChallengesButton = (): JSX.Element | null => {
   return (
     <Button
       onClick={challenges.openDialog}
+      data-tour="challenges-button"
       aria-label={t("challenges.buttonAriaLabel")}
       variant="ghost"
       color={allChallengesCompleted ? "neutral" : "primary"}

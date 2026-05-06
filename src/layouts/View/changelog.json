@@ -1,4 +1,25 @@
 {
+  "0.0.22": {
+    "releasedAt": "2026-05-07",
+    "language": {
+      "en": [
+        "Added an in-game tutorial tour that highlights key controls by mode (board, keyboard, hints, refresh, lightning timer, and daily meaning).",
+        "Updated the welcome tutorial flow to start this guided tour directly, with an option to open Help from the tour.",
+        "Improved Lightning round pacing with an optional start cue and optional immediate timer start on round entry.",
+        "Expanded sound settings with channel-level controls (enable, mute, and volume per channel), plus support for mode-specific background music.",
+        "Added a streak tooltip that shows the score bonus percentage your current streak gives on the next win.",
+        "Improved Play shortcut behavior after Daily completion: when today's Daily is already resolved, Play returns to mode selection instead of reopening the completed Daily round."
+      ],
+      "es": [
+        "Se añadió un tutorial guiado dentro de la partida que destaca los controles clave por modo (tablero, teclado, pistas, actualizar, temporizador relámpago y significado diario).",
+        "Se actualizó el flujo de bienvenida para iniciar directamente este tutorial guiado, con opción de abrir Ayuda desde el propio tour.",
+        "Se mejoró el ritmo de entrada en Relámpago con una señal opcional de inicio y arranque opcional inmediato del temporizador al entrar en la ronda.",
+        "Se ampliaron los ajustes de sonido con control por canal (activar, silenciar y volumen por canal), además de soporte para música de fondo según el modo.",
+        "Se añadió un tooltip de racha que muestra el porcentaje de bonus de puntos que aporta tu racha actual en la próxima victoria.",
+        "Se mejoró el acceso de Jugar tras completar Diario: cuando el Diario de hoy ya está resuelto, Jugar vuelve a la selección de modos en lugar de reabrir la ronda ya completada."
+      ]
+    }
+  },
   "0.0.21": {
     "releasedAt": "2026-05-04",
     "language": {

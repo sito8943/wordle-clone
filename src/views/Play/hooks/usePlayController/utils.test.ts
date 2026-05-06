@@ -61,6 +61,15 @@ describe("tutorial prompt visibility by mode", () => {
       }),
     ).toBe(false);
   });
+
+  it("does not infer classic as seen from legacy flag when mode-scoped profile visibility exists", () => {
+    expect(
+      hasSeenTutorialPromptForMode(WORDLE_MODE_IDS.CLASSIC, false, {
+        lightning: true,
+        daily: true,
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("resolveModeMusicTrack", () => {

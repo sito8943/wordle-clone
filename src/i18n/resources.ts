@@ -475,10 +475,20 @@ export const resources = {
               description:
                 "Type letters here and press Enter to submit each guess.",
             },
+            streak: {
+              title: "Streak",
+              description:
+                "Here you can track your win streak. A higher streak increases your next-win score bonus.",
+            },
             hint: {
               title: "Hints",
               description:
                 "Use this button for a yellow hint. Availability depends on mode and difficulty.",
+            },
+            challenges: {
+              title: "Challenges",
+              description:
+                "Open daily challenges here to check progress and complete bonus objectives.",
             },
             refresh: {
               title: "Refresh round",
@@ -1159,10 +1169,20 @@ export const resources = {
               description:
                 "Escribe letras aquí y pulsa Enter para enviar cada intento.",
             },
+            streak: {
+              title: "Racha",
+              description:
+                "Aquí puedes ver tu racha de victorias. Cuanto más alta sea, mayor será el bonus de puntos en tu próxima victoria.",
+            },
             hint: {
               title: "Pistas",
               description:
                 "Usa este botón para pedir una pista amarilla. La disponibilidad depende del modo y la dificultad.",
+            },
+            challenges: {
+              title: "Retos",
+              description:
+                "Abre aquí los retos diarios para revisar tu progreso y completar objetivos con bonus.",
             },
             refresh: {
               title: "Actualizar ronda",
