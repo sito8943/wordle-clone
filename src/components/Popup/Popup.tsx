@@ -14,6 +14,7 @@ import {
   DEFAULT_POPUP_OFFSET_PX,
   POPUP_ENTER_DURATION_MS,
   POPUP_EXIT_DURATION_MS,
+  POPUP_IMMEDIATE_DISMISS_GUARD_MS,
   POPUP_VIEWPORT_MARGIN_PX,
 } from "./constants";
 import type {
@@ -90,7 +91,7 @@ const Popup = ({
   }, [offsetPx, placement]);
 
   useLayoutEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || motionState === "hidden") {
       return;
     }
 
@@ -105,7 +106,7 @@ const Popup = ({
       window.removeEventListener("resize", updateCoordinates);
       window.removeEventListener("scroll", updateCoordinates, true);
     };
-  }, [isOpen, updateCoordinates]);
+  }, [isOpen, motionState, updateCoordinates]);
 
   useEffect(() => {
     if (isOpen) {
@@ -169,7 +170,9 @@ const Popup = ({
     openedAtRef.current = Date.now();
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (Date.now() - openedAtRef.current < 80) {
+      if (
+        Date.now() - openedAtRef.current < POPUP_IMMEDIATE_DISMISS_GUARD_MS
+      ) {
         return;
       }
 
@@ -200,6 +203,12 @@ const Popup = ({
     };
 
     const handleFocusIn = (event: FocusEvent) => {
+      if (
+        Date.now() - openedAtRef.current < POPUP_IMMEDIATE_DISMISS_GUARD_MS
+      ) {
+        return;
+      }
+
       const target = event.target;
       if (!(target instanceof Node)) {
         return;

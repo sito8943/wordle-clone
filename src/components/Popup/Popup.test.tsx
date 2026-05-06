@@ -8,6 +8,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Popup } from "./index";
 import { PopupProvider } from "@providers/Popup";
+import { POPUP_IMMEDIATE_DISMISS_GUARD_MS } from "./constants";
 
 afterEach(() => {
   cleanup();
@@ -134,11 +135,37 @@ describe("Popup", () => {
       expect(screen.getByRole("tooltip")).toBeTruthy();
     });
 
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, POPUP_IMMEDIATE_DISMISS_GUARD_MS + 20);
+    });
+
     fireEvent.focusIn(screen.getByRole("button", { name: "Outside target" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("tooltip")).toBeNull();
     });
+  });
+
+  it("does not close when focus moves outside immediately after opening", async () => {
+    render(
+      <div>
+        <Popup content="Popup content">
+          <div aria-label="Trigger element">Trigger</div>
+        </Popup>
+        <button type="button">Outside target</button>
+      </div>,
+    );
+
+    const trigger = screen.getByLabelText("Trigger element");
+    fireEvent.click(trigger);
+
+    await waitFor(() => {
+      expect(screen.getByRole("tooltip")).toBeTruthy();
+    });
+
+    fireEvent.focusIn(screen.getByRole("button", { name: "Outside target" }));
+
+    expect(screen.getByRole("tooltip")).toBeTruthy();
   });
 
   it("allows interacting with popup content", async () => {
