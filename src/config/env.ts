@@ -94,6 +94,11 @@ const env: RuntimeEnv = {
     import.meta.env.VITE_SOUND_ENABLED ?? rawEnv.SOUND_ENABLED,
     true,
   ),
+  masterAndMusicChannelsEnabled: readBoolean(
+    import.meta.env.VITE_MASTER_AND_MUSIC_CHANNELS_ENABLED ??
+      rawEnv.MASTER_AND_MUSIC_CHANNELS_ENABLED,
+    false,
+  ),
   hintsEnabled: readBoolean(
     import.meta.env.VITE_HINTS_ENABLED ?? rawEnv.HINTS_ENABLED,
     true,

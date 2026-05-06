@@ -11,6 +11,7 @@ export const resolveFeatureFlags = (): FeatureFlags => ({
   shareButtonEnabled: env.shareButtonEnabled,
   devConsoleEnabled: env.devConsoleEnabled && isDevelopmentMode(env.mode),
   soundEnabled: env.soundEnabled,
+  masterAndMusicChannelsEnabled: env.masterAndMusicChannelsEnabled,
   hintsEnabled: env.hintsEnabled,
   helpButtonEnabled: env.helpButtonEnabled,
   challengesEnabled: env.challengesEnabled,

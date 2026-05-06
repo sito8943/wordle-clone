@@ -28,6 +28,7 @@ const featureFlagsMock: FeatureFlags = {
   shareButtonEnabled: true,
   devConsoleEnabled: true,
   soundEnabled: true,
+  masterAndMusicChannelsEnabled: false,
   hintsEnabled: true,
   helpButtonEnabled: true,
   challengesEnabled: true,

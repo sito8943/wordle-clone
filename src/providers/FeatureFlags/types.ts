@@ -5,6 +5,7 @@ export type FeatureFlags = {
   shareButtonEnabled: boolean;
   devConsoleEnabled: boolean;
   soundEnabled: boolean;
+  masterAndMusicChannelsEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
   challengesEnabled: boolean;

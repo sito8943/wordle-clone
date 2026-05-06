@@ -37,6 +37,8 @@ const mockUseHardModeTimer = vi.fn();
 const mockUseSound = vi.fn();
 const mockNavigate = vi.fn();
 const defaultTimerAutoPauseEnabled = env.timerAutoPauseEnabled;
+const defaultMasterAndMusicChannelsEnabled =
+  env.masterAndMusicChannelsEnabled;
 
 const defaultMockSoundChannels = [
   {
@@ -116,6 +118,7 @@ describe("usePlayController", () => {
     mockNavigate.mockClear();
     window.sessionStorage.clear();
     window.localStorage.clear();
+    env.masterAndMusicChannelsEnabled = true;
     document.body.innerHTML = "";
     originalNavigatorShare = navigator.share;
     originalNavigatorCanShare = navigator.canShare;
@@ -234,6 +237,7 @@ describe("usePlayController", () => {
       writable: true,
     });
     env.timerAutoPauseEnabled = defaultTimerAutoPauseEnabled;
+    env.masterAndMusicChannelsEnabled = defaultMasterAndMusicChannelsEnabled;
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -1456,6 +1460,28 @@ describe("usePlayController", () => {
             ? { ...channel, enabled: false }
             : channel,
         ),
+      }),
+    );
+
+    renderHook(() =>
+      usePlayController({ modeId: WORDLE_MODE_IDS.LIGHTNING }),
+    );
+
+    expect(playMusic).not.toHaveBeenCalled();
+    expect(stopMusic).toHaveBeenCalledWith(
+      MUSIC_CHANNEL_ID,
+      MUSIC_TRANSITION_FADE_MS,
+    );
+  });
+
+  it("does not play mode music when master/music channels feature flag is disabled", () => {
+    env.masterAndMusicChannelsEnabled = false;
+    const playMusic = vi.fn();
+    const stopMusic = vi.fn();
+    mockUseSound.mockReturnValue(
+      createMockSoundValue({
+        playMusic,
+        stopMusic,
       }),
     );
 

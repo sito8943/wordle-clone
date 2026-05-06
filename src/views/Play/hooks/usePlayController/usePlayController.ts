@@ -98,8 +98,12 @@ export default function usePlayController(
     updatePlayerManualTileSelection,
     markTutorialPromptSeenForMode,
   } = usePlayer();
-  const { hintsEnabled, challengesEnabled, timerAutoPauseEnabled } =
-    useFeatureFlags();
+  const {
+    hintsEnabled,
+    challengesEnabled,
+    timerAutoPauseEnabled,
+    masterAndMusicChannelsEnabled,
+  } = useFeatureFlags();
   const { playSound, playMusic, stopMusic, channels } = useSound();
   const gameplayLanguage = WORDS_DEFAULT_LANGUAGE;
   const modeId = useMemo(
@@ -206,6 +210,8 @@ export default function usePlayController(
     () => isMusicChannelEnabled(channels, MUSIC_CHANNEL_ID),
     [channels],
   );
+  const musicPlaybackEnabled =
+    masterAndMusicChannelsEnabled && musicChannelEnabled;
 
   const roundSettled = useRef(false);
   const hydrated = useRef(false);
@@ -715,7 +721,7 @@ export default function usePlayController(
   );
 
   useEffect(() => {
-    if (!musicChannelEnabled) {
+    if (!musicPlaybackEnabled) {
       stopMusic(MUSIC_CHANNEL_ID, MUSIC_TRANSITION_FADE_MS);
       return;
     }
@@ -724,7 +730,7 @@ export default function usePlayController(
       channelId: MUSIC_CHANNEL_ID,
       fadeMs: MUSIC_TRANSITION_FADE_MS,
     });
-  }, [modeMusicTrack, musicChannelEnabled, playMusic, stopMusic]);
+  }, [modeMusicTrack, musicPlaybackEnabled, playMusic, stopMusic]);
 
   useEffect(() => {
     return () => {

@@ -12,6 +12,7 @@ export type RuntimeEnv = {
   shareButtonEnabled: boolean;
   devConsoleEnabled: boolean;
   soundEnabled: boolean;
+  masterAndMusicChannelsEnabled: boolean;
   hintsEnabled: boolean;
   helpButtonEnabled: boolean;
   challengesEnabled: boolean;

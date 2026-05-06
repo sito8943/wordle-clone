@@ -17,6 +17,7 @@ import {
 } from "@providers";
 import {
   WORDLE_MUSIC_MAP,
+  WORDLE_SFX_ONLY_SOUND_CHANNELS,
   WORDLE_SOUND_EVENT_MAP,
   WORDLE_SOUND_STORAGE_KEY_PREFIX,
   WORDLE_SOUND_STORAGE_KEYS,
@@ -52,7 +53,15 @@ void initI18n().then(() => {
           <SoundProvider
             featureEnabled={env.soundEnabled}
             eventMap={WORDLE_SOUND_EVENT_MAP}
-            musicMap={WORDLE_MUSIC_MAP}
+            musicMap={
+              env.masterAndMusicChannelsEnabled ? WORDLE_MUSIC_MAP : undefined
+            }
+            channels={
+              env.masterAndMusicChannelsEnabled
+                ? undefined
+                : WORDLE_SFX_ONLY_SOUND_CHANNELS
+            }
+            includeDefaultChannels={env.masterAndMusicChannelsEnabled}
             storageKeyPrefix={WORDLE_SOUND_STORAGE_KEY_PREFIX}
             storageKeys={WORDLE_SOUND_STORAGE_KEYS}
           >

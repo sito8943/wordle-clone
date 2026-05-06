@@ -168,6 +168,7 @@ Feature flags (all default `true` unless noted):
 - `VITE_SHARE_BUTTON_ENABLED`: enables the victory share action.
 - `VITE_DEV_CONSOLE_ENABLED`: enables the developer console (only in dev mode at runtime).
 - `VITE_SOUND_ENABLED`: enables procedural sound effects.
+- `VITE_MASTER_AND_MUSIC_CHANNELS_ENABLED` (default `false`): enables the `master` and `music` channels. When `false`, the app runs with SFX-only channel controls and disables music playback.
 - `VITE_HINTS_ENABLED`: enables the hint system.
 - `VITE_HELP_BUTTON_ENABLED`: enables the help button.
 - `VITE_CHALLENGES_ENABLED`: enables daily challenges.
