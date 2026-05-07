@@ -68,7 +68,7 @@ export function Keyboard({
         data-tour="keyboard"
         aria-label={t("play.gameplay.onScreenKeyboardAriaLabel")}
         onAnimationEnd={animateEntry ? onEntryAnimationEnd : undefined}
-        className={`fixed inset-x-0 bottom-0 z-10 w-full border-t border-neutral-300 bg-neutral-100/95 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur-sm dark:border-neutral-700 dark:bg-neutral-900/95 sm:pb-4 sm:pt-3 ${
+        className={`fixed inset-x-0 bottom-0 z-10 w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur-sm dark:bg-neutral-900/95 sm:pb-4 sm:pt-3 ${
           animateEntry ? "keyboard-entry-animation" : ""
         }`}
       >

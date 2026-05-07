@@ -8,7 +8,11 @@ import {
 import { MemoryRouter, Route, Routes, useParams } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
-import { ROUTES } from "@config/routes";
+import {
+  ROUTES,
+  ROUTE_SEARCH_PARAMS,
+  ROUTE_SEARCH_PARAM_VALUES,
+} from "@config/routes";
 import { DialogQueueProvider } from "@providers";
 import View from "./View";
 import {
@@ -143,6 +147,17 @@ describe("View layout chrome visibility", () => {
     renderView(ROUTES.ZEN);
 
     expect(screen.getByText("Navbar")).toBeTruthy();
+    expect(screen.queryByText("Footer")).toBeNull();
+    expect(screen.getByText("Zen content")).toBeTruthy();
+  });
+
+  it("collapses navbar when zen focus mode is active", () => {
+    renderView(
+      `${ROUTES.ZEN}?${ROUTE_SEARCH_PARAMS.FOCUS}=${ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON}`,
+    );
+
+    const navbarShell = screen.getByTestId("view-navbar-shell");
+    expect(navbarShell.className).toContain("max-h-0");
     expect(screen.queryByText("Footer")).toBeNull();
     expect(screen.getByText("Zen content")).toBeTruthy();
   });

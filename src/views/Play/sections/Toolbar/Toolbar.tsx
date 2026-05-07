@@ -1,8 +1,13 @@
 import { type JSX } from "react";
 import { FireStreak, Alert } from "@components";
+import {
+  ROUTE_SEARCH_PARAMS,
+  ROUTE_SEARCH_PARAM_VALUES,
+} from "@config/routes";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { usePlayView } from "@views/Play/providers";
+import { useLocation } from "react-router";
 import {
   ToolbarWordListButton,
   ToolbarHintButton,
@@ -14,11 +19,13 @@ import {
   ToolbarVolumeButton,
   ToolbarHardModeTimerIndicator,
   ToolbarRefreshButton,
+  ToolbarZenFocusButton,
 } from "./buttons";
 
 const Toolbar = (): JSX.Element => {
   const { t } = useTranslation();
   const { controller } = usePlayView();
+  const location = useLocation();
   const {
     currentWinStreak,
     activeModeId,
@@ -26,12 +33,19 @@ const Toolbar = (): JSX.Element => {
     dictionaryError,
     challengeCompletionMessage,
   } = controller;
+  const searchParams = new URLSearchParams(location.search);
+  const zenFocusActive =
+    activeModeId === WORDLE_MODE_IDS.ZEN &&
+    searchParams.get(ROUTE_SEARCH_PARAMS.FOCUS) ===
+      ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON;
   const showStreakBadge = activeModeId !== WORDLE_MODE_IDS.ZEN;
   return (
     <>
       <div
         className={`w-full flex items-center sm:px-4 toolbar-entry-from-top-animation ${
           showStreakBadge ? "justify-between" : "justify-end"
+        } transition-[margin-top] duration-300 ease-out ${
+          zenFocusActive ? "-mt-2 sm:-mt-3" : "mt-0"
         }`}
       >
         {showStreakBadge ? (
@@ -39,17 +53,22 @@ const Toolbar = (): JSX.Element => {
             <FireStreak streak={currentWinStreak} showScoreBonusPopup />
           </div>
         ) : null}
-        <div className="flex items-center justify-end gap-2 sm:gap-4 ">
-          <ToolbarWordListButton />
-          <ToolbarHintButton />
-          <ToolbarGameplayTourButton />
-          <ToolbarDailyMeaningButton />
-          <ToolbarChallengesButton />
-          <ToolbarResultsButton />
-          <ToolbarDeveloperConsoleButton />
-          <ToolbarVolumeButton />
-          <ToolbarHardModeTimerIndicator />
-          <ToolbarRefreshButton />
+        <div className="flex items-center justify-end gap-2 sm:gap-4">
+          {!zenFocusActive ? (
+            <>
+              <ToolbarWordListButton />
+              <ToolbarHintButton />
+              <ToolbarGameplayTourButton />
+              <ToolbarDailyMeaningButton />
+              <ToolbarChallengesButton />
+              <ToolbarResultsButton />
+              <ToolbarDeveloperConsoleButton />
+              <ToolbarVolumeButton />
+              <ToolbarHardModeTimerIndicator />
+              <ToolbarRefreshButton />
+            </>
+          ) : null}
+          <ToolbarZenFocusButton />
         </div>
       </div>
 
