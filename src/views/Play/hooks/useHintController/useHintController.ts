@@ -16,6 +16,7 @@ export const useHintController = ({
   gameId,
   difficulty,
   hintsLimitOverride,
+  unlimitedHints = false,
   hintStatusOverride,
   roundConfig,
   hasInProgressGameAtMount,
@@ -36,12 +37,17 @@ export const useHintController = ({
   const hasInProgressGameAtMountRef = useRef(hasInProgressGameAtMount);
   const [hintsUsed, setHintsUsed] = useState(0);
 
-  const hintsRemaining = Math.max(0, hintsLimit - hintsUsed);
-  const hintsEnabledForDifficulty = hintsLimit > 0;
+  const hintsRemaining = unlimitedHints
+    ? Number.POSITIVE_INFINITY
+    : Math.max(0, hintsLimit - hintsUsed);
+  const hintsEnabledForDifficulty = unlimitedHints || hintsLimit > 0;
   const currentRowComplete =
     current.length >= lettersPerRow && !current.includes(" ");
   const hintButtonDisabled =
-    hintsRemaining <= 0 || showResumeDialog || gameOver || currentRowComplete;
+    (!unlimitedHints && hintsRemaining <= 0) ||
+    showResumeDialog ||
+    gameOver ||
+    currentRowComplete;
 
   useEffect(() => {
     if (!hasInProgressGameAtMountRef.current) {
@@ -96,6 +102,10 @@ export const useHintController = ({
       return false;
     }
 
+    if (unlimitedHints) {
+      return true;
+    }
+
     setHintsUsed((previous) => {
       const next = previous + 1;
       setHintUsageSnapshot({
@@ -107,7 +117,14 @@ export const useHintController = ({
       return next;
     });
     return true;
-  }, [answer, gameId, hintButtonDisabled, hintStatus, revealHint]);
+  }, [
+    answer,
+    gameId,
+    hintButtonDisabled,
+    hintStatus,
+    revealHint,
+    unlimitedHints,
+  ]);
 
   return {
     hintsRemaining,

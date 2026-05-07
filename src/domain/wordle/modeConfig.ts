@@ -24,7 +24,7 @@ const ROUND_CONFIG_BY_MODE: Record<WordleModeId, Partial<BoardRoundConfig>> = {
 const MODE_RULES_ENABLED_BY_ID: Record<WordleModeId, boolean> = {
   classic: true,
   lightning: true,
-  zen: false,
+  zen: true,
   daily: true,
 };
 

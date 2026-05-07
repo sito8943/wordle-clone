@@ -380,6 +380,7 @@ export const resources = {
           wordListUnavailable: "Word list unavailable.",
           hintAriaLabel: "Hint",
           hintButton: "Hint ({{count}})",
+          hintButtonUnlimited: "Hint (∞)",
           tourAriaLabel: "Tutorial",
           tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Daily word meaning",
@@ -442,6 +443,7 @@ export const resources = {
           cancel: "Cancel",
         },
         gameModes: {
+          zen: "Zen",
           classic: "Classic",
           lightning: "Lightning",
           daily: "Daily",
@@ -1074,6 +1076,7 @@ export const resources = {
           wordListUnavailable: "La lista de palabras no está disponible.",
           hintAriaLabel: "Pista",
           hintButton: "Pista ({{count}})",
+          hintButtonUnlimited: "Pista (∞)",
           tourAriaLabel: "Tutorial",
           tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Significado de la palabra del día",
@@ -1136,6 +1139,7 @@ export const resources = {
           cancel: "Cancelar",
         },
         gameModes: {
+          zen: "Calmado",
           classic: "Clásico",
           lightning: "Relámpago",
           daily: "Diario",

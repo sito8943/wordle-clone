@@ -37,7 +37,7 @@ const TestConsumer = () => {
 
 const renderProvider = (
   children: ReactNode,
-  modeId?: "classic" | "lightning" | "daily",
+  modeId?: "classic" | "lightning" | "zen" | "daily",
 ) => render(<PlayViewProvider modeId={modeId}>{children}</PlayViewProvider>);
 
 describe("PlayViewProvider", () => {
@@ -120,6 +120,22 @@ describe("PlayViewProvider", () => {
     });
 
     renderProvider(<TestConsumer />, WORDLE_MODE_IDS.DAILY);
+
+    expect(mockUseChallenges).toHaveBeenCalledWith(false);
+    expect(screen.getByTestId("play-view-consumer").dataset.challenges).toBe(
+      "false",
+    );
+  });
+
+  it("disables challenges in zen mode", () => {
+    mockUsePlayController.mockReturnValue({
+      activeModeId: WORDLE_MODE_IDS.ZEN,
+      startAnimationsEnabled: true,
+      startAnimationSeed: 1,
+      wordListEnabledForDifficulty: true,
+    });
+
+    renderProvider(<TestConsumer />, WORDLE_MODE_IDS.ZEN);
 
     expect(mockUseChallenges).toHaveBeenCalledWith(false);
     expect(screen.getByTestId("play-view-consumer").dataset.challenges).toBe(

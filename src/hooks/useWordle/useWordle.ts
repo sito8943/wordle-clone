@@ -491,7 +491,10 @@ export default function useWordle(options: UseWordleOptions = {}) {
 
       resetActiveHints();
       setGameStateWithPersistence(
-        (prev) => applyGuess(prev, validation.guess, resolvedRoundConfig),
+        (prev) =>
+          applyGuess(prev, validation.guess, resolvedRoundConfig, {
+            disableMaxGuessDefeat: modeId === WORDLE_MODE_IDS.ZEN,
+          }),
         "immediate",
       );
     },
@@ -503,6 +506,7 @@ export default function useWordle(options: UseWordleOptions = {}) {
       setGameStateWithPersistence,
       showMessage,
       triggerInvalidGuessFeedback,
+      modeId,
     ],
   );
 

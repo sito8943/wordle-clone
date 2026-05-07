@@ -139,6 +139,7 @@ export default function usePlayController(
     allowUnknownWords:
       player.difficulty === "easy" ||
       player.difficulty === "normal" ||
+      activeModeId === WORDLE_MODE_IDS.ZEN ||
       activeModeId === WORDLE_MODE_IDS.DAILY,
     ...(options.allowSubmitWhenModalOpen === true
       ? { allowSubmitWhenModalOpen: true }
@@ -184,6 +185,7 @@ export default function usePlayController(
       : snapshotStreak;
 
   const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
+  const zenModeActive = activeModeId === WORDLE_MODE_IDS.ZEN;
   const dailyModeActive = activeModeId === WORDLE_MODE_IDS.DAILY;
   const resolveDailyModeOutcomeForToday =
     useCallback((): DailyModeOutcome | null => {
@@ -201,7 +203,9 @@ export default function usePlayController(
   const showDeveloperChallengesSection =
     activeModeId === WORDLE_MODE_IDS.CLASSIC;
   const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
-  const hardModeEnabled = lightningModeActive || player.difficulty === "insane";
+  const hardModeEnabled =
+    lightningModeActive ||
+    (player.difficulty === "insane" && !zenModeActive);
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
   const modeMusicTrack = useMemo(
     () => resolveModeMusicTrack(activeModeId),
@@ -331,6 +335,11 @@ export default function usePlayController(
 
     return Math.floor(answer.length / 3);
   }, [answer.length, dailyModeActive]);
+  const hintStatusOverride = zenModeActive
+    ? "correct"
+    : dailyModeActive
+      ? "present"
+      : undefined;
   const {
     showHardModeTimer,
     showHardModeFinalStretchBar,
@@ -690,7 +699,8 @@ export default function usePlayController(
     gameId,
     difficulty: player.difficulty,
     hintsLimitOverride: dailyHintsLimitOverride,
-    hintStatusOverride: dailyModeActive ? "present" : undefined,
+    hintStatusOverride,
+    unlimitedHints: zenModeActive,
     roundConfig,
     hasInProgressGameAtMount,
     showResumeDialog,

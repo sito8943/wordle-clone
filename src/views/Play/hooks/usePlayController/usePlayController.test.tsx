@@ -651,16 +651,23 @@ describe("usePlayController", () => {
     expect(getDailyMeaning).toHaveBeenCalledTimes(1);
   });
 
-  it("resolves and exposes modeId from controller options", () => {
+  it("resolves and exposes zen as an enabled active mode", () => {
     const { result } = renderHook(() =>
       usePlayController({ modeId: WORDLE_MODE_IDS.ZEN }),
     );
 
     expect(result.current.modeId).toBe(WORDLE_MODE_IDS.ZEN);
-    expect(result.current.modeEnabled).toBe(false);
-    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.ZEN);
+    expect(mockUseHintController).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hintStatusOverride: "correct",
+        unlimitedHints: true,
+      }),
+    );
     expect(mockUseWordle).toHaveBeenCalledWith(
       expect.objectContaining({
+        allowUnknownWords: true,
         roundConfig: CLASSIC_ROUND_CONFIG,
       }),
     );

@@ -14,7 +14,9 @@ import type { EndOfGameScoreSummaryItem, EndOfGameSnapshot } from "./types";
 export const shouldCompleteChallengesForMode = (
   modeId: WordleModeId,
 ): boolean =>
-  modeId !== WORDLE_MODE_IDS.LIGHTNING && modeId !== WORDLE_MODE_IDS.DAILY;
+  modeId !== WORDLE_MODE_IDS.LIGHTNING &&
+  modeId !== WORDLE_MODE_IDS.DAILY &&
+  modeId !== WORDLE_MODE_IDS.ZEN;
 
 export const resolveVictoryOutcomeForMode = ({
   modeId,
@@ -38,6 +40,27 @@ export const resolveVictoryOutcomeForMode = ({
   awardedPoints: number;
   snapshot: EndOfGameSnapshot;
 } => {
+  if (modeId === WORDLE_MODE_IDS.ZEN) {
+    const zenPoints = 0;
+    const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [
+      { key: "base", value: zenPoints },
+    ];
+
+    return {
+      awardedPoints: zenPoints,
+      snapshot: {
+        answer,
+        currentStreak: playerStreak,
+        bestStreak: playerStreak,
+        challengeBonusPoints: 0,
+        scoreSummary: {
+          items: scoreSummaryItems,
+          total: zenPoints,
+        },
+      },
+    };
+  }
+
   if (modeId === WORDLE_MODE_IDS.DAILY) {
     const dailyWinsScore = 1;
     const scoreSummaryItems: EndOfGameScoreSummaryItem[] = [

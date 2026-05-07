@@ -124,4 +124,33 @@ describe("buildBoardRows", () => {
       expect(row.letters).toEqual(guesses[i].word.split(""));
     });
   });
+
+  it("adds overflow rows when guesses exceed configured max and game is still active", () => {
+    const guesses = Array.from({ length: BOARD_ROWS }, (_, i) =>
+      makeGuess(`WORD${i}`.slice(0, 5)),
+    );
+    const rows = buildBoardRows(guesses, "", false);
+
+    expect(rows).toHaveLength(BOARD_ROWS + 2);
+    expect(rows[BOARD_ROWS].letters).toEqual(["", "", "", "", ""]);
+    expect(rows[BOARD_ROWS + 1].statuses).toEqual([
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+    ]);
+  });
+
+  it("keeps all guessed rows visible when game ends after overflowing the board", () => {
+    const guesses = Array.from({ length: BOARD_ROWS + 2 }, (_, i) =>
+      makeGuess(`WORD${i}`.slice(0, 5)),
+    );
+    const rows = buildBoardRows(guesses, "", true);
+
+    expect(rows).toHaveLength(BOARD_ROWS + 2);
+    expect(rows[BOARD_ROWS + 1].letters).toEqual(
+      guesses[BOARD_ROWS + 1].word.split(""),
+    );
+  });
 });
