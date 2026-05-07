@@ -11,3 +11,4 @@ export const STATUS_STYLE: Record<Status, string> = {
 
 export const TILE_ENTRY_STAGGER_MS = 16;
 export const BOARD_SHAKE_DURATION_MS = 220;
+export const BOARD_OVERFLOW_SHIFT_ANIMATION_DURATION_MS = 180;

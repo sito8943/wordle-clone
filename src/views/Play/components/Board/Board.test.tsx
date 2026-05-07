@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@i18n";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
@@ -253,6 +259,116 @@ describe("Board", () => {
     ).toBeTruthy();
     expect(rows[0].querySelector(".row-active-indicator-animation")).toBeNull();
     expect(rows[2].querySelector(".row-active-indicator-animation")).toBeNull();
+  });
+
+  it("keeps only the latest visible rows when maxVisibleRows is set", () => {
+    const absent: TileStatus[] = [
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+    ];
+    const guesses = Array.from({ length: 12 }, (_, index) => {
+      const letter = String.fromCharCode(65 + index);
+
+      return {
+        word: letter.repeat(5),
+        statuses: absent,
+      };
+    });
+
+    render(
+      <Board
+        guesses={guesses}
+        current=""
+        gameOver={false}
+        maxVisibleRows={6}
+      />,
+    );
+
+    expect(screen.getAllByRole("row").length).toBe(6);
+    expect(
+      screen.queryByRole("gridcell", {
+        name: `A, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
+      }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("gridcell", {
+        name: `I, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
+      }),
+    ).toBeTruthy();
+  });
+
+  it("enables board row viewport when maxVisibleRows is provided", () => {
+    render(<Board guesses={[]} current="" gameOver={false} maxVisibleRows={6} />);
+
+    const visibleWindow = screen.getByTestId("board-visible-window");
+    expect(visibleWindow.className).toContain("board-visible-window");
+    expect(visibleWindow.getAttribute("style")).toContain(
+      "--board-visible-rows: 6",
+    );
+  });
+
+  it("animates upward when the visible row window advances", async () => {
+    const absent: TileStatus[] = [
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+      "absent",
+    ];
+    const buildGuess = (letter: string) => ({
+      word: letter.repeat(5),
+      statuses: absent,
+    });
+    const { rerender } = render(
+      <Board
+        guesses={["A", "B", "C", "D", "E", "F"].map(buildGuess)}
+        current=""
+        gameOver={false}
+        maxVisibleRows={6}
+      />,
+    );
+
+    expect(screen.getByTestId("board-row-shift-layer").className).not.toContain(
+      "board-overflow-shift-up-animation",
+    );
+
+    rerender(
+      <Board
+        guesses={["A", "B", "C", "D", "E", "F", "G"].map(buildGuess)}
+        current=""
+        gameOver={false}
+        maxVisibleRows={6}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("board-row-shift-layer").className).toContain(
+        "board-overflow-shift-up-animation",
+      );
+    });
+
+    expect(screen.getByTestId("board-row-shift-layer").getAttribute("style")).toContain(
+      "--board-overflow-shift-rows: 1",
+    );
+    expect(
+      screen.getByRole("gridcell", {
+        name: `A, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
+      }),
+    ).toBeTruthy();
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("board-row-shift-layer").className,
+      ).not.toContain("board-overflow-shift-up-animation");
+    });
+    expect(
+      screen.queryByRole("gridcell", {
+        name: `A, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
+      }),
+    ).toBeNull();
   });
 
   it("scales past rows to 0.95 and active row to 1.05 with transition", () => {

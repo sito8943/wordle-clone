@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { buildBoardRows } from "@domain/wordle";
 import { BOARD_SHAKE_DURATION_MS } from "../constants";
-import type { BoardRowViewModel, UseBoardControllerParams } from "../types";
+import type {
+  BoardRowViewModel,
+  UseBoardControllerParams,
+  UseBoardControllerResult,
+} from "../types";
 
 const useBoardController = ({
   guesses,
@@ -18,6 +22,7 @@ const useBoardController = ({
   onTileSelect,
   overflowBufferRows,
   overflowTriggerRemainingRows,
+  maxVisibleRows,
 }: UseBoardControllerParams) => {
   const [isShaking, setIsShaking] = useState(false);
 
@@ -37,22 +42,50 @@ const useBoardController = ({
     };
   }, [shakePulse]);
 
-  const rows = useMemo<BoardRowViewModel[]>(() => {
-    const boardRows = buildBoardRows(guesses, current, gameOver, roundConfig, {
-      overflowBufferRows,
-      overflowTriggerRemainingRows,
-    });
-    const activeRowIndex = !gameOver ? guesses.length : -1;
+  const { rows, rowOffset, isRowWindowed } = useMemo<{
+    rows: BoardRowViewModel[];
+    rowOffset: number;
+    isRowWindowed: boolean;
+  }>(() => {
+    const allBoardRows = buildBoardRows(
+      guesses,
+      current,
+      gameOver,
+      roundConfig,
+      {
+        overflowBufferRows,
+        overflowTriggerRemainingRows,
+      },
+    );
+    const safeMaxVisibleRows =
+      typeof maxVisibleRows === "number" &&
+      Number.isFinite(maxVisibleRows) &&
+      maxVisibleRows > 0
+        ? Math.floor(maxVisibleRows)
+        : null;
+    const rowOffset =
+      safeMaxVisibleRows !== null && allBoardRows.length > safeMaxVisibleRows
+        ? allBoardRows.length - safeMaxVisibleRows
+        : 0;
+    const isRowWindowed = safeMaxVisibleRows !== null;
+    const boardRows =
+      rowOffset > 0 ? allBoardRows.slice(rowOffset) : allBoardRows;
+    const activeRowGlobalIndex = !gameOver ? guesses.length : -1;
+    const activeRowIndex =
+      activeRowGlobalIndex >= rowOffset
+        ? activeRowGlobalIndex - rowOffset
+        : -1;
 
-    return boardRows.map((row, index) => {
+    const rows = boardRows.map((row, index) => {
+      const globalRowIndex = rowOffset + index;
       const statuses =
-        index === activeRowIndex
+        globalRowIndex === activeRowGlobalIndex
           ? row.statuses.map(
               (status, cellIndex) => activeRowHintStatuses[cellIndex] ?? status,
             )
           : row.statuses;
       const resolvedActiveTileIndex =
-        index === activeRowIndex
+        globalRowIndex === activeRowGlobalIndex
           ? activeTileIndex !== null
             ? Math.min(Math.max(activeTileIndex, 0), row.letters.length - 1)
             : current.length < row.letters.length
@@ -60,29 +93,36 @@ const useBoardController = ({
               : null
           : null;
       const rowHintRevealTileIndex =
-        index === activeRowIndex ? hintRevealTileIndex : null;
+        globalRowIndex === activeRowGlobalIndex ? hintRevealTileIndex : null;
       const tiles = row.letters.map((letter, cellIndex) => ({
         key: cellIndex,
         letter,
         status: statuses[cellIndex],
-        animationOrder: index * row.letters.length + cellIndex,
+        animationOrder: globalRowIndex * row.letters.length + cellIndex,
         animateEntry: animateTileEntry,
         isActive: resolvedActiveTileIndex === cellIndex,
-        onClick: index === activeRowIndex ? onTileSelect : undefined,
+        onClick:
+          globalRowIndex === activeRowGlobalIndex ? onTileSelect : undefined,
         isHintReveal: rowHintRevealTileIndex === cellIndex,
         hintRevealPulse,
       }));
 
       return {
-        key: index,
+        key: globalRowIndex,
         tiles,
-        isPastRow: index < guesses.length,
+        isPastRow: globalRowIndex < guesses.length,
         isActiveRow: index === activeRowIndex,
         showNormalDictionaryBonusIndicator: Boolean(
-          normalDictionaryBonusRowFlags[index],
+          normalDictionaryBonusRowFlags[globalRowIndex],
         ),
       };
     });
+
+    return {
+      rows,
+      rowOffset,
+      isRowWindowed,
+    };
   }, [
     activeRowHintStatuses,
     animateTileEntry,
@@ -92,6 +132,7 @@ const useBoardController = ({
     roundConfig,
     overflowBufferRows,
     overflowTriggerRemainingRows,
+    maxVisibleRows,
     hintRevealPulse,
     hintRevealTileIndex,
     normalDictionaryBonusRowFlags,
@@ -99,10 +140,14 @@ const useBoardController = ({
     onTileSelect,
   ]);
 
-  return {
+  const result: UseBoardControllerResult = {
     rows,
     isShaking,
+    rowOffset,
+    isRowWindowed,
   };
+
+  return result;
 };
 
 export default useBoardController;

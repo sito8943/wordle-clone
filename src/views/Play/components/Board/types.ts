@@ -22,6 +22,7 @@ export type BoardPropsType = {
   onTileSelect?: (index: number) => void;
   overflowBufferRows?: number;
   overflowTriggerRemainingRows?: number;
+  maxVisibleRows?: number;
 };
 
 export type RowPropsType = {
@@ -79,4 +80,12 @@ export type UseBoardControllerParams = Pick<
   | "onTileSelect"
   | "overflowBufferRows"
   | "overflowTriggerRemainingRows"
+  | "maxVisibleRows"
 >;
+
+export type UseBoardControllerResult = {
+  rows: BoardRowViewModel[];
+  isShaking: boolean;
+  rowOffset: number;
+  isRowWindowed: boolean;
+};
