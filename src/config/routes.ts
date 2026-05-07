@@ -17,6 +17,11 @@ export const ROUTES = {
 
 export const ROUTE_SEARCH_PARAMS = {
   MODE: "mode",
+  FOCUS: "focus",
+} as const;
+
+export const ROUTE_SEARCH_PARAM_VALUES = {
+  FOCUS_ON: "on",
 } as const;
 
 export const ROUTE_HASHES = {
