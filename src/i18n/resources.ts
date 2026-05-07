@@ -487,6 +487,10 @@ export const resources = {
               description:
                 "Use this button for a yellow hint. Availability depends on mode and difficulty.",
             },
+            hintZen: {
+              description:
+                "In Zen mode this button gives only green hints, with unlimited uses.",
+            },
             challenges: {
               title: "Challenges",
               description:
@@ -1182,6 +1186,10 @@ export const resources = {
               title: "Pistas",
               description:
                 "Usa este botón para pedir una pista amarilla. La disponibilidad depende del modo y la dificultad.",
+            },
+            hintZen: {
+              description:
+                "En modo Calmado este botón da solo pistas verdes, y además son infinitas.",
             },
             challenges: {
               title: "Retos",

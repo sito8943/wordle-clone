@@ -16,6 +16,8 @@ const useBoardController = ({
   normalDictionaryBonusRowFlags = [],
   activeTileIndex = null,
   onTileSelect,
+  overflowBufferRows,
+  overflowTriggerRemainingRows,
 }: UseBoardControllerParams) => {
   const [isShaking, setIsShaking] = useState(false);
 
@@ -36,7 +38,10 @@ const useBoardController = ({
   }, [shakePulse]);
 
   const rows = useMemo<BoardRowViewModel[]>(() => {
-    const boardRows = buildBoardRows(guesses, current, gameOver, roundConfig);
+    const boardRows = buildBoardRows(guesses, current, gameOver, roundConfig, {
+      overflowBufferRows,
+      overflowTriggerRemainingRows,
+    });
     const activeRowIndex = !gameOver ? guesses.length : -1;
 
     return boardRows.map((row, index) => {
@@ -85,6 +90,8 @@ const useBoardController = ({
     gameOver,
     guesses,
     roundConfig,
+    overflowBufferRows,
+    overflowTriggerRemainingRows,
     hintRevealPulse,
     hintRevealTileIndex,
     normalDictionaryBonusRowFlags,

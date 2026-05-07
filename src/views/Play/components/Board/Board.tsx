@@ -21,6 +21,8 @@ export function Board({
   normalDictionaryBonusRowFlags = [],
   activeTileIndex = null,
   onTileSelect,
+  overflowBufferRows,
+  overflowTriggerRemainingRows,
 }: BoardPropsType) {
   const { t } = useTranslation();
   const { rows, isShaking } = useBoardController({
@@ -36,6 +38,8 @@ export function Board({
     normalDictionaryBonusRowFlags,
     activeTileIndex,
     onTileSelect,
+    overflowBufferRows,
+    overflowTriggerRemainingRows,
   });
   const boardClassName = `space-y-1.5 sm:space-y-2 mt-4 ${
     animateEntry ? "board-entry-animation" : ""

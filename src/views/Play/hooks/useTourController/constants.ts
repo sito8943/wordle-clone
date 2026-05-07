@@ -106,7 +106,7 @@ export const GAMEPLAY_TOUR_STEPS_BY_MODE: GameplayTourStepMap = {
       id: "hint",
       selector: TOUR_TARGET_SELECTORS.HINT_BUTTON,
       titleKey: "play.gameplayTour.steps.hint.title",
-      descriptionKey: "play.gameplayTour.steps.hint.description",
+      descriptionKey: "play.gameplayTour.steps.hintZen.description",
     },
   ],
   [WORDLE_MODE_IDS.DAILY]: [

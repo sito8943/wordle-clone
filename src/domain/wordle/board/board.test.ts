@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { buildBoardRows } from "./board";
-import { BOARD_COLUMNS, BOARD_ROWS } from "./constants";
+import {
+  BOARD_COLUMNS,
+  BOARD_OVERFLOW_BUFFER_ROWS,
+  BOARD_OVERFLOW_TRIGGER_REMAINING_ROWS,
+  BOARD_ROWS,
+} from "./constants";
 import type { GuessResult } from "../types";
 
 const makeGuess = (
@@ -140,6 +145,18 @@ describe("buildBoardRows", () => {
       "empty",
       "empty",
     ]);
+  });
+
+  it("preloads overflow rows before reaching the last row when trigger is configured", () => {
+    const guesses = Array.from({ length: BOARD_ROWS - 2 }, (_, i) =>
+      makeGuess(`WORD${i}`.slice(0, 5)),
+    );
+    const rows = buildBoardRows(guesses, "", false, undefined, {
+      overflowBufferRows: BOARD_OVERFLOW_BUFFER_ROWS,
+      overflowTriggerRemainingRows: BOARD_OVERFLOW_TRIGGER_REMAINING_ROWS,
+    });
+
+    expect(rows).toHaveLength(BOARD_ROWS + BOARD_OVERFLOW_BUFFER_ROWS);
   });
 
   it("keeps all guessed rows visible when game ends after overflowing the board", () => {

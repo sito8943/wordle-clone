@@ -20,6 +20,8 @@ export type BoardPropsType = {
   normalDictionaryBonusRowFlags?: boolean[];
   activeTileIndex?: number | null;
   onTileSelect?: (index: number) => void;
+  overflowBufferRows?: number;
+  overflowTriggerRemainingRows?: number;
 };
 
 export type RowPropsType = {
@@ -75,4 +77,6 @@ export type UseBoardControllerParams = Pick<
   | "normalDictionaryBonusRowFlags"
   | "activeTileIndex"
   | "onTileSelect"
+  | "overflowBufferRows"
+  | "overflowTriggerRemainingRows"
 >;

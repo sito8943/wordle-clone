@@ -216,4 +216,20 @@ describe("VictoryDialog", () => {
 
     expect(onPlayAgain).not.toHaveBeenCalled();
   });
+
+  it("hides the score summary section when no summary is provided", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={null}
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByText("Score summary")).toBeNull();
+    expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
+  });
 });

@@ -1,5 +1,9 @@
 import { Board } from "@views/Play/components";
-import { WORDLE_MODE_IDS } from "@domain/wordle";
+import {
+  BOARD_OVERFLOW_BUFFER_ROWS,
+  BOARD_OVERFLOW_TRIGGER_REMAINING_ROWS,
+  WORDLE_MODE_IDS,
+} from "@domain/wordle";
 import { usePlayView } from "@views/Play/providers";
 import type { JSX } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,6 +53,16 @@ export const BoardContent = (): JSX.Element => {
         normalDictionaryBonusRowFlags={normalDictionaryBonusRowFlags}
         activeTileIndex={manualTileSelection ? activeTileIndex : null}
         onTileSelect={manualTileSelection ? selectActiveTile : undefined}
+        overflowBufferRows={
+          controller.activeModeId === WORDLE_MODE_IDS.ZEN
+            ? BOARD_OVERFLOW_BUFFER_ROWS
+            : undefined
+        }
+        overflowTriggerRemainingRows={
+          controller.activeModeId === WORDLE_MODE_IDS.ZEN
+            ? BOARD_OVERFLOW_TRIGGER_REMAINING_ROWS
+            : undefined
+        }
       />
 
       {gameOver && showLegacyEndOfGameMessage && (

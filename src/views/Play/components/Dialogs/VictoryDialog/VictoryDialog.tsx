@@ -76,48 +76,53 @@ const VictoryDialog = ({
           sectionClassName="rounded-2xl bg-emerald-200 px-4 py-3 text-emerald-950 dark:bg-emerald-950/90 dark:text-emerald-400"
         />
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
-            {t("play.victoryDialog.scoreSummaryTitle")}
-          </h3>
-          <div className="mt-3 space-y-2 text-sm text-neutral-700 dark:text-neutral-200">
-            {scoreSummary.items.map((item) => (
-              <div key={item.key} className="flex items-center justify-between">
-                <span
-                  className={`${item.key === "dictionary" ? "text-xs text-gray-400" : ""} `}
+        {scoreSummary ? (
+          <section>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+              {t("play.victoryDialog.scoreSummaryTitle")}
+            </h3>
+            <div className="mt-3 space-y-2 text-sm text-neutral-700 dark:text-neutral-200">
+              {scoreSummary.items.map((item) => (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between"
                 >
-                  {t(`play.victoryDialog.scoreItems.${item.key}`, {
-                    bonus: NORMAL_DICTIONARY_ROW_BONUS,
-                  })}
-                </span>
+                  <span
+                    className={`${item.key === "dictionary" ? "text-xs text-gray-400" : ""} `}
+                  >
+                    {t(`play.victoryDialog.scoreItems.${item.key}`, {
+                      bonus: NORMAL_DICTIONARY_ROW_BONUS,
+                    })}
+                  </span>
 
-                <span
-                  className={`font-semibold ${item.key === "dictionary" ? "text-xs text-gray-400" : ""}`}
-                >
-                  {formatScoreSummaryValue(item.key, item.value)}
-                </span>
+                  <span
+                    className={`font-semibold ${item.key === "dictionary" ? "text-xs text-gray-400" : ""}`}
+                  >
+                    {formatScoreSummaryValue(item.key, item.value)}
+                  </span>
+                </div>
+              ))}
+              <div className="border-t border-neutral-200 pt-3 font-semibold text-neutral-950 dark:border-neutral-700 dark:text-neutral-50">
+                <div className="flex items-center justify-between">
+                  <span>{t("play.victoryDialog.scoreItems.total")}</span>
+                  <span>+{scoreSummary.total}</span>
+                </div>
               </div>
-            ))}
-            <div className="border-t border-neutral-200 pt-3 font-semibold text-neutral-950 dark:border-neutral-700 dark:text-neutral-50">
-              <div className="flex items-center justify-between">
-                <span>{t("play.victoryDialog.scoreItems.total")}</span>
-                <span>+{scoreSummary.total}</span>
-              </div>
+              {challengeBonusPoints > 0 ? (
+                <div className="border-t border-neutral-200 pt-3 text-neutral-950 dark:border-neutral-700 dark:text-neutral-50">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span>{t("play.victoryDialog.challengeBonus")}</span>
+                    <span>+{challengeBonusPoints}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between font-semibold">
+                    <span>{t("play.victoryDialog.totalWithChallenges")}</span>
+                    <span>+{scoreSummary.total + challengeBonusPoints}</span>
+                  </div>
+                </div>
+              ) : null}
             </div>
-            {challengeBonusPoints > 0 ? (
-              <div className="border-t border-neutral-200 pt-3 text-neutral-950 dark:border-neutral-700 dark:text-neutral-50">
-                <div className="flex items-center justify-between font-semibold">
-                  <span>{t("play.victoryDialog.challengeBonus")}</span>
-                  <span>+{challengeBonusPoints}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between font-semibold">
-                  <span>{t("play.victoryDialog.totalWithChallenges")}</span>
-                  <span>+{scoreSummary.total + challengeBonusPoints}</span>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         <div className="text-sm text-neutral-700 dark:text-neutral-200">
           <FireStreak
