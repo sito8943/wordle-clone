@@ -101,6 +101,22 @@ describe("Toolbar", () => {
     ).toBeTruthy();
   });
 
+  it("shows streak badge outside zen mode", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.CLASSIC;
+
+    const { container } = render(<Toolbar />);
+
+    expect(container.querySelector('[data-tour="streak-badge"]')).toBeTruthy();
+  });
+
+  it("hides streak badge in zen mode", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
+
+    const { container } = render(<Toolbar />);
+
+    expect(container.querySelector('[data-tour="streak-badge"]')).toBeNull();
+  });
+
   it("hides refresh button in daily mode", () => {
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.DAILY;
 

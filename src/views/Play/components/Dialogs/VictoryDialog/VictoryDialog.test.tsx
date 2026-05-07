@@ -232,4 +232,20 @@ describe("VictoryDialog", () => {
     expect(screen.queryByText("Score summary")).toBeNull();
     expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
   });
+
+  it("hides streak when explicitly disabled", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={null}
+        showStreak={false}
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Streak: 3")).toBeNull();
+  });
 });

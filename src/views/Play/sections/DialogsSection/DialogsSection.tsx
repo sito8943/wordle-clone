@@ -330,6 +330,7 @@ const DialogsSection = (): JSX.Element => {
               scoreSummary={
                 shouldHideVictoryScoreSummary ? null : victoryScoreSummary
               }
+              showStreak={!shouldHideVictoryScoreSummary}
               challengeBonusPoints={endOfGameChallengeBonusPoints}
               showSettingsHint={showEndOfGameSettingsHint}
               shareEnabled={shareButtonEnabled && victoryBoardShareSupported}

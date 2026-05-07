@@ -1,5 +1,6 @@
 import { type JSX } from "react";
 import { FireStreak, Alert } from "@components";
+import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { usePlayView } from "@views/Play/providers";
 import {
@@ -20,16 +21,24 @@ const Toolbar = (): JSX.Element => {
   const { controller } = usePlayView();
   const {
     currentWinStreak,
+    activeModeId,
     dictionaryLoading,
     dictionaryError,
     challengeCompletionMessage,
   } = controller;
+  const showStreakBadge = activeModeId !== WORDLE_MODE_IDS.ZEN;
   return (
     <>
-      <div className="w-full flex items-center justify-between sm:px-4 toolbar-entry-from-top-animation">
-        <div data-tour="streak-badge">
-          <FireStreak streak={currentWinStreak} showScoreBonusPopup />
-        </div>
+      <div
+        className={`w-full flex items-center sm:px-4 toolbar-entry-from-top-animation ${
+          showStreakBadge ? "justify-between" : "justify-end"
+        }`}
+      >
+        {showStreakBadge ? (
+          <div data-tour="streak-badge">
+            <FireStreak streak={currentWinStreak} showScoreBonusPopup />
+          </div>
+        ) : null}
         <div className="flex items-center justify-end gap-2 sm:gap-4 ">
           <ToolbarWordListButton />
           <ToolbarHintButton />

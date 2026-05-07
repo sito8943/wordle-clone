@@ -18,6 +18,7 @@ const VictoryDialog = ({
   currentStreak,
   scoreSummary,
   challengeBonusPoints = 0,
+  showStreak = true,
   showSettingsHint = false,
   shareEnabled = false,
   isSharing = false,
@@ -124,12 +125,14 @@ const VictoryDialog = ({
           </section>
         ) : null}
 
-        <div className="text-sm text-neutral-700 dark:text-neutral-200">
-          <FireStreak
-            streak={currentStreak}
-            className="text-neutral-700 dark:text-neutral-200"
-          />
-        </div>
+        {showStreak ? (
+          <div className="text-sm text-neutral-700 dark:text-neutral-200">
+            <FireStreak
+              streak={currentStreak}
+              className="text-neutral-700 dark:text-neutral-200"
+            />
+          </div>
+        ) : null}
 
         {showSettingsHint ? <SettingsHint /> : null}
 
