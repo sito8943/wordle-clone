@@ -38,6 +38,8 @@ const View = () => {
   const navigate = useNavigate();
   const appVersion = env.appVersion;
   const isHomeRoute = pathname === ROUTES.HOME;
+  const isZenRoute = pathname === ROUTES.ZEN;
+  const shouldShowFooter = !isHomeRoute && !isZenRoute;
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(
@@ -242,7 +244,7 @@ const View = () => {
           <Outlet />
         </ErrorBoundary>
       </div>
-      {!isHomeRoute ? <Footer /> : null}
+      {shouldShowFooter ? <Footer /> : null}
       <Suspense fallback={null}>
         {queuedVersionDialogVisible ? (
           <VersionUpdateDialog
