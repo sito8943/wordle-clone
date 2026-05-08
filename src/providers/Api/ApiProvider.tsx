@@ -25,7 +25,7 @@ const ApiProvider = ({ children }: ProviderProps) => {
       }),
     [backendUrl, convexUrl],
   );
-  const scoreClient = useMemo(() => new ScoreClient(gateway), [gateway]);
+  const scoreClient = useMemo(() => new ScoreClient(), []);
   const wordDictionaryClient = useMemo(
     () => new WordDictionaryClient(gateway),
     [gateway],

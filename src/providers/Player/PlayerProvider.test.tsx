@@ -90,15 +90,17 @@ const makeWrapper =
       streak: 0,
     }),
   }: {
-    upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
+    upsertPlayerProfile?: (input: unknown) => Promise<unknown>;
     register?: ApiContextType["apiManager"]["players"]["register"];
     renameNick?: ApiContextType["apiManager"]["players"]["renameNick"];
     updatePreferences?: ApiContextType["apiManager"]["players"]["updatePreferences"];
     markTutorialSeen?: ApiContextType["apiManager"]["players"]["markTutorialSeen"];
     resetTutorialPrompts?: ApiContextType["apiManager"]["players"]["resetTutorialPrompts"];
-    recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
+    recoverPlayerByCode?: ApiContextType["apiManager"]["players"]["getByCode"];
     adoptRecoveredIdentity?: ApiContextType["scoreClient"]["adoptRecoveredIdentity"];
-    getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
+    getCurrentPlayerProfile?: (
+      language: string,
+    ) => Promise<unknown> | unknown;
     queueRoundEvent?: (event: unknown) => void;
     syncRoundEvents?: (...args: unknown[]) => Promise<unknown>;
     getCurrentClientScoreSnapshot?: ApiContextType["scoreClient"]["getCurrentClientScoreSnapshot"];
@@ -113,22 +115,12 @@ const makeWrapper =
       );
     });
 
+    void upsertPlayerProfile;
     const apiValue = createTestApiContextValue({
-      scoreClient: createMockScoreClient(
-        vi.fn().mockResolvedValue({
-          scores: [],
-          source: "local",
-          currentClientRank: null,
-          currentClientEntry: null,
-        }),
-        {
-          upsertPlayerProfile,
-          recoverPlayerByCode,
-          adoptRecoveredIdentity,
-          getCurrentPlayerProfile,
-          getCurrentClientScoreSnapshot,
-        },
-      ) as never,
+      scoreClient: createMockScoreClient({
+        adoptRecoveredIdentity,
+        getCurrentClientScoreSnapshot,
+      }) as never,
       apiManager: createMockApiManager({
         players: {
           register,
@@ -758,17 +750,7 @@ describe("PlayerProvider", () => {
       .spyOn(queryClient, "invalidateQueries")
       .mockResolvedValue(undefined);
     const apiValue = createTestApiContextValue({
-      scoreClient: createMockScoreClient(
-        vi.fn().mockResolvedValue({
-          scores: [],
-          source: "local",
-          currentClientRank: null,
-          currentClientEntry: null,
-        }),
-        {
-          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
-        },
-      ) as never,
+      scoreClient: createMockScoreClient() as never,
       apiManager: createMockApiManager({
         players: {
           register: vi.fn().mockResolvedValue({
@@ -969,18 +951,7 @@ describe("PlayerProvider", () => {
       .spyOn(queryClient, "invalidateQueries")
       .mockResolvedValue(undefined);
     const apiValue = createTestApiContextValue({
-      scoreClient: createMockScoreClient(
-        vi.fn().mockResolvedValue({
-          scores: [],
-          source: "local",
-          currentClientRank: null,
-          currentClientEntry: null,
-        }),
-        {
-          recoverPlayerByCode,
-          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
-        },
-      ) as never,
+      scoreClient: createMockScoreClient() as never,
       apiManager: createMockApiManager({
         players: {
           getByCode: recoverPlayerByCode as never,

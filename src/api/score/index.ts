@@ -18,5 +18,4 @@ export type {
   StoredRoundSyncEvent,
   StoredScore,
   TopScoresResult,
-  UpsertPlayerProfileInput,
 } from "./types";

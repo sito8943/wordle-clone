@@ -2,18 +2,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import { SyncQueueManager } from "@api";
-import type { RemotePlayerProfile, TopScoresResult } from "@api/score";
 import type { ReactElement, ReactNode } from "react";
 import { i18n } from "@i18n";
 import { ApiContext } from "@providers/Api/ApiContext";
 import type { ApiContextType } from "@providers/Api/types";
-
-const DEFAULT_TOP_SCORES_RESULT: TopScoresResult = {
-  scores: [],
-  source: "local",
-  currentClientRank: null,
-  currentClientEntry: null,
-};
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -82,7 +74,7 @@ const createTestApiContextValue = (
   overrides: Partial<ApiContextType> = {},
 ): ApiContextType => ({
   apiManager: createMockApiManager(),
-  scoreClient: createMockScoreClient(async () => DEFAULT_TOP_SCORES_RESULT),
+  scoreClient: createMockScoreClient(),
   wordDictionaryClient: createMockWordDictionaryClient(async () => []),
   dailyWordClient: createMockDailyWordClient(),
   challengeClient: createMockChallengeClient(),
@@ -170,47 +162,10 @@ const createMockApiManager = (
   }) as unknown as ApiContextType["apiManager"];
 
 const createMockScoreClient = (
-  listTopScores: ApiContextType["scoreClient"]["listTopScores"],
   overrides: Partial<ApiContextType["scoreClient"]> = {},
 ) =>
   ({
-    listTopScores,
-    recordScore: vi.fn().mockResolvedValue(undefined),
-    isNickAvailable: vi.fn().mockResolvedValue(true),
-    upsertPlayerProfile: vi.fn().mockImplementation(
-      async (input) =>
-        ({
-          id: "remote-player",
-          clientId: "test-client",
-          clientRecordId: "test-record",
-          nick: input.nick,
-          language: input.language,
-          playerCode: "AB12",
-          score: input.score ?? 0,
-          streak: input.streak ?? 0,
-          difficulty: input.difficulty,
-          keyboardPreference: input.keyboardPreference,
-          tutorialPromptSeenModes: input.tutorialPromptSeenModes,
-          createdAt: 1000,
-        }) as RemotePlayerProfile,
-    ),
-    recoverPlayerByCode: vi.fn().mockResolvedValue({
-      id: "remote-player",
-      clientId: "test-client",
-      clientRecordId: "test-record",
-      nick: "Recovered",
-      language: "en",
-      playerCode: "AB12",
-      score: 0,
-      streak: 0,
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-      createdAt: 1000,
-    } as RemotePlayerProfile),
-    getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
     cachePlayerScore: vi.fn(),
-    getCachedTopScores: vi.fn().mockReturnValue(DEFAULT_TOP_SCORES_RESULT),
-    consumeDailyShield: vi.fn().mockResolvedValue(null),
     getCurrentClientScoreSnapshot: vi.fn().mockReturnValue({
       score: 0,
       streak: 0,

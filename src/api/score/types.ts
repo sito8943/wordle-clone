@@ -33,16 +33,6 @@ export type RecordScoreInput = {
   overwriteExisting?: boolean;
 };
 
-export type UpsertPlayerProfileInput = {
-  nick: string;
-  language: PlayerLanguage;
-  score?: number;
-  streak?: number;
-  difficulty: PlayerDifficulty;
-  keyboardPreference: PlayerKeyboardPreference;
-  tutorialPromptSeenModes?: PlayerTutorialPromptSeenModes;
-};
-
 export type TopScoresResult = {
   scores: ScoreEntry[];
   source: ScoreSource;
@@ -59,7 +49,6 @@ export type StoredScore = {
   score: number;
   streak: number;
   createdAt: number;
-  mutation?: string;
 };
 
 export type RemoteScore = {
@@ -111,22 +100,6 @@ export type RemotePlayerProfile = {
 
 export type StoredScoreIdentity = {
   clientRecordId: string;
-};
-
-export type ScoreClientGatewayOverrides = {
-  isConfigured?: boolean;
-  query?: (...args: unknown[]) => Promise<unknown>;
-  mutation?: (...args: unknown[]) => Promise<unknown>;
-  isNetworkError?: (error: unknown) => boolean;
-};
-
-export type ConsumeDailyShieldInput = {
-  nick: string;
-  language: PlayerLanguage;
-  difficulty: PlayerDifficulty;
-  keyboardPreference: PlayerKeyboardPreference;
-  playerCode?: string | null;
-  happenedAt?: number;
 };
 
 export type StoredRoundSyncEvent = RoundSyncEvent;
