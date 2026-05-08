@@ -89,7 +89,15 @@ const createTestApiContextValue = (
   ...overrides,
 });
 
-const createMockApiManager = (): ApiContextType["apiManager"] =>
+const createMockApiManager = (
+  overrides: Partial<{
+    words: Partial<ApiContextType["apiManager"]["words"]>;
+    players: Partial<ApiContextType["apiManager"]["players"]>;
+    scores: Partial<ApiContextType["apiManager"]["scores"]>;
+    challenges: Partial<ApiContextType["apiManager"]["challenges"]>;
+    admin: Partial<ApiContextType["apiManager"]["admin"]>;
+  }> = {},
+): ApiContextType["apiManager"] =>
   ({
     isConfigured: false,
     words: {
@@ -98,6 +106,48 @@ const createMockApiManager = (): ApiContextType["apiManager"] =>
       seed: vi.fn().mockResolvedValue(undefined),
       ensureSeeded: vi.fn().mockResolvedValue(undefined),
       refreshChecksum: vi.fn().mockResolvedValue({ checksum: 0, updatedAt: 0 }),
+      ...overrides.words,
+    },
+    players: {
+      register: vi.fn().mockResolvedValue(null),
+      getMe: vi.fn().mockResolvedValue(null),
+      renameNick: vi.fn().mockResolvedValue(null),
+      updatePreferences: vi.fn().mockResolvedValue(null),
+      markTutorialSeen: vi.fn().mockResolvedValue(null),
+      getNickAvailability: vi.fn().mockResolvedValue({ available: true }),
+      getByCode: vi.fn().mockResolvedValue(null),
+      backfillCodes: vi.fn().mockResolvedValue({ updated: 0 }),
+      ...overrides.players,
+    },
+    scores: {
+      getTop: vi.fn().mockResolvedValue({ scores: [] }),
+      record: vi.fn().mockResolvedValue({ ok: true, id: "score_test" }),
+      update: vi.fn().mockResolvedValue({ ok: true, id: "score_test" }),
+      syncRoundEvents: vi.fn().mockResolvedValue(null),
+      consumeDailyShield: vi.fn().mockResolvedValue(null),
+      ...overrides.scores,
+    },
+    challenges: {
+      list: vi.fn().mockResolvedValue([]),
+      getToday: vi.fn().mockResolvedValue(null),
+      getProgress: vi.fn().mockResolvedValue([]),
+      resetProgress: vi
+        .fn()
+        .mockResolvedValue({ resetCount: 0, pointsReverted: 0 }),
+      generateDaily: vi.fn().mockResolvedValue(null),
+      regenerateDaily: vi.fn().mockResolvedValue(null),
+      complete: vi
+        .fn()
+        .mockResolvedValue({ pointsAwarded: 0, alreadyCompleted: false }),
+      seed: vi
+        .fn()
+        .mockResolvedValue({ inserted: 0, total: 0, alreadySeeded: true }),
+      ...overrides.challenges,
+    },
+    admin: {
+      getDbStatus: vi.fn().mockResolvedValue({ empty: false, counts: {} }),
+      importBackup: vi.fn().mockResolvedValue({ ok: true, imported: {} }),
+      ...overrides.admin,
     },
   }) as unknown as ApiContextType["apiManager"];
 
@@ -187,6 +237,7 @@ const createHookWrapper = (
 
 export {
   createHookWrapper,
+  createMockApiManager,
   createMockChallengeClient,
   createMockDailyWordClient,
   createMockScoreClient,

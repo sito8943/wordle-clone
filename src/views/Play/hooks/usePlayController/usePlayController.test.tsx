@@ -77,7 +77,22 @@ const createMockSoundValue = (overrides: Record<string, unknown> = {}) => ({
 });
 
 vi.mock("@providers", () => ({
-  useApi: () => mockUseApi(),
+  useApi: () => {
+    const value = mockUseApi();
+    if (value && value.challengeClient && !value.apiManager) {
+      return {
+        ...value,
+        apiManager: {
+          challenges: {
+            getToday: value.challengeClient.getTodayChallenges,
+            generateDaily: value.challengeClient.generateDailyChallenges,
+            regenerateDaily: value.challengeClient.regenerateDailyChallenges,
+          },
+        },
+      };
+    }
+    return value;
+  },
   usePlayer: () => mockUsePlayer(),
 }));
 

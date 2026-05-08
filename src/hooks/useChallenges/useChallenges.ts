@@ -14,7 +14,7 @@ import {
 } from "./utils";
 
 const useChallenges = (enabled: boolean): UseChallengesResult => {
-  const { challengeClient } = useApi();
+  const { apiManager, challengeClient } = useApi();
   const [challenges, setChallenges] = useState<RemoteChallenges | null>(null);
   const [progress, setProgress] = useState<RemoteChallengeProgress[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,11 +47,11 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
       setLoading(true);
       try {
         // Try to get today's challenges
-        let todayChallenges = await challengeClient.getTodayChallenges(date);
+        let todayChallenges = await apiManager.challenges.getToday(date);
 
         // Generate if they don't exist yet (first player of the day)
         if (!todayChallenges) {
-          todayChallenges = await challengeClient.generateDailyChallenges(date);
+          todayChallenges = await apiManager.challenges.generateDaily(date);
         }
         setChallenges(todayChallenges);
 
@@ -82,7 +82,7 @@ const useChallenges = (enabled: boolean): UseChallengesResult => {
     };
 
     init();
-  }, [enabled, challengeClient]);
+  }, [apiManager, enabled, challengeClient]);
 
   const openDialog = useCallback(() => setShowDialog(true), []);
   const closeDialog = useCallback(() => setShowDialog(false), []);

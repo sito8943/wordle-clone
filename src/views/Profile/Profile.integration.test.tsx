@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PlayersManager } from "@api/players";
 import { ScoreClient } from "@api/score";
 import { env } from "@config";
 import { getChangelogRoute } from "@config/routes";
@@ -144,6 +145,19 @@ describe("Profile integration", () => {
       }),
     );
     vi.spyOn(ScoreClient.prototype, "recoverPlayerByCode").mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Recovered",
+      language: "en",
+      playerCode: "ZX90",
+      score: 44,
+      streak: 6,
+      difficulty: "hard",
+      keyboardPreference: "native",
+      createdAt: 1000,
+    });
+    vi.spyOn(PlayersManager.prototype, "getByCode").mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",

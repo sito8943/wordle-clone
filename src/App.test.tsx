@@ -8,6 +8,8 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import { PlayersManager } from "@api/players";
+import { ChallengesManager } from "@api/challenges";
 import { ScoreClient, type TopScoresResult } from "@api/score";
 import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE, WordDictionaryClient } from "@api/words";
@@ -270,6 +272,23 @@ describe("App", () => {
       keyboardPreference: "onscreen",
       createdAt: 1000,
     });
+    vi.spyOn(PlayersManager.prototype, "getByCode").mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Recovered",
+      language: "en",
+      playerCode: "AB12",
+      score: 0,
+      streak: 0,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    vi.spyOn(ChallengesManager.prototype, "getToday").mockResolvedValue(null);
+    vi.spyOn(ChallengesManager.prototype, "generateDaily").mockResolvedValue(
+      null as never,
+    );
     vi.spyOn(
       ScoreClient.prototype,
       "getCurrentPlayerProfile",

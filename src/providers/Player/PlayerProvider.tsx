@@ -58,7 +58,7 @@ const mergeTutorialPromptSeenModes = (
 };
 
 const PlayerProvider = ({ children }: ProviderProps) => {
-  const { scoreClient } = useApi();
+  const { apiManager, scoreClient } = useApi();
   const queryClient = useQueryClient();
   const {
     difficultyEasyEnabled,
@@ -304,7 +304,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const recoverPlayer = useCallback(
     async (code: string) => {
-      const remoteProfile = await scoreClient.recoverPlayerByCode(code);
+      const remoteProfile = await apiManager.players.getByCode(code);
+      if (!remoteProfile) {
+        throw new Error("Player not found.");
+      }
       scoreClient.adoptRecoveredIdentity(remoteProfile, {
         mergeCurrentBrowserProgress: false,
         clearQueuedRoundEvents: true,
@@ -312,7 +315,12 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       await applyRemoteProfile(remoteProfile);
       hydrateDailyModeOutcomeFromProfile(remoteProfile);
     },
-    [applyRemoteProfile, hydrateDailyModeOutcomeFromProfile, scoreClient],
+    [
+      apiManager,
+      applyRemoteProfile,
+      hydrateDailyModeOutcomeFromProfile,
+      scoreClient,
+    ],
   );
 
   const refreshCurrentPlayerProfile = useCallback(async () => {
@@ -716,9 +724,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     didHydrateRemoteRef.current = true;
 
     if (isAnonymousPlayer && hasRecoveryCode) {
-      void scoreClient
-        .recoverPlayerByCode(player.code)
+      void apiManager.players
+        .getByCode(player.code)
         .then(async (remoteProfile) => {
+          if (!remoteProfile) return;
           scoreClient.adoptRecoveredIdentity(remoteProfile, {
             mergeCurrentBrowserProgress: false,
             clearQueuedRoundEvents: true,
@@ -748,6 +757,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       })
       .catch(() => undefined);
   }, [
+    apiManager,
     applyRemoteProfile,
     hydrateDailyModeOutcomeFromProfile,
     player,

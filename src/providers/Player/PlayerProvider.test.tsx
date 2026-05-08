@@ -14,9 +14,10 @@ import { PlayerProvider } from "./index";
 import { usePlayer } from "./usePlayer";
 import { DEFAULT_PLAYER } from "./constants";
 import {
-  createTestQueryClient,
-  createTestApiContextValue,
+  createMockApiManager,
   createMockScoreClient,
+  createTestApiContextValue,
+  createTestQueryClient,
 } from "../../test/utils";
 
 beforeEach(() => localStorage.clear());
@@ -89,6 +90,11 @@ const makeWrapper =
           getCurrentClientScoreSnapshot,
         },
       ) as never,
+      apiManager: createMockApiManager({
+        players: {
+          getByCode: recoverPlayerByCode as never,
+        },
+      }),
     });
     const queryClient = createTestQueryClient();
 
@@ -920,6 +926,11 @@ describe("PlayerProvider", () => {
           getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
         },
       ) as never,
+      apiManager: createMockApiManager({
+        players: {
+          getByCode: recoverPlayerByCode as never,
+        },
+      }),
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>

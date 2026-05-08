@@ -84,6 +84,7 @@ export default function usePlayController(
 ) {
   const navigate = useNavigate();
   const {
+    apiManager,
     scoreClient,
     wordDictionaryClient,
     challengeClient,
@@ -434,10 +435,10 @@ export default function usePlayController(
     });
 
     try {
-      let todayChallenges = await challengeClient.getTodayChallenges(date);
+      let todayChallenges = await apiManager.challenges.getToday(date);
 
       if (!todayChallenges) {
-        todayChallenges = await challengeClient.generateDailyChallenges(date);
+        todayChallenges = await apiManager.challenges.generateDaily(date);
       }
 
       const progress = await challengeClient.getPlayerChallengeProgress(date);
@@ -539,6 +540,7 @@ export default function usePlayController(
     }
   }, [
     answer,
+    apiManager,
     challengeClient,
     challengesEnabled,
     gameId,
@@ -1238,10 +1240,10 @@ export default function usePlayController(
 
     try {
       const date = getTodayDateUTC();
-      let todayChallenges = await challengeClient.getTodayChallenges(date);
+      let todayChallenges = await apiManager.challenges.getToday(date);
 
       if (!todayChallenges) {
-        todayChallenges = await challengeClient.generateDailyChallenges(date);
+        todayChallenges = await apiManager.challenges.generateDaily(date);
       }
       const resetResult =
         await challengeClient.resetPlayerChallengeProgressForDate(date);
@@ -1272,6 +1274,7 @@ export default function usePlayController(
       setIsRefreshingDailyChallengesForDeveloper(false);
     }
   }, [
+    apiManager,
     challengeClient,
     isChangingDailyChallengesForDeveloper,
     isRefreshingDailyChallengesForDeveloper,
@@ -1301,8 +1304,7 @@ export default function usePlayController(
 
     try {
       const date = getTodayDateUTC();
-      const todayChallenges =
-        await challengeClient.regenerateDailyChallenges(date);
+      const todayChallenges = await apiManager.challenges.regenerateDaily(date);
       const resetResult =
         await challengeClient.resetPlayerChallengeProgressForDate(date);
       resetDailyChallengeRoundTracker(date, player.code);
@@ -1332,6 +1334,7 @@ export default function usePlayController(
       setIsChangingDailyChallengesForDeveloper(false);
     }
   }, [
+    apiManager,
     challengeClient,
     isChangingDailyChallengesForDeveloper,
     isRefreshingDailyChallengesForDeveloper,
