@@ -157,7 +157,9 @@ describe("View layout chrome visibility", () => {
     );
 
     const navbarShell = screen.getByTestId("view-navbar-shell");
-    expect(navbarShell.className).toContain("max-h-0");
+    expect(navbarShell.getAttribute("aria-hidden")).toBe("true");
+    expect(navbarShell.className).toContain("opacity-0");
+    expect(navbarShell.className).toContain("pointer-events-none");
     expect(screen.queryByText("Footer")).toBeNull();
     expect(screen.getByText("Zen content")).toBeTruthy();
   });

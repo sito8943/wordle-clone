@@ -289,15 +289,15 @@ describe("Board", () => {
 
     expect(screen.getAllByRole("row").length).toBe(6);
     expect(
-      screen.queryByRole("gridcell", {
+      screen.queryAllByRole("gridcell", {
         name: `A, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
       }),
-    ).toBeNull();
+    ).toHaveLength(0);
     expect(
-      screen.getByRole("gridcell", {
+      screen.getAllByRole("gridcell", {
         name: `I, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
-      }),
-    ).toBeTruthy();
+      }).length,
+    ).toBeGreaterThan(0);
   });
 
   it("enables board row viewport when maxVisibleRows is provided", () => {
@@ -356,10 +356,10 @@ describe("Board", () => {
       screen.getByTestId("board-row-shift-layer").getAttribute("style"),
     ).toContain("--board-overflow-shift-rows: 1");
     expect(
-      screen.getByRole("gridcell", {
-        name: `A, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
-      }),
-    ).toBeTruthy();
+      screen.getAllByRole("gridcell", {
+        name: `C, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
+      }).length,
+    ).toBeGreaterThan(0);
 
     await waitFor(() => {
       expect(
@@ -367,10 +367,10 @@ describe("Board", () => {
       ).not.toContain("board-overflow-shift-up-animation");
     });
     expect(
-      screen.queryByRole("gridcell", {
-        name: `A, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
+      screen.queryAllByRole("gridcell", {
+        name: `C, ${i18n.t("play.gameplay.tile.statuses.absent")}`,
       }),
-    ).toBeNull();
+    ).toHaveLength(0);
   });
 
   it("scales past rows to 0.95 and active row to 1.05 with transition", () => {

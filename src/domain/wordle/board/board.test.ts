@@ -3,7 +3,6 @@ import { buildBoardRows } from "./board";
 import {
   BOARD_COLUMNS,
   BOARD_OVERFLOW_BUFFER_ROWS,
-  BOARD_OVERFLOW_TRIGGER_REMAINING_ROWS,
   BOARD_ROWS,
 } from "./constants";
 import type { GuessResult } from "../types";
@@ -153,7 +152,7 @@ describe("buildBoardRows", () => {
     );
     const rows = buildBoardRows(guesses, "", false, undefined, {
       overflowBufferRows: BOARD_OVERFLOW_BUFFER_ROWS,
-      overflowTriggerRemainingRows: BOARD_OVERFLOW_TRIGGER_REMAINING_ROWS,
+      overflowTriggerRemainingRows: 2,
     });
 
     expect(rows).toHaveLength(BOARD_ROWS + BOARD_OVERFLOW_BUFFER_ROWS);
