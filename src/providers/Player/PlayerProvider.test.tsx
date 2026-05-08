@@ -13,6 +13,7 @@ import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
 import { usePlayer } from "./usePlayer";
 import { DEFAULT_PLAYER } from "./constants";
+import { SyncQueueManager } from "@api";
 import {
   createMockApiManager,
   createMockScoreClient,
@@ -72,6 +73,15 @@ const makeWrapper =
     getCurrentClientScoreSnapshot?: ApiContextType["scoreClient"]["getCurrentClientScoreSnapshot"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
+    const realSyncQueue = new SyncQueueManager();
+    vi.spyOn(realSyncQueue, "enqueueRoundEvent").mockImplementation((event) => {
+      queueRoundEvent(event);
+      return SyncQueueManager.prototype.enqueueRoundEvent.call(
+        realSyncQueue,
+        event,
+      );
+    });
+
     const apiValue = createTestApiContextValue({
       scoreClient: createMockScoreClient(
         vi.fn().mockResolvedValue({
@@ -99,7 +109,8 @@ const makeWrapper =
               getCurrentPlayerProfile(language as never),
             ) as never,
         },
-        syncQueue: { enqueueRoundEvent: queueRoundEvent as never },
+        scores: { syncRoundEvents: syncRoundEvents as never },
+        syncQueue: realSyncQueue,
       }),
     });
     const queryClient = createTestQueryClient();
@@ -705,22 +716,19 @@ describe("PlayerProvider", () => {
   });
 
   it("invalidates top scores after syncing a victory event", async () => {
-    const syncRoundEvents = vi
-      .fn()
-      .mockResolvedValueOnce(null)
-      .mockResolvedValue({
-        id: "remote-player",
-        clientId: "test-client",
-        clientRecordId: "test-record",
-        nick: "Ana",
-        language: "en",
-        playerCode: "ZX90",
-        score: 10,
-        streak: 1,
-        difficulty: "normal",
-        keyboardPreference: "onscreen",
-        createdAt: 1000,
-      });
+    const syncRoundEvents = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      language: "en",
+      playerCode: "ZX90",
+      score: 10,
+      streak: 1,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
     const queryClient = createTestQueryClient();
     const invalidateQueriesSpy = vi
       .spyOn(queryClient, "invalidateQueries")
@@ -740,6 +748,7 @@ describe("PlayerProvider", () => {
       ) as never,
       apiManager: createMockApiManager({
         players: { getMe: vi.fn().mockResolvedValue(null) as never },
+        scores: { syncRoundEvents: syncRoundEvents as never },
       }),
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -1147,6 +1156,14 @@ describe("PlayerProvider", () => {
         keyboardPreference: "onscreen",
       }),
     );
+    new SyncQueueManager().enqueueRoundEvent({
+      id: "evt-1",
+      kind: "win",
+      pointsDelta: 9,
+      modeId: "classic",
+      happenedAt: 1000,
+      version: 2,
+    });
     const syncRoundEvents = vi.fn().mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",

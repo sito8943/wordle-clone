@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
+import { SyncQueueManager } from "@api";
 import type { RemotePlayerProfile, TopScoresResult } from "@api/score";
 import type { ReactElement, ReactNode } from "react";
 import { i18n } from "@i18n";
@@ -101,20 +102,8 @@ const createMockApiManager = (
   }> = {},
 ): ApiContextType["apiManager"] =>
   ({
-    isConfigured: false,
-    syncQueue: {
-      enqueueRoundEvent: vi.fn(),
-      readRoundEvents: vi.fn().mockReturnValue([]),
-      writeRoundEvents: vi.fn(),
-      removeRoundEvents: vi.fn(),
-      clearRoundEvents: vi.fn(),
-      enqueuePendingScore: vi.fn(),
-      readPendingScores: vi.fn().mockReturnValue([]),
-      writePendingScores: vi.fn(),
-      removePendingScore: vi.fn(),
-      clearPendingScores: vi.fn(),
-      ...overrides.syncQueue,
-    },
+    isConfigured: true,
+    syncQueue: overrides.syncQueue ?? new SyncQueueManager(),
     identity: {
       getClientId: vi.fn().mockReturnValue("test-client"),
       getClientRecordId: vi.fn().mockReturnValue(null),

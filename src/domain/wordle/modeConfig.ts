@@ -34,7 +34,7 @@ const isWordleModeId = (value: unknown): value is WordleModeId =>
   value === WORDLE_MODE_IDS.ZEN ||
   value === WORDLE_MODE_IDS.DAILY;
 
-const isScoreboardModeId = (value: unknown): value is ScoreboardModeId =>
+export const isScoreboardModeId = (value: unknown): value is ScoreboardModeId =>
   value === SCOREBOARD_MODE_IDS.CLASSIC ||
   value === SCOREBOARD_MODE_IDS.LIGHTNING ||
   value === SCOREBOARD_MODE_IDS.DAILY;

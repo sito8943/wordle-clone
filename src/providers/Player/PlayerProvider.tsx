@@ -22,6 +22,7 @@ import {
   consumeDailyShieldForDate,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
+  isScoreboardModeId,
   resolveScoreboardModeId,
   resolveEnabledDifficulty,
   writeDailyModeOutcomeForDate,
@@ -36,6 +37,7 @@ import {
   type ScoreboardModeId,
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import { ApiNetworkError } from "@api";
 import type { RemotePlayerProfile } from "@api/score";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 
@@ -241,24 +243,53 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         return null;
       }
 
-      const syncedProfile = await scoreClient.syncRoundEvents({
-        nick: currentPlayer.name,
-        language: GAMEPLAY_LANGUAGE,
-        difficulty: currentPlayer.difficulty,
-        keyboardPreference: currentPlayer.keyboardPreference,
-      });
+      const allEvents = apiManager.syncQueue.readRoundEvents();
+      const supportedEvents = allEvents.filter((event) =>
+        isScoreboardModeId(event.modeId),
+      );
+      if (supportedEvents.length !== allEvents.length) {
+        apiManager.syncQueue.writeRoundEvents(supportedEvents);
+      }
+
+      if (supportedEvents.length === 0 || !apiManager.isConfigured) {
+        return null;
+      }
+
+      const orderedEvents = [...supportedEvents].sort(
+        (left, right) => left.happenedAt - right.happenedAt,
+      );
+
+      let syncedProfile: RemotePlayerProfile | null;
+      try {
+        syncedProfile = await apiManager.scores.syncRoundEvents({
+          nick: currentPlayer.name,
+          language: GAMEPLAY_LANGUAGE,
+          difficulty: currentPlayer.difficulty,
+          keyboardPreference: currentPlayer.keyboardPreference,
+          events: orderedEvents,
+        });
+      } catch (error) {
+        if (error instanceof ApiNetworkError) {
+          return null;
+        }
+        throw error;
+      }
+
+      apiManager.syncQueue.clearRoundEvents();
 
       if (syncedProfile) {
+        apiManager.identity.adoptFromProfile(syncedProfile);
         await applyRemoteProfile(syncedProfile, {
           preserveLocalPreferences: true,
           preserveLocalProgress: true,
         });
         await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.scores });
       }
 
       return syncedProfile;
     },
-    [applyRemoteProfile, queryClient, scoreClient],
+    [apiManager, applyRemoteProfile, queryClient],
   );
 
   const updatePlayer = useCallback(

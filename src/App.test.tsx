@@ -292,48 +292,51 @@ describe("App", () => {
     vi.spyOn(ScoresManager.prototype, "getTop").mockImplementation((async (
       params: { limit?: number; modeId?: string } = {},
     ) => {
-        const raw = localStorage.getItem("wordle:scoreboard:cache");
-        if (!raw) {
-          return { scores: [], currentClientRank: null, currentClientEntry: null };
-        }
-        const clientId =
-          localStorage.getItem("wordle:scoreboard:client-id") ?? "";
-        const cached = JSON.parse(raw) as Array<{
-          localId: string;
-          clientId?: string;
-          nick: string;
-          language?: string;
-          modeId?: string;
-          score: number;
-          streak?: number;
-          createdAt: number;
-        }>;
-        const modeId = params.modeId ?? "classic";
-        const sorted = cached
-          .filter((entry) => (entry.modeId ?? "classic") === modeId)
-          .sort((a, b) => b.score - a.score);
-        const decorated = sorted.map((entry) => ({
-          id: entry.localId,
-          nick: entry.nick,
-          language: entry.language,
-          modeId: entry.modeId,
-          score: entry.score,
-          streak: entry.streak ?? 0,
-          createdAt: entry.createdAt,
-          isCurrentClient: entry.clientId === clientId,
-        }));
-        const limit = params.limit ?? 10;
-        const top = decorated.slice(0, limit);
-        const currentIndex = decorated.findIndex(
-          (entry) => entry.isCurrentClient,
-        );
+      const raw = localStorage.getItem("wordle:scoreboard:cache");
+      if (!raw) {
         return {
-          scores: top,
-          currentClientRank: currentIndex >= 0 ? currentIndex + 1 : null,
-          currentClientEntry:
-            currentIndex >= 0 ? decorated[currentIndex] : null,
+          scores: [],
+          currentClientRank: null,
+          currentClientEntry: null,
         };
-      }) as never);
+      }
+      const clientId =
+        localStorage.getItem("wordle:scoreboard:client-id") ?? "";
+      const cached = JSON.parse(raw) as Array<{
+        localId: string;
+        clientId?: string;
+        nick: string;
+        language?: string;
+        modeId?: string;
+        score: number;
+        streak?: number;
+        createdAt: number;
+      }>;
+      const modeId = params.modeId ?? "classic";
+      const sorted = cached
+        .filter((entry) => (entry.modeId ?? "classic") === modeId)
+        .sort((a, b) => b.score - a.score);
+      const decorated = sorted.map((entry) => ({
+        id: entry.localId,
+        nick: entry.nick,
+        language: entry.language,
+        modeId: entry.modeId,
+        score: entry.score,
+        streak: entry.streak ?? 0,
+        createdAt: entry.createdAt,
+        isCurrentClient: entry.clientId === clientId,
+      }));
+      const limit = params.limit ?? 10;
+      const top = decorated.slice(0, limit);
+      const currentIndex = decorated.findIndex(
+        (entry) => entry.isCurrentClient,
+      );
+      return {
+        scores: top,
+        currentClientRank: currentIndex >= 0 ? currentIndex + 1 : null,
+        currentClientEntry: currentIndex >= 0 ? decorated[currentIndex] : null,
+      };
+    }) as never);
     vi.spyOn(
       ScoreClient.prototype,
       "getCurrentPlayerProfile",
