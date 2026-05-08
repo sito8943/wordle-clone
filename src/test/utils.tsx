@@ -80,6 +80,7 @@ const createMockDailyWordClient = (
 const createTestApiContextValue = (
   overrides: Partial<ApiContextType> = {},
 ): ApiContextType => ({
+  apiManager: createMockApiManager(),
   scoreClient: createMockScoreClient(async () => DEFAULT_TOP_SCORES_RESULT),
   wordDictionaryClient: createMockWordDictionaryClient(async () => []),
   dailyWordClient: createMockDailyWordClient(),
@@ -87,6 +88,18 @@ const createTestApiContextValue = (
   convexEnabled: true,
   ...overrides,
 });
+
+const createMockApiManager = (): ApiContextType["apiManager"] =>
+  ({
+    isConfigured: false,
+    words: {
+      list: vi.fn().mockResolvedValue([]),
+      getChecksum: vi.fn().mockResolvedValue(null),
+      seed: vi.fn().mockResolvedValue(undefined),
+      ensureSeeded: vi.fn().mockResolvedValue(undefined),
+      refreshChecksum: vi.fn().mockResolvedValue({ checksum: 0, updatedAt: 0 }),
+    },
+  }) as unknown as ApiContextType["apiManager"];
 
 const createMockScoreClient = (
   listTopScores: ApiContextType["scoreClient"]["listTopScores"],

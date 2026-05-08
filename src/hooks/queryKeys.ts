@@ -4,6 +4,8 @@ import type { DictionaryLanguage } from "@api/words";
 const TOP_SCORES_QUERY_KEY = ["scores", "top"] as const;
 const DICTIONARY_QUERY_KEY = ["dictionary"] as const;
 const DICTIONARY_CHECKSUM_QUERY_KEY = ["dictionary", "checksum"] as const;
+const WORDS_QUERY_KEY = ["words"] as const;
+const WORDS_CHECKSUM_QUERY_KEY = ["words", "checksum"] as const;
 
 export const queryKeys = {
   topScores: TOP_SCORES_QUERY_KEY,
@@ -21,4 +23,9 @@ export const queryKeys = {
     [...DICTIONARY_QUERY_KEY, language] as const,
   dictionaryChecksumByLanguage: (language: DictionaryLanguage) =>
     [...DICTIONARY_CHECKSUM_QUERY_KEY, language] as const,
+  words: WORDS_QUERY_KEY,
+  wordsByLanguage: (language: DictionaryLanguage) =>
+    [...WORDS_QUERY_KEY, "list", language] as const,
+  wordsChecksumByLanguage: (language: DictionaryLanguage) =>
+    [...WORDS_CHECKSUM_QUERY_KEY, language] as const,
 };

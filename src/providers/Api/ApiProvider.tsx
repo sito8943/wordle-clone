@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { ApiManager } from "@api";
 import { ChallengeClient } from "@api/challenges";
 import { ConvexGateway } from "@api/convex/ConvexGateway";
 import { DailyWordClient } from "@api/dailyWord";
@@ -12,6 +13,10 @@ const ApiProvider = ({ children }: ProviderProps) => {
   const backendUrl = env.mode === "test" ? undefined : env.backendUrl;
   const convexUrl = env.mode === "test" ? undefined : env.convexUrl;
 
+  const apiManager = useMemo(
+    () => new ApiManager({ baseUrl: backendUrl }),
+    [backendUrl],
+  );
   const gateway = useMemo(
     () =>
       new ConvexGateway({
@@ -33,6 +38,7 @@ const ApiProvider = ({ children }: ProviderProps) => {
 
   const contextValue = useMemo(
     () => ({
+      apiManager,
       scoreClient,
       wordDictionaryClient,
       dailyWordClient,
@@ -40,6 +46,7 @@ const ApiProvider = ({ children }: ProviderProps) => {
       convexEnabled: gateway.isConfigured,
     }),
     [
+      apiManager,
       scoreClient,
       wordDictionaryClient,
       dailyWordClient,
