@@ -44,8 +44,8 @@ const Toolbar = (): JSX.Element => {
       <div
         className={`w-full flex items-center sm:px-4 toolbar-entry-from-top-animation ${
           showStreakBadge ? "justify-between" : "justify-end"
-        } transition-[margin-top] duration-300 ease-out ${
-          zenFocusActive ? "-mt-2 sm:-mt-3" : "mt-0"
+        } transition-[margin-top,translate] duration-500 ease-in-out ${
+          zenFocusActive ? "" : "mt-0"
         }`}
       >
         {showStreakBadge ? (

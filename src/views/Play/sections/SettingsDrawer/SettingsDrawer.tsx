@@ -5,6 +5,7 @@ import {
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ROUTE_SEARCH_PARAMS, ROUTE_SEARCH_PARAM_VALUES } from "@config/routes";
 import { WORDLE_MODE_IDS, type PlayerDifficulty } from "@domain/wordle";
 import { Button, SwitcherField } from "@components";
 import { useTranslation } from "@i18n";
@@ -16,6 +17,7 @@ import {
 } from "@views/Play/constants";
 import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 import { usePlayView } from "@views/Play/providers";
+import { useLocation } from "react-router";
 
 const SettingsDrawer = (): JSX.Element | null => {
   const { t } = useTranslation();
@@ -36,6 +38,11 @@ const SettingsDrawer = (): JSX.Element | null => {
     changeDifficulty,
     changeManualTileSelection,
   } = controller;
+  const location = useLocation();
+  const zenFocusActive =
+    activeModeId === WORDLE_MODE_IDS.ZEN &&
+    new URLSearchParams(location.search).get(ROUTE_SEARCH_PARAMS.FOCUS) ===
+      ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON;
   const showDifficultySettings = activeModeId !== WORDLE_MODE_IDS.DAILY;
 
   useEffect(() => {
@@ -56,6 +63,14 @@ const SettingsDrawer = (): JSX.Element | null => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [closeSettingsPanel, showSettingsPanel]);
+
+  useEffect(() => {
+    if (!zenFocusActive || !showSettingsPanel) {
+      return;
+    }
+
+    closeSettingsPanel();
+  }, [closeSettingsPanel, showSettingsPanel, zenFocusActive]);
 
   const toggleSettingsPanel = () => {
     if (showSettingsPanel) {
@@ -82,22 +97,26 @@ const SettingsDrawer = (): JSX.Element | null => {
         id={PLAY_SETTINGS_PANEL_ID}
         role="complementary"
         aria-label={t("play.settingsPanel.title")}
-        className={`fixed right-0 top-0 z-19 flex h-full w-full max-w-sm overflow-visible transition-all duration-500 ease-in-out  ${
+        className={`fixed right-0 top-0 z-19 flex h-full w-full max-w-sm overflow-visible transition-[translate,transform,background] duration-500 ease-in-out  ${
           showSettingsPanel
             ? "translate-x-0 bg-white border-l border-neutral-300 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
-            : "pointer-events-none translate-x-[90%]"
+            : zenFocusActive
+              ? "pointer-events-none opacity-0 translate-x-[90%]"
+              : "pointer-events-none translate-x-[90%]"
         }`}
       >
-        <Button
-          onClick={toggleSettingsPanel}
-          aria-label={t("play.toolbar.settingsAriaLabel")}
-          aria-expanded={showSettingsPanel}
-          aria-controls={PLAY_SETTINGS_PANEL_ID}
-          icon={!showSettingsPanel ? faChevronLeft : faChevronRight}
-          iconClassName={`text-base transition-[scale] duration-300 ease-out`}
-          variant="ghost"
-          className={`h-full pointer-events-auto ${showSettingsPanel ? "w-6 max-sm:hidden!" : "w-10 h-full max-h-60 my-auto"}`}
-        />
+        {!zenFocusActive ? (
+          <Button
+            onClick={toggleSettingsPanel}
+            aria-label={t("play.toolbar.settingsAriaLabel")}
+            aria-expanded={showSettingsPanel}
+            aria-controls={PLAY_SETTINGS_PANEL_ID}
+            icon={!showSettingsPanel ? faChevronLeft : faChevronRight}
+            iconClassName={`text-base transition-[scale] duration-300 ease-out`}
+            variant="ghost"
+            className={`h-full pointer-events-auto ${showSettingsPanel ? "w-6 max-sm:hidden!" : "w-10 h-full max-h-60 my-auto"}`}
+          />
+        ) : null}
         <div className={showSettingsPanel ? "" : "pointer-events-none"}>
           <header className="relative border-b border-neutral-200 px-4 py-4 dark:border-neutral-700">
             <div className="pr-10">

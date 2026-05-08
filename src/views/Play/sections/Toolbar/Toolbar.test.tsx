@@ -183,13 +183,16 @@ describe("Toolbar", () => {
 
   it("keeps only focus off button visible when zen focus is active", () => {
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
-    renderToolbar(
+    const { container } = renderToolbar(
       `/zen?${ROUTE_SEARCH_PARAMS.FOCUS}=${ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON}`,
     );
 
-    expect(
-      screen.getByRole("button", { name: "play.toolbar.focusOffAriaLabel" }),
-    ).toBeTruthy();
+    const focusOffButton = screen.getByRole("button", {
+      name: "play.toolbar.focusOffAriaLabel",
+    });
+
+    expect(focusOffButton).toBeTruthy();
+    expect(container.contains(focusOffButton)).toBe(false);
     expect(
       screen.queryByRole("button", { name: "play.toolbar.refreshAriaLabel" }),
     ).toBeNull();
