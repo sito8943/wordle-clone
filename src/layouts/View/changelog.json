@@ -1,4 +1,25 @@
 {
+  "0.0.23": {
+    "releasedAt": "2026-05-08",
+    "language": {
+      "en": [
+        "Added Zen Focus mode: Focus on now hides extra layout/gameplay controls, and Focus off is available as a floating quick button.",
+        "Improved Zen board flow with smooth infinite progression: rows keep expanding as you play while the board keeps the latest rows visible.",
+        "Updated Zen rules so reaching the original row limit no longer forces a loss, and Zen wins do not change your score/streak.",
+        "Refined quick settings behavior by hiding difficulty controls in Daily and Zen, where difficulty is not part of the active mode rules.",
+        "Expanded the tutorial tour with Zen-specific guidance (board behavior, hints, focus, and refresh) for clearer first-time onboarding.",
+        "Added one-tap tutorial reset from Settings/quick settings and synced tutorial prompt state more reliably when profile sync is available."
+      ],
+      "es": [
+        "Se añadió el modo Enfoque en Zen: Enfocar ahora oculta controles extra de layout/juego, y Desenfocar queda disponible como botón flotante rápido.",
+        "Se mejoró el flujo del tablero en Zen con progresión infinita fluida: las filas se amplían al jugar y el tablero mantiene visibles las últimas filas.",
+        "Se actualizaron las reglas de Zen para que alcanzar el límite original de filas ya no fuerce derrota, y las victorias en Zen no cambien tu puntuación/racha.",
+        "Se refinó el comportamiento de ajustes rápidos ocultando el control de dificultad en Diario y Zen, donde la dificultad no forma parte de las reglas activas del modo.",
+        "Se amplió el tour del tutorial con guía específica de Zen (comportamiento del tablero, pistas, enfoque y reinicio) para mejorar el onboarding inicial.",
+        "Se añadió reinicio del tutorial en un toque desde Ajustes/ajustes rápidos y se sincronizó el estado del tutorial de forma más fiable cuando hay sync de perfil disponible."
+      ]
+    }
+  },
   "0.0.22": {
     "releasedAt": "2026-05-07",
     "language": {
