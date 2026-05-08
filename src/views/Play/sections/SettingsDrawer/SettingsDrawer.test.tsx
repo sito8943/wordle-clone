@@ -86,6 +86,14 @@ describe("SettingsDrawer", () => {
     expect(screen.queryByLabelText("profile.labels.difficulty")).toBeNull();
   });
 
+  it("hides difficulty settings when active mode is zen", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
+
+    renderSettingsDrawer();
+
+    expect(screen.queryByLabelText("profile.labels.difficulty")).toBeNull();
+  });
+
   it("hides the side settings activator when zen focus mode is active", () => {
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
     playViewMock.controller.showSettingsPanel = false;

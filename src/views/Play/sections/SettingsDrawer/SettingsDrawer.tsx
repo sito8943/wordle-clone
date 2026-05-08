@@ -45,7 +45,9 @@ const SettingsDrawer = (): JSX.Element | null => {
     activeModeId === WORDLE_MODE_IDS.ZEN &&
     new URLSearchParams(location.search).get(ROUTE_SEARCH_PARAMS.FOCUS) ===
       ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON;
-  const showDifficultySettings = activeModeId !== WORDLE_MODE_IDS.DAILY;
+  const showDifficultySettings =
+    activeModeId !== WORDLE_MODE_IDS.DAILY &&
+    activeModeId !== WORDLE_MODE_IDS.ZEN;
 
   useEffect(() => {
     if (!showSettingsPanel) {
