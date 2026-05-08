@@ -72,9 +72,7 @@ const useBoardController = ({
       rowOffset > 0 ? allBoardRows.slice(rowOffset) : allBoardRows;
     const activeRowGlobalIndex = !gameOver ? guesses.length : -1;
     const activeRowIndex =
-      activeRowGlobalIndex >= rowOffset
-        ? activeRowGlobalIndex - rowOffset
-        : -1;
+      activeRowGlobalIndex >= rowOffset ? activeRowGlobalIndex - rowOffset : -1;
 
     const rows = boardRows.map((row, index) => {
       const globalRowIndex = rowOffset + index;

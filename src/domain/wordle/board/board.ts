@@ -30,11 +30,7 @@ export const buildBoardRows = (
     totalRows += overflowBufferRows;
   }
 
-  if (
-    !gameOver &&
-    overflowTriggerRemainingRows > 0 &&
-    overflowBufferRows > 0
-  ) {
+  if (!gameOver && overflowTriggerRemainingRows > 0 && overflowBufferRows > 0) {
     while (totalRows - guesses.length <= overflowTriggerRemainingRows) {
       totalRows += overflowBufferRows;
     }

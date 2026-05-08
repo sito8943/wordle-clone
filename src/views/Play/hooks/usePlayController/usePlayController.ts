@@ -204,8 +204,7 @@ export default function usePlayController(
     activeModeId === WORDLE_MODE_IDS.CLASSIC;
   const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
   const hardModeEnabled =
-    lightningModeActive ||
-    (player.difficulty === "insane" && !zenModeActive);
+    lightningModeActive || (player.difficulty === "insane" && !zenModeActive);
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
   const modeMusicTrack = useMemo(
     () => resolveModeMusicTrack(activeModeId),

@@ -301,7 +301,9 @@ describe("Board", () => {
   });
 
   it("enables board row viewport when maxVisibleRows is provided", () => {
-    render(<Board guesses={[]} current="" gameOver={false} maxVisibleRows={6} />);
+    render(
+      <Board guesses={[]} current="" gameOver={false} maxVisibleRows={6} />,
+    );
 
     const visibleWindow = screen.getByTestId("board-visible-window");
     expect(visibleWindow.className).toContain("board-visible-window");
@@ -350,9 +352,9 @@ describe("Board", () => {
       );
     });
 
-    expect(screen.getByTestId("board-row-shift-layer").getAttribute("style")).toContain(
-      "--board-overflow-shift-rows: 1",
-    );
+    expect(
+      screen.getByTestId("board-row-shift-layer").getAttribute("style"),
+    ).toContain("--board-overflow-shift-rows: 1");
     expect(
       screen.getByRole("gridcell", {
         name: `A, ${i18n.t("play.gameplay.tile.statuses.absent")}`,

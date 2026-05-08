@@ -1,9 +1,6 @@
 import { type JSX } from "react";
 import { FireStreak, Alert } from "@components";
-import {
-  ROUTE_SEARCH_PARAMS,
-  ROUTE_SEARCH_PARAM_VALUES,
-} from "@config/routes";
+import { ROUTE_SEARCH_PARAMS, ROUTE_SEARCH_PARAM_VALUES } from "@config/routes";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
 import { usePlayView } from "@views/Play/providers";

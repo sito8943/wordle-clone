@@ -393,8 +393,8 @@ h1,
   to {
     transform: translateY(
       calc(
-        var(--board-overflow-shift-rows, 1) * var(--board-overflow-row-height, 54px) *
-          -1
+        var(--board-overflow-shift-rows, 1) *
+          var(--board-overflow-row-height, 54px) * -1
       )
     );
   }
@@ -431,8 +431,7 @@ h1,
 
 .board-overflow-shift-up-animation {
   --board-overflow-row-height: 54px;
-  animation: board-overflow-shift-up 180ms cubic-bezier(0.22, 1, 0.36, 1)
-    both;
+  animation: board-overflow-shift-up 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .keyboard-entry-animation {

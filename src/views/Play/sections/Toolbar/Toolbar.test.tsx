@@ -95,9 +95,7 @@ const renderToolbarTree = (initialEntry = "/") => (
 );
 
 const renderToolbar = (initialEntry = "/") =>
-  render(
-    renderToolbarTree(initialEntry),
-  );
+  render(renderToolbarTree(initialEntry));
 
 describe("Toolbar", () => {
   beforeEach(() => {
