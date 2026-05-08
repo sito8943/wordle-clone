@@ -7,6 +7,13 @@ This file defines how agents should work inside this repository.
 - This guide applies to the full project root.
 - Architecture details live in `ARCHITECTURE.md` and are the source of truth.
 
+## Backend Source Of Truth
+
+- The production backend for this frontend is maintained in a separate project at:
+  `/Users/sito8943/Documents/HSCode/HS Ecole/Frontend Frameworks/wordle-daily-backend`
+- Do not treat Convex as the backend source of truth for new backend changes in this repo.
+- If a task requires backend behavior changes, document the required backend change and point to that external backend project.
+
 ## Mandatory Architecture Gate (Blocking)
 
 - Before any code change, read and apply `ARCHITECTURE_RULES.md`.
