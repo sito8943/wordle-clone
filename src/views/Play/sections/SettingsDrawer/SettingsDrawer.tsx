@@ -38,6 +38,7 @@ const SettingsDrawer = (): JSX.Element | null => {
     closeSettingsPanel,
     changeDifficulty,
     changeManualTileSelection,
+    resetTutorialTour,
   } = controller;
   const location = useLocation();
   const zenFocusActive =
@@ -223,6 +224,20 @@ const SettingsDrawer = (): JSX.Element | null => {
                   label={t("profile.labels.manualTileSelection")}
                   description={t("profile.manualTileSelectionDescription")}
                 />
+              </div>
+
+              <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-700">
+                <Button
+                  onClick={resetTutorialTour}
+                  variant="outline"
+                  color="neutral"
+                  className="w-full"
+                >
+                  {t("profile.resetTutorialTourAction")}
+                </Button>
+                <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+                  {t("play.settingsPanel.tutorialResetDescription")}
+                </p>
               </div>
             </div>
           </div>

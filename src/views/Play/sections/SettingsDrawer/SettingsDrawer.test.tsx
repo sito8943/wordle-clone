@@ -26,6 +26,7 @@ const playViewMock = vi.hoisted(() => ({
     closeSettingsPanel: vi.fn(),
     changeDifficulty: vi.fn(),
     changeManualTileSelection: vi.fn(),
+    resetTutorialTour: vi.fn(),
   },
   player: {
     difficulty: "normal",
@@ -61,6 +62,8 @@ describe("SettingsDrawer", () => {
     playViewMock.controller.showSettingsPanel = true;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (playViewMock.controller.closeSettingsPanel as Mock<any>).mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (playViewMock.controller.resetTutorialTour as Mock<any>).mockClear();
   });
 
   afterEach(() => {
@@ -94,5 +97,13 @@ describe("SettingsDrawer", () => {
     expect(
       screen.queryByRole("button", { name: "play.toolbar.settingsAriaLabel" }),
     ).toBeNull();
+  });
+
+  it("resets tutorial state from quick settings", () => {
+    renderSettingsDrawer();
+
+    fireEvent.click(screen.getByText("profile.resetTutorialTourAction"));
+
+    expect(playViewMock.controller.resetTutorialTour).toHaveBeenCalledTimes(1);
   });
 });

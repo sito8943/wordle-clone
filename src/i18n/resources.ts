@@ -201,6 +201,8 @@ export const resources = {
         cancelAction: "Cancel",
         settingsTitle: "Settings",
         savedMessage: "Configuration saved.",
+        tutorialResetMessage: "Tutorial reset successfully.",
+        resetTutorialTourAction: "Reset tutorial",
         emptyNameError: "Name cannot be empty.",
         nameNotAvailable: "Name is not available.",
         labels: {
@@ -410,6 +412,8 @@ export const resources = {
           title: "Quick settings",
           description:
             "Adjust difficulty and manual tile selection without leaving this board.",
+          tutorialResetDescription:
+            "Reset the tutorial so it can be shown again from step 1.",
         },
         volumeDialog: {
           title: "Volume",
@@ -917,6 +921,8 @@ export const resources = {
         cancelAction: "Cancelar",
         settingsTitle: "Ajustes",
         savedMessage: "Configuración guardada.",
+        tutorialResetMessage: "Tutorial reiniciado correctamente.",
+        resetTutorialTourAction: "Reiniciar tutorial",
         emptyNameError: "El nombre no puede estar vacío.",
         nameNotAvailable: "El nombre no está disponible.",
         labels: {
@@ -1127,6 +1133,8 @@ export const resources = {
           title: "Ajustes rápidos",
           description:
             "Ajusta la dificultad y la selección manual de casillas sin salir del tablero.",
+          tutorialResetDescription:
+            "Reinicia el tutorial para que se vuelva a mostrar desde el paso 1.",
         },
         volumeDialog: {
           title: "Volumen",

@@ -93,6 +93,7 @@ const buildMockProfileView = (
     changeSoundEnabled: vi.fn(),
     manualTileSelection: false,
     changeManualTileSelection: vi.fn(),
+    resetTutorialTour: vi.fn(),
     changeDifficulty: vi.fn(),
     isDifficultyChangeConfirmationOpen: false,
     confirmDifficultyChange: vi.fn(),

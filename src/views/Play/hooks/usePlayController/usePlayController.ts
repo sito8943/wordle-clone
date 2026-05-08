@@ -4,6 +4,7 @@ import {
   clearAllDailyModeOutcomes,
   clearAllDailyShieldUsages,
   clearAllPersistedGameStates,
+  clearTutorialPromptSeenModesState,
   clearDailyShieldUsage,
   clearDailyModeOutcome,
   consumeDailyShieldForDate,
@@ -1016,6 +1017,18 @@ export default function usePlayController(
   const closeSettingsPanel = useCallback(() => {
     setShowSettingsPanel(false);
   }, []);
+
+  const resetTutorialTour = useCallback(() => {
+    clearTutorialPromptSeenModesState();
+    closeGameplayTour();
+    replacePlayer({
+      declinedTutorial: undefined,
+      tutorialPromptSeenModes: undefined,
+    });
+    setShowSettingsPanel(false);
+    setShowTutorialPromptDialog(true);
+  }, [closeGameplayTour, replacePlayer]);
+
   const goToPlayRoute = useCallback(() => {
     navigate(ROUTES.PLAY);
   }, [navigate]);
@@ -1645,6 +1658,7 @@ export default function usePlayController(
     goToNextGameplayTourStep,
     goToPreviousGameplayTourStep,
     openModeHelpFromGameplayTour,
+    resetTutorialTour,
     acceptTutorialPrompt,
     declineTutorialPrompt,
     goToPlayRoute,

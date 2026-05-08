@@ -28,6 +28,7 @@ const SettingsSection = () => {
       changeSoundEnabled,
       manualTileSelection,
       changeManualTileSelection,
+      resetTutorialTour,
     },
   } = useProfileView();
 
@@ -66,6 +67,9 @@ const SettingsSection = () => {
           {t("profile.languageDialog.openAction", {
             language: t(`profile.languageOptions.${language}`),
           })}
+        </Button>
+        <Button onClick={resetTutorialTour} variant="outline" color="neutral">
+          {t("profile.resetTutorialTourAction")}
         </Button>
       </div>
       <div id="end-dialogs" className="mt-4 max-w-xl">

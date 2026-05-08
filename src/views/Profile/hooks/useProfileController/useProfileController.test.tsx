@@ -12,6 +12,7 @@ const mockUseSound = vi.fn();
 const mockReadPersistedGameState = vi.fn();
 const mockClearPersistedGameState = vi.fn();
 const mockClearAllPersistedGameStates = vi.fn();
+const mockClearTutorialPromptSeenModesState = vi.fn();
 
 vi.mock("@providers", () => ({
   useApi: () => mockUseApi(),
@@ -39,6 +40,8 @@ vi.mock("@domain/wordle", async () => {
       mockClearPersistedGameState(...args),
     clearAllPersistedGameStates: (...args: unknown[]) =>
       mockClearAllPersistedGameStates(...args),
+    clearTutorialPromptSeenModesState: (...args: unknown[]) =>
+      mockClearTutorialPromptSeenModesState(...args),
   };
 });
 
@@ -64,6 +67,7 @@ describe("useProfileController", () => {
       },
       recoverPlayer: vi.fn().mockResolvedValue(undefined),
       refreshCurrentPlayerProfile: vi.fn().mockResolvedValue(undefined),
+      replacePlayer: vi.fn(),
       updatePlayer: vi.fn().mockResolvedValue(undefined),
       updatePlayerDifficulty: vi.fn(),
       updatePlayerKeyboardPreference: vi.fn(),
@@ -94,6 +98,7 @@ describe("useProfileController", () => {
     mockReadPersistedGameState.mockReturnValue(null);
     mockClearPersistedGameState.mockReset();
     mockClearAllPersistedGameStates.mockReset();
+    mockClearTutorialPromptSeenModesState.mockReset();
   });
 
   afterEach(() => {
@@ -282,5 +287,28 @@ describe("useProfileController", () => {
     });
 
     expect(setChannelEnabled).toHaveBeenCalledWith("master", false);
+  });
+
+  it("resets tutorial visibility and shows success feedback", () => {
+    const replacePlayer = vi.fn();
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      replacePlayer,
+    });
+
+    const { result } = renderHook(() => useProfileController());
+
+    act(() => {
+      result.current.resetTutorialTour();
+    });
+
+    expect(mockClearTutorialPromptSeenModesState).toHaveBeenCalledTimes(1);
+    expect(replacePlayer).toHaveBeenCalledWith({
+      declinedTutorial: undefined,
+      tutorialPromptSeenModes: undefined,
+    });
+    expect(result.current.savedMessage).toBe(
+      i18n.t("profile.tutorialResetMessage"),
+    );
   });
 });
