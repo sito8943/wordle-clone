@@ -104,9 +104,7 @@ describe("useNavbarController", () => {
     rerender();
 
     await waitFor(() => {
-      expect(mockGetTop.mock.calls.length).toBeGreaterThan(
-        initialCallCount,
-      );
+      expect(mockGetTop.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
   });
 

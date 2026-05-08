@@ -56,13 +56,11 @@ const makeWrapper =
     updatePreferences = vi
       .fn()
       .mockImplementation(buildDefaultProfileImpl({ nick: "Ana" })),
-    markTutorialSeen = vi
-      .fn()
-      .mockImplementation(async (modeId: string) =>
-        buildDefaultProfileImpl({
-          tutorialPromptSeenModes: { [modeId]: true },
-        })(),
-      ),
+    markTutorialSeen = vi.fn().mockImplementation(async (modeId: string) =>
+      buildDefaultProfileImpl({
+        tutorialPromptSeenModes: { [modeId]: true },
+      })(),
+    ),
     resetTutorialPrompts = vi
       .fn()
       .mockImplementation(
@@ -98,9 +96,7 @@ const makeWrapper =
     resetTutorialPrompts?: ApiContextType["apiManager"]["players"]["resetTutorialPrompts"];
     recoverPlayerByCode?: ApiContextType["apiManager"]["players"]["getByCode"];
     adoptRecoveredIdentity?: ApiContextType["scoreClient"]["adoptRecoveredIdentity"];
-    getCurrentPlayerProfile?: (
-      language: string,
-    ) => Promise<unknown> | unknown;
+    getCurrentPlayerProfile?: (language: string) => Promise<unknown> | unknown;
     queueRoundEvent?: (event: unknown) => void;
     syncRoundEvents?: (...args: unknown[]) => Promise<unknown>;
     getCurrentClientScoreSnapshot?: ApiContextType["scoreClient"]["getCurrentClientScoreSnapshot"];

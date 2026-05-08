@@ -34,9 +34,7 @@ class ChallengeClient {
     return this.apiManager.challenges.regenerateDaily(date);
   }
 
-  getPlayerChallengeProgress(
-    date: string,
-  ): Promise<RemoteChallengeProgress[]> {
+  getPlayerChallengeProgress(date: string): Promise<RemoteChallengeProgress[]> {
     return this.apiManager.challenges.getProgress(date);
   }
 

@@ -106,9 +106,7 @@ describe("useProfileController", () => {
   });
 
   it("returns an error when the name is not available", async () => {
-    const getNickAvailability = vi
-      .fn()
-      .mockResolvedValue({ available: false });
+    const getNickAvailability = vi.fn().mockResolvedValue({ available: false });
     const updatePlayer = vi.fn().mockResolvedValue(undefined);
     mockUseApi.mockReturnValue({
       apiManager: {
