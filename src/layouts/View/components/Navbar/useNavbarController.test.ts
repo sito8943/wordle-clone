@@ -198,7 +198,7 @@ describe("useNavbarController", () => {
     expect(result.current.playRoute).toBe(ROUTES.PLAY);
   });
 
-  it("uses game modes route when stored mode is daily and today is resolved in legacy daily status", () => {
+  it("keeps daily route when only legacy daily status exists and player has recovery code", () => {
     mockPlayer.code = "AB12";
     localStorage.setItem(
       CURRENT_WORDLE_MODE_STORAGE_KEY,
@@ -210,7 +210,7 @@ describe("useNavbarController", () => {
 
     const { result } = renderHook(() => useNavbarController());
 
-    expect(result.current.playRoute).toBe(ROUTES.PLAY);
+    expect(result.current.playRoute).toBe(getModeRoute("daily"));
   });
 
   it("prioritizes active mode route over stale stored mode", () => {

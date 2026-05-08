@@ -193,12 +193,12 @@ export default function usePlayController(
         return null;
       }
 
-      const currentPlayerOutcome = readDailyModeOutcomeForDate(player.code);
-      if (currentPlayerOutcome !== null) {
-        return currentPlayerOutcome;
+      const hasRecoveredIdentity = player.code.trim().length > 0;
+      if (hasRecoveredIdentity) {
+        return readDailyModeOutcomeForDate(player.code);
       }
 
-      return readDailyModeOutcomeForDate();
+      return readDailyModeOutcomeForDate(undefined);
     }, [dailyModeActive, player.code]);
   const showDeveloperChallengesSection =
     activeModeId === WORDLE_MODE_IDS.CLASSIC;

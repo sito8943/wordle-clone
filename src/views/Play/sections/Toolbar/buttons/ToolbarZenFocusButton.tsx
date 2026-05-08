@@ -16,7 +16,9 @@ import {
   ZEN_FOCUS_FLOATING_BOUNDS_PADDING,
   ZEN_FOCUS_FLOATING_DEFAULT_X,
   ZEN_FOCUS_FLOATING_DEFAULT_Y,
+  TOOLBAR_ICON_CLASS_NAME,
 } from "./constants";
+import { faPlane, faPlaneSlash } from "@fortawesome/free-solid-svg-icons";
 
 const ToolbarZenFocusButton = (): JSX.Element | null => {
   const { t } = useTranslation();
@@ -158,6 +160,9 @@ const ToolbarZenFocusButton = (): JSX.Element | null => {
           aria-label={focusButtonAriaLabel}
           variant="ghost"
           color="warning"
+          icon={zenFocusActive ? faPlaneSlash : faPlane}
+          hideLabelOnMobile
+          iconClassName={TOOLBAR_ICON_CLASS_NAME}
           className={TOOLBAR_COMPACT_BUTTON_CLASS_NAME}
         >
           {focusButtonLabel}
@@ -172,7 +177,10 @@ const ToolbarZenFocusButton = (): JSX.Element | null => {
       onClick={handleFocusButtonClick}
       aria-label={focusButtonAriaLabel}
       variant="ghost"
+      icon={zenFocusActive ? faPlaneSlash : faPlane}
       color="warning"
+      hideLabelOnMobile
+      iconClassName={TOOLBAR_ICON_CLASS_NAME}
       className={TOOLBAR_COMPACT_BUTTON_CLASS_NAME}
     >
       {focusButtonLabel}

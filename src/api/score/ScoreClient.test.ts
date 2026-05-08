@@ -655,6 +655,45 @@ describe("ScoreClient", () => {
     expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
   });
 
+  it("ignores legacy unscoped daily status when current player has recovery code", async () => {
+    const clientId = "client-me";
+    const today = new Date().toISOString().slice(0, 10);
+    storage.setItem(SCOREBOARD_CLIENT_ID_KEY, clientId);
+    storage.setItem(
+      "player",
+      JSON.stringify({
+        name: "Sito",
+        code: "AB12",
+      }),
+    );
+    storage.setItem(
+      "wordle:daily-mode-status",
+      JSON.stringify({ date: today, outcome: "won" }),
+    );
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "local-me",
+          clientId,
+          nick: "Sito",
+          language: "en",
+          modeId: "classic",
+          score: 12,
+          streak: 2,
+          createdAt: 1000,
+        },
+      ]),
+    );
+
+    const client = new ScoreClient(createGateway(), storage);
+    const result = await client.listTopScores(10, "en", "classic");
+
+    expect(result.scores).toHaveLength(1);
+    expect(result.scores[0].hasWonDailyToday).toBe(false);
+    expect(result.scores[0].hasDailyShieldAvailableToday).toBe(false);
+  });
+
   it("prefers current player scoped shield usage over legacy unscoped daily status", async () => {
     const clientId = "client-me";
     const today = new Date().toISOString().slice(0, 10);
@@ -909,6 +948,100 @@ describe("ScoreClient", () => {
       score: 5,
       streak: 1,
     });
+  });
+
+  it("does not merge previous browser snapshots or queued events when recovering another account", async () => {
+    const query = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "previous-browser",
+      clientRecordId: "remote-record",
+      nick: "Recovered",
+      playerCode: "ZX90",
+      score: 4,
+      streak: 1,
+      progressByMode: {
+        classic: { score: 4, streak: 1, updatedAt: 1000 },
+        lightning: { score: 2, streak: 1, updatedAt: 1500 },
+        daily: { score: 1, streak: 1, updatedAt: 2000 },
+      },
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
+    const client = new ScoreClient(
+      createGateway({
+        isConfigured: true,
+        query,
+        mutation: vi.fn().mockResolvedValue(undefined),
+      }),
+      storage,
+    );
+    const currentClientId = storage.getItem(SCOREBOARD_CLIENT_ID_KEY) ?? "";
+    storage.setItem(
+      SCOREBOARD_CACHE_KEY,
+      JSON.stringify([
+        {
+          localId: "old-record",
+          clientId: currentClientId,
+          nick: "Old Local",
+          language: "en",
+          modeId: "classic",
+          score: 90,
+          streak: 12,
+          createdAt: 3000,
+        },
+      ]),
+    );
+    storage.setItem(
+      SCOREBOARD_PENDING_KEY,
+      JSON.stringify([
+        {
+          localId: "old-record",
+          clientId: currentClientId,
+          nick: "Old Local",
+          language: "en",
+          modeId: "daily",
+          score: 22,
+          streak: 5,
+          createdAt: 3500,
+          mutation: "scores:addScore",
+        },
+      ]),
+    );
+    storage.setItem(
+      WORDLE_SYNC_EVENTS_KEY,
+      JSON.stringify([
+        {
+          id: "old-win",
+          kind: "win",
+          pointsDelta: 10,
+          modeId: "classic",
+          happenedAt: 4000,
+          version: 2,
+        },
+      ]),
+    );
+
+    const profile = await client.recoverPlayerByCode("zx90");
+    client.adoptRecoveredIdentity(profile, {
+      mergeCurrentBrowserProgress: false,
+      clearQueuedRoundEvents: true,
+    });
+
+    expect(client.getCurrentClientScoreSnapshot("en", "classic")).toEqual({
+      score: 4,
+      streak: 1,
+    });
+    expect(client.getCurrentClientScoreSnapshot("en", "daily")).toEqual({
+      score: 1,
+      streak: 1,
+    });
+
+    const cache = JSON.parse(storage.getItem(SCOREBOARD_CACHE_KEY) || "[]");
+    expect(
+      cache.some((entry: { nick?: string }) => entry.nick === "Old Local"),
+    ).toBe(false);
+    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
   });
 
   it("requests top scores using the recovered profile identity", async () => {

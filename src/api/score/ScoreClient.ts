@@ -405,12 +405,30 @@ class ScoreClient {
     };
   }
 
-  adoptRecoveredIdentity(profile: RemotePlayerProfile): void {
+  adoptRecoveredIdentity(
+    profile: RemotePlayerProfile,
+    options?: {
+      mergeCurrentBrowserProgress?: boolean;
+      clearQueuedRoundEvents?: boolean;
+    },
+  ): void {
     const previousIdentity = this.readProfileIdentity();
     const preserveModeScopedEntries =
       previousIdentity?.clientRecordId === profile.clientRecordId;
+    const mergeCurrentBrowserProgress =
+      options?.mergeCurrentBrowserProgress !== false;
+    const clearQueuedRoundEvents = options?.clearQueuedRoundEvents === true;
+
     this.writeProfileIdentity({ clientRecordId: profile.clientRecordId });
-    this.replaceCurrentBrowserScores(profile, preserveModeScopedEntries);
+    this.replaceCurrentBrowserScores(
+      profile,
+      preserveModeScopedEntries,
+      mergeCurrentBrowserProgress,
+    );
+
+    if (clearQueuedRoundEvents) {
+      this.clearRoundEvents();
+    }
   }
 
   async recordScore(
@@ -1635,10 +1653,7 @@ class ScoreClient {
       return [DAILY_MODE_STATUS_STORAGE_KEY_PREFIX];
     }
 
-    return [
-      `${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:${currentPlayerCode}`,
-      DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
-    ];
+    return [`${DAILY_MODE_STATUS_STORAGE_KEY_PREFIX}:${currentPlayerCode}`];
   }
 
   private readCurrentPlayerCode(): string | null {
@@ -1951,17 +1966,17 @@ class ScoreClient {
   private replaceCurrentBrowserScores(
     profile: RemotePlayerProfile,
     preserveModeScopedEntries: boolean,
+    mergeCurrentBrowserProgress: boolean,
   ): void {
     const cacheEntries = this.readScores(SCOREBOARD_CACHE_KEY);
     const pendingEntries = this.readScores(SCOREBOARD_PENDING_KEY);
-    const localCurrentLanguageEntries = [
-      ...cacheEntries,
-      ...pendingEntries,
-    ].filter(
-      (entry) =>
-        this.isCurrentBrowserEntryForAnyMode(entry) &&
-        entry.language === profile.language,
-    );
+    const localCurrentLanguageEntries = mergeCurrentBrowserProgress
+      ? [...cacheEntries, ...pendingEntries].filter(
+          (entry) =>
+            this.isCurrentBrowserEntryForAnyMode(entry) &&
+            entry.language === profile.language,
+        )
+      : [];
     const nextEntries = this.resolveProfileModeCacheEntries(
       profile,
       localCurrentLanguageEntries,

@@ -33,8 +33,14 @@ const GameModes = () => {
   const { player } = usePlayer();
   const { status: dailyModeRequirementsStatus } = useDailyModePrerequisites();
   const readDailyModeOutcome = useCallback(
-    () =>
-      readDailyModeOutcomeForDate(player.code) ?? readDailyModeOutcomeForDate(),
+    () => {
+      const hasRecoveredIdentity = player.code.trim().length > 0;
+      if (hasRecoveredIdentity) {
+        return readDailyModeOutcomeForDate(player.code);
+      }
+
+      return readDailyModeOutcomeForDate(undefined);
+    },
     [player.code],
   );
   const [selectedModeId, setSelectedModeId] = useState<GameModeId | null>(null);

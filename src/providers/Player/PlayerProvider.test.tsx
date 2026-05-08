@@ -795,8 +795,9 @@ describe("PlayerProvider", () => {
       keyboardPreference: "native",
       createdAt: 1000,
     });
+    const adoptRecoveredIdentity = vi.fn();
     const recoveredHook = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ recoverPlayerByCode }),
+      wrapper: makeWrapper({ recoverPlayerByCode, adoptRecoveredIdentity }),
     });
 
     await act(async () => {
@@ -804,6 +805,15 @@ describe("PlayerProvider", () => {
     });
 
     expect(recoverPlayerByCode).toHaveBeenCalledWith("rcv1");
+    expect(adoptRecoveredIdentity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playerCode: "RCV1",
+      }),
+      {
+        mergeCurrentBrowserProgress: false,
+        clearQueuedRoundEvents: true,
+      },
+    );
     expect(recoveredHook.result.current.player.name).toBe("Recovered");
     expect(recoveredHook.result.current.player.score).toBe(27);
     expect(recoveredHook.result.current.player.difficulty).toBe("hard");
@@ -920,6 +930,10 @@ describe("PlayerProvider", () => {
           nick: "Recovered",
           playerCode: "RCV1",
         }),
+        {
+          mergeCurrentBrowserProgress: false,
+          clearQueuedRoundEvents: true,
+        },
       );
       expect(result.current.player.name).toBe("Recovered");
       expect(result.current.player.code).toBe("RCV1");

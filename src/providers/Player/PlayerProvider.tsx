@@ -305,7 +305,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
   const recoverPlayer = useCallback(
     async (code: string) => {
       const remoteProfile = await scoreClient.recoverPlayerByCode(code);
-      scoreClient.adoptRecoveredIdentity(remoteProfile);
+      scoreClient.adoptRecoveredIdentity(remoteProfile, {
+        mergeCurrentBrowserProgress: false,
+        clearQueuedRoundEvents: true,
+      });
       await applyRemoteProfile(remoteProfile);
       hydrateDailyModeOutcomeFromProfile(remoteProfile);
     },
@@ -681,7 +684,10 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       void scoreClient
         .recoverPlayerByCode(player.code)
         .then(async (remoteProfile) => {
-          scoreClient.adoptRecoveredIdentity(remoteProfile);
+          scoreClient.adoptRecoveredIdentity(remoteProfile, {
+            mergeCurrentBrowserProgress: false,
+            clearQueuedRoundEvents: true,
+          });
           await applyRemoteProfile(remoteProfile);
           hydrateDailyModeOutcomeFromProfile(remoteProfile);
         })
