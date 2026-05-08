@@ -518,7 +518,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
             version: 2,
           };
 
-      scoreClient.queueRoundEvent(event);
+      apiManager.syncQueue.enqueueRoundEvent(event);
 
       if (current.name === DEFAULT_PLAYER.name) {
         return;
@@ -526,7 +526,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
       await syncQueuedRoundEvents(nextPlayer);
     },
-    [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents],
+    [
+      apiManager,
+      scoreClient,
+      setStoredPlayer,
+      storedPlayer,
+      syncQueuedRoundEvents,
+    ],
   );
 
   const commitLoss = useCallback(
@@ -565,7 +571,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         return;
       }
 
-      scoreClient.queueRoundEvent({
+      apiManager.syncQueue.enqueueRoundEvent({
         id:
           typeof crypto !== "undefined" && "randomUUID" in crypto
             ? crypto.randomUUID()
@@ -578,7 +584,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
       await syncQueuedRoundEvents(nextPlayer);
     },
-    [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents],
+    [
+      apiManager,
+      scoreClient,
+      setStoredPlayer,
+      storedPlayer,
+      syncQueuedRoundEvents,
+    ],
   );
 
   const updatePlayerDifficulty = useCallback(

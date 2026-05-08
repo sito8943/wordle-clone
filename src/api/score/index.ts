@@ -15,6 +15,8 @@ export type {
   RemoteScoresResponse,
   ScoreEntry,
   ScoreSource,
+  StoredRoundSyncEvent,
+  StoredScore,
   SyncPendingScoresResult,
   TopScoresResult,
   UpsertPlayerProfileInput,

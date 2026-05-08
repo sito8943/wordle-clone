@@ -99,6 +99,7 @@ const makeWrapper =
               getCurrentPlayerProfile(language as never),
             ) as never,
         },
+        syncQueue: { enqueueRoundEvent: queueRoundEvent as never },
       }),
     });
     const queryClient = createTestQueryClient();

@@ -4,6 +4,7 @@ import { HttpGateway } from "./http";
 import { IdentityProvider } from "./identity";
 import { PlayersManager } from "./players";
 import { ScoresManager } from "./score";
+import { SyncQueueManager } from "./syncQueue";
 import { WordsManager } from "./words";
 
 type ApiManagerOptions = {
@@ -18,11 +19,13 @@ class ApiManager {
   readonly words: WordsManager;
   readonly admin: AdminManager;
   readonly identity: IdentityProvider;
+  readonly syncQueue: SyncQueueManager;
   private readonly gateway: HttpGateway;
 
   constructor(options: ApiManagerOptions = {}) {
     this.gateway = new HttpGateway({ baseUrl: options.baseUrl });
     this.identity = new IdentityProvider(options.storage);
+    this.syncQueue = new SyncQueueManager(options.storage);
     this.scores = new ScoresManager(this.gateway, this.identity);
     this.players = new PlayersManager(this.gateway, this.identity);
     this.challenges = new ChallengesManager(this.gateway, this.identity);

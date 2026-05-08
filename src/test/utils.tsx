@@ -97,10 +97,24 @@ const createMockApiManager = (
     challenges: Partial<ApiContextType["apiManager"]["challenges"]>;
     admin: Partial<ApiContextType["apiManager"]["admin"]>;
     identity: Partial<ApiContextType["apiManager"]["identity"]>;
+    syncQueue: Partial<ApiContextType["apiManager"]["syncQueue"]>;
   }> = {},
 ): ApiContextType["apiManager"] =>
   ({
     isConfigured: false,
+    syncQueue: {
+      enqueueRoundEvent: vi.fn(),
+      readRoundEvents: vi.fn().mockReturnValue([]),
+      writeRoundEvents: vi.fn(),
+      removeRoundEvents: vi.fn(),
+      clearRoundEvents: vi.fn(),
+      enqueuePendingScore: vi.fn(),
+      readPendingScores: vi.fn().mockReturnValue([]),
+      writePendingScores: vi.fn(),
+      removePendingScore: vi.fn(),
+      clearPendingScores: vi.fn(),
+      ...overrides.syncQueue,
+    },
     identity: {
       getClientId: vi.fn().mockReturnValue("test-client"),
       getClientRecordId: vi.fn().mockReturnValue(null),
