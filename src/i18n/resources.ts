@@ -476,6 +476,10 @@ export const resources = {
               description:
                 "This is your board. Guess the hidden word before you run out of rows.",
             },
+            boardZen: {
+              description:
+                "This is your board. In Zen mode there is no row limit, so you can solve it at your own pace.",
+            },
             keyboard: {
               title: "Keyboard",
               description:
@@ -495,6 +499,11 @@ export const resources = {
               description:
                 "In Zen mode this button gives only green hints, with unlimited uses.",
             },
+            focus: {
+              title: "Focus on/off",
+              description:
+                "Use Focus on to hide extra controls and reduce distractions. Focus off brings all controls back.",
+            },
             challenges: {
               title: "Challenges",
               description:
@@ -504,6 +513,10 @@ export const resources = {
               title: "Refresh round",
               description:
                 "Refresh starts a new round. If you already have progress, you'll be asked to confirm.",
+            },
+            refreshZen: {
+              description:
+                "In Zen mode, refresh starts a clean board but does not count for the scoreboard.",
             },
             timer: {
               title: "Lightning timer",
@@ -1180,6 +1193,10 @@ export const resources = {
               description:
                 "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas.",
             },
+            boardZen: {
+              description:
+                "Este es tu tablero. En modo Calmado no hay límite de filas, así que puedes resolverlo a tu ritmo.",
+            },
             keyboard: {
               title: "Teclado",
               description:
@@ -1199,6 +1216,11 @@ export const resources = {
               description:
                 "En modo Calmado este botón da solo pistas verdes, y además son infinitas.",
             },
+            focus: {
+              title: "Focus on/off",
+              description:
+                "Usa Focus on para ocultar controles extra y jugar con menos distracciones. Focus off vuelve a mostrar todos los controles.",
+            },
             challenges: {
               title: "Retos",
               description:
@@ -1208,6 +1230,10 @@ export const resources = {
               title: "Actualizar ronda",
               description:
                 "Actualizar inicia una ronda nueva. Si ya tienes progreso, te pediremos confirmación.",
+            },
+            refreshZen: {
+              description:
+                "En modo Calmado, actualizar inicia un tablero nuevo pero no cuenta para la clasificación.",
             },
             timer: {
               title: "Temporizador relámpago",

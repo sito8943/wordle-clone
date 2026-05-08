@@ -158,6 +158,7 @@ const ToolbarZenFocusButton = (): JSX.Element | null => {
         <Button
           onClick={handleFocusButtonClick}
           aria-label={focusButtonAriaLabel}
+          data-tour="zen-focus-button"
           variant="ghost"
           color="warning"
           icon={zenFocusActive ? faPlaneSlash : faPlane}
@@ -176,6 +177,7 @@ const ToolbarZenFocusButton = (): JSX.Element | null => {
     <Button
       onClick={handleFocusButtonClick}
       aria-label={focusButtonAriaLabel}
+      data-tour="zen-focus-button"
       variant="ghost"
       icon={zenFocusActive ? faPlaneSlash : faPlane}
       color="warning"
