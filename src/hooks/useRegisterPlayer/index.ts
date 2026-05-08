@@ -1,0 +1,1 @@
+export { useRegisterPlayer } from "./useRegisterPlayer";
