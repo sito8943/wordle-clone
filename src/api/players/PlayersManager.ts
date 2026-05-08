@@ -65,6 +65,14 @@ class PlayersManager {
     );
   }
 
+  resetTutorialPrompts(): Promise<RemotePlayerProfile> {
+    const { clientId, clientRecordId } = this.identity.requireIdentity();
+    return this.gateway.delete<RemotePlayerProfile>(
+      `${PlayersManager.BASE_PATH}/me/tutorial-prompts`,
+      { clientId, clientRecordId },
+    );
+  }
+
   getNickAvailability(nick: string): Promise<NickAvailabilityResult> {
     const { clientId, clientRecordId } = this.identity.getIdentity();
     return this.gateway.get<NickAvailabilityResult>(

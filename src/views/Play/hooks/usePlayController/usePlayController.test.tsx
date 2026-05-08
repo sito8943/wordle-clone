@@ -88,6 +88,17 @@ vi.mock("@providers", () => ({
             generateDaily: value.challengeClient.generateDailyChallenges,
             regenerateDaily: value.challengeClient.regenerateDailyChallenges,
           },
+          scores: {
+            consumeDailyShield:
+              value.scoreClient?.consumeDailyShield ??
+              vi.fn().mockResolvedValue(null),
+            update:
+              value.scoreClient?.recordScore ??
+              vi.fn().mockResolvedValue({ ok: true, id: "score_test" }),
+            record: vi.fn().mockResolvedValue({ ok: true, id: "score_test" }),
+            getTop: vi.fn().mockResolvedValue({ scores: [] }),
+            syncRoundEvents: vi.fn().mockResolvedValue(null),
+          },
         },
       };
     }

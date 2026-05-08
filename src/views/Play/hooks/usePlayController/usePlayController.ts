@@ -36,7 +36,6 @@ import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useSound } from "@providers/Sound";
 import { useHardModeTimer } from "./useHardModeTimer";
 import type { RemoteChallenge } from "@api/challenges";
-import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
@@ -956,7 +955,7 @@ export default function usePlayController(
     consumeDailyShieldForDate({
       playerCode: player.code,
     });
-    void scoreClient.consumeDailyShield({
+    void apiManager.scores.consumeDailyShield({
       nick: player.name,
       language: player.language,
       difficulty: player.difficulty,
@@ -965,13 +964,13 @@ export default function usePlayController(
     });
     setDefeatShieldDecisionPending(false);
   }, [
+    apiManager,
     defeatShieldDecisionPending,
     player.code,
     player.difficulty,
     player.keyboardPreference,
     player.language,
     player.name,
-    scoreClient,
   ]);
 
   const skipDailyShieldForCurrentDefeat = useCallback(() => {
@@ -1400,29 +1399,25 @@ export default function usePlayController(
           ? nextPlayer.streak
           : activeModeStreak;
 
-      void scoreClient.recordScore(
-        {
-          nick: nextNick,
-          language: gameplayLanguage,
-          modeId: activeModeId,
-          score: nextScore,
-          streak: nextStreak,
-          overwriteExisting: true,
-        },
-        UPDATE_SCORE_MUTATION,
-      );
+      void apiManager.scores.update({
+        nick: nextNick,
+        language: gameplayLanguage,
+        modeId: activeModeId,
+        score: nextScore,
+        streak: nextStreak,
+      });
 
       replacePlayer(nextPlayer);
       setShowDeveloperConsoleDialog(false);
     },
     [
       activeModeId,
+      apiManager,
       player.name,
       player.score,
       activeModeStreak,
       gameplayLanguage,
       replacePlayer,
-      scoreClient,
     ],
   );
 

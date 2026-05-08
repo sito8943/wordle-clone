@@ -37,7 +37,7 @@ const InitialPlayerDialog = lazy(
 
 const View = () => {
   const { t } = useTranslation();
-  const { scoreClient } = useApi();
+  const { apiManager } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
   const { pathname, hash, search } = useLocation();
   const navigate = useNavigate();
@@ -127,7 +127,8 @@ const View = () => {
       const normalizedName = normalizePlayerName(name);
 
       try {
-        const isAvailable = await scoreClient.isNickAvailable(normalizedName);
+        const { available: isAvailable } =
+          await apiManager.players.getNickAvailability(normalizedName);
         if (!isAvailable) {
           return t("layout.initialPlayer.nameNotAvailable");
         }
@@ -137,7 +138,7 @@ const View = () => {
         return t("layout.initialPlayer.nameValidationError");
       }
     },
-    [scoreClient, t],
+    [apiManager, t],
   );
 
   useEffect(() => {

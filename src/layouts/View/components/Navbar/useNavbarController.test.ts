@@ -8,7 +8,7 @@ import {
   WORDLE_MODE_IDS,
 } from "@domain/wordle";
 
-const mockListTopScores = vi.fn();
+const mockGetTop = vi.fn();
 const mockPlayer = { score: 0, code: "", name: "Player", language: "en" };
 const mockLocation: { pathname: string; search: string } = {
   pathname: ROUTES.HOME,
@@ -21,7 +21,7 @@ vi.mock("react-router", () => ({
 }));
 
 vi.mock("@providers", () => ({
-  useApi: () => ({ scoreClient: { listTopScores: mockListTopScores } }),
+  useApi: () => ({ apiManager: { scores: { getTop: mockGetTop } } }),
   usePlayer: () => ({ player: mockPlayer }),
 }));
 
@@ -40,7 +40,7 @@ describe("useNavbarController", () => {
     mockPlayer.code = "";
     mockPlayer.name = "Player";
     mockPlayer.language = "en";
-    mockListTopScores.mockResolvedValue({
+    mockGetTop.mockResolvedValue({
       scores: [],
       source: "local",
       currentClientRank: 3,
@@ -79,7 +79,7 @@ describe("useNavbarController", () => {
   });
 
   it("sets rank to null when scoreClient throws", async () => {
-    mockListTopScores.mockRejectedValue(new Error("network error"));
+    mockGetTop.mockRejectedValue(new Error("network error"));
 
     const { result } = renderHook(() => useNavbarController());
 
@@ -95,16 +95,16 @@ describe("useNavbarController", () => {
     const { rerender } = renderHook(() => useNavbarController());
 
     await waitFor(() => {
-      expect(mockListTopScores).toHaveBeenCalled();
+      expect(mockGetTop).toHaveBeenCalled();
     });
-    const initialCallCount = mockListTopScores.mock.calls.length;
+    const initialCallCount = mockGetTop.mock.calls.length;
 
     mockPlayer.code = "AB12";
     mockPlayer.name = "Recovered";
     rerender();
 
     await waitFor(() => {
-      expect(mockListTopScores.mock.calls.length).toBeGreaterThan(
+      expect(mockGetTop.mock.calls.length).toBeGreaterThan(
         initialCallCount,
       );
     });

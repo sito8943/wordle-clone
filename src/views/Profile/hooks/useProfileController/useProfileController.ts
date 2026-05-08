@@ -19,7 +19,7 @@ import { useAnimationsPreference, useThemePreference } from "@hooks";
 import type { ThemePreference } from "@hooks/useThemePreference";
 
 export default function useProfileController() {
-  const { scoreClient } = useApi();
+  const { apiManager } = useApi();
   const {
     player,
     recoverPlayer,
@@ -69,7 +69,8 @@ export default function useProfileController() {
     async (name: string) => {
       const normalizedName = normalizePlayerName(name);
       if (normalizedName !== player.name) {
-        const isAvailable = await scoreClient.isNickAvailable(normalizedName);
+        const { available: isAvailable } =
+          await apiManager.players.getNickAvailability(normalizedName);
         if (!isAvailable) {
           return i18n.t("profile.nameNotAvailable");
         }
@@ -93,7 +94,7 @@ export default function useProfileController() {
       );
       return null;
     },
-    [player.code.length, player.name, scoreClient, updatePlayer],
+    [apiManager, player.code.length, player.name, updatePlayer],
   );
 
   const submitRecoveryCode = useCallback(

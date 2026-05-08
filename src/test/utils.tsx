@@ -131,6 +131,7 @@ const createMockApiManager = (
       renameNick: vi.fn().mockResolvedValue(null),
       updatePreferences: vi.fn().mockResolvedValue(null),
       markTutorialSeen: vi.fn().mockResolvedValue(null),
+      resetTutorialPrompts: vi.fn().mockResolvedValue(null),
       getNickAvailability: vi.fn().mockResolvedValue({ available: true }),
       getByCode: vi.fn().mockResolvedValue(null),
       backfillCodes: vi.fn().mockResolvedValue({ updated: 0 }),

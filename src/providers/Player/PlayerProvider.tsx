@@ -305,12 +305,18 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         return;
       }
 
-      const remoteProfile = await scoreClient.upsertPlayerProfile({
-        nick: normalizedName,
-        language: current.language,
-        difficulty: current.difficulty,
-        keyboardPreference: current.keyboardPreference,
-      });
+      const remoteProfile =
+        current.code.length === 0
+          ? await apiManager.players.register({
+              nick: normalizedName,
+              language: current.language,
+              difficulty: current.difficulty,
+              keyboardPreference: current.keyboardPreference,
+            })
+          : await apiManager.players.renameNick({
+              nick: normalizedName,
+              language: current.language,
+            });
 
       await applyRemoteProfile(remoteProfile);
       hydrateDailyModeOutcomeFromProfile(remoteProfile);
@@ -325,9 +331,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       }
     },
     [
+      apiManager,
       applyRemoteProfile,
       hydrateDailyModeOutcomeFromProfile,
-      scoreClient,
       storedPlayer,
       syncQueuedRoundEvents,
     ],
@@ -402,13 +408,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       }
 
       try {
-        const remoteProfile = await scoreClient.upsertPlayerProfile({
-          nick: current.name,
-          language: current.language,
-          difficulty: current.difficulty,
-          keyboardPreference: current.keyboardPreference,
-          tutorialPromptSeenModes: nextTutorialPromptSeenModes,
-        });
+        const remoteProfile = await apiManager.players.markTutorialSeen(modeId);
 
         await applyRemoteProfile(remoteProfile, {
           preserveLocalPreferences: true,
@@ -418,7 +418,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         // Keep local tutorial state when remote sync is unavailable.
       }
     },
-    [applyRemoteProfile, scoreClient, setStoredPlayer, storedPlayer],
+    [apiManager, applyRemoteProfile, setStoredPlayer, storedPlayer],
   );
 
   const resetTutorialPromptSeenModes = useCallback(async () => {
@@ -437,13 +437,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     }
 
     try {
-      const remoteProfile = await scoreClient.upsertPlayerProfile({
-        nick: current.name,
-        language: current.language,
-        difficulty: current.difficulty,
-        keyboardPreference: current.keyboardPreference,
-        tutorialPromptSeenModes: {},
-      });
+      const remoteProfile = await apiManager.players.resetTutorialPrompts();
 
       await applyRemoteProfile(remoteProfile, {
         preserveLocalPreferences: true,
@@ -452,7 +446,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     } catch {
       // Keep local tutorial reset when remote sync is unavailable.
     }
-  }, [applyRemoteProfile, scoreClient, setStoredPlayer, storedPlayer]);
+  }, [apiManager, applyRemoteProfile, setStoredPlayer, storedPlayer]);
 
   const commitVictory = useCallback(
     async (
@@ -834,9 +828,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       return;
     }
 
-    void scoreClient
-      .upsertPlayerProfile({
-        nick: player.name,
+    void apiManager.players
+      .updatePreferences({
         language: player.language,
         difficulty: player.difficulty,
         keyboardPreference: player.keyboardPreference,
@@ -847,7 +840,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         }),
       )
       .catch(() => undefined);
-  }, [applyRemoteProfile, player, scoreClient]);
+  }, [apiManager, applyRemoteProfile, player]);
 
   useEffect(() => {
     if (i18n.language === player.language) {

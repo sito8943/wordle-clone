@@ -24,7 +24,7 @@ import {
 } from "./utils";
 
 const useNavbarController = () => {
-  const { scoreClient } = useApi();
+  const { apiManager } = useApi();
   const { player } = usePlayer();
   const location = useLocation();
 
@@ -79,13 +79,13 @@ const useNavbarController = () => {
       setIsCurrentClientRankLoading(true);
 
       try {
-        const result = await scoreClient.listTopScores(
-          Math.max(env.scoreLimit, NAVBAR_TOP_TEN_LIMIT),
-          WORDS_DEFAULT_LANGUAGE,
-          scoreboardModeId,
-        );
+        const result = await apiManager.scores.getTop({
+          limit: Math.max(env.scoreLimit, NAVBAR_TOP_TEN_LIMIT),
+          language: WORDS_DEFAULT_LANGUAGE,
+          modeId: scoreboardModeId,
+        });
         if (!cancelled) {
-          setCurrentClientRank(result.currentClientRank);
+          setCurrentClientRank(result.currentClientRank ?? null);
         }
       } catch {
         if (!cancelled) {
@@ -104,12 +104,12 @@ const useNavbarController = () => {
       cancelled = true;
     };
   }, [
+    apiManager,
     location.pathname,
     player.code,
     player.name,
     player.score,
     scoreboardModeId,
-    scoreClient,
   ]);
 
   const rankTone = useMemo(

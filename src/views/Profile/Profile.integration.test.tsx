@@ -2,7 +2,6 @@ import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayersManager } from "@api/players";
-import { ScoreClient } from "@api/score";
 import { env } from "@config";
 import { getChangelogRoute } from "@config/routes";
 import { ApiProvider, FeatureFlagsProvider, PlayerProvider } from "@providers";
@@ -26,7 +25,10 @@ describe("Profile integration", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
-    vi.spyOn(ScoreClient.prototype, "upsertPlayerProfile").mockImplementation(
+    vi.spyOn(PlayersManager.prototype, "getNickAvailability").mockResolvedValue(
+      { available: true },
+    );
+    vi.spyOn(PlayersManager.prototype, "register").mockImplementation(
       async (input) => ({
         id: "remote-player",
         clientId: "test-client",
@@ -34,10 +36,40 @@ describe("Profile integration", () => {
         nick: input.nick,
         language: input.language,
         playerCode: "AB12",
-        score: input.score ?? 0,
-        streak: input.streak ?? 0,
+        score: 0,
+        streak: 0,
         difficulty: input.difficulty,
         keyboardPreference: input.keyboardPreference,
+        createdAt: 1000,
+      }),
+    );
+    vi.spyOn(PlayersManager.prototype, "renameNick").mockImplementation(
+      async (input) => ({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: input.nick,
+        language: input.language,
+        playerCode: "AB12",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      }),
+    );
+    vi.spyOn(PlayersManager.prototype, "updatePreferences").mockImplementation(
+      async (input) => ({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: "Player",
+        language: input.language ?? "en",
+        playerCode: "AB12",
+        score: 0,
+        streak: 0,
+        difficulty: input.difficulty ?? "normal",
+        keyboardPreference: input.keyboardPreference ?? "onscreen",
         createdAt: 1000,
       }),
     );
@@ -144,19 +176,6 @@ describe("Profile integration", () => {
         keyboardPreference: "onscreen",
       }),
     );
-    vi.spyOn(ScoreClient.prototype, "recoverPlayerByCode").mockResolvedValue({
-      id: "remote-player",
-      clientId: "test-client",
-      clientRecordId: "test-record",
-      nick: "Recovered",
-      language: "en",
-      playerCode: "ZX90",
-      score: 44,
-      streak: 6,
-      difficulty: "hard",
-      keyboardPreference: "native",
-      createdAt: 1000,
-    });
     vi.spyOn(PlayersManager.prototype, "getByCode").mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",

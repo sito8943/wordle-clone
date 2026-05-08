@@ -47,8 +47,10 @@ describe("useProfileController", () => {
     vi.useFakeTimers();
     void i18n.changeLanguage("en");
     mockUseApi.mockReturnValue({
-      scoreClient: {
-        isNickAvailable: vi.fn().mockResolvedValue(true),
+      apiManager: {
+        players: {
+          getNickAvailability: vi.fn().mockResolvedValue({ available: true }),
+        },
       },
     });
     mockUsePlayer.mockReturnValue({
@@ -104,11 +106,15 @@ describe("useProfileController", () => {
   });
 
   it("returns an error when the name is not available", async () => {
-    const isNickAvailable = vi.fn().mockResolvedValue(false);
+    const getNickAvailability = vi
+      .fn()
+      .mockResolvedValue({ available: false });
     const updatePlayer = vi.fn().mockResolvedValue(undefined);
     mockUseApi.mockReturnValue({
-      scoreClient: {
-        isNickAvailable,
+      apiManager: {
+        players: {
+          getNickAvailability,
+        },
       },
     });
     mockUsePlayer.mockReturnValue({
@@ -121,7 +127,7 @@ describe("useProfileController", () => {
     await expect(result.current.submitProfile("Ana")).resolves.toBe(
       i18n.t("profile.nameNotAvailable"),
     );
-    expect(isNickAvailable).toHaveBeenCalledWith("Ana");
+    expect(getNickAvailability).toHaveBeenCalledWith("Ana");
     expect(updatePlayer).not.toHaveBeenCalled();
   });
 

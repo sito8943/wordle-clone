@@ -10,8 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { PlayersManager } from "@api/players";
 import { ChallengesManager } from "@api/challenges";
-import { ScoreClient, ScoresManager, type TopScoresResult } from "@api/score";
-import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
+import { ScoresManager, type TopScoresResult } from "@api/score";
 import { WORDS_DEFAULT_LANGUAGE, WordDictionaryClient } from "@api/words";
 import { env } from "@config";
 import { ROUTES } from "@config/routes";
@@ -244,7 +243,7 @@ describe("App", () => {
       mockedNow += 5_000;
       return current;
     });
-    vi.spyOn(ScoreClient.prototype, "upsertPlayerProfile").mockImplementation(
+    vi.spyOn(PlayersManager.prototype, "register").mockImplementation(
       async (input) => ({
         id: "remote-player",
         clientId: "test-client",
@@ -252,26 +251,47 @@ describe("App", () => {
         nick: input.nick,
         language: input.language,
         playerCode: "AB12",
-        score: input.score ?? 0,
-        streak: input.streak ?? 0,
+        score: 0,
+        streak: 0,
         difficulty: input.difficulty,
         keyboardPreference: input.keyboardPreference,
         createdAt: 1000,
       }),
     );
-    vi.spyOn(ScoreClient.prototype, "recoverPlayerByCode").mockResolvedValue({
-      id: "remote-player",
-      clientId: "test-client",
-      clientRecordId: "test-record",
-      nick: "Recovered",
-      language: "en",
-      playerCode: "AB12",
-      score: 0,
-      streak: 0,
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-      createdAt: 1000,
-    });
+    vi.spyOn(PlayersManager.prototype, "renameNick").mockImplementation(
+      async (input) => ({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: input.nick,
+        language: input.language,
+        playerCode: "AB12",
+        score: 0,
+        streak: 0,
+        difficulty: "normal",
+        keyboardPreference: "onscreen",
+        createdAt: 1000,
+      }),
+    );
+    vi.spyOn(PlayersManager.prototype, "updatePreferences").mockImplementation(
+      async (input) => ({
+        id: "remote-player",
+        clientId: "test-client",
+        clientRecordId: "test-record",
+        nick: "TestUser",
+        language: input.language ?? "en",
+        playerCode: "AB12",
+        score: 0,
+        streak: 0,
+        difficulty: input.difficulty ?? "normal",
+        keyboardPreference: input.keyboardPreference ?? "onscreen",
+        createdAt: 1000,
+      }),
+    );
+    vi.spyOn(PlayersManager.prototype, "getNickAvailability").mockResolvedValue(
+      { available: true },
+    );
+    vi.spyOn(PlayersManager.prototype, "getMe").mockResolvedValue(null);
     vi.spyOn(PlayersManager.prototype, "getByCode").mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",
@@ -324,7 +344,7 @@ describe("App", () => {
         score: entry.score,
         streak: entry.streak ?? 0,
         createdAt: entry.createdAt,
-        isCurrentClient: entry.clientId === clientId,
+        isCurrentClient: entry.clientId == null || entry.clientId === clientId,
       }));
       const limit = params.limit ?? 10;
       const top = decorated.slice(0, limit);
@@ -337,10 +357,6 @@ describe("App", () => {
         currentClientEntry: currentIndex >= 0 ? decorated[currentIndex] : null,
       };
     }) as never);
-    vi.spyOn(
-      ScoreClient.prototype,
-      "getCurrentPlayerProfile",
-    ).mockResolvedValue(null);
   });
 
   it("renders the main navigation", async () => {
@@ -465,8 +481,12 @@ describe("App", () => {
       resolveListTopScores = resolve;
     });
     const listTopScoresSpy = vi
-      .spyOn(ScoreClient.prototype, "listTopScores")
-      .mockReturnValue(listTopScoresPromise);
+      .spyOn(ScoresManager.prototype, "getTop")
+      .mockReturnValue(
+        listTopScoresPromise as unknown as ReturnType<
+          typeof ScoresManager.prototype.getTop
+        >,
+      );
 
     try {
       renderApp();
@@ -540,6 +560,10 @@ describe("App", () => {
           createdAt: 1000,
         },
       ]),
+    );
+
+    vi.spyOn(PlayersManager.prototype, "getNickAvailability").mockResolvedValue(
+      { available: false },
     );
 
     renderApp();
@@ -771,9 +795,9 @@ describe("App", () => {
     env.mode = "develpment";
     env.backendUrl = undefined;
     env.convexUrl = undefined;
-    const recordScoreSpy = vi
-      .spyOn(ScoreClient.prototype, "recordScore")
-      .mockResolvedValue();
+    const updateScoreSpy = vi
+      .spyOn(ScoresManager.prototype, "update")
+      .mockResolvedValue({ ok: true, id: "score_test" });
 
     try {
       renderApp();
@@ -815,17 +839,15 @@ describe("App", () => {
         expect(player.streak).toBe(7);
       });
 
-      expect(recordScoreSpy).toHaveBeenCalledWith(
+      expect(updateScoreSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           nick: "DevUser",
           score: 42,
           streak: 7,
-          overwriteExisting: true,
         }),
-        UPDATE_SCORE_MUTATION,
       );
     } finally {
-      recordScoreSpy.mockRestore();
+      updateScoreSpy.mockRestore();
     }
   });
 
@@ -858,8 +880,8 @@ describe("App", () => {
     env.mode = "develpment";
     env.backendUrl = undefined;
     env.convexUrl = undefined;
-    const recordScoreSpy = vi
-      .spyOn(ScoreClient.prototype, "recordScore")
+    const updateScoreSpy = vi
+      .spyOn(ScoresManager.prototype, "update")
       .mockImplementation(async (input) => {
         const cache = JSON.parse(
           localStorage.getItem("wordle:scoreboard:cache") || "[]",
@@ -886,6 +908,7 @@ describe("App", () => {
         }
 
         localStorage.setItem("wordle:scoreboard:cache", JSON.stringify(cache));
+        return { ok: true, id: "score_test" };
       });
 
     try {
@@ -931,7 +954,7 @@ describe("App", () => {
         ).toBe(true);
       });
     } finally {
-      recordScoreSpy.mockRestore();
+      updateScoreSpy.mockRestore();
     }
   });
 
@@ -2658,6 +2681,10 @@ describe("App", () => {
           createdAt: 1000,
         },
       ]),
+    );
+
+    vi.spyOn(PlayersManager.prototype, "getNickAvailability").mockResolvedValue(
+      { available: false },
     );
 
     renderApp();
