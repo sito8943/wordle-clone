@@ -1,5 +1,6 @@
 import { useId } from "react";
 import type { CSSProperties } from "react";
+import { cn } from "@utils/cn";
 import type { FireProps } from "../types";
 import { clampSize, getFireVisualState, sanitizeCounter } from "../utils";
 import "./Fire.css";
@@ -31,11 +32,11 @@ const Fire = ({ streak, size = 24, className = "" }: FireProps) => {
     <span
       role="img"
       aria-label={`Streak fire level ${safeStreak}`}
-      className={[
+      className={cn(
         "streak-fire",
         `streak-fire-state-${visualState}`,
         className,
-      ].join(" ")}
+      )}
       style={cssVars}
     >
       <span className="streak-fire-glyph">

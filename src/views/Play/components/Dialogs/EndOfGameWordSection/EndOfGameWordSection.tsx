@@ -3,6 +3,7 @@ import { faInfoCircle, faThumbsDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { env } from "@config/env";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import { cn } from "@utils/cn";
 import type { EndOfGameWordSectionProps } from "./types";
 
 const EndOfGameWordSection = ({
@@ -39,7 +40,10 @@ const EndOfGameWordSection = ({
             href={reportHref}
             target="_blank"
             rel="noopener noreferrer"
-            className={`text-primary text-xl ${!reportHref ? "pointer-events-none opacity-40" : ""}`}
+            className={cn(
+              "text-primary text-xl",
+              !reportHref && "pointer-events-none opacity-40",
+            )}
             aria-disabled={!reportHref}
             title={reportText}
           >

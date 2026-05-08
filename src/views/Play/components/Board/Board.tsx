@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Row } from "./Row";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import { PLAY_BOARD_SHARE_CAPTURE_ID } from "@views/Play/constants";
 import { BOARD_OVERFLOW_SHIFT_ANIMATION_DURATION_MS } from "./constants";
@@ -99,18 +100,17 @@ export function Board({
     };
   }, [isOverflowShiftAnimating]);
 
-  const boardClassName = `space-y-1.5 sm:space-y-2 ${
-    animateEntry ? "board-entry-animation" : ""
-  }`;
-  const boardWrapperClassName = `w-fit ${
-    isShaking ? "board-shake-pulse-animation" : ""
-  }`;
+  const boardClassName = cn(
+    "space-y-1.5 sm:space-y-2",
+    animateEntry && "board-entry-animation",
+  );
+  const boardWrapperClassName = cn("w-fit", isShaking && "board-shake-pulse-animation");
   const boardViewportClassName = isRowWindowed
-    ? `board-visible-window ${isOverflowShiftAnimating ? "overflow-hidden" : ""}`
-    : "";
+    ? cn("board-visible-window", isOverflowShiftAnimating && "overflow-hidden")
+    : undefined;
   const boardShiftLayerClassName = isOverflowShiftAnimating
     ? "board-overflow-shift-up-animation"
-    : "";
+    : undefined;
   const boardShiftLayerStyle = isOverflowShiftAnimating
     ? ({
         "--board-overflow-shift-rows": overflowShiftRows,
@@ -136,9 +136,10 @@ export function Board({
   return (
     <div
       data-testid="board-scroll-container"
-      className={`w-full max-w-full ${
-        enableHorizontalScroll ? "overflow-x-auto overscroll-x-contain" : ""
-      }`}
+      className={cn(
+        "w-full max-w-full",
+        enableHorizontalScroll && "overflow-x-auto overscroll-x-contain",
+      )}
     >
       <div className="mx-auto w-fit min-w-max px-4 sm:px-6">
         <div id={PLAY_BOARD_SHARE_CAPTURE_ID} className={boardWrapperClassName}>
@@ -179,7 +180,10 @@ export function Board({
               >
                 <span
                   key={`combo-${comboFlash.pulse}`}
-                  className={`combo-flash-animation block rounded-full border px-2.5 py-1 text-sm font-black tracking-wide shadow-lg ${comboFlashStyleClass}`}
+                  className={cn(
+                    "combo-flash-animation block rounded-full border px-2.5 py-1 text-sm font-black tracking-wide shadow-lg",
+                    comboFlashStyleClass,
+                  )}
                 >
                   {t("play.gameplay.comboFlashValue", {
                     count: comboFlash.count,

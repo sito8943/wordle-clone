@@ -4,6 +4,7 @@ import { Button } from "@components";
 import { ROUTE_SEARCH_PARAMS, ROUTE_SEARCH_PARAM_VALUES } from "@config/routes";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { usePlayView } from "@views/Play/providers";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -140,11 +141,12 @@ const ToolbarZenFocusButton = (): JSX.Element | null => {
     return createPortal(
       <div
         ref={floatingContainerRef}
-        className={`fixed z-40 transition-[opacity,transform] ease-out ${
+        className={cn(
+          "fixed z-40 transition-[opacity,transform] ease-out",
           floatingVisible
-            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
-            : "opacity-0 -translate-y-1 scale-95 pointer-events-none"
-        }`}
+            ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+            : "pointer-events-none -translate-y-1 scale-95 opacity-0",
+        )}
         style={{
           right: `${floatingPosition.x}px`,
           top: `${floatingPosition.y}px`,

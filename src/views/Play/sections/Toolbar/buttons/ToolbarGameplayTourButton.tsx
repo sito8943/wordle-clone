@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@components";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { usePlayView } from "@views/Play/providers";
 import {
   TOOLBAR_COMPACT_BUTTON_CLASS_NAME,
@@ -21,7 +22,7 @@ const ToolbarGameplayTourButton = (): JSX.Element => {
       variant="ghost"
       icon={faCircleQuestion}
       iconClassName={TOOLBAR_ICON_CLASS_NAME}
-      className={`${TOOLBAR_COMPACT_BUTTON_CLASS_NAME} hidden!`}
+      className={cn(TOOLBAR_COMPACT_BUTTON_CLASS_NAME, "hidden!")}
       hideLabelOnMobile
       disabled={showGameplayTourDialog}
     >

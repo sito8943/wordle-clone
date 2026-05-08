@@ -4,6 +4,7 @@ import { Button, FireStreak } from "@components";
 import { Dialog, useDialogCloseTransition } from "@components/Dialogs";
 import { NORMAL_DICTIONARY_ROW_BONUS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { DIALOG_CLOSE_DURATION_MS } from "@components/Dialogs/ConfirmationDialog/constants";
 import { getDialogTransitionClasses } from "@components/Dialogs/ConfirmationDialog/utils";
 import { VICTORY_DIALOG_TITLE_ID } from "./constants";
@@ -89,7 +90,9 @@ const VictoryDialog = ({
                   className="flex items-center justify-between"
                 >
                   <span
-                    className={`${item.key === "dictionary" ? "text-xs text-gray-400" : ""} `}
+                    className={cn(
+                      item.key === "dictionary" && "text-xs text-gray-400",
+                    )}
                   >
                     {t(`play.victoryDialog.scoreItems.${item.key}`, {
                       bonus: NORMAL_DICTIONARY_ROW_BONUS,
@@ -97,7 +100,10 @@ const VictoryDialog = ({
                   </span>
 
                   <span
-                    className={`font-semibold ${item.key === "dictionary" ? "text-xs text-gray-400" : ""}`}
+                    className={cn(
+                      "font-semibold",
+                      item.key === "dictionary" && "text-xs text-gray-400",
+                    )}
                   >
                     {formatScoreSummaryValue(item.key, item.value)}
                   </span>

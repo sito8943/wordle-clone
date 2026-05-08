@@ -1,5 +1,6 @@
 import { Button } from "@components";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { useEffect, useMemo, useState, type JSX } from "react";
 import { createPortal } from "react-dom";
 import type { GameplayTourDialogProps } from "./types";
@@ -104,9 +105,10 @@ const GameplayTourDialog = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby={GAMEPLAY_TOUR_DIALOG_TITLE_ID}
-        className={`fixed inset-x-0 z-40 mx-auto w-[min(92vw,36rem)] rounded-2xl border border-neutral-300 bg-white p-5 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900 ${
-          showDialogAboveKeyboard ? "top-4 bottom-auto" : "bottom-0 mb-4"
-        }`}
+        className={cn(
+          "fixed inset-x-0 z-40 mx-auto w-[min(92vw,36rem)] rounded-2xl border border-neutral-300 bg-white p-5 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900",
+          showDialogAboveKeyboard ? "bottom-auto top-4" : "bottom-0 mb-4",
+        )}
         style={{
           top: showDialogAboveKeyboard
             ? `calc(env(safe-area-inset-top) + ${TOUR_DIALOG_VIEWPORT_MARGIN_PX}px)`

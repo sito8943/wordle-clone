@@ -8,6 +8,7 @@ import {
 } from "react";
 import { Button, Dialog, useDialogCloseTransition } from "@components";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import {
   DIALOG_CLOSE_DURATION_MS,
   getDialogTransitionClasses,
@@ -194,11 +195,12 @@ const DeveloperConsoleDialog = ({
           </div>
           {dictionaryChecksumMessage && (
             <p
-              className={`mt-2 text-sm ${
+              className={cn(
+                "mt-2 text-sm",
                 dictionaryChecksumMessageKind === "error"
                   ? "text-red-600 dark:text-red-400"
-                  : "text-emerald-700 dark:text-emerald-400"
-              }`}
+                  : "text-emerald-700 dark:text-emerald-400",
+              )}
             >
               {dictionaryChecksumMessage}
             </p>
@@ -247,11 +249,12 @@ const DeveloperConsoleDialog = ({
             </div>
             {dailyChallengesDeveloperMessage && (
               <p
-                className={`mt-2 text-sm ${
+                className={cn(
+                  "mt-2 text-sm",
                   dailyChallengesDeveloperMessageKind === "error"
                     ? "text-red-600 dark:text-red-400"
-                    : "text-emerald-700 dark:text-emerald-400"
-                }`}
+                    : "text-emerald-700 dark:text-emerald-400",
+                )}
               >
                 {dailyChallengesDeveloperMessage}
               </p>
@@ -285,11 +288,12 @@ const DeveloperConsoleDialog = ({
             </div>
             {dailyModeDeveloperMessage ? (
               <p
-                className={`mt-2 text-sm ${
+                className={cn(
+                  "mt-2 text-sm",
                   dailyModeDeveloperMessageKind === "error"
                     ? "text-red-600 dark:text-red-400"
-                    : "text-emerald-700 dark:text-emerald-400"
-                }`}
+                    : "text-emerald-700 dark:text-emerald-400",
+                )}
               >
                 {dailyModeDeveloperMessage}
               </p>

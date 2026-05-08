@@ -33,6 +33,7 @@
     "@fortawesome/react-fontawesome": "^3.2.0",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.90.21",
+    "clsx": "^2.1.1",
     "convex": "^1.32.0",
     "html2canvas": "^1.4.1",
     "i18next": "^25.8.19",
@@ -42,6 +43,7 @@
     "react-i18next": "^16.5.8",
     "react-router": "^7.13.1",
     "sito-sound-provider": "^0.2.0",
+    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {

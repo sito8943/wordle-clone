@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type JSX } from "react";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { usePlayView } from "@views/Play/providers";
 import type { NativeKeyboardClockStyle } from "../types";
 import {
@@ -65,10 +66,13 @@ const ToolbarHardModeTimerIndicator = (): JSX.Element | null => {
       aria-label={t("play.toolbar.insaneTimerAriaLabel", {
         seconds: hardModeSecondsLeft,
       })}
-      className={`${TOOLBAR_COMPACT_BUTTON_CLASS_NAME} inline-flex items-center gap-2 rounded border px-3 py-2 text-sm font-bold border-blue-300 bg-blue-100/90 text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200`}
+      className={cn(
+        TOOLBAR_COMPACT_BUTTON_CLASS_NAME,
+        "inline-flex items-center gap-2 rounded border border-blue-300 bg-blue-100/90 px-3 py-2 text-sm font-bold text-blue-900 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200",
+      )}
     >
       <span
-        className={`${showTickAnimation ? "boost-animation " : ""}inline-flex`}
+        className={cn("inline-flex", showTickAnimation && "boost-animation")}
         style={
           {
             "--boost-scale": hardModeClockBoostScale.toString(),

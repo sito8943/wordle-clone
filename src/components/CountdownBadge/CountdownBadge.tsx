@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
+import { cn } from "@utils/cn";
 import { formatCountdown } from "./utils";
 import type { CountdownBadgeProps } from "./types";
 
@@ -72,25 +73,33 @@ const CountdownBadge = ({
 
   return (
     <div
-      className={`flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-1 m-0 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 ${className}`.trim()}
+      className={cn(
+        "m-0 flex items-center justify-center gap-2 rounded-lg bg-neutral-100 px-3 py-1 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
+        className,
+      )}
     >
       {label ? (
         <span
           aria-live="polite"
-          className={`max-sm:hidden inline-block font-mono tabular-nums ${labelClassName}`.trim()}
+          className={cn(
+            "inline-block font-mono tabular-nums max-sm:hidden",
+            labelClassName,
+          )}
         >
           {label}
         </span>
       ) : null}
       <span
         aria-live="polite"
-        className={`inline-block font-mono tabular-nums ${countdownClassName}`.trim()}
+        className={cn("inline-block font-mono tabular-nums", countdownClassName)}
       >
         {countdown}
         <FontAwesomeIcon
-          className={`ml-2 transition-all duration-100 ease-in-out ${
-            isTickAnimating ? "scale-120 text-primary" : "scale-100"
-          } ${iconClassName}`.trim()}
+          className={cn(
+            "ml-2 transition-all duration-100 ease-in-out",
+            isTickAnimating ? "scale-120 text-primary" : "scale-100",
+            iconClassName,
+          )}
           icon={faClock}
         />
       </span>

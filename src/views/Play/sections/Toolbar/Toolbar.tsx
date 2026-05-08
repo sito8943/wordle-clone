@@ -3,6 +3,7 @@ import { FireStreak, Alert } from "@components";
 import { ROUTE_SEARCH_PARAMS, ROUTE_SEARCH_PARAM_VALUES } from "@config/routes";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { usePlayView } from "@views/Play/providers";
 import { useLocation } from "react-router";
 import {
@@ -39,11 +40,11 @@ const Toolbar = (): JSX.Element => {
   return (
     <>
       <div
-        className={`w-full flex items-center sm:px-4 toolbar-entry-from-top-animation ${
-          showStreakBadge ? "justify-between" : "justify-end"
-        } transition-[margin-top,translate] duration-500 ease-in-out ${
-          zenFocusActive ? "" : "mt-0"
-        }`}
+        className={cn(
+          "toolbar-entry-from-top-animation flex w-full items-center transition-[margin-top,translate] duration-500 ease-in-out sm:px-4",
+          showStreakBadge ? "justify-between" : "justify-end",
+          !zenFocusActive && "mt-0",
+        )}
       >
         {showStreakBadge ? (
           <div data-tour="streak-badge">
