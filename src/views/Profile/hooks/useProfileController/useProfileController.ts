@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { i18n } from "@i18n";
 import {
   clearAllPersistedGameStates,
-  clearTutorialPromptSeenModesState,
   readPersistedGameState,
   WORDLE_MODE_IDS,
   type PlayerDifficulty,
@@ -25,7 +24,7 @@ export default function useProfileController() {
     player,
     recoverPlayer,
     refreshCurrentPlayerProfile,
-    replacePlayer,
+    resetTutorialPromptSeenModes,
     updatePlayer,
     updatePlayerDifficulty,
     updatePlayerLanguage,
@@ -240,17 +239,13 @@ export default function useProfileController() {
   }, []);
 
   const resetTutorialTour = useCallback(() => {
-    clearTutorialPromptSeenModesState();
-    replacePlayer({
-      declinedTutorial: undefined,
-      tutorialPromptSeenModes: undefined,
-    });
+    void resetTutorialPromptSeenModes();
     setSavedMessage(i18n.t("profile.tutorialResetMessage"));
     setTimeout(
       () => setSavedMessage(""),
       PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
     );
-  }, [replacePlayer]);
+  }, [resetTutorialPromptSeenModes]);
 
   const isDifficultyChangeConfirmationOpen = pendingDifficulty !== null;
 

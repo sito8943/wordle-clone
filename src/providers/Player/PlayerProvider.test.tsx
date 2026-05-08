@@ -307,6 +307,50 @@ describe("PlayerProvider", () => {
     );
   });
 
+  it("resets tutorial prompt modes and syncs empty state to backend", async () => {
+    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: input.nick,
+      language: input.language,
+      playerCode: "AB12",
+      score: 12,
+      streak: 3,
+      difficulty: input.difficulty,
+      keyboardPreference: input.keyboardPreference,
+      tutorialPromptSeenModes: input.tutorialPromptSeenModes,
+      createdAt: 1000,
+    }));
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ upsertPlayerProfile }),
+    });
+
+    act(() => {
+      result.current.replacePlayer({
+        name: "Ana",
+        code: "AB12",
+        score: 12,
+        streak: 3,
+        declinedTutorial: true,
+        tutorialPromptSeenModes: { classic: true, lightning: true },
+      });
+    });
+
+    await act(async () => {
+      await result.current.resetTutorialPromptSeenModes();
+    });
+
+    expect(result.current.player.declinedTutorial).toBeUndefined();
+    expect(result.current.player.tutorialPromptSeenModes).toBeUndefined();
+    expect(upsertPlayerProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nick: "Ana",
+        tutorialPromptSeenModes: {},
+      }),
+    );
+  });
+
   it("commitVictory adds points, increments streak and enqueues an event", async () => {
     const queueRoundEvent = vi.fn();
     const { result } = renderHook(() => usePlayer(), {

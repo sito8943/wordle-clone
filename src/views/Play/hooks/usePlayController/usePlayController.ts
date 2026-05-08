@@ -4,7 +4,6 @@ import {
   clearAllDailyModeOutcomes,
   clearAllDailyShieldUsages,
   clearAllPersistedGameStates,
-  clearTutorialPromptSeenModesState,
   clearDailyShieldUsage,
   clearDailyModeOutcome,
   consumeDailyShieldForDate,
@@ -98,6 +97,7 @@ export default function usePlayController(
     updatePlayerDifficulty,
     updatePlayerManualTileSelection,
     markTutorialPromptSeenForMode,
+    resetTutorialPromptSeenModes,
   } = usePlayer();
   const {
     hintsEnabled,
@@ -1019,15 +1019,11 @@ export default function usePlayController(
   }, []);
 
   const resetTutorialTour = useCallback(() => {
-    clearTutorialPromptSeenModesState();
+    void resetTutorialPromptSeenModes();
     closeGameplayTour();
-    replacePlayer({
-      declinedTutorial: undefined,
-      tutorialPromptSeenModes: undefined,
-    });
     setShowSettingsPanel(false);
     setShowTutorialPromptDialog(true);
-  }, [closeGameplayTour, replacePlayer]);
+  }, [closeGameplayTour, resetTutorialPromptSeenModes]);
 
   const goToPlayRoute = useCallback(() => {
     navigate(ROUTES.PLAY);

@@ -198,6 +198,7 @@ describe("usePlayController", () => {
       updatePlayerDifficulty: vi.fn(),
       updatePlayerManualTileSelection: vi.fn(),
       markTutorialPromptSeenForMode: vi.fn().mockResolvedValue(undefined),
+      resetTutorialPromptSeenModes: vi.fn().mockResolvedValue(undefined),
       commitVictory: vi.fn().mockResolvedValue(undefined),
       commitLoss: vi.fn().mockResolvedValue(undefined),
     });
@@ -993,6 +994,22 @@ describe("usePlayController", () => {
     expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("lightning");
     expect(mockNavigate).not.toHaveBeenCalled();
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
+  });
+
+  it("resets tutorial prompt state through player provider", () => {
+    const resetTutorialPromptSeenModes = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      resetTutorialPromptSeenModes,
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.resetTutorialTour();
+    });
+
+    expect(resetTutorialPromptSeenModes).toHaveBeenCalledTimes(1);
   });
 
   it("navigates to mode-specific help from the gameplay tour", () => {

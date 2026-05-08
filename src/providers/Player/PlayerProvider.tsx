@@ -380,6 +380,39 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     [applyRemoteProfile, scoreClient, setStoredPlayer, storedPlayer],
   );
 
+  const resetTutorialPromptSeenModes = useCallback(async () => {
+    const current = normalizePlayer(storedPlayer);
+
+    setStoredPlayer((previous) =>
+      normalizePlayer({
+        ...normalizePlayer(previous),
+        declinedTutorial: undefined,
+        tutorialPromptSeenModes: undefined,
+      }),
+    );
+
+    if (current.name === DEFAULT_PLAYER.name && current.code.length === 0) {
+      return;
+    }
+
+    try {
+      const remoteProfile = await scoreClient.upsertPlayerProfile({
+        nick: current.name,
+        language: current.language,
+        difficulty: current.difficulty,
+        keyboardPreference: current.keyboardPreference,
+        tutorialPromptSeenModes: {},
+      });
+
+      await applyRemoteProfile(remoteProfile, {
+        preserveLocalPreferences: true,
+        preserveLocalProgress: true,
+      });
+    } catch {
+      // Keep local tutorial reset when remote sync is unavailable.
+    }
+  }, [applyRemoteProfile, scoreClient, setStoredPlayer, storedPlayer]);
+
   const commitVictory = useCallback(
     async (
       points: number,
@@ -641,6 +674,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerShowEndOfGameDialogs,
       updatePlayerManualTileSelection,
       markTutorialPromptSeenForMode,
+      resetTutorialPromptSeenModes,
       commitVictory,
       commitLoss,
     }),
@@ -656,6 +690,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerShowEndOfGameDialogs,
       updatePlayerManualTileSelection,
       markTutorialPromptSeenForMode,
+      resetTutorialPromptSeenModes,
       commitVictory,
       commitLoss,
     ],
