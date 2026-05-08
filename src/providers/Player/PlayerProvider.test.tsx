@@ -93,6 +93,11 @@ const makeWrapper =
       apiManager: createMockApiManager({
         players: {
           getByCode: recoverPlayerByCode as never,
+          getMe: vi
+            .fn()
+            .mockImplementation(async ({ language }: { language?: string }) =>
+              getCurrentPlayerProfile(language as never),
+            ) as never,
         },
       }),
     });
@@ -732,6 +737,9 @@ describe("PlayerProvider", () => {
           getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
         },
       ) as never,
+      apiManager: createMockApiManager({
+        players: { getMe: vi.fn().mockResolvedValue(null) as never },
+      }),
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>
@@ -929,6 +937,7 @@ describe("PlayerProvider", () => {
       apiManager: createMockApiManager({
         players: {
           getByCode: recoverPlayerByCode as never,
+          getMe: vi.fn().mockResolvedValue(null) as never,
         },
       }),
     });

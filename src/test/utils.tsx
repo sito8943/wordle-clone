@@ -96,10 +96,24 @@ const createMockApiManager = (
     scores: Partial<ApiContextType["apiManager"]["scores"]>;
     challenges: Partial<ApiContextType["apiManager"]["challenges"]>;
     admin: Partial<ApiContextType["apiManager"]["admin"]>;
+    identity: Partial<ApiContextType["apiManager"]["identity"]>;
   }> = {},
 ): ApiContextType["apiManager"] =>
   ({
     isConfigured: false,
+    identity: {
+      getClientId: vi.fn().mockReturnValue("test-client"),
+      getClientRecordId: vi.fn().mockReturnValue(null),
+      setClientRecordId: vi.fn(),
+      clearClientRecordId: vi.fn(),
+      getIdentity: vi.fn().mockReturnValue({ clientId: "test-client" }),
+      requireIdentity: vi.fn().mockReturnValue({
+        clientId: "test-client",
+        clientRecordId: "test-record",
+      }),
+      adoptFromProfile: vi.fn(),
+      ...overrides.identity,
+    },
     words: {
       list: vi.fn().mockResolvedValue([]),
       getChecksum: vi.fn().mockResolvedValue(null),

@@ -57,6 +57,11 @@ class IdentityProvider {
     this.remove(PROFILE_IDENTITY_KEY);
   }
 
+  adoptFromProfile(profile: { clientRecordId: string }): void {
+    if (!profile.clientRecordId) return;
+    this.setClientRecordId(profile.clientRecordId);
+  }
+
   getIdentity(): Identity {
     const clientId = this.getClientId();
     const clientRecordId = this.getClientRecordId();
