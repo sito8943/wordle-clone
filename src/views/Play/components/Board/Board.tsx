@@ -104,7 +104,10 @@ export function Board({
     "space-y-1.5 sm:space-y-2",
     animateEntry && "board-entry-animation",
   );
-  const boardWrapperClassName = cn("w-fit", isShaking && "board-shake-pulse-animation");
+  const boardWrapperClassName = cn(
+    "w-fit",
+    isShaking && "board-shake-pulse-animation",
+  );
   const boardViewportClassName = isRowWindowed
     ? cn("board-visible-window", isOverflowShiftAnimating && "overflow-hidden")
     : undefined;

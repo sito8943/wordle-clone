@@ -120,7 +120,9 @@ const SettingsDrawer = (): JSX.Element | null => {
             variant="ghost"
             className={cn(
               "h-full pointer-events-auto",
-              showSettingsPanel ? "w-6 max-sm:hidden!" : "h-full w-10 max-h-60 my-auto",
+              showSettingsPanel
+                ? "w-6 max-sm:hidden!"
+                : "h-full w-10 max-h-60 my-auto",
             )}
           />
         ) : null}

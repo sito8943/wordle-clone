@@ -91,7 +91,10 @@ const CountdownBadge = ({
       ) : null}
       <span
         aria-live="polite"
-        className={cn("inline-block font-mono tabular-nums", countdownClassName)}
+        className={cn(
+          "inline-block font-mono tabular-nums",
+          countdownClassName,
+        )}
       >
         {countdown}
         <FontAwesomeIcon
