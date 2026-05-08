@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { usePopupPortalTarget } from "@providers/Popup";
+import { cn } from "@utils/cn";
 import {
   DEFAULT_POPUP_OFFSET_PX,
   POPUP_ENTER_DURATION_MS,
@@ -335,12 +336,12 @@ const Popup = ({
               ref={panelRef}
               id={popupId}
               role="tooltip"
-              className={[
+              className={cn(
                 "pointer-events-auto fixed z-50 w-max max-w-[min(24rem,calc(100vw-1rem))] rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium leading-5 text-neutral-800 shadow-xl dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100",
                 originClassName,
                 motionClassName,
                 panelClassName,
-              ].join(" ")}
+              )}
               style={{
                 top: coordinates.top,
                 left: coordinates.left,

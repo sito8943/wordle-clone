@@ -2,6 +2,7 @@ import { getStreakScoreMultiplier } from "@domain/wordle";
 import { Popup } from "@components/Popup";
 import Fire from "./Fire";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import type { FireStreakProps } from "./types";
 import { sanitizeCounter, toTooltipNumber } from "./utils";
 
@@ -32,16 +33,15 @@ const FireStreak = ({
     <div
       title={showScoreBonusPopup ? undefined : label}
       aria-label={label}
-      className={[
-        "inline-flex items-center cursor-help gap-1.5 rounded-full font-semibold tabular-nums select-none",
-        showScoreBonusPopup ? "outline-none" : "",
-        showScoreBonusPopup
-          ? "transition-colors hover:bg-amber-500/10 dark:hover:bg-amber-300/10 focus-visible:ring-2 focus-visible:ring-primary/40"
-          : "",
+      className={cn(
+        "inline-flex cursor-help items-center gap-1.5 rounded-full font-semibold tabular-nums select-none",
+        showScoreBonusPopup && "outline-none",
+        showScoreBonusPopup &&
+          "transition-colors hover:bg-amber-500/10 dark:hover:bg-amber-300/10 focus-visible:ring-2 focus-visible:ring-primary/40",
         sizeClassName,
         showFlame ? "text-amber-800" : "text-neutral-600",
         className,
-      ].join(" ")}
+      )}
     >
       {noLabel && showFlame && <Fire streak={safeStreak} size={iconSize} />}
       <span aria-hidden="true">{label}</span>

@@ -1,6 +1,5 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClientProvider } from "@tanstack/react-query";
 import "./global.css";
 import { i18n, initI18n } from "@i18n";
 import { env } from "@config";
@@ -22,7 +21,7 @@ import {
   WORDLE_SOUND_STORAGE_KEY_PREFIX,
   WORDLE_SOUND_STORAGE_KEYS,
 } from "@providers/Sound";
-import { queryClient } from "./queryClient";
+import { QueryRoot } from "./QueryRoot";
 
 resetBrowserStorageOnAppUpdate(env.appVersion);
 
@@ -49,7 +48,7 @@ void initI18n().then(() => {
           </div>
         )}
       >
-        <QueryClientProvider client={queryClient}>
+        <QueryRoot>
           <SoundProvider
             featureEnabled={env.soundEnabled}
             eventMap={WORDLE_SOUND_EVENT_MAP}
@@ -77,7 +76,7 @@ void initI18n().then(() => {
               </ApiProvider>
             </FeatureFlagsProvider>
           </SoundProvider>
-        </QueryClientProvider>
+        </QueryRoot>
       </ErrorBoundary>
     </StrictMode>,
   );

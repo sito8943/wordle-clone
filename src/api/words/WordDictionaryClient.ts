@@ -1,28 +1,22 @@
-import { ConvexGateway } from "../convex/ConvexGateway";
+import type { ApiManager } from "@api";
+import { ApiNetworkError } from "@api/http";
 import {
   WORDS_CACHE_KEY_PREFIX,
   WORDS_CHECKSUM_KEY_PREFIX,
   WORDS_DEFAULT_LANGUAGE,
-  WORDS_ENSURE_MUTATION,
-  WORDS_REFRESH_CHECKSUM_MUTATION,
-  WORDS_LANGUAGE_CHECKSUM_QUERY,
-  WORDS_LIST_BY_LANGUAGE_QUERY,
 } from "./constants";
 import type { DictionaryLanguage } from "./types";
-import {
-  normalizeDictionaryLanguage,
-  normalizeWords,
-  resolveStorage,
-} from "./utils";
+import { normalizeDictionaryLanguage, resolveStorage } from "./utils";
 
 type RemoteChecksum = { checksum: number; updatedAt: number };
 
 class WordDictionaryClient {
-  private readonly gateway: ConvexGateway;
+  private readonly apiManager: ApiManager;
   private readonly storage: Storage;
+  private readonly ensuredLanguages = new Set<DictionaryLanguage>();
 
-  constructor(gateway: ConvexGateway, storage?: Storage) {
-    this.gateway = gateway;
+  constructor(apiManager: ApiManager, storage?: Storage) {
+    this.apiManager = apiManager;
     this.storage = resolveStorage(storage);
   }
 
@@ -34,7 +28,10 @@ class WordDictionaryClient {
     try {
       const raw = this.storage.getItem(this.getCacheKey(normalizedLanguage));
       if (!raw) return [];
-      return normalizeWords(JSON.parse(raw));
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed)
+        ? parsed.filter((item): item is string => typeof item === "string")
+        : [];
     } catch {
       return [];
     }
@@ -58,11 +55,7 @@ class WordDictionaryClient {
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   ): Promise<RemoteChecksum | null> {
     const normalizedLanguage = normalizeDictionaryLanguage(language);
-
-    return this.gateway.query<RemoteChecksum | null>(
-      WORDS_LANGUAGE_CHECKSUM_QUERY,
-      { language: normalizedLanguage },
-    );
+    return this.apiManager.words.getChecksum(normalizedLanguage);
   }
 
   clearCache(language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE): void {
@@ -76,11 +69,7 @@ class WordDictionaryClient {
     language: DictionaryLanguage = WORDS_DEFAULT_LANGUAGE,
   ): Promise<RemoteChecksum> {
     const normalizedLanguage = normalizeDictionaryLanguage(language);
-
-    return this.gateway.mutation<RemoteChecksum>(
-      WORDS_REFRESH_CHECKSUM_MUTATION,
-      { language: normalizedLanguage },
-    );
+    return this.apiManager.words.refreshChecksum(normalizedLanguage);
   }
 
   async loadWords(
@@ -93,31 +82,28 @@ class WordDictionaryClient {
       return cachedWords;
     }
 
-    if (!this.gateway.isConfigured || !this.isOnline()) {
+    if (!this.apiManager.isConfigured || !this.isOnline()) {
       return cachedWords;
     }
 
     try {
-      await this.gateway.mutation(WORDS_ENSURE_MUTATION, {
-        language: normalizedLanguage,
-      });
+      if (!this.ensuredLanguages.has(normalizedLanguage)) {
+        await this.apiManager.words.ensureSeeded(normalizedLanguage);
+        this.ensuredLanguages.add(normalizedLanguage);
+      }
 
       const [remoteWords, remoteChecksum] = await Promise.all([
-        this.gateway.query<unknown>(WORDS_LIST_BY_LANGUAGE_QUERY, {
-          language: normalizedLanguage,
-        }),
+        this.apiManager.words.list(normalizedLanguage),
         this.fetchRemoteChecksum(normalizedLanguage),
       ]);
 
-      const normalizedRemoteWords = normalizeWords(remoteWords);
-
-      if (normalizedRemoteWords.length === 0) {
+      if (remoteWords.length === 0) {
         return cachedWords;
       }
 
       this.storage.setItem(
         this.getCacheKey(normalizedLanguage),
-        JSON.stringify(normalizedRemoteWords),
+        JSON.stringify(remoteWords),
       );
       if (remoteChecksum) {
         this.storage.setItem(
@@ -126,9 +112,9 @@ class WordDictionaryClient {
         );
       }
 
-      return normalizedRemoteWords;
+      return remoteWords;
     } catch (error) {
-      if (!this.gateway.isNetworkError(error)) {
+      if (!(error instanceof ApiNetworkError)) {
         throw error;
       }
       return cachedWords;

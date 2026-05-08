@@ -5,7 +5,8 @@
 - React 19 + TypeScript + Vite
 - React Router (`createBrowserRouter`)
 - Vitest + Testing Library
-- Convex (scoreboard + dictionary backend)
+- External backend project (scoreboard + dictionary + daily services) at:
+  `/Users/sito8943/Documents/HSCode/HS Ecole/Frontend Frameworks/wordle-daily-backend`
 - Browser persistence (`localStorage` and `sessionStorage`)
 
 ## Runtime Composition
@@ -43,7 +44,7 @@
 
 ### 2) API (`src/api`)
 
-- `api/convex/ConvexGateway.ts`: gateway abstraction for Convex or local fallback.
+- `api/convex/ConvexGateway.ts`: gateway abstraction used by frontend API clients (legacy naming; backend source of truth is the external backend project).
 - `api/score/*`: scoreboard operations.
 - `api/words/*`: dictionary loading/caching interface.
 
@@ -207,7 +208,7 @@ This is an evolution of the current layered architecture, not a replacement for 
 - score/profile identity continues through `PlayerProvider`, which now performs remote-first create/recover profile operations, keeps local score as cache, and syncs confirmed victories through the offline event queue
 
 3. `useWordle` delegates core transitions to domain functions and persists game state.
-4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to Convex when possible, scoped to the fixed gameplay language (`es`) and scoreboard mode (`classic`, `lightning`, `daily`).
+4. `PlayerProvider` treats local score/streak as provisional UI cache, writes local scoreboard cache immediately, and syncs pending victory events to the configured backend when possible, scoped to the fixed gameplay language (`es`) and scoreboard mode (`classic`, `lightning`, `daily`).
 5. Home feature modlets (`Board`, `Keyboard`, dialogs) receive already-processed state/actions.
 
 ## Testing Layout

@@ -188,15 +188,21 @@ export const applyGuess = (
   state: PersistedGameState,
   guess: GuessResult,
   roundConfig?: Partial<BoardRoundConfig>,
+  options: {
+    disableMaxGuessDefeat?: boolean;
+  } = {},
 ): PersistedGameState => {
   const { maxGuesses } = resolveBoardRoundConfig(roundConfig);
   const nextGuesses = [...state.guesses, guess];
+  const reachedMaxGuesses = nextGuesses.length === maxGuesses;
+  const shouldEndByMaxGuesses =
+    reachedMaxGuesses && options.disableMaxGuessDefeat !== true;
 
   return {
     ...state,
     guesses: nextGuesses,
     current: "",
-    gameOver: guess.word === state.answer || nextGuesses.length === maxGuesses,
+    gameOver: guess.word === state.answer || shouldEndByMaxGuesses,
   };
 };
 

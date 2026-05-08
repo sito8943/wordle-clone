@@ -1,0 +1,1 @@
+export { useGetTopScores } from "./useGetTopScores";

@@ -57,28 +57,27 @@ describe("useChallenges", () => {
 
   it("loads today's challenges and auto-opens dialog when there are incomplete challenges", async () => {
     const todayChallenges = createTodayChallenges();
+    const getToday = vi.fn().mockResolvedValue(todayChallenges);
+    const generateDaily = vi.fn();
     const challengeClient = {
       isConfigured: true,
-      getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
-      generateDailyChallenges: vi.fn(),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([]),
     };
-    mockUseApi.mockReturnValue({ challengeClient });
+    const apiManager = { challenges: { getToday, generateDaily } };
+    mockUseApi.mockReturnValue({ apiManager, challengeClient });
 
     const { result } = renderHook(() => useChallenges(true));
 
     await waitFor(() => {
-      expect(challengeClient.getTodayChallenges).toHaveBeenCalledTimes(1);
+      expect(getToday).toHaveBeenCalledTimes(1);
     });
 
     await waitFor(() => {
       expect(result.current.challenges).toEqual(todayChallenges);
     });
 
-    expect(challengeClient.getTodayChallenges).toHaveBeenCalledWith(
-      todayChallenges.date,
-    );
-    expect(challengeClient.generateDailyChallenges).not.toHaveBeenCalled();
+    expect(getToday).toHaveBeenCalledWith(todayChallenges.date);
+    expect(generateDaily).not.toHaveBeenCalled();
     expect(result.current.showDialog).toBe(true);
     expect(
       window.sessionStorage.getItem("wordle:daily-challenges-dialog-seen"),
@@ -87,10 +86,10 @@ describe("useChallenges", () => {
 
   it("generates today's challenges when they do not exist", async () => {
     const todayChallenges = createTodayChallenges();
+    const getToday = vi.fn().mockResolvedValue(null);
+    const generateDaily = vi.fn().mockResolvedValue(todayChallenges);
     const challengeClient = {
       isConfigured: true,
-      getTodayChallenges: vi.fn().mockResolvedValue(null),
-      generateDailyChallenges: vi.fn().mockResolvedValue(todayChallenges),
       getPlayerChallengeProgress: vi.fn().mockResolvedValue([
         {
           _id: "progress-1",
@@ -110,23 +109,22 @@ describe("useChallenges", () => {
         },
       ]),
     };
-    mockUseApi.mockReturnValue({ challengeClient });
+    const apiManager = { challenges: { getToday, generateDaily } };
+    mockUseApi.mockReturnValue({ apiManager, challengeClient });
 
     renderHook(() => useChallenges(true));
 
     await waitFor(() => {
-      expect(challengeClient.generateDailyChallenges).toHaveBeenCalledWith(
-        todayChallenges.date,
-      );
+      expect(generateDaily).toHaveBeenCalledWith(todayChallenges.date);
     });
   });
 
   it("refreshes progress when the custom progress-updated event is dispatched", async () => {
     const todayChallenges = createTodayChallenges();
+    const getToday = vi.fn().mockResolvedValue(todayChallenges);
+    const generateDaily = vi.fn();
     const challengeClient = {
       isConfigured: true,
-      getTodayChallenges: vi.fn().mockResolvedValue(todayChallenges),
-      generateDailyChallenges: vi.fn(),
       getPlayerChallengeProgress: vi
         .fn()
         .mockResolvedValueOnce([])
@@ -141,7 +139,8 @@ describe("useChallenges", () => {
           },
         ]),
     };
-    mockUseApi.mockReturnValue({ challengeClient });
+    const apiManager = { challenges: { getToday, generateDaily } };
+    mockUseApi.mockReturnValue({ apiManager, challengeClient });
 
     const { result } = renderHook(() => useChallenges(true));
 

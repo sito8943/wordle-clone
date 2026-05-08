@@ -12,7 +12,12 @@ import {
 } from "@providers";
 import { normalizePlayerName } from "@providers/Player/utils";
 import { env } from "@config/env";
-import { ROUTES, getChangelogRoute } from "@config/routes";
+import {
+  ROUTES,
+  ROUTE_SEARCH_PARAMS,
+  ROUTE_SEARCH_PARAM_VALUES,
+  getChangelogRoute,
+} from "@config/routes";
 import { VIEW_DIALOG_IDS } from "./constants";
 import { VIEW_VERSION_HISTORY } from "./changelog";
 import {
@@ -32,12 +37,18 @@ const InitialPlayerDialog = lazy(
 
 const View = () => {
   const { t } = useTranslation();
-  const { scoreClient } = useApi();
+  const { apiManager } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, search } = useLocation();
   const navigate = useNavigate();
   const appVersion = env.appVersion;
   const isHomeRoute = pathname === ROUTES.HOME;
+  const isZenRoute = pathname === ROUTES.ZEN;
+  const zenFocusModeActive =
+    isZenRoute &&
+    new URLSearchParams(search).get(ROUTE_SEARCH_PARAMS.FOCUS) ===
+      ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON;
+  const shouldShowFooter = !isHomeRoute && !isZenRoute;
   useThemePreference({ applyToDocument: true });
   useAnimationsPreference({ applyToDocument: true });
   const [showInitialPlayerDialog, setShowInitialPlayerDialog] = useState(
@@ -116,7 +127,8 @@ const View = () => {
       const normalizedName = normalizePlayerName(name);
 
       try {
-        const isAvailable = await scoreClient.isNickAvailable(normalizedName);
+        const { available: isAvailable } =
+          await apiManager.players.getNickAvailability(normalizedName);
         if (!isAvailable) {
           return t("layout.initialPlayer.nameNotAvailable");
         }
@@ -126,7 +138,7 @@ const View = () => {
         return t("layout.initialPlayer.nameValidationError");
       }
     },
-    [scoreClient, t],
+    [apiManager, t],
   );
 
   useEffect(() => {
@@ -225,7 +237,19 @@ const View = () => {
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
       <div className="mx-auto flex min-h-screen w-full flex-col max-sm:p-3 p-1">
-        {!isHomeRoute ? <Navbar /> : null}
+        {!isHomeRoute ? (
+          <div
+            data-testid="view-navbar-shell"
+            aria-hidden={zenFocusModeActive}
+            className={`overflow-hidden transition-[max-height,opacity,translate,transform,margin] duration-500 ease-in-out ${
+              zenFocusModeActive
+                ? "-translate-y-12 opacity-0 -mt-2 pointer-events-none"
+                : "translate-y-0 opacity-100 mt-0"
+            }`}
+          >
+            <Navbar />
+          </div>
+        ) : null}
         <ErrorBoundary
           name="route-outlet"
           resetKeys={[pathname]}
@@ -242,7 +266,7 @@ const View = () => {
           <Outlet />
         </ErrorBoundary>
       </div>
-      {!isHomeRoute ? <Footer /> : null}
+      {shouldShowFooter ? <Footer /> : null}
       <Suspense fallback={null}>
         {queuedVersionDialogVisible ? (
           <VersionUpdateDialog

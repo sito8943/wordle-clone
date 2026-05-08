@@ -1,3 +1,4 @@
+import { Alert } from "@components";
 import { EditableProfileCard, ProfileCard } from "@views/Profile/components";
 import { useProfileView } from "@views/Profile/providers";
 
@@ -16,9 +17,9 @@ const ProfileEditorSection = () => {
   return (
     <>
       {savedMessage ? (
-        <p role="status" aria-live="polite" className="text-sm text-green-700">
-          {savedMessage}
-        </p>
+        <div role="status" aria-live="polite">
+          <Alert message={savedMessage} color="success" />
+        </div>
       ) : null}
       {editing ? (
         <EditableProfileCard

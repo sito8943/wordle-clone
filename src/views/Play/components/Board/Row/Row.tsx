@@ -1,4 +1,5 @@
 import { Tile } from "../Tile";
+import { cn } from "@utils/cn";
 import type { RowPropsType } from "../types";
 
 export function Row({ row, normalDictionaryBonusTooltip }: RowPropsType) {
@@ -11,7 +12,10 @@ export function Row({ row, normalDictionaryBonusTooltip }: RowPropsType) {
   return (
     <div
       role="row"
-      className={`relative flex gap-1.5 sm:gap-2 transition-[scale] duration-200 ${rowScaleClass}`}
+      className={cn(
+        "relative flex gap-1.5 transition-[scale] duration-200 sm:gap-2",
+        rowScaleClass,
+      )}
     >
       {row.isActiveRow ? (
         <span

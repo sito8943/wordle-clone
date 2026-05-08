@@ -9,3 +9,8 @@ export type BoardRowModel = {
   letters: string[];
   statuses: BoardCellStatus[];
 };
+
+export type BuildBoardRowsOptions = {
+  overflowBufferRows?: number;
+  overflowTriggerRemainingRows?: number;
+};

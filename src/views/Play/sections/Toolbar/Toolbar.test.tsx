@@ -1,6 +1,14 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { ROUTE_SEARCH_PARAMS, ROUTE_SEARCH_PARAM_VALUES } from "@config/routes";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WORDLE_MODE_IDS } from "@domain/wordle";
+import { MemoryRouter } from "react-router";
 import Toolbar from "./Toolbar";
 
 const featureFlagsMock = vi.hoisted(() => ({
@@ -80,6 +88,15 @@ vi.mock("@i18n", () => ({
   }),
 }));
 
+const renderToolbarTree = (initialEntry = "/") => (
+  <MemoryRouter initialEntries={[initialEntry]}>
+    <Toolbar />
+  </MemoryRouter>
+);
+
+const renderToolbar = (initialEntry = "/") =>
+  render(renderToolbarTree(initialEntry));
+
 describe("Toolbar", () => {
   beforeEach(() => {
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.CLASSIC;
@@ -94,17 +111,33 @@ describe("Toolbar", () => {
   });
 
   it("shows refresh button outside daily mode", () => {
-    render(<Toolbar />);
+    renderToolbar();
 
     expect(
       screen.getByRole("button", { name: "play.toolbar.refreshAriaLabel" }),
     ).toBeTruthy();
   });
 
+  it("shows streak badge outside zen mode", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.CLASSIC;
+
+    const { container } = renderToolbar();
+
+    expect(container.querySelector('[data-tour="streak-badge"]')).toBeTruthy();
+  });
+
+  it("hides streak badge in zen mode", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
+
+    const { container } = renderToolbar("/zen");
+
+    expect(container.querySelector('[data-tour="streak-badge"]')).toBeNull();
+  });
+
   it("hides refresh button in daily mode", () => {
     playViewMock.controller.activeModeId = WORDLE_MODE_IDS.DAILY;
 
-    render(<Toolbar />);
+    renderToolbar();
 
     expect(
       screen.queryByRole("button", { name: "play.toolbar.refreshAriaLabel" }),
@@ -117,13 +150,13 @@ describe("Toolbar", () => {
     playViewMock.controller.hardModeTickPulse = 0;
     playViewMock.controller.hardModeClockBoostScale = 1.08;
 
-    const { rerender } = render(<Toolbar />);
+    const { rerender } = renderToolbar();
 
     const firstTimerIcon = screen.getByTestId("toolbar-hard-mode-timer-icon");
 
     playViewMock.controller.hardModeSecondsLeft = 59;
     playViewMock.controller.hardModeTickPulse = 1;
-    rerender(<Toolbar />);
+    rerender(renderToolbarTree());
 
     await waitFor(() => {
       const secondTimerIcon = screen.getByTestId(
@@ -134,5 +167,48 @@ describe("Toolbar", () => {
         "boost-animation",
       );
     });
+  });
+
+  it("shows focus on button only in zen mode", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
+
+    renderToolbar("/zen");
+
+    expect(
+      screen.getByRole("button", { name: "play.toolbar.focusOnAriaLabel" }),
+    ).toBeTruthy();
+  });
+
+  it("keeps only focus off button visible when zen focus is active", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
+    const { container } = renderToolbar(
+      `/zen?${ROUTE_SEARCH_PARAMS.FOCUS}=${ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON}`,
+    );
+
+    const focusOffButton = screen.getByRole("button", {
+      name: "play.toolbar.focusOffAriaLabel",
+    });
+
+    expect(focusOffButton).toBeTruthy();
+    expect(container.contains(focusOffButton)).toBe(false);
+    expect(
+      screen.queryByRole("button", { name: "play.toolbar.refreshAriaLabel" }),
+    ).toBeNull();
+  });
+
+  it("toggles from focus on to focus off in zen mode", () => {
+    playViewMock.controller.activeModeId = WORDLE_MODE_IDS.ZEN;
+    renderToolbar("/zen");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "play.toolbar.focusOnAriaLabel" }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "play.toolbar.focusOffAriaLabel" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "play.toolbar.refreshAriaLabel" }),
+    ).toBeNull();
   });
 });

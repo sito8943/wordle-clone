@@ -1,4 +1,5 @@
 import type { RemoteChallenge } from "@api/challenges";
+import { cn } from "@utils/cn";
 import { useTranslation } from "react-i18next";
 
 export const ChallengeRow = ({
@@ -24,32 +25,51 @@ export const ChallengeRow = ({
 
   return (
     <div
-      className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+      className={cn(
+        "flex items-start gap-3 rounded-lg border p-3 transition-colors",
         completed
           ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950/30"
-          : "border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50"
-      }`}
+          : "border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50",
+      )}
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span
-            className={`text-sm font-semibold ${completed ? "text-green-700 line-through dark:text-green-400" : "text-neutral-900 dark:text-neutral-100"}`}
+            className={cn(
+              "text-sm font-semibold",
+              completed
+                ? "text-green-700 line-through dark:text-green-400"
+                : "text-neutral-900 dark:text-neutral-100",
+            )}
           >
             {t(nameKey)}
           </span>
           <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${typeClassName}`}
+            className={cn(
+              "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold",
+              typeClassName,
+            )}
           >
             {typeLabel}
           </span>
           <span
-            className={`ml-auto text-xs font-bold ${completed ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+            className={cn(
+              "ml-auto text-xs font-bold",
+              completed
+                ? "text-green-600 dark:text-green-400"
+                : "text-amber-600 dark:text-amber-400",
+            )}
           >
             {t("challenges.points", { points })}
           </span>
         </div>
         <p
-          className={`mt-1 text-xs ${completed ? "text-green-600/70 line-through dark:text-green-400/70" : "text-neutral-600 dark:text-neutral-400"}`}
+          className={cn(
+            "mt-1 text-xs",
+            completed
+              ? "text-green-600/70 line-through dark:text-green-400/70"
+              : "text-neutral-600 dark:text-neutral-400",
+          )}
         >
           {t(descKey)}
         </p>

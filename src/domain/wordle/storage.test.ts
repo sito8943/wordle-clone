@@ -2,10 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearAllPersistedGameStates,
   clearPersistedGameState,
+  clearTutorialPromptSeenModesState,
   persistGameState,
   readPersistedGameState,
 } from "./storage";
 import { WORDLE_MODE_IDS } from "./modeConfig";
+import { TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY } from "./constants";
 import type { PersistedGameState } from "./types";
 
 const makeState = (
@@ -192,5 +194,32 @@ describe("per-mode persistence", () => {
 
     expect(readPersistedGameState(WORDLE_MODE_IDS.DAILY)).toBeNull();
     expect(localStorage.getItem(`${CLASSIC_KEY}:daily`)).toBeNull();
+  });
+});
+
+describe("clearTutorialPromptSeenModesState", () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => localStorage.clear());
+
+  it("removes stored tutorial prompt modes", () => {
+    localStorage.setItem(
+      TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY,
+      JSON.stringify({ classic: true, zen: true }),
+    );
+
+    clearTutorialPromptSeenModesState();
+
+    expect(
+      localStorage.getItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY),
+    ).toBeNull();
+  });
+
+  it("does not throw when localStorage.removeItem fails", () => {
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementationOnce(() => {
+      throw new Error("StorageError");
+    });
+
+    expect(() => clearTutorialPromptSeenModesState()).not.toThrow();
+    vi.restoreAllMocks();
   });
 });

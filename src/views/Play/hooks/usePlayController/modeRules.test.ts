@@ -6,16 +6,16 @@ import {
 } from "./modeRules";
 
 describe("shouldCompleteChallengesForMode", () => {
-  it("returns false for lightning and daily", () => {
+  it("returns false for lightning, daily and zen", () => {
     expect(shouldCompleteChallengesForMode(WORDLE_MODE_IDS.LIGHTNING)).toBe(
       false,
     );
     expect(shouldCompleteChallengesForMode(WORDLE_MODE_IDS.DAILY)).toBe(false);
+    expect(shouldCompleteChallengesForMode(WORDLE_MODE_IDS.ZEN)).toBe(false);
   });
 
-  it("returns true for classic and zen", () => {
+  it("returns true for classic", () => {
     expect(shouldCompleteChallengesForMode(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
-    expect(shouldCompleteChallengesForMode(WORDLE_MODE_IDS.ZEN)).toBe(true);
   });
 });
 
@@ -75,6 +75,27 @@ describe("resolveVictoryOutcomeForMode", () => {
     });
     expect(lowStreakOutcome.snapshot.currentStreak).toBe(1);
     expect(highStreakOutcome.snapshot.currentStreak).toBe(100);
+  });
+
+  it("keeps zen wins scoreless and without streak progression", () => {
+    const outcome = resolveVictoryOutcomeForMode({
+      modeId: WORDLE_MODE_IDS.ZEN,
+      answer: "APPLE",
+      guessesLength: 6,
+      guessWords: ["SLATE", "CRANE", "ALERT", "STONE", "PLANT", "APPLE"],
+      playerDifficulty: "insane",
+      playerStreak: 12,
+      hardModeEnabled: true,
+      hardModeSecondsLeft: 3,
+    });
+
+    expect(outcome.awardedPoints).toBe(0);
+    expect(outcome.snapshot.currentStreak).toBe(12);
+    expect(outcome.snapshot.bestStreak).toBe(12);
+    expect(outcome.snapshot.scoreSummary).toEqual({
+      items: [{ key: "base", value: 0 }],
+      total: 0,
+    });
   });
 
   it("uses regular scoring for non-daily modes", () => {

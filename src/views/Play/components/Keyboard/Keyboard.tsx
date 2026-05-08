@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import type { KeyboardProps } from "./types";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import useKeyboardController from "./useKeyboardController";
 import { DELETE_HOLD_DELAY_MS, DELETE_REPEAT_INTERVAL_MS } from "./constants";
 
@@ -62,15 +63,16 @@ export function Keyboard({
 
   return (
     <>
-      <div aria-hidden="true" className="h-48 sm:hidden" />
+      <div aria-hidden="true" className="h-48 sm:h-56" />
       <div
         role="group"
         data-tour="keyboard"
         aria-label={t("play.gameplay.onScreenKeyboardAriaLabel")}
         onAnimationEnd={animateEntry ? onEntryAnimationEnd : undefined}
-        className={`w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 sm:pt-0 sm:pb-4 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:bg-neutral-100/95 max-sm:backdrop-blur-sm dark:max-sm:bg-neutral-900/95 ${
-          animateEntry ? "keyboard-entry-animation" : ""
-        }`}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-10 w-full pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur-sm dark:bg-neutral-900/95 sm:pb-4 sm:pt-3",
+          animateEntry && "keyboard-entry-animation",
+        )}
       >
         {rows.map((row, ri) => (
           <div
@@ -99,7 +101,11 @@ export function Keyboard({
                     key === "BACKSPACE" ? stopDeleteRepeat : undefined
                   }
                   aria-label={ariaLabel}
-                  className={`flex h-11 w-9 items-center justify-center rounded-lg border text-xs font-bold tracking-wide transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-100 active:scale-[0.97] dark:focus-visible:ring-neutral-200 dark:focus-visible:ring-offset-neutral-900 sm:h-12 sm:w-10 sm:text-sm ${isWide ? "w-14 text-[0.65rem] sm:w-16 sm:text-xs" : ""} ${keyStyle}`}
+                  className={cn(
+                    "flex h-11 w-9 items-center justify-center rounded-lg border text-xs font-bold tracking-wide transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-100 active:scale-[0.97] dark:focus-visible:ring-neutral-200 dark:focus-visible:ring-offset-neutral-900 sm:h-12 sm:w-10 sm:text-sm",
+                    isWide && "w-14 text-[0.65rem] sm:w-16 sm:text-xs",
+                    keyStyle,
+                  )}
                 >
                   {displayKey}
                 </button>

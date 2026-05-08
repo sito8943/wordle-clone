@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-08
+
+### Branch `0.0.23`
+
+- Migrated frontend API integration to REST v2 architecture with `ApiManager`, `HttpGateway`, resource managers (`scores`, `players`, `challenges`, `words`, `admin`), `IdentityProvider`, and `SyncQueueManager`.
+- Added typed HTTP error handling (`400`/`404`/`409`) and standardized identity injection (`clientId`, `clientRecordId`) across manager calls.
+- Refactored score/profile orchestration: `ScoreClient` now focuses on local cache/identity reconciliation while remote writes and sync flows are handled by API managers.
+- Split profile flows into dedicated remote actions (`register`, `renameNick`, `updatePreferences`, `markTutorialSeen`, `resetTutorialPrompts`, `getMe`, `getByCode`) and aligned provider/controller usage to those actions.
+- Expanded mode-aware gameplay behavior for Zen: board overflow growth with visible-row windowing/shift animation, no max-guess auto-loss, no score gain on victory, and challenge completion disabled in this mode.
+- Added Zen Focus mode (`?focus=on`) to reduce distractions by collapsing layout/toolbar controls and exposing a floating focus toggle.
+- Updated Play quick settings behavior: difficulty controls are hidden for Daily/Zen and the drawer auto-closes when Zen Focus is activated.
+- Extended tutorial UX with Zen-focused tour steps and added reset-tour flows that sync tutorial prompt state to remote profile when available, with local fallback.
+
 ## 2026-05-07
 
 ### Branch `0.0.22`

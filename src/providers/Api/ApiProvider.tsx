@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import { ApiManager } from "@api";
 import { ChallengeClient } from "@api/challenges";
-import { ConvexGateway } from "@api/convex/ConvexGateway";
 import { DailyWordClient } from "@api/dailyWord";
 import { ScoreClient } from "@api/score";
 import { WordDictionaryClient } from "@api/words";
@@ -10,41 +10,37 @@ import type { ProviderProps } from "../types";
 
 const ApiProvider = ({ children }: ProviderProps) => {
   const backendUrl = env.mode === "test" ? undefined : env.backendUrl;
-  const convexUrl = env.mode === "test" ? undefined : env.convexUrl;
 
-  const gateway = useMemo(
-    () =>
-      new ConvexGateway({
-        backendUrl,
-        convexUrl,
-      }),
-    [backendUrl, convexUrl],
+  const apiManager = useMemo(
+    () => new ApiManager({ baseUrl: backendUrl }),
+    [backendUrl],
   );
-  const scoreClient = useMemo(() => new ScoreClient(gateway), [gateway]);
+  const scoreClient = useMemo(() => new ScoreClient(), []);
   const wordDictionaryClient = useMemo(
-    () => new WordDictionaryClient(gateway),
-    [gateway],
+    () => new WordDictionaryClient(apiManager),
+    [apiManager],
   );
   const dailyWordClient = useMemo(() => new DailyWordClient(), []);
   const challengeClient = useMemo(
-    () => new ChallengeClient(gateway),
-    [gateway],
+    () => new ChallengeClient(apiManager),
+    [apiManager],
   );
 
   const contextValue = useMemo(
     () => ({
+      apiManager,
       scoreClient,
       wordDictionaryClient,
       dailyWordClient,
       challengeClient,
-      convexEnabled: gateway.isConfigured,
+      convexEnabled: apiManager.isConfigured,
     }),
     [
+      apiManager,
       scoreClient,
       wordDictionaryClient,
       dailyWordClient,
       challengeClient,
-      gateway,
     ],
   );
 

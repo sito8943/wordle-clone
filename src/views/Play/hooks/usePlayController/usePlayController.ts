@@ -36,7 +36,6 @@ import { useFeatureFlags } from "@providers/FeatureFlags";
 import { useSound } from "@providers/Sound";
 import { useHardModeTimer } from "./useHardModeTimer";
 import type { RemoteChallenge } from "@api/challenges";
-import { UPDATE_SCORE_MUTATION } from "@api/score/constants";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 import { useWordle } from "@hooks";
 import { useHintController } from "../useHintController";
@@ -84,6 +83,7 @@ export default function usePlayController(
 ) {
   const navigate = useNavigate();
   const {
+    apiManager,
     scoreClient,
     wordDictionaryClient,
     challengeClient,
@@ -97,6 +97,7 @@ export default function usePlayController(
     updatePlayerDifficulty,
     updatePlayerManualTileSelection,
     markTutorialPromptSeenForMode,
+    resetTutorialPromptSeenModes,
   } = usePlayer();
   const {
     hintsEnabled,
@@ -139,6 +140,7 @@ export default function usePlayController(
     allowUnknownWords:
       player.difficulty === "easy" ||
       player.difficulty === "normal" ||
+      activeModeId === WORDLE_MODE_IDS.ZEN ||
       activeModeId === WORDLE_MODE_IDS.DAILY,
     ...(options.allowSubmitWhenModalOpen === true
       ? { allowSubmitWhenModalOpen: true }
@@ -184,6 +186,7 @@ export default function usePlayController(
       : snapshotStreak;
 
   const lightningModeActive = activeModeId === WORDLE_MODE_IDS.LIGHTNING;
+  const zenModeActive = activeModeId === WORDLE_MODE_IDS.ZEN;
   const dailyModeActive = activeModeId === WORDLE_MODE_IDS.DAILY;
   const resolveDailyModeOutcomeForToday =
     useCallback((): DailyModeOutcome | null => {
@@ -191,17 +194,18 @@ export default function usePlayController(
         return null;
       }
 
-      const currentPlayerOutcome = readDailyModeOutcomeForDate(player.code);
-      if (currentPlayerOutcome !== null) {
-        return currentPlayerOutcome;
+      const hasRecoveredIdentity = player.code.trim().length > 0;
+      if (hasRecoveredIdentity) {
+        return readDailyModeOutcomeForDate(player.code);
       }
 
-      return readDailyModeOutcomeForDate();
+      return readDailyModeOutcomeForDate(undefined);
     }, [dailyModeActive, player.code]);
   const showDeveloperChallengesSection =
     activeModeId === WORDLE_MODE_IDS.CLASSIC;
   const showDeveloperDailySection = activeModeId === WORDLE_MODE_IDS.DAILY;
-  const hardModeEnabled = lightningModeActive || player.difficulty === "insane";
+  const hardModeEnabled =
+    lightningModeActive || (player.difficulty === "insane" && !zenModeActive);
   const showEndOfGameDialogs = player.showEndOfGameDialogs;
   const modeMusicTrack = useMemo(
     () => resolveModeMusicTrack(activeModeId),
@@ -331,6 +335,11 @@ export default function usePlayController(
 
     return Math.floor(answer.length / 3);
   }, [answer.length, dailyModeActive]);
+  const hintStatusOverride = zenModeActive
+    ? "correct"
+    : dailyModeActive
+      ? "present"
+      : undefined;
   const {
     showHardModeTimer,
     showHardModeFinalStretchBar,
@@ -425,10 +434,10 @@ export default function usePlayController(
     });
 
     try {
-      let todayChallenges = await challengeClient.getTodayChallenges(date);
+      let todayChallenges = await apiManager.challenges.getToday(date);
 
       if (!todayChallenges) {
-        todayChallenges = await challengeClient.generateDailyChallenges(date);
+        todayChallenges = await apiManager.challenges.generateDaily(date);
       }
 
       const progress = await challengeClient.getPlayerChallengeProgress(date);
@@ -530,6 +539,7 @@ export default function usePlayController(
     }
   }, [
     answer,
+    apiManager,
     challengeClient,
     challengesEnabled,
     gameId,
@@ -690,7 +700,8 @@ export default function usePlayController(
     gameId,
     difficulty: player.difficulty,
     hintsLimitOverride: dailyHintsLimitOverride,
-    hintStatusOverride: dailyModeActive ? "present" : undefined,
+    hintStatusOverride,
+    unlimitedHints: zenModeActive,
     roundConfig,
     hasInProgressGameAtMount,
     showResumeDialog,
@@ -944,7 +955,7 @@ export default function usePlayController(
     consumeDailyShieldForDate({
       playerCode: player.code,
     });
-    void scoreClient.consumeDailyShield({
+    void apiManager.scores.consumeDailyShield({
       nick: player.name,
       language: player.language,
       difficulty: player.difficulty,
@@ -953,13 +964,13 @@ export default function usePlayController(
     });
     setDefeatShieldDecisionPending(false);
   }, [
+    apiManager,
     defeatShieldDecisionPending,
     player.code,
     player.difficulty,
     player.keyboardPreference,
     player.language,
     player.name,
-    scoreClient,
   ]);
 
   const skipDailyShieldForCurrentDefeat = useCallback(() => {
@@ -1007,6 +1018,14 @@ export default function usePlayController(
   const closeSettingsPanel = useCallback(() => {
     setShowSettingsPanel(false);
   }, []);
+
+  const resetTutorialTour = useCallback(() => {
+    void resetTutorialPromptSeenModes();
+    closeGameplayTour();
+    setShowSettingsPanel(false);
+    setShowTutorialPromptDialog(true);
+  }, [closeGameplayTour, resetTutorialPromptSeenModes]);
+
   const goToPlayRoute = useCallback(() => {
     navigate(ROUTES.PLAY);
   }, [navigate]);
@@ -1220,10 +1239,10 @@ export default function usePlayController(
 
     try {
       const date = getTodayDateUTC();
-      let todayChallenges = await challengeClient.getTodayChallenges(date);
+      let todayChallenges = await apiManager.challenges.getToday(date);
 
       if (!todayChallenges) {
-        todayChallenges = await challengeClient.generateDailyChallenges(date);
+        todayChallenges = await apiManager.challenges.generateDaily(date);
       }
       const resetResult =
         await challengeClient.resetPlayerChallengeProgressForDate(date);
@@ -1254,6 +1273,7 @@ export default function usePlayController(
       setIsRefreshingDailyChallengesForDeveloper(false);
     }
   }, [
+    apiManager,
     challengeClient,
     isChangingDailyChallengesForDeveloper,
     isRefreshingDailyChallengesForDeveloper,
@@ -1283,8 +1303,7 @@ export default function usePlayController(
 
     try {
       const date = getTodayDateUTC();
-      const todayChallenges =
-        await challengeClient.regenerateDailyChallenges(date);
+      const todayChallenges = await apiManager.challenges.regenerateDaily(date);
       const resetResult =
         await challengeClient.resetPlayerChallengeProgressForDate(date);
       resetDailyChallengeRoundTracker(date, player.code);
@@ -1314,6 +1333,7 @@ export default function usePlayController(
       setIsChangingDailyChallengesForDeveloper(false);
     }
   }, [
+    apiManager,
     challengeClient,
     isChangingDailyChallengesForDeveloper,
     isRefreshingDailyChallengesForDeveloper,
@@ -1379,29 +1399,25 @@ export default function usePlayController(
           ? nextPlayer.streak
           : activeModeStreak;
 
-      void scoreClient.recordScore(
-        {
-          nick: nextNick,
-          language: gameplayLanguage,
-          modeId: activeModeId,
-          score: nextScore,
-          streak: nextStreak,
-          overwriteExisting: true,
-        },
-        UPDATE_SCORE_MUTATION,
-      );
+      void apiManager.scores.update({
+        nick: nextNick,
+        language: gameplayLanguage,
+        modeId: activeModeId,
+        score: nextScore,
+        streak: nextStreak,
+      });
 
       replacePlayer(nextPlayer);
       setShowDeveloperConsoleDialog(false);
     },
     [
       activeModeId,
+      apiManager,
       player.name,
       player.score,
       activeModeStreak,
       gameplayLanguage,
       replacePlayer,
-      scoreClient,
     ],
   );
 
@@ -1636,6 +1652,7 @@ export default function usePlayController(
     goToNextGameplayTourStep,
     goToPreviousGameplayTourStep,
     openModeHelpFromGameplayTour,
+    resetTutorialTour,
     acceptTutorialPrompt,
     declineTutorialPrompt,
     goToPlayRoute,

@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { cn } from "@utils/cn";
 import type { ButtonProps } from "./types";
 import { BASE_STYLE, STYLE_BY_VARIANT } from "./constants";
 
@@ -13,9 +14,7 @@ const Button = ({
   children,
   ...props
 }: ButtonProps) => {
-  const classes = [BASE_STYLE, STYLE_BY_VARIANT[variant][color], className]
-    .filter(Boolean)
-    .join(" ");
+  const classes = cn(BASE_STYLE, STYLE_BY_VARIANT[variant][color], className);
 
   return (
     <button type={type} className={classes} {...props}>

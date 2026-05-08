@@ -19,6 +19,9 @@ const ToolbarHintButton = (): JSX.Element | null => {
     hintButtonDisabled,
     hintsRemaining,
   } = controller;
+  const hintButtonLabel = Number.isFinite(hintsRemaining)
+    ? t("play.toolbar.hintButton", { count: hintsRemaining })
+    : t("play.toolbar.hintButtonUnlimited");
 
   if (!hintsEnabled || !hintsEnabledForDifficulty) {
     return null;
@@ -37,7 +40,7 @@ const ToolbarHintButton = (): JSX.Element | null => {
       hideLabelOnMobile
       disabled={hintButtonDisabled}
     >
-      {t("play.toolbar.hintButton", { count: hintsRemaining })}
+      {hintButtonLabel}
     </Button>
   );
 };

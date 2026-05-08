@@ -1,0 +1,1 @@
+export { useUpdateScore } from "./useUpdateScore";

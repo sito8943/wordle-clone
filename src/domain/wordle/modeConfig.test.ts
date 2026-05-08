@@ -62,14 +62,14 @@ describe("modeConfig", () => {
     );
   });
 
-  it("keeps classic, lightning and daily enabled while gating zen", () => {
+  it("keeps all public modes enabled", () => {
     expect(isWordleModeEnabled(WORDLE_MODE_IDS.CLASSIC)).toBe(true);
     expect(isWordleModeEnabled(WORDLE_MODE_IDS.LIGHTNING)).toBe(true);
-    expect(isWordleModeEnabled(WORDLE_MODE_IDS.ZEN)).toBe(false);
+    expect(isWordleModeEnabled(WORDLE_MODE_IDS.ZEN)).toBe(true);
     expect(isWordleModeEnabled(WORDLE_MODE_IDS.DAILY)).toBe(true);
   });
 
-  it("resolves playable mode and falls back to classic for gated modes", () => {
+  it("resolves playable mode ids without fallback for supported modes", () => {
     expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.CLASSIC)).toBe(
       WORDLE_MODE_IDS.CLASSIC,
     );
@@ -77,7 +77,7 @@ describe("modeConfig", () => {
       WORDLE_MODE_IDS.LIGHTNING,
     );
     expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.ZEN)).toBe(
-      WORDLE_MODE_IDS.CLASSIC,
+      WORDLE_MODE_IDS.ZEN,
     );
     expect(resolvePlayableWordleModeId(WORDLE_MODE_IDS.DAILY)).toBe(
       WORDLE_MODE_IDS.DAILY,

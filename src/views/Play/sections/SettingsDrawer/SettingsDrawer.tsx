@@ -5,9 +5,11 @@ import {
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ROUTE_SEARCH_PARAMS, ROUTE_SEARCH_PARAM_VALUES } from "@config/routes";
 import { WORDLE_MODE_IDS, type PlayerDifficulty } from "@domain/wordle";
 import { Button, SwitcherField } from "@components";
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import {
   PLAY_SETTINGS_PANEL_DIFFICULTY_INPUT_ID,
@@ -16,6 +18,7 @@ import {
 } from "@views/Play/constants";
 import { HARD_MODE_TOTAL_SECONDS } from "@views/Play/hooks/usePlayController/constants";
 import { usePlayView } from "@views/Play/providers";
+import { useLocation } from "react-router";
 
 const SettingsDrawer = (): JSX.Element | null => {
   const { t } = useTranslation();
@@ -35,8 +38,16 @@ const SettingsDrawer = (): JSX.Element | null => {
     closeSettingsPanel,
     changeDifficulty,
     changeManualTileSelection,
+    resetTutorialTour,
   } = controller;
-  const showDifficultySettings = activeModeId !== WORDLE_MODE_IDS.DAILY;
+  const location = useLocation();
+  const zenFocusActive =
+    activeModeId === WORDLE_MODE_IDS.ZEN &&
+    new URLSearchParams(location.search).get(ROUTE_SEARCH_PARAMS.FOCUS) ===
+      ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON;
+  const showDifficultySettings =
+    activeModeId !== WORDLE_MODE_IDS.DAILY &&
+    activeModeId !== WORDLE_MODE_IDS.ZEN;
 
   useEffect(() => {
     if (!showSettingsPanel) {
@@ -57,6 +68,14 @@ const SettingsDrawer = (): JSX.Element | null => {
     };
   }, [closeSettingsPanel, showSettingsPanel]);
 
+  useEffect(() => {
+    if (!zenFocusActive || !showSettingsPanel) {
+      return;
+    }
+
+    closeSettingsPanel();
+  }, [closeSettingsPanel, showSettingsPanel, zenFocusActive]);
+
   const toggleSettingsPanel = () => {
     if (showSettingsPanel) {
       closeSettingsPanel();
@@ -73,32 +92,43 @@ const SettingsDrawer = (): JSX.Element | null => {
   return (
     <>
       <div
-        className={`dialog-backdrop z-19 transition-opacity duration-500 ease-in-out ${
-          showSettingsPanel ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className={cn(
+          "dialog-backdrop z-19 transition-opacity duration-500 ease-in-out",
+          showSettingsPanel ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
         onClick={showSettingsPanel ? closeSettingsPanel : undefined}
       />
       <aside
         id={PLAY_SETTINGS_PANEL_ID}
         role="complementary"
         aria-label={t("play.settingsPanel.title")}
-        className={`fixed right-0 top-0 z-19 flex h-full w-full max-w-sm overflow-visible transition-all duration-500 ease-in-out  ${
+        className={cn(
+          "fixed right-0 top-0 z-19 flex h-full w-full max-w-sm overflow-visible transition-[translate,transform,background] duration-500 ease-in-out",
           showSettingsPanel
-            ? "translate-x-0 bg-white border-l border-neutral-300 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
-            : "pointer-events-none translate-x-[90%]"
-        }`}
+            ? "translate-x-0 border-l border-neutral-300 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
+            : zenFocusActive
+              ? "pointer-events-none translate-x-[90%] opacity-0"
+              : "pointer-events-none translate-x-[90%]",
+        )}
       >
-        <Button
-          onClick={toggleSettingsPanel}
-          aria-label={t("play.toolbar.settingsAriaLabel")}
-          aria-expanded={showSettingsPanel}
-          aria-controls={PLAY_SETTINGS_PANEL_ID}
-          icon={!showSettingsPanel ? faChevronLeft : faChevronRight}
-          iconClassName={`text-base transition-[scale] duration-300 ease-out`}
-          variant="ghost"
-          className={`h-full pointer-events-auto ${showSettingsPanel ? "w-6 max-sm:hidden!" : "w-10 h-full max-h-60 my-auto"}`}
-        />
-        <div className={showSettingsPanel ? "" : "pointer-events-none"}>
+        {!zenFocusActive ? (
+          <Button
+            onClick={toggleSettingsPanel}
+            aria-label={t("play.toolbar.settingsAriaLabel")}
+            aria-expanded={showSettingsPanel}
+            aria-controls={PLAY_SETTINGS_PANEL_ID}
+            icon={!showSettingsPanel ? faChevronLeft : faChevronRight}
+            iconClassName="text-base transition-[scale] duration-300 ease-out"
+            variant="ghost"
+            className={cn(
+              "h-full pointer-events-auto",
+              showSettingsPanel
+                ? "w-6 max-sm:hidden!"
+                : "h-full w-10 max-h-60 my-auto",
+            )}
+          />
+        ) : null}
+        <div className={cn(!showSettingsPanel && "pointer-events-none")}>
           <header className="relative border-b border-neutral-200 px-4 py-4 dark:border-neutral-700">
             <div className="pr-10">
               <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
@@ -198,6 +228,20 @@ const SettingsDrawer = (): JSX.Element | null => {
                   label={t("profile.labels.manualTileSelection")}
                   description={t("profile.manualTileSelectionDescription")}
                 />
+              </div>
+
+              <div className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-700">
+                <Button
+                  onClick={resetTutorialTour}
+                  variant="outline"
+                  color="neutral"
+                  className="w-full"
+                >
+                  {t("profile.resetTutorialTourAction")}
+                </Button>
+                <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+                  {t("play.settingsPanel.tutorialResetDescription")}
+                </p>
               </div>
             </div>
           </div>

@@ -201,6 +201,8 @@ export const resources = {
         cancelAction: "Cancel",
         settingsTitle: "Settings",
         savedMessage: "Configuration saved.",
+        tutorialResetMessage: "Tutorial reset successfully.",
+        resetTutorialTourAction: "Reset tutorial",
         emptyNameError: "Name cannot be empty.",
         nameNotAvailable: "Name is not available.",
         labels: {
@@ -380,6 +382,7 @@ export const resources = {
           wordListUnavailable: "Word list unavailable.",
           hintAriaLabel: "Hint",
           hintButton: "Hint ({{count}})",
+          hintButtonUnlimited: "Hint (∞)",
           tourAriaLabel: "Tutorial",
           tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Daily word meaning",
@@ -394,6 +397,10 @@ export const resources = {
           developerConsoleButton: "Dev console",
           insaneTimerAriaLabel: "Insane timer: {{seconds}} seconds",
           insaneTimerValue: "{{seconds}}s",
+          focusOnAriaLabel: "Focus on",
+          focusOnButton: "Focus on",
+          focusOffAriaLabel: "Focus off",
+          focusOffButton: "Focus off",
           refreshAriaLabel: "Refresh",
           loadingWordList: "Loading word list...",
           volumeAriaLabel: "Volume",
@@ -405,6 +412,8 @@ export const resources = {
           title: "Quick settings",
           description:
             "Adjust difficulty and manual tile selection without leaving this board.",
+          tutorialResetDescription:
+            "Reset the tutorial so it can be shown again from step 1.",
         },
         volumeDialog: {
           title: "Volume",
@@ -442,6 +451,7 @@ export const resources = {
           cancel: "Cancel",
         },
         gameModes: {
+          zen: "Zen",
           classic: "Classic",
           lightning: "Lightning",
           daily: "Daily",
@@ -470,6 +480,10 @@ export const resources = {
               description:
                 "This is your board. Guess the hidden word before you run out of rows.",
             },
+            boardZen: {
+              description:
+                "This is your board. In Zen mode there is no row limit, so you can solve it at your own pace.",
+            },
             keyboard: {
               title: "Keyboard",
               description:
@@ -485,6 +499,15 @@ export const resources = {
               description:
                 "Use this button for a yellow hint. Availability depends on mode and difficulty.",
             },
+            hintZen: {
+              description:
+                "In Zen mode this button gives only green hints, with unlimited uses.",
+            },
+            focus: {
+              title: "Focus on/off",
+              description:
+                "Use Focus on to hide extra controls and reduce distractions. Focus off brings all controls back.",
+            },
             challenges: {
               title: "Challenges",
               description:
@@ -494,6 +517,10 @@ export const resources = {
               title: "Refresh round",
               description:
                 "Refresh starts a new round. If you already have progress, you'll be asked to confirm.",
+            },
+            refreshZen: {
+              description:
+                "In Zen mode, refresh starts a clean board but does not count for the scoreboard.",
             },
             timer: {
               title: "Lightning timer",
@@ -894,6 +921,8 @@ export const resources = {
         cancelAction: "Cancelar",
         settingsTitle: "Ajustes",
         savedMessage: "Configuración guardada.",
+        tutorialResetMessage: "Tutorial reiniciado correctamente.",
+        resetTutorialTourAction: "Reiniciar tutorial",
         emptyNameError: "El nombre no puede estar vacío.",
         nameNotAvailable: "El nombre no está disponible.",
         labels: {
@@ -1074,6 +1103,7 @@ export const resources = {
           wordListUnavailable: "La lista de palabras no está disponible.",
           hintAriaLabel: "Pista",
           hintButton: "Pista ({{count}})",
+          hintButtonUnlimited: "Pista (∞)",
           tourAriaLabel: "Tutorial",
           tourButton: "Tutorial",
           dailyMeaningAriaLabel: "Significado de la palabra del día",
@@ -1088,6 +1118,10 @@ export const resources = {
           developerConsoleButton: "Consola dev",
           insaneTimerAriaLabel: "Temporizador insano: {{seconds}} segundos",
           insaneTimerValue: "{{seconds}}s",
+          focusOnAriaLabel: "Focus on",
+          focusOnButton: "Focus on",
+          focusOffAriaLabel: "Focus off",
+          focusOffButton: "Focus off",
           refreshAriaLabel: "Actualizar",
           loadingWordList: "Cargando lista de palabras...",
           volumeAriaLabel: "Volumen",
@@ -1099,6 +1133,8 @@ export const resources = {
           title: "Ajustes rápidos",
           description:
             "Ajusta la dificultad y la selección manual de casillas sin salir del tablero.",
+          tutorialResetDescription:
+            "Reinicia el tutorial para que se vuelva a mostrar desde el paso 1.",
         },
         volumeDialog: {
           title: "Volumen",
@@ -1136,6 +1172,7 @@ export const resources = {
           cancel: "Cancelar",
         },
         gameModes: {
+          zen: "Calmado",
           classic: "Clásico",
           lightning: "Relámpago",
           daily: "Diario",
@@ -1164,6 +1201,10 @@ export const resources = {
               description:
                 "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas.",
             },
+            boardZen: {
+              description:
+                "Este es tu tablero. En modo Calmado no hay límite de filas, así que puedes resolverlo a tu ritmo.",
+            },
             keyboard: {
               title: "Teclado",
               description:
@@ -1179,6 +1220,15 @@ export const resources = {
               description:
                 "Usa este botón para pedir una pista amarilla. La disponibilidad depende del modo y la dificultad.",
             },
+            hintZen: {
+              description:
+                "En modo Calmado este botón da solo pistas verdes, y además son infinitas.",
+            },
+            focus: {
+              title: "Focus on/off",
+              description:
+                "Usa Focus on para ocultar controles extra y jugar con menos distracciones. Focus off vuelve a mostrar todos los controles.",
+            },
             challenges: {
               title: "Retos",
               description:
@@ -1188,6 +1238,10 @@ export const resources = {
               title: "Actualizar ronda",
               description:
                 "Actualizar inicia una ronda nueva. Si ya tienes progreso, te pediremos confirmación.",
+            },
+            refreshZen: {
+              description:
+                "En modo Calmado, actualizar inicia un tablero nuevo pero no cuenta para la clasificación.",
             },
             timer: {
               title: "Temporizador relámpago",

@@ -217,4 +217,39 @@ describe("useHintController", () => {
     expect(revealHint).toHaveBeenCalledWith("present");
     expect(result.current.hintsRemaining).toBe(1);
   });
+
+  it("supports unlimited green hints without persisting usage", () => {
+    const revealHint = vi.fn().mockReturnValue(true);
+    const { result } = renderHook(() =>
+      useHintController({
+        answer: "LECTURA",
+        gameId: "game-zen",
+        difficulty: "hard",
+        unlimitedHints: true,
+        hintStatusOverride: "correct",
+        hasInProgressGameAtMount: false,
+        showResumeDialog: false,
+        gameOver: false,
+        current: "",
+        revealHint,
+      }),
+    );
+
+    let firstHintUsed = false;
+    let secondHintUsed = false;
+    act(() => {
+      firstHintUsed = result.current.useHint();
+      secondHintUsed = result.current.useHint();
+    });
+
+    expect(firstHintUsed).toBe(true);
+    expect(secondHintUsed).toBe(true);
+    expect(revealHint).toHaveBeenCalledTimes(2);
+    expect(revealHint).toHaveBeenNthCalledWith(1, "correct");
+    expect(revealHint).toHaveBeenNthCalledWith(2, "correct");
+    expect(result.current.hintsEnabledForDifficulty).toBe(true);
+    expect(result.current.hintButtonDisabled).toBe(false);
+    expect(result.current.hintsRemaining).toBe(Number.POSITIVE_INFINITY);
+    expect(localStorage.getItem(HINT_USAGE_STORAGE_KEY)).toBeNull();
+  });
 });

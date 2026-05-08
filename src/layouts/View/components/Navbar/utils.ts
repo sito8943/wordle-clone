@@ -39,6 +39,13 @@ export const resolveNavbarPlayableModeId = (
 
 export const hasResolvedDailyOutcomeForToday = (
   playerCode?: string | null,
-): boolean =>
-  readDailyModeOutcomeForDate(playerCode) !== null ||
-  readDailyModeOutcomeForDate() !== null;
+): boolean => {
+  const hasRecoveredIdentity =
+    typeof playerCode === "string" && playerCode.trim().length > 0;
+
+  if (hasRecoveredIdentity) {
+    return readDailyModeOutcomeForDate(playerCode) !== null;
+  }
+
+  return readDailyModeOutcomeForDate(undefined) !== null;
+};

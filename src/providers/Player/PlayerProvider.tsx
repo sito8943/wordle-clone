@@ -22,6 +22,7 @@ import {
   consumeDailyShieldForDate,
   getRoundDurationMs,
   isScoreCommitDurationSuspicious,
+  isScoreboardModeId,
   resolveScoreboardModeId,
   resolveEnabledDifficulty,
   writeDailyModeOutcomeForDate,
@@ -36,6 +37,7 @@ import {
   type ScoreboardModeId,
 } from "@domain/wordle";
 import { useFeatureFlags } from "@providers/FeatureFlags";
+import { ApiNetworkError } from "@api";
 import type { RemotePlayerProfile } from "@api/score";
 import { WORDS_DEFAULT_LANGUAGE } from "@api/words";
 
@@ -58,7 +60,7 @@ const mergeTutorialPromptSeenModes = (
 };
 
 const PlayerProvider = ({ children }: ProviderProps) => {
-  const { scoreClient } = useApi();
+  const { apiManager, scoreClient } = useApi();
   const queryClient = useQueryClient();
   const {
     difficultyEasyEnabled,
@@ -241,24 +243,53 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         return null;
       }
 
-      const syncedProfile = await scoreClient.syncRoundEvents({
-        nick: currentPlayer.name,
-        language: GAMEPLAY_LANGUAGE,
-        difficulty: currentPlayer.difficulty,
-        keyboardPreference: currentPlayer.keyboardPreference,
-      });
+      const allEvents = apiManager.syncQueue.readRoundEvents();
+      const supportedEvents = allEvents.filter((event) =>
+        isScoreboardModeId(event.modeId),
+      );
+      if (supportedEvents.length !== allEvents.length) {
+        apiManager.syncQueue.writeRoundEvents(supportedEvents);
+      }
+
+      if (supportedEvents.length === 0 || !apiManager.isConfigured) {
+        return null;
+      }
+
+      const orderedEvents = [...supportedEvents].sort(
+        (left, right) => left.happenedAt - right.happenedAt,
+      );
+
+      let syncedProfile: RemotePlayerProfile | null;
+      try {
+        syncedProfile = await apiManager.scores.syncRoundEvents({
+          nick: currentPlayer.name,
+          language: GAMEPLAY_LANGUAGE,
+          difficulty: currentPlayer.difficulty,
+          keyboardPreference: currentPlayer.keyboardPreference,
+          events: orderedEvents,
+        });
+      } catch (error) {
+        if (error instanceof ApiNetworkError) {
+          return null;
+        }
+        throw error;
+      }
+
+      apiManager.syncQueue.clearRoundEvents();
 
       if (syncedProfile) {
+        apiManager.identity.adoptFromProfile(syncedProfile);
         await applyRemoteProfile(syncedProfile, {
           preserveLocalPreferences: true,
           preserveLocalProgress: true,
         });
         await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.scores });
       }
 
       return syncedProfile;
     },
-    [applyRemoteProfile, queryClient, scoreClient],
+    [apiManager, applyRemoteProfile, queryClient],
   );
 
   const updatePlayer = useCallback(
@@ -274,12 +305,18 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         return;
       }
 
-      const remoteProfile = await scoreClient.upsertPlayerProfile({
-        nick: normalizedName,
-        language: current.language,
-        difficulty: current.difficulty,
-        keyboardPreference: current.keyboardPreference,
-      });
+      const remoteProfile =
+        current.code.length === 0
+          ? await apiManager.players.register({
+              nick: normalizedName,
+              language: current.language,
+              difficulty: current.difficulty,
+              keyboardPreference: current.keyboardPreference,
+            })
+          : await apiManager.players.renameNick({
+              nick: normalizedName,
+              language: current.language,
+            });
 
       await applyRemoteProfile(remoteProfile);
       hydrateDailyModeOutcomeFromProfile(remoteProfile);
@@ -294,9 +331,9 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       }
     },
     [
+      apiManager,
       applyRemoteProfile,
       hydrateDailyModeOutcomeFromProfile,
-      scoreClient,
       storedPlayer,
       syncQueuedRoundEvents,
     ],
@@ -304,27 +341,40 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
   const recoverPlayer = useCallback(
     async (code: string) => {
-      const remoteProfile = await scoreClient.recoverPlayerByCode(code);
-      scoreClient.adoptRecoveredIdentity(remoteProfile);
+      const remoteProfile = await apiManager.players.getByCode(code);
+      if (!remoteProfile) {
+        throw new Error("Player not found.");
+      }
+      scoreClient.adoptRecoveredIdentity(remoteProfile, {
+        mergeCurrentBrowserProgress: false,
+      });
+      apiManager.syncQueue.clearRoundEvents();
       await applyRemoteProfile(remoteProfile);
       hydrateDailyModeOutcomeFromProfile(remoteProfile);
     },
-    [applyRemoteProfile, hydrateDailyModeOutcomeFromProfile, scoreClient],
+    [
+      apiManager,
+      applyRemoteProfile,
+      hydrateDailyModeOutcomeFromProfile,
+      scoreClient,
+    ],
   );
 
   const refreshCurrentPlayerProfile = useCallback(async () => {
-    const remoteProfile =
-      await scoreClient.getCurrentPlayerProfile(GAMEPLAY_LANGUAGE);
+    const remoteProfile = await apiManager.players.getMe({
+      language: GAMEPLAY_LANGUAGE,
+    });
 
     if (!remoteProfile) {
       return;
     }
 
+    apiManager.identity.adoptFromProfile(remoteProfile);
     await applyRemoteProfile(remoteProfile, {
       preserveLocalPreferences: true,
     });
     hydrateDailyModeOutcomeFromProfile(remoteProfile);
-  }, [applyRemoteProfile, hydrateDailyModeOutcomeFromProfile, scoreClient]);
+  }, [apiManager, applyRemoteProfile, hydrateDailyModeOutcomeFromProfile]);
 
   const replacePlayer = useCallback(
     (nextPlayer: Partial<Player>) => {
@@ -358,13 +408,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       }
 
       try {
-        const remoteProfile = await scoreClient.upsertPlayerProfile({
-          nick: current.name,
-          language: current.language,
-          difficulty: current.difficulty,
-          keyboardPreference: current.keyboardPreference,
-          tutorialPromptSeenModes: nextTutorialPromptSeenModes,
-        });
+        const remoteProfile = await apiManager.players.markTutorialSeen(modeId);
 
         await applyRemoteProfile(remoteProfile, {
           preserveLocalPreferences: true,
@@ -374,8 +418,35 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         // Keep local tutorial state when remote sync is unavailable.
       }
     },
-    [applyRemoteProfile, scoreClient, setStoredPlayer, storedPlayer],
+    [apiManager, applyRemoteProfile, setStoredPlayer, storedPlayer],
   );
+
+  const resetTutorialPromptSeenModes = useCallback(async () => {
+    const current = normalizePlayer(storedPlayer);
+
+    setStoredPlayer((previous) =>
+      normalizePlayer({
+        ...normalizePlayer(previous),
+        declinedTutorial: undefined,
+        tutorialPromptSeenModes: undefined,
+      }),
+    );
+
+    if (current.name === DEFAULT_PLAYER.name && current.code.length === 0) {
+      return;
+    }
+
+    try {
+      const remoteProfile = await apiManager.players.resetTutorialPrompts();
+
+      await applyRemoteProfile(remoteProfile, {
+        preserveLocalPreferences: true,
+        preserveLocalProgress: true,
+      });
+    } catch {
+      // Keep local tutorial reset when remote sync is unavailable.
+    }
+  }, [apiManager, applyRemoteProfile, setStoredPlayer, storedPlayer]);
 
   const commitVictory = useCallback(
     async (
@@ -472,7 +543,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
             version: 2,
           };
 
-      scoreClient.queueRoundEvent(event);
+      apiManager.syncQueue.enqueueRoundEvent(event);
 
       if (current.name === DEFAULT_PLAYER.name) {
         return;
@@ -480,7 +551,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
       await syncQueuedRoundEvents(nextPlayer);
     },
-    [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents],
+    [
+      apiManager,
+      scoreClient,
+      setStoredPlayer,
+      storedPlayer,
+      syncQueuedRoundEvents,
+    ],
   );
 
   const commitLoss = useCallback(
@@ -519,7 +596,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         return;
       }
 
-      scoreClient.queueRoundEvent({
+      apiManager.syncQueue.enqueueRoundEvent({
         id:
           typeof crypto !== "undefined" && "randomUUID" in crypto
             ? crypto.randomUUID()
@@ -532,7 +609,13 @@ const PlayerProvider = ({ children }: ProviderProps) => {
 
       await syncQueuedRoundEvents(nextPlayer);
     },
-    [scoreClient, setStoredPlayer, storedPlayer, syncQueuedRoundEvents],
+    [
+      apiManager,
+      scoreClient,
+      setStoredPlayer,
+      storedPlayer,
+      syncQueuedRoundEvents,
+    ],
   );
 
   const updatePlayerDifficulty = useCallback(
@@ -638,6 +721,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerShowEndOfGameDialogs,
       updatePlayerManualTileSelection,
       markTutorialPromptSeenForMode,
+      resetTutorialPromptSeenModes,
       commitVictory,
       commitLoss,
     }),
@@ -653,6 +737,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       updatePlayerShowEndOfGameDialogs,
       updatePlayerManualTileSelection,
       markTutorialPromptSeenForMode,
+      resetTutorialPromptSeenModes,
       commitVictory,
       commitLoss,
     ],
@@ -678,10 +763,14 @@ const PlayerProvider = ({ children }: ProviderProps) => {
     didHydrateRemoteRef.current = true;
 
     if (isAnonymousPlayer && hasRecoveryCode) {
-      void scoreClient
-        .recoverPlayerByCode(player.code)
+      void apiManager.players
+        .getByCode(player.code)
         .then(async (remoteProfile) => {
-          scoreClient.adoptRecoveredIdentity(remoteProfile);
+          if (!remoteProfile) return;
+          scoreClient.adoptRecoveredIdentity(remoteProfile, {
+            mergeCurrentBrowserProgress: false,
+          });
+          apiManager.syncQueue.clearRoundEvents();
           await applyRemoteProfile(remoteProfile);
           hydrateDailyModeOutcomeFromProfile(remoteProfile);
         })
@@ -696,9 +785,11 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           return;
         }
 
-        const remoteProfile =
-          await scoreClient.getCurrentPlayerProfile(GAMEPLAY_LANGUAGE);
+        const remoteProfile = await apiManager.players.getMe({
+          language: GAMEPLAY_LANGUAGE,
+        });
         if (remoteProfile) {
+          apiManager.identity.adoptFromProfile(remoteProfile);
           await applyRemoteProfile(remoteProfile, {
             preserveLocalPreferences: true,
           });
@@ -707,6 +798,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       })
       .catch(() => undefined);
   }, [
+    apiManager,
     applyRemoteProfile,
     hydrateDailyModeOutcomeFromProfile,
     player,
@@ -736,9 +828,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       return;
     }
 
-    void scoreClient
-      .upsertPlayerProfile({
-        nick: player.name,
+    void apiManager.players
+      .updatePreferences({
         language: player.language,
         difficulty: player.difficulty,
         keyboardPreference: player.keyboardPreference,
@@ -749,7 +840,7 @@ const PlayerProvider = ({ children }: ProviderProps) => {
         }),
       )
       .catch(() => undefined);
-  }, [applyRemoteProfile, player, scoreClient]);
+  }, [apiManager, applyRemoteProfile, player]);
 
   useEffect(() => {
     if (i18n.language === player.language) {

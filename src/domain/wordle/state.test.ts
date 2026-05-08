@@ -331,6 +331,36 @@ describe("applyGuess", () => {
     });
     expect(next.gameOver).toBe(true);
   });
+
+  it("can keep the round open after reaching max guesses when configured", () => {
+    const wrongGuess = {
+      word: "ABOUT",
+      statuses: [
+        "absent",
+        "absent",
+        "absent",
+        "absent",
+        "absent",
+      ] as PersistedGameState["guesses"][0]["statuses"],
+    };
+    const state = makeState({
+      guesses: Array(5).fill(wrongGuess),
+    });
+    const next = applyGuess(
+      state,
+      wrongGuess,
+      {
+        lettersPerRow: 5,
+        maxGuesses: 6,
+      },
+      {
+        disableMaxGuessDefeat: true,
+      },
+    );
+
+    expect(next.gameOver).toBe(false);
+    expect(next.guesses).toHaveLength(6);
+  });
 });
 
 describe("validateGuessInput", () => {

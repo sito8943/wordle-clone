@@ -9,7 +9,7 @@ import { PlayerContext } from "../../../providers/Player/PlayerContext";
 import type { PlayerContextType } from "../../../providers/Player/types";
 import {
   createHookWrapper,
-  createMockScoreClient,
+  createMockApiManager,
   createTestApiContextValue,
   createTestQueryClient,
 } from "../../../test/utils";
@@ -28,6 +28,7 @@ const createTestPlayerContextValue = (
   updatePlayerShowEndOfGameDialogs: vi.fn(),
   updatePlayerManualTileSelection: vi.fn(),
   markTutorialPromptSeenForMode: vi.fn().mockResolvedValue(undefined),
+  resetTutorialPromptSeenModes: vi.fn().mockResolvedValue(undefined),
   commitVictory: vi.fn().mockResolvedValue(undefined),
   commitLoss: vi.fn().mockResolvedValue(undefined),
   ...overrides,
@@ -56,13 +57,15 @@ describe("useScoreboardController", () => {
     vi.restoreAllMocks();
   });
 
-  it("exposes cached local scores while the remote scoreboard is pending", () => {
-    const listTopScores = vi.fn().mockReturnValue(new Promise(() => undefined));
+  it("reports loading while the remote scoreboard is pending", () => {
+    const getTop = vi.fn().mockReturnValue(new Promise(() => undefined));
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
       queryClient,
       createTestApiContextValue({
-        scoreClient: createMockScoreClient(listTopScores),
+        apiManager: createMockApiManager({
+          scores: { getTop: getTop as never },
+        }),
       }),
     );
     const scoreboardWrapper = createScoreboardWrapper(wrapper);
@@ -71,14 +74,14 @@ describe("useScoreboardController", () => {
       wrapper: scoreboardWrapper,
     });
 
-    expect(result.current.loading).toBe(false);
+    expect(result.current.loading).toBe(true);
     expect(result.current.source).toBe("local");
     expect(result.current.error).toBe("");
     expect(result.current.scores).toEqual([]);
   });
 
   it("maps query success data to scoreboard rows", async () => {
-    const listTopScores = vi.fn().mockResolvedValue({
+    const getTop = vi.fn().mockResolvedValue({
       scores: [
         {
           id: "1",
@@ -87,11 +90,9 @@ describe("useScoreboardController", () => {
           score: 120,
           streak: 4,
           createdAt: Date.UTC(2026, 2, 1),
-          source: "local",
           isCurrentClient: false,
         },
       ],
-      source: "convex",
       currentClientRank: 12,
       currentClientEntry: {
         id: "me",
@@ -100,7 +101,6 @@ describe("useScoreboardController", () => {
         score: 98,
         streak: 3,
         createdAt: Date.UTC(2026, 2, 2),
-        source: "convex",
         isCurrentClient: true,
       },
     });
@@ -108,7 +108,9 @@ describe("useScoreboardController", () => {
     const wrapper = createHookWrapper(
       queryClient,
       createTestApiContextValue({
-        scoreClient: createMockScoreClient(listTopScores),
+        apiManager: createMockApiManager({
+          scores: { getTop: getTop as never },
+        }),
       }),
     );
     const scoreboardWrapper = createScoreboardWrapper(wrapper);
@@ -131,9 +133,8 @@ describe("useScoreboardController", () => {
   });
 
   it("requests top scores for the selected mode", async () => {
-    const listTopScores = vi.fn().mockResolvedValue({
+    const getTop = vi.fn().mockResolvedValue({
       scores: [],
-      source: "local",
       currentClientRank: null,
       currentClientEntry: null,
     });
@@ -141,7 +142,9 @@ describe("useScoreboardController", () => {
     const wrapper = createHookWrapper(
       queryClient,
       createTestApiContextValue({
-        scoreClient: createMockScoreClient(listTopScores),
+        apiManager: createMockApiManager({
+          scores: { getTop: getTop as never },
+        }),
       }),
     );
     const scoreboardWrapper = createScoreboardWrapper(wrapper);
@@ -151,18 +154,17 @@ describe("useScoreboardController", () => {
     });
 
     await waitFor(() => {
-      expect(listTopScores).toHaveBeenCalledWith(
-        expect.any(Number),
-        WORDS_DEFAULT_LANGUAGE,
-        "lightning",
-      );
+      expect(getTop).toHaveBeenCalledWith({
+        limit: expect.any(Number),
+        language: WORDS_DEFAULT_LANGUAGE,
+        modeId: "lightning",
+      });
     });
   });
 
   it("requests top scores for daily mode", async () => {
-    const listTopScores = vi.fn().mockResolvedValue({
+    const getTop = vi.fn().mockResolvedValue({
       scores: [],
-      source: "local",
       currentClientRank: null,
       currentClientEntry: null,
     });
@@ -170,7 +172,9 @@ describe("useScoreboardController", () => {
     const wrapper = createHookWrapper(
       queryClient,
       createTestApiContextValue({
-        scoreClient: createMockScoreClient(listTopScores),
+        apiManager: createMockApiManager({
+          scores: { getTop: getTop as never },
+        }),
       }),
     );
     const scoreboardWrapper = createScoreboardWrapper(wrapper);
@@ -180,23 +184,25 @@ describe("useScoreboardController", () => {
     });
 
     await waitFor(() => {
-      expect(listTopScores).toHaveBeenCalledWith(
-        expect.any(Number),
-        WORDS_DEFAULT_LANGUAGE,
-        "daily",
-      );
+      expect(getTop).toHaveBeenCalledWith({
+        limit: expect.any(Number),
+        language: WORDS_DEFAULT_LANGUAGE,
+        modeId: "daily",
+      });
     });
   });
 
   it("surfaces query error messages", async () => {
-    const listTopScores = vi
+    const getTop = vi
       .fn()
       .mockRejectedValue(new Error("Failed to load scoreboard."));
     const queryClient = createTestQueryClient();
     const wrapper = createHookWrapper(
       queryClient,
       createTestApiContextValue({
-        scoreClient: createMockScoreClient(listTopScores),
+        apiManager: createMockApiManager({
+          scores: { getTop: getTop as never },
+        }),
       }),
     );
     const scoreboardWrapper = createScoreboardWrapper(wrapper);
@@ -214,9 +220,8 @@ describe("useScoreboardController", () => {
   });
 
   it("refresh invalidates and refetches top scores", async () => {
-    const listTopScores = vi.fn().mockResolvedValue({
+    const getTop = vi.fn().mockResolvedValue({
       scores: [],
-      source: "local",
       currentClientRank: null,
       currentClientEntry: null,
     });
@@ -227,7 +232,9 @@ describe("useScoreboardController", () => {
     const wrapper = createHookWrapper(
       queryClient,
       createTestApiContextValue({
-        scoreClient: createMockScoreClient(listTopScores),
+        apiManager: createMockApiManager({
+          scores: { getTop: getTop as never },
+        }),
       }),
     );
     const scoreboardWrapper = createScoreboardWrapper(wrapper);
@@ -245,8 +252,8 @@ describe("useScoreboardController", () => {
     });
 
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: queryKeys.topScores,
+      queryKey: queryKeys.scores,
     });
-    expect(listTopScores).toHaveBeenCalledTimes(2);
+    expect(getTop).toHaveBeenCalledTimes(2);
   });
 });

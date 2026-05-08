@@ -1,4 +1,5 @@
 import { env } from "@config";
+import { TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY } from "./constants";
 import { hasInProgressGame } from "./state";
 import { getTodayDateUTC } from "./daily";
 import { WORDLE_MODE_IDS } from "./modeConfig";
@@ -132,5 +133,17 @@ export const clearAllPersistedGameStates = (): void => {
 
   for (const modeId of modeIds) {
     clearPersistedGameState(modeId);
+  }
+};
+
+export const clearTutorialPromptSeenModesState = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(TUTORIAL_PROMPT_SEEN_MODES_STORAGE_KEY);
+  } catch {
+    // Ignore localStorage remove errors.
   }
 };

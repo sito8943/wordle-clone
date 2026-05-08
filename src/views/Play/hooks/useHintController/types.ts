@@ -12,6 +12,7 @@ export type UseHintControllerParams = {
   gameId: string;
   difficulty: PlayerDifficulty;
   hintsLimitOverride?: number;
+  unlimitedHints?: boolean;
   hintStatusOverride?: HintTileStatus | null;
   roundConfig?: Partial<BoardRoundConfig>;
   hasInProgressGameAtMount: boolean;

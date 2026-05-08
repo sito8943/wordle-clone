@@ -13,10 +13,12 @@ import type { ApiContextType } from "@providers/Api/types";
 import { PlayerProvider } from "./index";
 import { usePlayer } from "./usePlayer";
 import { DEFAULT_PLAYER } from "./constants";
+import { SyncQueueManager } from "@api";
 import {
-  createTestQueryClient,
-  createTestApiContextValue,
+  createMockApiManager,
   createMockScoreClient,
+  createTestApiContextValue,
+  createTestQueryClient,
 } from "../../test/utils";
 
 beforeEach(() => localStorage.clear());
@@ -25,21 +27,45 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const buildDefaultProfileImpl =
+  (overrides: Record<string, unknown> = {}) =>
+  async (input: Record<string, unknown> = {}) => ({
+    id: "remote-player",
+    clientId: "test-client",
+    clientRecordId: "test-record",
+    nick: typeof input.nick === "string" ? input.nick : "Player",
+    language: typeof input.language === "string" ? input.language : "en",
+    playerCode: "AB12",
+    score: typeof input.score === "number" ? input.score : 0,
+    streak: typeof input.streak === "number" ? input.streak : 0,
+    difficulty:
+      typeof input.difficulty === "string" ? input.difficulty : "normal",
+    keyboardPreference:
+      typeof input.keyboardPreference === "string"
+        ? input.keyboardPreference
+        : "onscreen",
+    createdAt: 1000,
+    ...overrides,
+  });
+
 const makeWrapper =
   ({
-    upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
-      id: "remote-player",
-      clientId: "test-client",
-      clientRecordId: "test-record",
-      nick: input.nick,
-      language: input.language,
-      playerCode: "AB12",
-      score: input.score ?? 0,
-      streak: input.streak ?? 0,
-      difficulty: input.difficulty,
-      keyboardPreference: input.keyboardPreference,
-      createdAt: 1000,
-    })),
+    upsertPlayerProfile = vi.fn().mockImplementation(buildDefaultProfileImpl()),
+    register = vi.fn().mockImplementation(buildDefaultProfileImpl()),
+    renameNick = vi.fn().mockImplementation(buildDefaultProfileImpl()),
+    updatePreferences = vi
+      .fn()
+      .mockImplementation(buildDefaultProfileImpl({ nick: "Ana" })),
+    markTutorialSeen = vi.fn().mockImplementation(async (modeId: string) =>
+      buildDefaultProfileImpl({
+        tutorialPromptSeenModes: { [modeId]: true },
+      })(),
+    ),
+    resetTutorialPrompts = vi
+      .fn()
+      .mockImplementation(
+        buildDefaultProfileImpl({ tutorialPromptSeenModes: {} }),
+      ),
     recoverPlayerByCode = vi.fn().mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",
@@ -62,33 +88,52 @@ const makeWrapper =
       streak: 0,
     }),
   }: {
-    upsertPlayerProfile?: ApiContextType["scoreClient"]["upsertPlayerProfile"];
-    recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
+    upsertPlayerProfile?: (input: unknown) => Promise<unknown>;
+    register?: ApiContextType["apiManager"]["players"]["register"];
+    renameNick?: ApiContextType["apiManager"]["players"]["renameNick"];
+    updatePreferences?: ApiContextType["apiManager"]["players"]["updatePreferences"];
+    markTutorialSeen?: ApiContextType["apiManager"]["players"]["markTutorialSeen"];
+    resetTutorialPrompts?: ApiContextType["apiManager"]["players"]["resetTutorialPrompts"];
+    recoverPlayerByCode?: ApiContextType["apiManager"]["players"]["getByCode"];
     adoptRecoveredIdentity?: ApiContextType["scoreClient"]["adoptRecoveredIdentity"];
-    getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
-    queueRoundEvent?: ApiContextType["scoreClient"]["queueRoundEvent"];
-    syncRoundEvents?: ApiContextType["scoreClient"]["syncRoundEvents"];
+    getCurrentPlayerProfile?: (language: string) => Promise<unknown> | unknown;
+    queueRoundEvent?: (event: unknown) => void;
+    syncRoundEvents?: (...args: unknown[]) => Promise<unknown>;
     getCurrentClientScoreSnapshot?: ApiContextType["scoreClient"]["getCurrentClientScoreSnapshot"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
+    const realSyncQueue = new SyncQueueManager();
+    vi.spyOn(realSyncQueue, "enqueueRoundEvent").mockImplementation((event) => {
+      queueRoundEvent(event);
+      return SyncQueueManager.prototype.enqueueRoundEvent.call(
+        realSyncQueue,
+        event,
+      );
+    });
+
+    void upsertPlayerProfile;
     const apiValue = createTestApiContextValue({
-      scoreClient: createMockScoreClient(
-        vi.fn().mockResolvedValue({
-          scores: [],
-          source: "local",
-          currentClientRank: null,
-          currentClientEntry: null,
-        }),
-        {
-          upsertPlayerProfile,
-          recoverPlayerByCode,
-          adoptRecoveredIdentity,
-          getCurrentPlayerProfile,
-          queueRoundEvent,
-          syncRoundEvents,
-          getCurrentClientScoreSnapshot,
+      scoreClient: createMockScoreClient({
+        adoptRecoveredIdentity,
+        getCurrentClientScoreSnapshot,
+      }) as never,
+      apiManager: createMockApiManager({
+        players: {
+          register,
+          renameNick,
+          updatePreferences,
+          markTutorialSeen,
+          resetTutorialPrompts,
+          getByCode: recoverPlayerByCode as never,
+          getMe: vi
+            .fn()
+            .mockImplementation(async ({ language }: { language?: string }) =>
+              getCurrentPlayerProfile(language as never),
+            ) as never,
         },
-      ) as never,
+        scores: { syncRoundEvents: syncRoundEvents as never },
+        syncQueue: realSyncQueue,
+      }),
     });
     const queryClient = createTestQueryClient();
 
@@ -180,7 +225,7 @@ describe("PlayerProvider", () => {
   });
 
   it("updatePlayer restores the daily lock from backend profile data", async () => {
-    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+    const register = vi.fn().mockImplementation(async (input) => ({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",
@@ -195,7 +240,7 @@ describe("PlayerProvider", () => {
       createdAt: 1000,
     }));
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ upsertPlayerProfile }),
+      wrapper: makeWrapper({ register }),
     });
 
     await act(async () => {
@@ -206,7 +251,7 @@ describe("PlayerProvider", () => {
   });
 
   it("updatePlayer applies backend shield availability for today", async () => {
-    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+    const register = vi.fn().mockImplementation(async (input) => ({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",
@@ -222,7 +267,7 @@ describe("PlayerProvider", () => {
       createdAt: 1000,
     }));
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ upsertPlayerProfile }),
+      wrapper: makeWrapper({ register }),
     });
 
     await act(async () => {
@@ -265,22 +310,22 @@ describe("PlayerProvider", () => {
   });
 
   it("marks tutorial prompt as seen per mode and syncs it to backend", async () => {
-    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+    const markTutorialSeen = vi.fn().mockImplementation(async (modeId) => ({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",
-      nick: input.nick,
-      language: input.language,
+      nick: "Ana",
+      language: "en",
       playerCode: "AB12",
       score: 12,
       streak: 3,
-      difficulty: input.difficulty,
-      keyboardPreference: input.keyboardPreference,
-      tutorialPromptSeenModes: input.tutorialPromptSeenModes,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      tutorialPromptSeenModes: { [modeId]: true },
       createdAt: 1000,
     }));
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ upsertPlayerProfile }),
+      wrapper: makeWrapper({ markTutorialSeen }),
     });
 
     act(() => {
@@ -299,12 +344,46 @@ describe("PlayerProvider", () => {
     expect(result.current.player.tutorialPromptSeenModes).toMatchObject({
       lightning: true,
     });
-    expect(upsertPlayerProfile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        nick: "Ana",
-        tutorialPromptSeenModes: { lightning: true },
-      }),
-    );
+    expect(markTutorialSeen).toHaveBeenCalledWith("lightning");
+  });
+
+  it("resets tutorial prompt modes and syncs empty state to backend", async () => {
+    const resetTutorialPrompts = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      language: "en",
+      playerCode: "AB12",
+      score: 12,
+      streak: 3,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      tutorialPromptSeenModes: {},
+      createdAt: 1000,
+    });
+    const { result } = renderHook(() => usePlayer(), {
+      wrapper: makeWrapper({ resetTutorialPrompts }),
+    });
+
+    act(() => {
+      result.current.replacePlayer({
+        name: "Ana",
+        code: "AB12",
+        score: 12,
+        streak: 3,
+        declinedTutorial: true,
+        tutorialPromptSeenModes: { classic: true, lightning: true },
+      });
+    });
+
+    await act(async () => {
+      await result.current.resetTutorialPromptSeenModes();
+    });
+
+    expect(result.current.player.declinedTutorial).toBeUndefined();
+    expect(result.current.player.tutorialPromptSeenModes).toBeUndefined();
+    expect(resetTutorialPrompts).toHaveBeenCalledWith();
   });
 
   it("commitVictory adds points, increments streak and enqueues an event", async () => {
@@ -541,21 +620,21 @@ describe("PlayerProvider", () => {
   });
 
   it("syncs preference changes without sending cached score or streak snapshots", async () => {
-    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+    const updatePreferences = vi.fn().mockImplementation(async (input) => ({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",
-      nick: input.nick,
-      language: input.language,
+      nick: "Ana",
+      language: input.language ?? "en",
       playerCode: "AB12",
       score: 99,
       streak: 7,
-      difficulty: input.difficulty,
-      keyboardPreference: input.keyboardPreference,
+      difficulty: input.difficulty ?? "normal",
+      keyboardPreference: input.keyboardPreference ?? "onscreen",
       createdAt: 1000,
     }));
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ upsertPlayerProfile }),
+      wrapper: makeWrapper({ updatePreferences }),
     });
 
     act(() => {
@@ -567,24 +646,24 @@ describe("PlayerProvider", () => {
       });
     });
 
-    upsertPlayerProfile.mockClear();
+    updatePreferences.mockClear();
 
     act(() => {
       result.current.updatePlayerDifficulty("hard");
     });
 
     await waitFor(() => {
-      expect(upsertPlayerProfile).toHaveBeenCalledWith(
+      expect(updatePreferences).toHaveBeenCalledWith(
         expect.objectContaining({
-          nick: "Ana",
           difficulty: "hard",
           keyboardPreference: "onscreen",
         }),
       );
     });
 
-    expect(upsertPlayerProfile.mock.calls[0]?.[0]).not.toHaveProperty("score");
-    expect(upsertPlayerProfile.mock.calls[0]?.[0]).not.toHaveProperty("streak");
+    expect(updatePreferences.mock.calls[0]?.[0]).not.toHaveProperty("score");
+    expect(updatePreferences.mock.calls[0]?.[0]).not.toHaveProperty("streak");
+    expect(updatePreferences.mock.calls[0]?.[0]).not.toHaveProperty("nick");
   });
 
   it("updates the end-of-game dialogs preference", () => {
@@ -649,39 +728,44 @@ describe("PlayerProvider", () => {
   });
 
   it("invalidates top scores after syncing a victory event", async () => {
-    const syncRoundEvents = vi
-      .fn()
-      .mockResolvedValueOnce(null)
-      .mockResolvedValue({
-        id: "remote-player",
-        clientId: "test-client",
-        clientRecordId: "test-record",
-        nick: "Ana",
-        language: "en",
-        playerCode: "ZX90",
-        score: 10,
-        streak: 1,
-        difficulty: "normal",
-        keyboardPreference: "onscreen",
-        createdAt: 1000,
-      });
+    const syncRoundEvents = vi.fn().mockResolvedValue({
+      id: "remote-player",
+      clientId: "test-client",
+      clientRecordId: "test-record",
+      nick: "Ana",
+      language: "en",
+      playerCode: "ZX90",
+      score: 10,
+      streak: 1,
+      difficulty: "normal",
+      keyboardPreference: "onscreen",
+      createdAt: 1000,
+    });
     const queryClient = createTestQueryClient();
     const invalidateQueriesSpy = vi
       .spyOn(queryClient, "invalidateQueries")
       .mockResolvedValue(undefined);
     const apiValue = createTestApiContextValue({
-      scoreClient: createMockScoreClient(
-        vi.fn().mockResolvedValue({
-          scores: [],
-          source: "local",
-          currentClientRank: null,
-          currentClientEntry: null,
-        }),
-        {
-          syncRoundEvents,
-          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
+      scoreClient: createMockScoreClient() as never,
+      apiManager: createMockApiManager({
+        players: {
+          register: vi.fn().mockResolvedValue({
+            id: "remote-player",
+            clientId: "test-client",
+            clientRecordId: "test-record",
+            nick: "Ana",
+            language: "en",
+            playerCode: "ZX90",
+            score: 0,
+            streak: 0,
+            difficulty: "normal",
+            keyboardPreference: "onscreen",
+            createdAt: 1000,
+          }),
+          getMe: vi.fn().mockResolvedValue(null) as never,
         },
-      ) as never,
+        scores: { syncRoundEvents: syncRoundEvents as never },
+      }),
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>
@@ -751,22 +835,22 @@ describe("PlayerProvider", () => {
     expect(result.current.player.code).toBe("ZX90");
   });
 
-  it("calls scoreClient.upsertPlayerProfile when name changes", async () => {
-    const upsertPlayerProfile = vi.fn().mockImplementation(async (input) => ({
+  it("calls players.register when name changes for an unregistered player", async () => {
+    const register = vi.fn().mockImplementation(async (input) => ({
       id: "remote-player",
       clientId: "test-client",
       clientRecordId: "test-record",
       nick: input.nick,
       language: input.language,
       playerCode: "ZX90",
-      score: input.score ?? 0,
-      streak: input.streak ?? 0,
+      score: 0,
+      streak: 0,
       difficulty: input.difficulty,
       keyboardPreference: input.keyboardPreference,
       createdAt: 1000,
     }));
     const { result } = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ upsertPlayerProfile }),
+      wrapper: makeWrapper({ register }),
     });
 
     await act(async () => {
@@ -774,7 +858,7 @@ describe("PlayerProvider", () => {
     });
 
     await waitFor(() => {
-      expect(upsertPlayerProfile).toHaveBeenCalledWith(
+      expect(register).toHaveBeenCalledWith(
         expect.objectContaining({ nick: "NewName" }),
       );
     });
@@ -795,8 +879,9 @@ describe("PlayerProvider", () => {
       keyboardPreference: "native",
       createdAt: 1000,
     });
+    const adoptRecoveredIdentity = vi.fn();
     const recoveredHook = renderHook(() => usePlayer(), {
-      wrapper: makeWrapper({ recoverPlayerByCode }),
+      wrapper: makeWrapper({ recoverPlayerByCode, adoptRecoveredIdentity }),
     });
 
     await act(async () => {
@@ -804,6 +889,14 @@ describe("PlayerProvider", () => {
     });
 
     expect(recoverPlayerByCode).toHaveBeenCalledWith("rcv1");
+    expect(adoptRecoveredIdentity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playerCode: "RCV1",
+      }),
+      {
+        mergeCurrentBrowserProgress: false,
+      },
+    );
     expect(recoveredHook.result.current.player.name).toBe("Recovered");
     expect(recoveredHook.result.current.player.score).toBe(27);
     expect(recoveredHook.result.current.player.difficulty).toBe("hard");
@@ -854,18 +947,13 @@ describe("PlayerProvider", () => {
       .spyOn(queryClient, "invalidateQueries")
       .mockResolvedValue(undefined);
     const apiValue = createTestApiContextValue({
-      scoreClient: createMockScoreClient(
-        vi.fn().mockResolvedValue({
-          scores: [],
-          source: "local",
-          currentClientRank: null,
-          currentClientEntry: null,
-        }),
-        {
-          recoverPlayerByCode,
-          getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
+      scoreClient: createMockScoreClient() as never,
+      apiManager: createMockApiManager({
+        players: {
+          getByCode: recoverPlayerByCode as never,
+          getMe: vi.fn().mockResolvedValue(null) as never,
         },
-      ) as never,
+      }),
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>
@@ -920,6 +1008,9 @@ describe("PlayerProvider", () => {
           nick: "Recovered",
           playerCode: "RCV1",
         }),
+        {
+          mergeCurrentBrowserProgress: false,
+        },
       );
       expect(result.current.player.name).toBe("Recovered");
       expect(result.current.player.code).toBe("RCV1");
@@ -1068,6 +1159,14 @@ describe("PlayerProvider", () => {
         keyboardPreference: "onscreen",
       }),
     );
+    new SyncQueueManager().enqueueRoundEvent({
+      id: "evt-1",
+      kind: "win",
+      pointsDelta: 9,
+      modeId: "classic",
+      happenedAt: 1000,
+      version: 2,
+    });
     const syncRoundEvents = vi.fn().mockResolvedValue({
       id: "remote-player",
       clientId: "test-client",

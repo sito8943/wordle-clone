@@ -141,11 +141,19 @@ vi.mock(
   }),
 );
 
+vi.mock("../../components/Dialogs/VictoryDialog/VictoryDialog", () => ({
+  default: ({ visible }: { visible: boolean }) =>
+    visible ? <div>Victory Dialog</div> : null,
+}));
+
 describe("DialogsSection", () => {
   beforeEach(() => {
+    controllerMock.activeModeId = "classic";
     controllerMock.showResumeDialog = false;
     controllerMock.showRefreshDialog = false;
     controllerMock.showDailyCompletedDialog = false;
+    controllerMock.showVictoryDialog = false;
+    controllerMock.victoryScoreSummary = null;
   });
 
   afterEach(() => {
@@ -190,6 +198,22 @@ describe("DialogsSection", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Daily Completed Dialog")).toBeTruthy();
+    });
+  });
+
+  it("renders the victory dialog when visible even if score summary is null", async () => {
+    controllerMock.activeModeId = "zen";
+    controllerMock.showVictoryDialog = true;
+    controllerMock.victoryScoreSummary = null;
+
+    render(
+      <DialogQueueProvider>
+        <DialogsSection />
+      </DialogQueueProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Victory Dialog")).toBeTruthy();
     });
   });
 });

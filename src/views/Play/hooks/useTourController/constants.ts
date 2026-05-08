@@ -6,6 +6,7 @@ export const TOUR_TARGET_SELECTORS = {
   KEYBOARD: '[data-tour="keyboard"]',
   STREAK_BADGE: '[data-tour="streak-badge"]',
   HINT_BUTTON: '[data-tour="hint-button"]',
+  ZEN_FOCUS_BUTTON: '[data-tour="zen-focus-button"]',
   CHALLENGES_BUTTON: '[data-tour="challenges-button"]',
   REFRESH_BUTTON: '[data-wordle-refresh="true"]',
   HARD_MODE_TIMER: '[data-tour="hard-mode-timer"]',
@@ -94,7 +95,7 @@ export const GAMEPLAY_TOUR_STEPS_BY_MODE: GameplayTourStepMap = {
       id: "board",
       selector: TOUR_TARGET_SELECTORS.BOARD,
       titleKey: "play.gameplayTour.steps.board.title",
-      descriptionKey: "play.gameplayTour.steps.board.description",
+      descriptionKey: "play.gameplayTour.steps.boardZen.description",
     },
     {
       id: "keyboard",
@@ -106,7 +107,19 @@ export const GAMEPLAY_TOUR_STEPS_BY_MODE: GameplayTourStepMap = {
       id: "hint",
       selector: TOUR_TARGET_SELECTORS.HINT_BUTTON,
       titleKey: "play.gameplayTour.steps.hint.title",
-      descriptionKey: "play.gameplayTour.steps.hint.description",
+      descriptionKey: "play.gameplayTour.steps.hintZen.description",
+    },
+    {
+      id: "focus",
+      selector: TOUR_TARGET_SELECTORS.ZEN_FOCUS_BUTTON,
+      titleKey: "play.gameplayTour.steps.focus.title",
+      descriptionKey: "play.gameplayTour.steps.focus.description",
+    },
+    {
+      id: "refresh",
+      selector: TOUR_TARGET_SELECTORS.REFRESH_BUTTON,
+      titleKey: "play.gameplayTour.steps.refresh.title",
+      descriptionKey: "play.gameplayTour.steps.refreshZen.description",
     },
   ],
   [WORDLE_MODE_IDS.DAILY]: [

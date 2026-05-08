@@ -8,7 +8,11 @@ import {
 import { MemoryRouter, Route, Routes, useParams } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
-import { ROUTES } from "@config/routes";
+import {
+  ROUTES,
+  ROUTE_SEARCH_PARAMS,
+  ROUTE_SEARCH_PARAM_VALUES,
+} from "@config/routes";
 import { DialogQueueProvider } from "@providers";
 import View from "./View";
 import {
@@ -99,6 +103,10 @@ const renderView = (initialEntry: string = ROUTES.HOME) =>
               element={<div>Play content</div>}
             />
             <Route
+              path={toChildPath(ROUTES.ZEN)}
+              element={<div>Zen content</div>}
+            />
+            <Route
               path={toChildPath(ROUTES.SCOREBOARD)}
               element={<div>Scoreboard content</div>}
             />
@@ -128,11 +136,32 @@ describe("View layout chrome visibility", () => {
     expect(screen.getByText("Home content")).toBeTruthy();
   });
 
-  it("shows navbar and footer on non-home routes", () => {
+  it("shows navbar and footer on regular non-home routes", () => {
     renderView(ROUTES.PLAY);
 
     expect(screen.getByText("Navbar")).toBeTruthy();
     expect(screen.getByText("Footer")).toBeTruthy();
+  });
+
+  it("hides footer on zen route while keeping navbar", () => {
+    renderView(ROUTES.ZEN);
+
+    expect(screen.getByText("Navbar")).toBeTruthy();
+    expect(screen.queryByText("Footer")).toBeNull();
+    expect(screen.getByText("Zen content")).toBeTruthy();
+  });
+
+  it("collapses navbar when zen focus mode is active", () => {
+    renderView(
+      `${ROUTES.ZEN}?${ROUTE_SEARCH_PARAMS.FOCUS}=${ROUTE_SEARCH_PARAM_VALUES.FOCUS_ON}`,
+    );
+
+    const navbarShell = screen.getByTestId("view-navbar-shell");
+    expect(navbarShell.getAttribute("aria-hidden")).toBe("true");
+    expect(navbarShell.className).toContain("opacity-0");
+    expect(navbarShell.className).toContain("pointer-events-none");
+    expect(screen.queryByText("Footer")).toBeNull();
+    expect(screen.getByText("Zen content")).toBeTruthy();
   });
 });
 

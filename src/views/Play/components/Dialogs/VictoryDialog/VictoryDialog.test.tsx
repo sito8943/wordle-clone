@@ -216,4 +216,36 @@ describe("VictoryDialog", () => {
 
     expect(onPlayAgain).not.toHaveBeenCalled();
   });
+
+  it("hides the score summary section when no summary is provided", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={null}
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByText("Score summary")).toBeNull();
+    expect(screen.getByLabelText("Streak: 3")).toBeTruthy();
+  });
+
+  it("hides streak when explicitly disabled", () => {
+    render(
+      <VictoryDialog
+        visible
+        answer="APPLE"
+        currentStreak={3}
+        scoreSummary={null}
+        showStreak={false}
+        onClose={() => undefined}
+        onPlayAgain={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Streak: 3")).toBeNull();
+  });
 });

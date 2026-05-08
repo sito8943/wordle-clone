@@ -19,11 +19,12 @@ import { useAnimationsPreference, useThemePreference } from "@hooks";
 import type { ThemePreference } from "@hooks/useThemePreference";
 
 export default function useProfileController() {
-  const { scoreClient } = useApi();
+  const { apiManager } = useApi();
   const {
     player,
     recoverPlayer,
     refreshCurrentPlayerProfile,
+    resetTutorialPromptSeenModes,
     updatePlayer,
     updatePlayerDifficulty,
     updatePlayerLanguage,
@@ -68,7 +69,8 @@ export default function useProfileController() {
     async (name: string) => {
       const normalizedName = normalizePlayerName(name);
       if (normalizedName !== player.name) {
-        const isAvailable = await scoreClient.isNickAvailable(normalizedName);
+        const { available: isAvailable } =
+          await apiManager.players.getNickAvailability(normalizedName);
         if (!isAvailable) {
           return i18n.t("profile.nameNotAvailable");
         }
@@ -92,7 +94,7 @@ export default function useProfileController() {
       );
       return null;
     },
-    [player.code.length, player.name, scoreClient, updatePlayer],
+    [apiManager, player.code.length, player.name, updatePlayer],
   );
 
   const submitRecoveryCode = useCallback(
@@ -237,6 +239,15 @@ export default function useProfileController() {
     setPendingDifficulty(null);
   }, []);
 
+  const resetTutorialTour = useCallback(() => {
+    void resetTutorialPromptSeenModes();
+    setSavedMessage(i18n.t("profile.tutorialResetMessage"));
+    setTimeout(
+      () => setSavedMessage(""),
+      PROFILE_SAVED_MESSAGE_VISIBILITY_DURATION_MS,
+    );
+  }, [resetTutorialPromptSeenModes]);
+
   const isDifficultyChangeConfirmationOpen = pendingDifficulty !== null;
 
   const pendingDifficultyValue = pendingDifficulty ?? player.difficulty;
@@ -270,6 +281,7 @@ export default function useProfileController() {
     changeSoundEnabled,
     manualTileSelection: player.manualTileSelection,
     changeManualTileSelection,
+    resetTutorialTour,
     changeDifficulty,
     isDifficultyChangeConfirmationOpen,
     confirmDifficultyChange,

@@ -7,10 +7,9 @@ import { i18n } from "@i18n";
 import { SCOREBOARD_MODE_IDS } from "@domain/wordle";
 import type { ScoreboardModeId } from "@domain/wordle";
 import { useApi } from "@providers";
-import { queryKeys } from "@hooks";
+import { queryKeys, useGetTopScores } from "@hooks";
 import { formatDate } from "@hooks/utils";
 import type { ScoreboardRowEntry } from "./types";
-import useTopScoresQuery from "./useTopScoresQuery";
 
 export default function useScoreboardController(
   modeId: ScoreboardModeId = SCOREBOARD_MODE_IDS.CLASSIC,
@@ -22,7 +21,11 @@ export default function useScoreboardController(
     isLoading,
     error: topScoresError,
     refetch,
-  } = useTopScoresQuery(env.scoreLimit, WORDS_DEFAULT_LANGUAGE, modeId);
+  } = useGetTopScores({
+    limit: env.scoreLimit,
+    language: WORDS_DEFAULT_LANGUAGE,
+    modeId,
+  });
   const scores = useMemo<ScoreEntry[]>(
     () => data?.scores ?? [],
     [data?.scores],
@@ -38,7 +41,7 @@ export default function useScoreboardController(
         : "";
 
   const refresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.topScores });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.scores });
     await refetch();
   }, [queryClient, refetch]);
 

@@ -47,8 +47,10 @@ describe("useProfileController", () => {
     vi.useFakeTimers();
     void i18n.changeLanguage("en");
     mockUseApi.mockReturnValue({
-      scoreClient: {
-        isNickAvailable: vi.fn().mockResolvedValue(true),
+      apiManager: {
+        players: {
+          getNickAvailability: vi.fn().mockResolvedValue({ available: true }),
+        },
       },
     });
     mockUsePlayer.mockReturnValue({
@@ -64,6 +66,7 @@ describe("useProfileController", () => {
       },
       recoverPlayer: vi.fn().mockResolvedValue(undefined),
       refreshCurrentPlayerProfile: vi.fn().mockResolvedValue(undefined),
+      resetTutorialPromptSeenModes: vi.fn().mockResolvedValue(undefined),
       updatePlayer: vi.fn().mockResolvedValue(undefined),
       updatePlayerDifficulty: vi.fn(),
       updatePlayerKeyboardPreference: vi.fn(),
@@ -103,11 +106,13 @@ describe("useProfileController", () => {
   });
 
   it("returns an error when the name is not available", async () => {
-    const isNickAvailable = vi.fn().mockResolvedValue(false);
+    const getNickAvailability = vi.fn().mockResolvedValue({ available: false });
     const updatePlayer = vi.fn().mockResolvedValue(undefined);
     mockUseApi.mockReturnValue({
-      scoreClient: {
-        isNickAvailable,
+      apiManager: {
+        players: {
+          getNickAvailability,
+        },
       },
     });
     mockUsePlayer.mockReturnValue({
@@ -120,7 +125,7 @@ describe("useProfileController", () => {
     await expect(result.current.submitProfile("Ana")).resolves.toBe(
       i18n.t("profile.nameNotAvailable"),
     );
-    expect(isNickAvailable).toHaveBeenCalledWith("Ana");
+    expect(getNickAvailability).toHaveBeenCalledWith("Ana");
     expect(updatePlayer).not.toHaveBeenCalled();
   });
 
@@ -282,5 +287,24 @@ describe("useProfileController", () => {
     });
 
     expect(setChannelEnabled).toHaveBeenCalledWith("master", false);
+  });
+
+  it("resets tutorial visibility and shows success feedback", () => {
+    const resetTutorialPromptSeenModes = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      resetTutorialPromptSeenModes,
+    });
+
+    const { result } = renderHook(() => useProfileController());
+
+    act(() => {
+      result.current.resetTutorialTour();
+    });
+
+    expect(resetTutorialPromptSeenModes).toHaveBeenCalledTimes(1);
+    expect(result.current.savedMessage).toBe(
+      i18n.t("profile.tutorialResetMessage"),
+    );
   });
 });

@@ -8,6 +8,7 @@ import ToolbarRefreshButton from "./ToolbarRefreshButton";
 import ToolbarResultsButton from "./ToolbarResultsButton";
 import ToolbarVolumeButton from "./ToolbarVolumeButton";
 import ToolbarWordListButton from "./ToolbarWordListButton";
+import ToolbarZenFocusButton from "./ToolbarZenFocusButton";
 
 export {
   ToolbarChallengesButton,
@@ -20,4 +21,5 @@ export {
   ToolbarResultsButton,
   ToolbarVolumeButton,
   ToolbarWordListButton,
+  ToolbarZenFocusButton,
 };

@@ -3,7 +3,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "@config";
-import { ROUTES } from "@config/routes";
 import { CURRENT_WORDLE_MODE_STORAGE_KEY } from "@domain/wordle";
 import Play from "./Play";
 
@@ -92,15 +91,15 @@ describe("Play", () => {
     );
   });
 
-  it("renders mode placeholder when non-classic mode is feature-gated", () => {
+  it("renders zen mode through PlayViewProvider", () => {
     env.playOfflineStateEnabled = false;
 
     renderPlay("zen");
 
-    expect(screen.getByTestId("play-mode-gate-placeholder")).toBeTruthy();
-    expect(screen.queryByTestId("play-provider")).toBeNull();
-    expect(screen.queryByText("PlayContent Stub")).toBeNull();
-    expect(screen.getByRole("link").getAttribute("href")).toBe(ROUTES.CLASSIC);
-    expect(localStorage.getItem(CURRENT_WORDLE_MODE_STORAGE_KEY)).toBeNull();
+    expect(
+      screen.getByTestId("play-provider").getAttribute("data-mode-id"),
+    ).toBe("zen");
+    expect(screen.queryByTestId("play-mode-gate-placeholder")).toBeNull();
+    expect(localStorage.getItem(CURRENT_WORDLE_MODE_STORAGE_KEY)).toBe("zen");
   });
 });

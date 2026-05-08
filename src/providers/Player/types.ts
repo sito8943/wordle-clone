@@ -24,6 +24,7 @@ export type PlayerContextType = {
   markTutorialPromptSeenForMode: (
     modeId: PlayerTutorialModeId,
   ) => Promise<void>;
+  resetTutorialPromptSeenModes: () => Promise<void>;
   commitVictory: (
     points: number,
     wonAt?: number,

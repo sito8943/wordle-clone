@@ -150,6 +150,8 @@ const DialogsSection = (): JSX.Element => {
     controller.activeModeId !== WORDLE_MODE_IDS.DAILY
       ? closeEndOfGameDialog
       : goToPlayRoute;
+  const shouldHideVictoryScoreSummary =
+    controller.activeModeId === WORDLE_MODE_IDS.ZEN;
 
   const resumeDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.RESUME,
@@ -158,7 +160,7 @@ const DialogsSection = (): JSX.Element => {
   );
   const victoryDialogVisible = useDialogQueueItem(
     PLAY_DIALOG_IDS.VICTORY,
-    Boolean(victoryScoreSummary) && showVictoryDialog,
+    showVictoryDialog,
     DIALOG_QUEUE_PRIORITIES.PLAY,
   );
   const defeatDialogVisible = useDialogQueueItem(
@@ -320,12 +322,15 @@ const DialogsSection = (): JSX.Element => {
               onRetry={retryDailyMeaningFetch}
             />
           ) : null}
-          {victoryDialogVisible && victoryScoreSummary ? (
+          {victoryDialogVisible ? (
             <VictoryDialog
               visible
               answer={endOfGameAnswer}
               currentStreak={endOfGameCurrentStreak}
-              scoreSummary={victoryScoreSummary}
+              scoreSummary={
+                shouldHideVictoryScoreSummary ? null : victoryScoreSummary
+              }
+              showStreak={!shouldHideVictoryScoreSummary}
               challengeBonusPoints={endOfGameChallengeBonusPoints}
               showSettingsHint={showEndOfGameSettingsHint}
               shareEnabled={shareButtonEnabled && victoryBoardShareSupported}

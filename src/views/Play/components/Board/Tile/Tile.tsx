@@ -1,4 +1,5 @@
 import { useTranslation } from "@i18n";
+import { cn } from "@utils/cn";
 import { STATUS_STYLE, TILE_ENTRY_STAGGER_MS } from "../constants";
 import type { TilePropsType } from "../types";
 
@@ -29,9 +30,12 @@ export function Tile({ tile }: TilePropsType) {
         `play.gameplay.tile.statuses.${status}`,
       )}`}
       onClick={onClick ? () => onClick(tileIndex) : undefined}
-      className={`relative flex h-12 w-12 select-none items-center justify-center rounded-xl border-2 text-2xl font-extrabold uppercase transition-colors sm:h-14 sm:w-14 sm:text-[2rem] ${tileStyle} ${tileEntryClass} ${
-        onClick ? "cursor-pointer" : ""
-      }`}
+      className={cn(
+        "relative flex h-12 w-12 select-none items-center justify-center rounded-xl border-2 text-2xl font-extrabold uppercase transition-colors sm:h-14 sm:w-14 sm:text-[2rem]",
+        tileStyle,
+        tileEntryClass,
+        onClick && "cursor-pointer",
+      )}
       style={tileEntryStyle}
     >
       {isActive ? (
@@ -40,7 +44,7 @@ export function Tile({ tile }: TilePropsType) {
           className="tile-active-border-animation pointer-events-none absolute inset-0 rounded-lg border-2 border-primary"
         />
       ) : null}
-      <p className={`slab ${letterRevealClass}`}>{letter}</p>
+      <p className={cn("slab", letterRevealClass)}>{letter}</p>
     </div>
   );
 }

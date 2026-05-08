@@ -77,7 +77,33 @@ const createMockSoundValue = (overrides: Record<string, unknown> = {}) => ({
 });
 
 vi.mock("@providers", () => ({
-  useApi: () => mockUseApi(),
+  useApi: () => {
+    const value = mockUseApi();
+    if (value && value.challengeClient && !value.apiManager) {
+      return {
+        ...value,
+        apiManager: {
+          challenges: {
+            getToday: value.challengeClient.getTodayChallenges,
+            generateDaily: value.challengeClient.generateDailyChallenges,
+            regenerateDaily: value.challengeClient.regenerateDailyChallenges,
+          },
+          scores: {
+            consumeDailyShield:
+              value.scoreClient?.consumeDailyShield ??
+              vi.fn().mockResolvedValue(null),
+            update:
+              value.scoreClient?.recordScore ??
+              vi.fn().mockResolvedValue({ ok: true, id: "score_test" }),
+            record: vi.fn().mockResolvedValue({ ok: true, id: "score_test" }),
+            getTop: vi.fn().mockResolvedValue({ scores: [] }),
+            syncRoundEvents: vi.fn().mockResolvedValue(null),
+          },
+        },
+      };
+    }
+    return value;
+  },
   usePlayer: () => mockUsePlayer(),
 }));
 
@@ -198,6 +224,7 @@ describe("usePlayController", () => {
       updatePlayerDifficulty: vi.fn(),
       updatePlayerManualTileSelection: vi.fn(),
       markTutorialPromptSeenForMode: vi.fn().mockResolvedValue(undefined),
+      resetTutorialPromptSeenModes: vi.fn().mockResolvedValue(undefined),
       commitVictory: vi.fn().mockResolvedValue(undefined),
       commitLoss: vi.fn().mockResolvedValue(undefined),
     });
@@ -651,16 +678,23 @@ describe("usePlayController", () => {
     expect(getDailyMeaning).toHaveBeenCalledTimes(1);
   });
 
-  it("resolves and exposes modeId from controller options", () => {
+  it("resolves and exposes zen as an enabled active mode", () => {
     const { result } = renderHook(() =>
       usePlayController({ modeId: WORDLE_MODE_IDS.ZEN }),
     );
 
     expect(result.current.modeId).toBe(WORDLE_MODE_IDS.ZEN);
-    expect(result.current.modeEnabled).toBe(false);
-    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.CLASSIC);
+    expect(result.current.modeEnabled).toBe(true);
+    expect(result.current.activeModeId).toBe(WORDLE_MODE_IDS.ZEN);
+    expect(mockUseHintController).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hintStatusOverride: "correct",
+        unlimitedHints: true,
+      }),
+    );
     expect(mockUseWordle).toHaveBeenCalledWith(
       expect.objectContaining({
+        allowUnknownWords: true,
         roundConfig: CLASSIC_ROUND_CONFIG,
       }),
     );
@@ -986,6 +1020,22 @@ describe("usePlayController", () => {
     expect(markTutorialPromptSeenForMode).toHaveBeenCalledWith("lightning");
     expect(mockNavigate).not.toHaveBeenCalled();
     expect(replacePlayer).toHaveBeenCalledWith({ declinedTutorial: false });
+  });
+
+  it("resets tutorial prompt state through player provider", () => {
+    const resetTutorialPromptSeenModes = vi.fn().mockResolvedValue(undefined);
+    mockUsePlayer.mockReturnValue({
+      ...mockUsePlayer(),
+      resetTutorialPromptSeenModes,
+    });
+
+    const { result } = renderHook(() => usePlayController());
+
+    act(() => {
+      result.current.resetTutorialTour();
+    });
+
+    expect(resetTutorialPromptSeenModes).toHaveBeenCalledTimes(1);
   });
 
   it("navigates to mode-specific help from the gameplay tour", () => {
