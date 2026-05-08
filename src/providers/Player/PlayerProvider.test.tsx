@@ -68,8 +68,8 @@ const makeWrapper =
     recoverPlayerByCode?: ApiContextType["scoreClient"]["recoverPlayerByCode"];
     adoptRecoveredIdentity?: ApiContextType["scoreClient"]["adoptRecoveredIdentity"];
     getCurrentPlayerProfile?: ApiContextType["scoreClient"]["getCurrentPlayerProfile"];
-    queueRoundEvent?: ApiContextType["scoreClient"]["queueRoundEvent"];
-    syncRoundEvents?: ApiContextType["scoreClient"]["syncRoundEvents"];
+    queueRoundEvent?: (event: unknown) => void;
+    syncRoundEvents?: (...args: unknown[]) => Promise<unknown>;
     getCurrentClientScoreSnapshot?: ApiContextType["scoreClient"]["getCurrentClientScoreSnapshot"];
   } = {}) =>
   ({ children }: { children: ReactNode }) => {
@@ -95,8 +95,6 @@ const makeWrapper =
           recoverPlayerByCode,
           adoptRecoveredIdentity,
           getCurrentPlayerProfile,
-          queueRoundEvent,
-          syncRoundEvents,
           getCurrentClientScoreSnapshot,
         },
       ) as never,
@@ -742,7 +740,6 @@ describe("PlayerProvider", () => {
           currentClientEntry: null,
         }),
         {
-          syncRoundEvents,
           getCurrentPlayerProfile: vi.fn().mockResolvedValue(null),
         },
       ) as never,
@@ -879,7 +876,6 @@ describe("PlayerProvider", () => {
       }),
       {
         mergeCurrentBrowserProgress: false,
-        clearQueuedRoundEvents: true,
       },
     );
     expect(recoveredHook.result.current.player.name).toBe("Recovered");
@@ -1006,7 +1002,6 @@ describe("PlayerProvider", () => {
         }),
         {
           mergeCurrentBrowserProgress: false,
-          clearQueuedRoundEvents: true,
         },
       );
       expect(result.current.player.name).toBe("Recovered");

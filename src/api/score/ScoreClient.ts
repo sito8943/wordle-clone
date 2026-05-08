@@ -12,10 +12,8 @@ import {
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PENDING_KEY,
   SCOREBOARD_PROFILE_IDENTITY_KEY,
-  SYNC_ROUND_EVENTS_MUTATION,
   UPDATE_SCORE_MUTATION,
   UPSERT_PLAYER_PROFILE_MUTATION,
-  WORDLE_SYNC_EVENTS_KEY,
 } from "./constants";
 import {
   DAILY_MODE_STATUS_STORAGE_KEY_PREFIX,
@@ -25,10 +23,8 @@ import {
   resolveScoreboardModeId,
 } from "@domain/wordle";
 import type {
-  PlayerDifficulty,
   PlayerLanguage,
   PlayerTutorialPromptSeenModes,
-  RoundSyncWinProof,
   ScoreboardModeId,
 } from "@domain/wordle";
 import type {
@@ -42,9 +38,6 @@ import type {
   ScoreSource,
   StoredScoreIdentity,
   StoredScore,
-  StoredRoundSyncEvent,
-  SyncRoundEventsInput,
-  SyncPendingScoresResult,
   ConsumeDailyShieldInput,
   TopScoresResult,
   UpsertPlayerProfileInput,
@@ -254,121 +247,6 @@ class ScoreClient {
     }
   }
 
-  queueRoundEvent(event: StoredRoundSyncEvent): void {
-    const safeModeId = this.normalizeModeId(event.modeId);
-    if (!this.isRemoteSupportedMode(safeModeId)) {
-      return;
-    }
-
-    const pending = this.readRoundEvents();
-    const next = pending.filter((entry) => entry.id !== event.id);
-    if (event.kind === "win") {
-      const happenedAt =
-        Number.isFinite(event.happenedAt) && event.happenedAt > 0
-          ? Math.floor(event.happenedAt)
-          : Date.now();
-      const normalizedWinEventBase = {
-        ...event,
-        pointsDelta: this.normalizeScore(event.pointsDelta),
-        modeId: safeModeId,
-        happenedAt,
-      };
-
-      if (event.version === 3) {
-        const normalizedProof = this.toRoundSyncWinProof(event.proof);
-        if (!normalizedProof) {
-          return;
-        }
-
-        next.push({
-          ...normalizedWinEventBase,
-          version: 3,
-          proof: normalizedProof,
-        });
-      } else {
-        next.push({
-          ...normalizedWinEventBase,
-          version: 2,
-        });
-      }
-    } else {
-      next.push({
-        ...event,
-        modeId: safeModeId,
-        happenedAt:
-          Number.isFinite(event.happenedAt) && event.happenedAt > 0
-            ? Math.floor(event.happenedAt)
-            : Date.now(),
-        version: 2,
-      });
-    }
-    this.writeRoundEvents(next);
-  }
-
-  async syncRoundEvents(
-    input: SyncRoundEventsInput,
-  ): Promise<RemotePlayerProfile | null> {
-    const events = this.readRoundEvents();
-    const supportedEvents = events.filter((event) =>
-      this.isRemoteSupportedMode(event.modeId),
-    );
-    if (supportedEvents.length !== events.length) {
-      this.writeRoundEvents(supportedEvents);
-    }
-
-    const identity = this.readProfileIdentity();
-
-    if (
-      supportedEvents.length === 0 ||
-      !this.gateway.isConfigured ||
-      !this.isOnline()
-    ) {
-      return null;
-    }
-
-    const orderedEvents = [...supportedEvents].sort(
-      (left, right) => left.happenedAt - right.happenedAt,
-    );
-
-    try {
-      const response = await this.gateway.mutation<unknown>(
-        SYNC_ROUND_EVENTS_MUTATION,
-        {
-          clientId: this.clientId,
-          clientRecordId: identity?.clientRecordId,
-          nick: this.normalizeNick(input.nick),
-          language: this.normalizeLanguage(input.language),
-          difficulty: input.difficulty,
-          keyboardPreference: input.keyboardPreference,
-          events: orderedEvents,
-        },
-      );
-      const lastEvent = orderedEvents[orderedEvents.length - 1];
-      const profile = this.parseRemotePlayerProfile(response, {
-        clientId: this.clientId,
-        clientRecordId: identity?.clientRecordId ?? this.createLocalId(),
-        nick: input.nick,
-        language: this.normalizeLanguage(input.language),
-        score: 0,
-        streak: 0,
-        difficulty: input.difficulty,
-        keyboardPreference: input.keyboardPreference,
-        createdAt: lastEvent.happenedAt,
-        playerCode: "",
-      });
-
-      this.clearRoundEvents();
-      this.adoptRecoveredIdentity(profile);
-      return profile;
-    } catch (error) {
-      if (!this.gateway.isNetworkError(error)) {
-        throw error;
-      }
-
-      return null;
-    }
-  }
-
   cachePlayerScore(input: RecordScoreInput): void {
     const identity = this.readProfileIdentity();
     const language = this.normalizeLanguage(input.language);
@@ -409,7 +287,6 @@ class ScoreClient {
     profile: RemotePlayerProfile,
     options?: {
       mergeCurrentBrowserProgress?: boolean;
-      clearQueuedRoundEvents?: boolean;
     },
   ): void {
     const previousIdentity = this.readProfileIdentity();
@@ -417,7 +294,6 @@ class ScoreClient {
       previousIdentity?.clientRecordId === profile.clientRecordId;
     const mergeCurrentBrowserProgress =
       options?.mergeCurrentBrowserProgress !== false;
-    const clearQueuedRoundEvents = options?.clearQueuedRoundEvents === true;
 
     this.writeProfileIdentity({ clientRecordId: profile.clientRecordId });
     this.replaceCurrentBrowserScores(
@@ -425,10 +301,6 @@ class ScoreClient {
       preserveModeScopedEntries,
       mergeCurrentBrowserProgress,
     );
-
-    if (clearQueuedRoundEvents) {
-      this.clearRoundEvents();
-    }
   }
 
   async recordScore(
@@ -636,69 +508,6 @@ class ScoreClient {
       currentClientRank: localResult.currentClientRank,
       currentClientEntry: localResult.currentClientEntry,
     };
-  }
-
-  async syncPendingScores(): Promise<SyncPendingScoresResult> {
-    const pending = this.dedupeStoredByNick(
-      this.readScores(SCOREBOARD_PENDING_KEY),
-    );
-    const supportedPending = pending.filter((entry) =>
-      this.isRemoteSupportedMode(entry.modeId),
-    );
-    if (supportedPending.length !== pending.length) {
-      this.writeScores(SCOREBOARD_PENDING_KEY, supportedPending);
-    }
-
-    if (
-      supportedPending.length === 0 ||
-      !this.gateway.isConfigured ||
-      !this.isOnline()
-    ) {
-      return { flushed: false };
-    }
-
-    const stillPending: StoredScore[] = [];
-    let networkDown = false;
-
-    for (const entry of supportedPending) {
-      if (networkDown) {
-        stillPending.push(entry);
-        continue;
-      }
-
-      try {
-        await this.gateway.mutation(
-          entry.mutation === UPDATE_SCORE_MUTATION
-            ? UPDATE_SCORE_MUTATION
-            : ADD_SCORE_MUTATION,
-          {
-            clientRecordId:
-              this.readProfileIdentity()?.clientRecordId ?? entry.localId,
-            clientId: this.clientId,
-            nick: entry.nick,
-            language: entry.language,
-            modeId: entry.modeId,
-            score: entry.score,
-            streak: entry.streak,
-            createdAt: entry.createdAt,
-          },
-        );
-      } catch (error) {
-        if (!this.gateway.isNetworkError(error)) {
-          throw error;
-        }
-
-        networkDown = true;
-        stillPending.push(entry);
-      }
-    }
-
-    this.writeScores(
-      SCOREBOARD_PENDING_KEY,
-      this.dedupeStoredByNick(stillPending),
-    );
-
-    return { flushed: stillPending.length !== supportedPending.length };
   }
 
   private localScoresRanked(
@@ -942,40 +751,6 @@ class ScoreClient {
     this.storage.setItem(key, JSON.stringify(scores));
   }
 
-  private readRoundEvents(): StoredRoundSyncEvent[] {
-    try {
-      const raw = this.storage.getItem(WORDLE_SYNC_EVENTS_KEY);
-      if (!raw) {
-        return [];
-      }
-
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) {
-        return [];
-      }
-
-      return parsed.flatMap((entry) => {
-        const normalized = this.toStoredRoundSyncEvent(entry);
-        return normalized ? [normalized] : [];
-      });
-    } catch {
-      return [];
-    }
-  }
-
-  private writeRoundEvents(events: StoredRoundSyncEvent[]): void {
-    this.storage.setItem(
-      WORDLE_SYNC_EVENTS_KEY,
-      JSON.stringify(
-        events.sort((left, right) => left.happenedAt - right.happenedAt),
-      ),
-    );
-  }
-
-  private clearRoundEvents(): void {
-    this.storage.removeItem(WORDLE_SYNC_EVENTS_KEY);
-  }
-
   private normalizeNick(nick: string): string {
     const trimmed = nick.trim();
     if (trimmed.length === 0) {
@@ -1037,22 +812,6 @@ class ScoreClient {
     return Math.max(0, Math.floor(streak));
   }
 
-  private normalizeDifficulty(value: unknown): PlayerDifficulty {
-    if (value === "easy") {
-      return "easy";
-    }
-
-    if (value === "hard") {
-      return "hard";
-    }
-
-    if (value === "insane") {
-      return "insane";
-    }
-
-    return "normal";
-  }
-
   private normalizeTutorialPromptSeenModes(
     value: unknown,
   ): PlayerTutorialPromptSeenModes | undefined {
@@ -1104,135 +863,6 @@ class ScoreClient {
     }
 
     return Math.random().toString(36).slice(2);
-  }
-
-  private toStoredRoundSyncEvent(value: unknown): StoredRoundSyncEvent | null {
-    if (!value || typeof value !== "object") {
-      return null;
-    }
-
-    const candidate = value as {
-      id?: unknown;
-      kind?: unknown;
-      pointsDelta?: unknown;
-      modeId?: unknown;
-      happenedAt?: unknown;
-      version?: unknown;
-      proof?: unknown;
-    };
-    if (
-      typeof candidate.id !== "string" ||
-      typeof candidate.kind !== "string"
-    ) {
-      return null;
-    }
-
-    if (
-      candidate.kind === "win" &&
-      typeof candidate.pointsDelta === "number" &&
-      typeof candidate.happenedAt === "number"
-    ) {
-      const modeId = this.normalizeModeId(candidate.modeId);
-      if (!this.isRemoteSupportedMode(modeId)) {
-        return null;
-      }
-
-      const safeHappenedAt = Math.floor(candidate.happenedAt);
-      if (candidate.version === 3) {
-        const normalizedProof = this.toRoundSyncWinProof(candidate.proof);
-        if (!normalizedProof) {
-          return null;
-        }
-
-        return {
-          id: candidate.id,
-          kind: "win",
-          pointsDelta: this.normalizeScore(candidate.pointsDelta),
-          modeId,
-          happenedAt: safeHappenedAt,
-          version: 3,
-          proof: normalizedProof,
-        };
-      }
-
-      return {
-        id: candidate.id,
-        kind: "win",
-        pointsDelta: this.normalizeScore(candidate.pointsDelta),
-        modeId,
-        happenedAt: safeHappenedAt,
-        version: 2,
-      };
-    }
-
-    if (candidate.kind === "loss" && typeof candidate.happenedAt === "number") {
-      const modeId = this.normalizeModeId(candidate.modeId);
-      if (!this.isRemoteSupportedMode(modeId)) {
-        return null;
-      }
-
-      return {
-        id: candidate.id,
-        kind: "loss",
-        modeId,
-        happenedAt: Math.floor(candidate.happenedAt),
-        version: 2,
-      };
-    }
-
-    return null;
-  }
-
-  private toRoundSyncWinProof(value: unknown): RoundSyncWinProof | null {
-    if (!value || typeof value !== "object") {
-      return null;
-    }
-
-    const candidate = value as Partial<RoundSyncWinProof>;
-    if (
-      typeof candidate.roundStartedAt !== "number" ||
-      typeof candidate.guessesUsed !== "number" ||
-      typeof candidate.hardModeEnabled !== "boolean" ||
-      typeof candidate.hardModeSecondsLeft !== "number" ||
-      !Array.isArray(candidate.guessWords)
-    ) {
-      return null;
-    }
-
-    const roundStartedAt = Math.floor(candidate.roundStartedAt);
-    if (!Number.isFinite(roundStartedAt) || roundStartedAt <= 0) {
-      return null;
-    }
-
-    const guessesUsed = Math.floor(candidate.guessesUsed);
-    if (!Number.isFinite(guessesUsed) || guessesUsed <= 0) {
-      return null;
-    }
-
-    const rawHardModeSecondsLeft = Math.floor(candidate.hardModeSecondsLeft);
-    if (!Number.isFinite(rawHardModeSecondsLeft)) {
-      return null;
-    }
-
-    const hardModeSecondsLeft = Math.max(0, rawHardModeSecondsLeft);
-
-    const guessWords = candidate.guessWords
-      .filter((entry): entry is string => typeof entry === "string")
-      .map((entry) => entry.trim().toUpperCase())
-      .filter((entry) => entry.length > 0);
-
-    if (guessWords.length === 0) {
-      return null;
-    }
-
-    return {
-      roundStartedAt,
-      guessesUsed,
-      difficulty: this.normalizeDifficulty(candidate.difficulty),
-      hardModeEnabled: candidate.hardModeEnabled,
-      hardModeSecondsLeft,
-      guessWords,
-    };
   }
 
   private toStoredScore(value: unknown): StoredScore | null {

@@ -341,8 +341,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
       }
       scoreClient.adoptRecoveredIdentity(remoteProfile, {
         mergeCurrentBrowserProgress: false,
-        clearQueuedRoundEvents: true,
       });
+      apiManager.syncQueue.clearRoundEvents();
       await applyRemoteProfile(remoteProfile);
       hydrateDailyModeOutcomeFromProfile(remoteProfile);
     },
@@ -775,8 +775,8 @@ const PlayerProvider = ({ children }: ProviderProps) => {
           if (!remoteProfile) return;
           scoreClient.adoptRecoveredIdentity(remoteProfile, {
             mergeCurrentBrowserProgress: false,
-            clearQueuedRoundEvents: true,
           });
+          apiManager.syncQueue.clearRoundEvents();
           await applyRemoteProfile(remoteProfile);
           hydrateDailyModeOutcomeFromProfile(remoteProfile);
         })

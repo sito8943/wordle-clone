@@ -50,10 +50,6 @@ export type TopScoresResult = {
   currentClientEntry: ScoreEntry | null;
 };
 
-export type SyncPendingScoresResult = {
-  flushed: boolean;
-};
-
 export type StoredScore = {
   localId: string;
   clientId?: string;
@@ -122,13 +118,6 @@ export type ScoreClientGatewayOverrides = {
   query?: (...args: unknown[]) => Promise<unknown>;
   mutation?: (...args: unknown[]) => Promise<unknown>;
   isNetworkError?: (error: unknown) => boolean;
-};
-
-export type SyncRoundEventsInput = {
-  nick: string;
-  language: PlayerLanguage;
-  difficulty: PlayerDifficulty;
-  keyboardPreference: PlayerKeyboardPreference;
 };
 
 export type ConsumeDailyShieldInput = {

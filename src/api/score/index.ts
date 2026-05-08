@@ -17,7 +17,6 @@ export type {
   ScoreSource,
   StoredRoundSyncEvent,
   StoredScore,
-  SyncPendingScoresResult,
   TopScoresResult,
   UpsertPlayerProfileInput,
 } from "./types";

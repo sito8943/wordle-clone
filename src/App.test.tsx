@@ -341,7 +341,6 @@ describe("App", () => {
       ScoreClient.prototype,
       "getCurrentPlayerProfile",
     ).mockResolvedValue(null);
-    vi.spyOn(ScoreClient.prototype, "syncRoundEvents").mockResolvedValue(null);
   });
 
   it("renders the main navigation", async () => {

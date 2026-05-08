@@ -6,9 +6,6 @@ import {
   SCOREBOARD_CLIENT_ID_KEY,
   SCOREBOARD_PENDING_KEY,
   SCOREBOARD_PROFILE_IDENTITY_KEY,
-  SYNC_ROUND_EVENTS_MUTATION,
-  UPDATE_SCORE_MUTATION,
-  WORDLE_SYNC_EVENTS_KEY,
 } from "./constants";
 import type { ScoreClientGatewayOverrides } from "./types";
 
@@ -163,7 +160,6 @@ describe("ScoreClient", () => {
       createdAt: 1000,
     });
     const result = await client.listTopScores(10, "en", "daily");
-    await client.syncPendingScores();
 
     expect(result.source).toBe("convex");
     expect(result.scores).toHaveLength(1);
@@ -450,48 +446,6 @@ describe("ScoreClient", () => {
     expect(result.scores).toHaveLength(1);
     expect(result.scores[0].nick).toBe("New Nick");
     expect(result.currentClientEntry?.nick).toBe("New Nick");
-  });
-
-  it("syncs pending overwrite scores using update mutation", async () => {
-    const networkError = new Error("Network offline");
-    const mutation = vi
-      .fn()
-      .mockRejectedValueOnce(networkError)
-      .mockResolvedValueOnce(undefined);
-    const query = vi.fn().mockResolvedValue([]);
-    const client = new ScoreClient(
-      createGateway({
-        isConfigured: true,
-        query,
-        mutation,
-        isNetworkError: (error) => error === networkError,
-      }),
-      storage,
-    );
-
-    await client.recordScore(
-      {
-        nick: "Sito",
-        score: 3,
-        streak: 1,
-        createdAt: 2000,
-        overwriteExisting: true,
-      },
-      UPDATE_SCORE_MUTATION,
-    );
-
-    await client.syncPendingScores();
-
-    expect(mutation).toHaveBeenNthCalledWith(
-      2,
-      UPDATE_SCORE_MUTATION,
-      expect.objectContaining({
-        nick: "Sito",
-        score: 3,
-        streak: 1,
-        createdAt: 2000,
-      }),
-    );
   });
 
   it("returns current client rank metadata from remote response", async () => {
@@ -1008,24 +962,9 @@ describe("ScoreClient", () => {
         },
       ]),
     );
-    storage.setItem(
-      WORDLE_SYNC_EVENTS_KEY,
-      JSON.stringify([
-        {
-          id: "old-win",
-          kind: "win",
-          pointsDelta: 10,
-          modeId: "classic",
-          happenedAt: 4000,
-          version: 2,
-        },
-      ]),
-    );
-
     const profile = await client.recoverPlayerByCode("zx90");
     client.adoptRecoveredIdentity(profile, {
       mergeCurrentBrowserProgress: false,
-      clearQueuedRoundEvents: true,
     });
 
     expect(client.getCurrentClientScoreSnapshot("en", "classic")).toEqual({
@@ -1041,7 +980,6 @@ describe("ScoreClient", () => {
     expect(
       cache.some((entry: { nick?: string }) => entry.nick === "Old Local"),
     ).toBe(false);
-    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
   });
 
   it("requests top scores using the recovered profile identity", async () => {
@@ -1120,199 +1058,6 @@ describe("ScoreClient", () => {
     expect(profile?.hasWonDailyToday).toBe(true);
   });
 
-  it("queues round events locally and syncs them as deltas", async () => {
-    const mutation = vi.fn().mockResolvedValue({
-      id: "remote-player",
-      clientId: "remote-client",
-      clientRecordId: "remote-record",
-      nick: "Ana",
-      playerCode: "AB12",
-      score: 24,
-      streak: 0,
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-      createdAt: 2000,
-    });
-    const client = new ScoreClient(
-      createGateway({
-        isConfigured: true,
-        mutation,
-      }),
-      storage,
-    );
-
-    client.queueRoundEvent({
-      id: "win-1",
-      kind: "win",
-      pointsDelta: 8,
-      modeId: "classic",
-      happenedAt: 1000,
-      version: 2,
-    });
-    client.queueRoundEvent({
-      id: "loss-1",
-      kind: "loss",
-      modeId: "classic",
-      happenedAt: 2000,
-      version: 2,
-    });
-
-    await client.syncRoundEvents({
-      nick: "Ana",
-      language: "en",
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-    });
-
-    expect(mutation).toHaveBeenCalledWith(
-      SYNC_ROUND_EVENTS_MUTATION,
-      expect.objectContaining({
-        nick: "Ana",
-        events: [
-          {
-            id: "win-1",
-            kind: "win",
-            pointsDelta: 8,
-            modeId: "classic",
-            happenedAt: 1000,
-            version: 2,
-          },
-          {
-            id: "loss-1",
-            kind: "loss",
-            modeId: "classic",
-            happenedAt: 2000,
-            version: 2,
-          },
-        ],
-      }),
-    );
-    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
-  });
-
-  it("syncs v3 win events with round proof metadata", async () => {
-    const mutation = vi.fn().mockResolvedValue({
-      id: "remote-player",
-      clientId: "remote-client",
-      clientRecordId: "remote-record",
-      nick: "Ana",
-      playerCode: "AB12",
-      score: 24,
-      streak: 1,
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-      createdAt: 2000,
-    });
-    const client = new ScoreClient(
-      createGateway({
-        isConfigured: true,
-        mutation,
-      }),
-      storage,
-    );
-
-    client.queueRoundEvent({
-      id: "win-v3-1",
-      kind: "win",
-      pointsDelta: 8,
-      modeId: "classic",
-      happenedAt: 1000,
-      version: 3,
-      proof: {
-        roundStartedAt: 500,
-        guessesUsed: 3,
-        difficulty: "normal",
-        hardModeEnabled: false,
-        hardModeSecondsLeft: 60,
-        guessWords: ["SLATE", "CRANE", "APPLE"],
-      },
-    });
-
-    await client.syncRoundEvents({
-      nick: "Ana",
-      language: "en",
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-    });
-
-    expect(mutation).toHaveBeenCalledWith(
-      SYNC_ROUND_EVENTS_MUTATION,
-      expect.objectContaining({
-        events: [
-          {
-            id: "win-v3-1",
-            kind: "win",
-            pointsDelta: 8,
-            modeId: "classic",
-            happenedAt: 1000,
-            version: 3,
-            proof: {
-              roundStartedAt: 500,
-              guessesUsed: 3,
-              difficulty: "normal",
-              hardModeEnabled: false,
-              hardModeSecondsLeft: 60,
-              guessWords: ["SLATE", "CRANE", "APPLE"],
-            },
-          },
-        ],
-      }),
-    );
-    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
-  });
-
-  it("keeps local classic snapshot when sync returns a stale profile", async () => {
-    const mutation = vi.fn().mockResolvedValue({
-      id: "remote-player",
-      clientId: "remote-client",
-      clientRecordId: "remote-record",
-      nick: "Ana",
-      playerCode: "AB12",
-      score: 10,
-      streak: 1,
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-      createdAt: 1000,
-    });
-    const client = new ScoreClient(
-      createGateway({
-        isConfigured: true,
-        mutation,
-      }),
-      storage,
-    );
-
-    client.cachePlayerScore({
-      nick: "Ana",
-      language: "en",
-      modeId: "classic",
-      score: 20,
-      streak: 2,
-      createdAt: 2000,
-      overwriteExisting: true,
-    });
-    client.queueRoundEvent({
-      id: "win-1",
-      kind: "win",
-      pointsDelta: 10,
-      modeId: "classic",
-      happenedAt: 3000,
-      version: 2,
-    });
-
-    await client.syncRoundEvents({
-      nick: "Ana",
-      language: "en",
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-    });
-
-    expect(client.getCurrentClientScoreSnapshot("en", "classic")).toEqual({
-      score: 20,
-      streak: 2,
-    });
-  });
-
   it("prefers cache snapshot over pending rows for current streak", () => {
     const client = new ScoreClient(createGateway(), storage);
     const clientId = storage.getItem(SCOREBOARD_CLIENT_ID_KEY) ?? "";
@@ -1353,60 +1098,5 @@ describe("ScoreClient", () => {
       score: 12,
       streak: 0,
     });
-  });
-
-  it("queues daily round events for remote sync", async () => {
-    const mutation = vi.fn().mockResolvedValue({
-      id: "remote-player",
-      clientId: "remote-client",
-      clientRecordId: "remote-record",
-      nick: "Ana",
-      playerCode: "AB12",
-      score: 1,
-      streak: 1,
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-      createdAt: 1000,
-    });
-    const client = new ScoreClient(
-      createGateway({
-        isConfigured: true,
-        mutation,
-      }),
-      storage,
-    );
-
-    client.queueRoundEvent({
-      id: "daily-win-1",
-      kind: "win",
-      pointsDelta: 1,
-      modeId: "daily",
-      happenedAt: 1000,
-      version: 2,
-    });
-
-    await client.syncRoundEvents({
-      nick: "Ana",
-      language: "en",
-      difficulty: "normal",
-      keyboardPreference: "onscreen",
-    });
-
-    expect(mutation).toHaveBeenCalledWith(
-      SYNC_ROUND_EVENTS_MUTATION,
-      expect.objectContaining({
-        events: [
-          {
-            id: "daily-win-1",
-            kind: "win",
-            pointsDelta: 1,
-            modeId: "daily",
-            happenedAt: 1000,
-            version: 2,
-          },
-        ],
-      }),
-    );
-    expect(storage.getItem(WORDLE_SYNC_EVENTS_KEY)).toBeNull();
   });
 });
