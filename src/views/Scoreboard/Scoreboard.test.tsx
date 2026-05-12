@@ -15,6 +15,7 @@ import {
   vi,
 } from "vitest";
 import { i18n, initI18n } from "@i18n";
+import { MemoryRouter } from "react-router";
 import Scoreboard from "./Scoreboard";
 import { useScoreboardController } from "./hooks";
 
@@ -37,6 +38,13 @@ const mockController = (overrides = {}) => {
   } as ReturnType<typeof useScoreboardController>);
 };
 
+const renderScoreboard = () =>
+  render(
+    <MemoryRouter>
+      <Scoreboard />
+    </MemoryRouter>,
+  );
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -53,19 +61,19 @@ beforeEach(async () => {
 describe("Scoreboard", () => {
   it("renders the heading", () => {
     mockController();
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByRole("heading", { name: "Scoreboard" })).toBeTruthy();
   });
 
   it("renders the Refresh button", () => {
     mockController();
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByRole("button", { name: "Refresh scores" })).toBeTruthy();
   });
 
   it("lets the player switch between Classic, Lightning and Daily scoreboards", () => {
     mockController();
-    render(<Scoreboard />);
+    renderScoreboard();
 
     const lightningButton = screen.getByRole("button", { name: "Lightning" });
     fireEvent.click(lightningButton);
@@ -86,31 +94,31 @@ describe("Scoreboard", () => {
 
   it("shows 'No scores yet.' when list is empty and not loading", () => {
     mockController();
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByText("No scores yet.")).toBeTruthy();
   });
 
   it("shows 'Loading scores...' when loading is true", () => {
     mockController({ loading: true });
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByText("Loading scores...")).toBeTruthy();
   });
 
   it("shows backend not configured notice when convexEnabled is false", () => {
     mockController({ convexEnabled: false });
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByText(/Backend is not configured/)).toBeTruthy();
   });
 
   it("shows offline fallback notice when convexEnabled but source is local", () => {
     mockController({ convexEnabled: true, source: "local" });
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByText(/Offline fallback active/)).toBeTruthy();
   });
 
   it("shows error message when error is set", () => {
     mockController({ error: "Failed to fetch scores" });
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByText("Failed to fetch scores")).toBeTruthy();
   });
 
@@ -141,7 +149,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByText("Ana")).toBeTruthy();
     expect(screen.getByText("Carlos")).toBeTruthy();
   });
@@ -162,7 +170,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    render(<Scoreboard />);
+    renderScoreboard();
 
     const playerButton = screen.getByRole("button", { name: "Ana" });
     const row = playerButton.closest("tr");
@@ -188,7 +196,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(
       screen.queryByRole("columnheader", {
         name: i18n.t("scoreboard.headers.date"),
@@ -214,7 +222,7 @@ describe("Scoreboard", () => {
           },
         ],
       });
-      render(<Scoreboard />);
+      renderScoreboard();
 
       const playerButton = screen.getByRole("button", { name: "Ana" });
       fireEvent.click(playerButton);
@@ -250,7 +258,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    render(<Scoreboard />);
+    renderScoreboard();
 
     const originalInnerHeight = window.innerHeight;
     Object.defineProperty(window, "innerHeight", {
@@ -317,7 +325,7 @@ describe("Scoreboard", () => {
           },
         ],
       });
-      render(<Scoreboard />);
+      renderScoreboard();
 
       fireEvent.click(screen.getByRole("button", { name: "Ana" }));
       expect(screen.getByText("Jan 1")).toBeTruthy();
@@ -353,7 +361,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    const { container } = render(<Scoreboard />);
+    const { container } = renderScoreboard();
     const row = container.querySelector(".scoreboard-current-player-row");
     expect(row).toBeTruthy();
   });
@@ -361,7 +369,7 @@ describe("Scoreboard", () => {
   it("calls refresh when Refresh button is clicked", () => {
     const refresh = vi.fn().mockResolvedValue(undefined);
     mockController({ refresh });
-    render(<Scoreboard />);
+    renderScoreboard();
     fireEvent.click(screen.getByRole("button", { name: "Refresh scores" }));
     expect(refresh).toHaveBeenCalledTimes(1);
   });
@@ -382,7 +390,7 @@ describe("Scoreboard", () => {
         isPinnedCurrentClient: false,
       })),
     });
-    render(<Scoreboard />);
+    renderScoreboard();
     expect(screen.getByText(/Real position: #15/)).toBeTruthy();
   });
 
@@ -402,7 +410,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    const { container } = render(<Scoreboard />);
+    const { container } = renderScoreboard();
     expect(container.querySelector("svg")).toBeTruthy();
   });
 
@@ -423,7 +431,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    const { container } = render(<Scoreboard />);
+    const { container } = renderScoreboard();
 
     expect(
       container.querySelector('svg[data-icon="shield-heart"]'),
@@ -447,7 +455,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    const { container } = render(<Scoreboard />);
+    const { container } = renderScoreboard();
 
     expect(container.querySelector('svg[data-icon="shield-heart"]')).toBeNull();
   });
@@ -470,7 +478,7 @@ describe("Scoreboard", () => {
         },
       ],
     });
-    const { container } = render(<Scoreboard />);
+    const { container } = renderScoreboard();
 
     expect(container.querySelector('svg[data-icon="shield-heart"]')).toBeNull();
   });

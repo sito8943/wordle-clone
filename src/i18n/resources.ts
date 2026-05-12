@@ -78,8 +78,7 @@ export const resources = {
           classic: {
             name: "Classic",
             details: {
-              baseRules:
-                "Standard mode: {{rows}} rows, {{letters}} letters.",
+              baseRules: "Standard mode: {{rows}} rows, {{letters}} letters.",
               hintsChoice:
                 "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
               hintsDisabledBonus:
@@ -91,8 +90,7 @@ export const resources = {
           lightning: {
             name: "Lightning",
             details: {
-              baseRules:
-                "Timed mode: {{rows}} rows, {{letters}} letters.",
+              baseRules: "Timed mode: {{rows}} rows, {{letters}} letters.",
               timer: "Complete the board in {{seconds}} seconds.",
               hintsChoice:
                 "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
@@ -110,7 +108,8 @@ export const resources = {
             },
             access: {
               loading: "Loading daily requirements...",
-              unavailable: "This mode will be unlocked when the word and meaning of the day are available.",
+              unavailable:
+                "This mode will be unlocked when the word and meaning of the day are available.",
             },
           },
         },
@@ -802,8 +801,7 @@ export const resources = {
           classic: {
             name: "Clásico",
             details: {
-              baseRules:
-                "Modo estándar: {{rows}} filas y {{letters}} letras.",
+              baseRules: "Modo estándar: {{rows}} filas y {{letters}} letras.",
               hintsChoice:
                 "Antes de empezar puedes decidir si activar pistas ({{hintCount}} pista amarilla).",
               hintsDisabledBonus:

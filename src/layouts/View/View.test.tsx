@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useParams } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { i18n } from "@i18n";
 import { env } from "@config";
 import {
   ROUTES,
@@ -179,11 +180,14 @@ describe("View app version dialog", () => {
   it("shows the update dialog from any route when a newer version is detected", async () => {
     env.appVersion = "0.0.16-beta";
     localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.15");
+    const expectedDialogTitle = i18n.t("home.versionUpdateDialog.title", {
+      version: env.appVersion,
+    });
 
     renderView(ROUTES.SCOREBOARD);
 
     expect(screen.getByText("Scoreboard content")).toBeTruthy();
-    expect(screen.getByText("You're now on version 0.0.16-beta")).toBeTruthy();
+    expect(screen.getByText(expectedDialogTitle)).toBeTruthy();
     expect(
       screen.getByText(
         "The app was updated successfully with improvements and changes.",
@@ -212,10 +216,13 @@ describe("View app version dialog", () => {
     env.appVersion = "0.0.16-beta";
     localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.16-beta");
     localStorage.setItem(PREVIOUS_APP_VERSION_STORAGE_KEY, "0.0.15");
+    const expectedDialogTitle = i18n.t("home.versionUpdateDialog.title", {
+      version: env.appVersion,
+    });
 
     renderView(ROUTES.SCOREBOARD);
 
-    expect(screen.getByText("You're now on version 0.0.16-beta")).toBeTruthy();
+    expect(screen.getByText(expectedDialogTitle)).toBeTruthy();
     expect(
       screen.getByText(
         "The app was updated successfully with improvements and changes.",
@@ -246,22 +253,23 @@ describe("View app version dialog", () => {
       PLAYER_STORAGE_KEY,
       JSON.stringify({ name: "Player" }),
     );
+    const expectedDialogTitle = i18n.t("home.versionUpdateDialog.title", {
+      version: env.appVersion,
+    });
 
     renderView(ROUTES.PLAY);
 
     await waitFor(() => {
       expect(screen.getByText("Initial player dialog")).toBeTruthy();
     });
-    expect(screen.queryByText("You're now on version 0.0.16-beta")).toBeNull();
+    expect(screen.queryByText(expectedDialogTitle)).toBeNull();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Confirm initial player" }),
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByText("You're now on version 0.0.16-beta"),
-      ).toBeTruthy();
+      expect(screen.getByText(expectedDialogTitle)).toBeTruthy();
     });
   });
 });
