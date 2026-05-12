@@ -1,0 +1,1 @@
+export const VERSION_UPDATE_DIALOG_FEATURE_IMAGE_SRC = "/pwa-512x512.png";

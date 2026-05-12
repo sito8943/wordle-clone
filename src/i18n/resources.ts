@@ -120,14 +120,19 @@ export const resources = {
         donationThankYouAlert:
           "Thanks for supporting Wordle with your donation.",
         versionUpdateDialog: {
-          title: "Updated to {{version}}",
-          description: "Congratulations, a new version has been published.",
+          title: "You're now on version {{version}}",
+          description:
+            "The app was updated successfully with improvements and changes.",
           previousVersionLabel: "Previous version: {{previousVersion}}.",
           historyTitle: "Version history",
           releaseLabel: "Version {{version}} · {{date}}",
           historyAction: "View changelog",
+          featuredTitle: "Main feature",
+          featuredFallback: "We're preparing more details about this version.",
+          featuredImageAlt:
+            "Illustration of the main feature in version {{version}}",
           closeAction: "Close dialog",
-          currentVersionAction: "View current changelog",
+          currentVersionAction: "View what's new",
         },
       },
       changelog: {
@@ -839,14 +844,20 @@ export const resources = {
         donate: "Donar",
         donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
         versionUpdateDialog: {
-          title: "Actualizado a {{version}}",
-          description: "Enhorabuena, se ha publicado una nueva versión.",
+          title: "Ya estás en la versión {{version}}",
+          description:
+            "La aplicación se ha actualizado correctamente con nuevas mejoras y cambios.",
           previousVersionLabel: "Versión anterior: {{previousVersion}}.",
           historyTitle: "Historial de versiones",
           releaseLabel: "Versión {{version}} · {{date}}",
           historyAction: "Ver changelog",
+          featuredTitle: "Novedad principal",
+          featuredFallback:
+            "Estamos preparando más detalles de esta versión.",
+          featuredImageAlt:
+            "Ilustración de la novedad principal de la versión {{version}}",
           closeAction: "Cerrar diálogo",
-          currentVersionAction: "Ver changelog actual",
+          currentVersionAction: "Ver novedades",
         },
       },
       changelog: {

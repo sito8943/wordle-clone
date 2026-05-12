@@ -1,4 +1,11 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { useTranslation } from "@i18n";
@@ -19,7 +26,7 @@ import {
   getChangelogRoute,
 } from "@config/routes";
 import { VIEW_DIALOG_IDS } from "./constants";
-import { VIEW_VERSION_HISTORY } from "./changelog";
+import { getResolvedVersionChangelog } from "./changelog";
 import {
   clearPendingPreviousAppVersion,
   getPendingPreviousAppVersion,
@@ -29,6 +36,7 @@ import {
   storeAppVersion,
 } from "./utils";
 import VersionUpdateDialog from "./components/VersionUpdateDialog/VersionUpdateDialog";
+import { VERSION_UPDATE_DIALOG_FEATURE_IMAGE_SRC } from "./components/VersionUpdateDialog/constants";
 
 const InitialPlayerDialog = lazy(
   () =>
@@ -36,7 +44,7 @@ const InitialPlayerDialog = lazy(
 );
 
 const View = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { apiManager } = useApi();
   const { player, recoverPlayer, updatePlayer } = usePlayer();
   const { pathname, hash, search } = useLocation();
@@ -91,6 +99,11 @@ const View = () => {
   const openCurrentVersionChangelog = useCallback(() => {
     openVersionChangelog(appVersion);
   }, [appVersion, openVersionChangelog]);
+  const currentVersionChangelog = useMemo(
+    () => getResolvedVersionChangelog(appVersion, i18n.language),
+    [appVersion, i18n.language],
+  );
+  const featuredVersionChange = currentVersionChangelog?.changes[0] ?? null;
 
   const confirmInitialPlayerName = useCallback(
     async (name: string): Promise<string | null> => {
@@ -273,10 +286,10 @@ const View = () => {
             visible={queuedVersionDialogVisible}
             onClose={closeVersionDialog}
             onOpenCurrentChangelog={openCurrentVersionChangelog}
-            onOpenVersionChangelog={openVersionChangelog}
             currentVersion={appVersion}
             previousVersion={previousAppVersion}
-            versionHistory={VIEW_VERSION_HISTORY}
+            featuredChange={featuredVersionChange}
+            featuredImageSrc={VERSION_UPDATE_DIALOG_FEATURE_IMAGE_SRC}
           />
         ) : null}
       </Suspense>

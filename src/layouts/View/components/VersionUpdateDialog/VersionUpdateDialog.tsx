@@ -1,34 +1,17 @@
 import { Button, Dialog } from "@components";
-import { getChangelogRoute } from "@config/routes";
 import { useTranslation } from "@i18n";
-import { Link } from "react-router";
 import type { VersionUpdateDialogProps } from "./types";
 
 const VersionUpdateDialog = ({
   visible,
   onClose,
   onOpenCurrentChangelog,
-  onOpenVersionChangelog,
   currentVersion,
   previousVersion,
-  versionHistory,
+  featuredChange,
+  featuredImageSrc,
 }: VersionUpdateDialogProps) => {
-  const { t, i18n } = useTranslation();
-
-  const formatReleaseDate = (value: string): string => {
-    const parsedDate = new Date(`${value}T00:00:00`);
-    if (Number.isNaN(parsedDate.getTime())) {
-      return value;
-    }
-
-    const locale =
-      i18n.language === "es" || i18n.language.startsWith("es-")
-        ? "es-ES"
-        : "en-US";
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
-      parsedDate,
-    );
-  };
+  const { t } = useTranslation();
 
   return (
     <Dialog
@@ -40,7 +23,7 @@ const VersionUpdateDialog = ({
       headerAction={<span aria-hidden="true" />}
       panelClassName="max-w-xl"
     >
-      <div className="mt-4 flex max-h-[65vh] flex-col gap-5 overflow-y-auto pr-1">
+      <div className="mt-4 flex max-h-[65vh] flex-col gap-4 overflow-y-auto pr-1">
         {previousVersion ? (
           <p className="text-sm text-neutral-700 dark:text-neutral-300">
             {t("home.versionUpdateDialog.previousVersionLabel", {
@@ -48,43 +31,28 @@ const VersionUpdateDialog = ({
             })}
           </p>
         ) : null}
-        <section>
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-            {t("home.versionUpdateDialog.historyTitle")}
-          </h3>
-          <ol className="mt-3 flex flex-col gap-3">
-            {versionHistory.map((entry) => {
-              const isCurrentVersion = entry.version === currentVersion;
-
-              return (
-                <li
-                  key={`history-${entry.version}`}
-                  className={`rounded-md border p-3 ${
-                    isCurrentVersion
-                      ? "border-primary bg-primary/10 dark:border-primary dark:bg-primary/20"
-                      : "border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900"
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                    {t("home.versionUpdateDialog.releaseLabel", {
-                      version: entry.version,
-                      date: formatReleaseDate(entry.releasedAt),
-                    })}
-                  </p>
-                  <Link
-                    to={getChangelogRoute(entry.version)}
-                    className="mt-2 text-sm font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary/80"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onOpenVersionChangelog(entry.version);
-                    }}
-                  >
-                    {t("home.versionUpdateDialog.historyAction")}
-                  </Link>
-                </li>
-              );
-            })}
-          </ol>
+        <section className="rounded-lg border border-neutral-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900">
+          <div className="grid gap-3 sm:grid-cols-[8rem_1fr] sm:items-center">
+            <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700">
+              <img
+                src={featuredImageSrc}
+                alt={t("home.versionUpdateDialog.featuredImageAlt", {
+                  version: currentVersion,
+                })}
+                className="h-28 w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                {t("home.versionUpdateDialog.featuredTitle")}
+              </h3>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                {featuredChange ??
+                  t("home.versionUpdateDialog.featuredFallback")}
+              </p>
+            </div>
+          </div>
         </section>
         <div className="flex flex-wrap justify-end gap-2">
           <Button variant="outline" color="neutral" onClick={onClose}>

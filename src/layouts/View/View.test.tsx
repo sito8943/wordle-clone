@@ -183,15 +183,25 @@ describe("View app version dialog", () => {
     renderView(ROUTES.SCOREBOARD);
 
     expect(screen.getByText("Scoreboard content")).toBeTruthy();
-    expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
+    expect(screen.getByText("You're now on version 0.0.16-beta")).toBeTruthy();
     expect(
-      screen.getByText("Congratulations, a new version has been published."),
+      screen.getByText(
+        "The app was updated successfully with improvements and changes.",
+      ),
     ).toBeTruthy();
-    expect(screen.getByText("Version history")).toBeTruthy();
+    expect(
+      screen.getByText(/Added local app-version tracking to detect/i),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("img", {
+        name: "Illustration of the main feature in version 0.0.16-beta",
+      }),
+    ).toBeTruthy();
+    expect(screen.queryByText("Version history")).toBeNull();
     expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.15");
 
     fireEvent.click(
-      screen.getByRole("button", { name: "View current changelog" }),
+      screen.getByRole("button", { name: "View what's new" }),
     );
 
     await waitFor(() => {
@@ -207,9 +217,11 @@ describe("View app version dialog", () => {
 
     renderView(ROUTES.SCOREBOARD);
 
-    expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
+    expect(screen.getByText("You're now on version 0.0.16-beta")).toBeTruthy();
     expect(
-      screen.getByText("Congratulations, a new version has been published."),
+      screen.getByText(
+        "The app was updated successfully with improvements and changes.",
+      ),
     ).toBeTruthy();
     expect(screen.getByText("Previous version: 0.0.15.")).toBeTruthy();
 
@@ -226,7 +238,7 @@ describe("View app version dialog", () => {
 
     renderView(ROUTES.SCOREBOARD);
 
-    expect(screen.queryByText("Updated to 0.0.15")).toBeNull();
+    expect(screen.queryByText("You're now on version 0.0.15")).toBeNull();
   });
 
   it("queues layout dialogs and renders the next one after closing the active one", async () => {
@@ -242,14 +254,16 @@ describe("View app version dialog", () => {
     await waitFor(() => {
       expect(screen.getByText("Initial player dialog")).toBeTruthy();
     });
-    expect(screen.queryByText("Updated to 0.0.16-beta")).toBeNull();
+    expect(screen.queryByText("You're now on version 0.0.16-beta")).toBeNull();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Confirm initial player" }),
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Updated to 0.0.16-beta")).toBeTruthy();
+      expect(
+        screen.getByText("You're now on version 0.0.16-beta"),
+      ).toBeTruthy();
     });
   });
 });
