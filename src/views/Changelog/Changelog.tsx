@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ROUTES, getChangelogRoute } from "@config/routes";
+import { getChangelogRoute } from "@config/routes";
 import { useTranslation } from "@i18n";
 import { Button } from "@components";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
@@ -46,7 +46,7 @@ const Changelog = (): JSX.Element => {
             color="neutral"
             icon={faChevronLeft}
             onClick={() => {
-              navigate(ROUTES.HOME);
+              navigate(-1);
             }}
             className="px-1!"
           ></Button>

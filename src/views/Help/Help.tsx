@@ -12,6 +12,9 @@ import {
   HELP_MODE_DETAIL_KEYS,
   HELP_MODE_TRANSLATION_VALUES,
 } from "./constants";
+import { Button } from "@components";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router";
 
 const Help = (): JSX.Element => {
   const { t } = useTranslation();
@@ -21,6 +24,7 @@ const Help = (): JSX.Element => {
     difficultyHardEnabled,
     difficultyInsaneEnabled,
   } = useFeatureFlags();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const modeQuery = searchParams.get(ROUTE_SEARCH_PARAMS.MODE);
   const modeId = resolveWordleModeId(modeQuery);
@@ -67,7 +71,18 @@ const Help = (): JSX.Element => {
         className="settings-entrance my-0!"
         style={{ animationDelay: "0ms" }}
       >
-        <h2 className="page-title">{t("play.helpDialog.title")}</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="ghost"
+            color="neutral"
+            icon={faChevronLeft}
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="px-1!"
+          ></Button>
+          <h2 className="page-title">{t("play.helpDialog.title")}</h2>
+        </div>
         <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
           {t("play.helpDialog.description")}
         </p>

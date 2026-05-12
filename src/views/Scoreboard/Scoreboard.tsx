@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import {
+  faChevronLeft,
   faRotateRight,
   faShieldHeart,
 } from "@fortawesome/free-solid-svg-icons";
@@ -22,9 +23,11 @@ import {
 } from "./constants";
 import { useScoreboardController } from "./hooks";
 import type { DropdownPlacement } from "./types";
+import { useNavigate } from "react-router";
 
 const Scoreboard = (): JSX.Element => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [selectedModeId, setSelectedModeId] = useState<ScoreboardModeId>(
     SCOREBOARD_MODE_IDS.CLASSIC,
   );
@@ -295,6 +298,15 @@ const Scoreboard = (): JSX.Element => {
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center justify-between gap-4">
+          <Button
+            variant="ghost"
+            color="neutral"
+            icon={faChevronLeft}
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="px-1!"
+          ></Button>
           <h2 className="page-title">{t("scoreboard.title")}</h2>
           <Button
             onClick={() => void refresh()}
