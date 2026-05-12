@@ -99,7 +99,7 @@ const Help = (): JSX.Element => {
           <h3 className="text-base font-semibold">
             {t("play.helpDialog.modeTitle", { mode: modeName })}
           </h3>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-800 dark:text-neutral-200">
+          <ul className="w-full mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-800 dark:text-neutral-200">
             {modeDetailKeys.map((detailKey) => (
               <li key={detailKey}>
                 {t(detailKey, HELP_MODE_TRANSLATION_VALUES)}
@@ -116,7 +116,7 @@ const Help = (): JSX.Element => {
         <h3 className="text-base font-semibold">
           {t("play.helpDialog.scoringTitle")}
         </h3>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-800 dark:text-neutral-200">
+        <ul className="w-full mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-800 dark:text-neutral-200">
           <li>{t("play.helpDialog.scoring.basePoints")}</li>
           <li>
             {t("play.helpDialog.scoring.streakBonus", {
