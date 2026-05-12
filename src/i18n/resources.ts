@@ -483,11 +483,11 @@ export const resources = {
             board: {
               title: "Board",
               description:
-                "This is your board. Guess the hidden word before you run out of rows. Green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
+                "This is your board. Guess the hidden word before you run out of rows. If the letter is Green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
             },
             boardZen: {
               description:
-                "This is your board. In Zen mode there is no row limit, so you can solve it at your own pace. Green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
+                "This is your board. In Zen mode there is no row limit, so you can solve it at your own pace. If the letter is Green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
             },
             keyboard: {
               title: "Keyboard",
@@ -502,11 +502,11 @@ export const resources = {
             hint: {
               title: "Hints",
               description:
-                "Use this button for a yellow hint. Availability depends on mode and difficulty.",
+                "Use this button to reveal a yellow letter. Availability depends on mode and difficulty.",
             },
             hintZen: {
               description:
-                "In Zen mode this button gives only green hints, with unlimited uses.",
+                "In Zen mode this button reveals only green letters, with unlimited uses.",
             },
             focus: {
               title: "Focus on/off",
@@ -1209,11 +1209,11 @@ export const resources = {
             board: {
               title: "Tablero",
               description:
-                "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas. Verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
+                "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas. Si la letra es Verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
             },
             boardZen: {
               description:
-                "Este es tu tablero. En modo Calmado no hay límite de filas, así que puedes resolverlo a tu ritmo. Verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
+                "Este es tu tablero. En modo Calmado no hay límite de filas, así que puedes resolverlo a tu ritmo. Si la letra es Verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
             },
             keyboard: {
               title: "Teclado",
@@ -1228,11 +1228,11 @@ export const resources = {
             hint: {
               title: "Pistas",
               description:
-                "Usa este botón para pedir una pista amarilla. La disponibilidad depende del modo y la dificultad.",
+                "Usa este botón para revelar una letra amarilla. La disponibilidad depende del modo y la dificultad.",
             },
             hintZen: {
               description:
-                "En modo Calmado este botón da solo pistas verdes, y además son infinitas.",
+                "En modo Calmado este botón revela solo letras verdes, y además son infinitas.",
             },
             focus: {
               title: "Focus on/off",
