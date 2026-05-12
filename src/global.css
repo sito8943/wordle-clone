@@ -89,7 +89,21 @@ h1,
   }
 
   .profile-card-container {
-    @apply gap-4;
+    @apply gap-4 mt-2;
+  }
+
+  .profile-alert-slot {
+    @apply w-full overflow-hidden;
+    max-height: 0;
+    opacity: 0;
+    transition:
+      max-height 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.18s ease-out;
+  }
+
+  .profile-alert-slot-open {
+    max-height: 10rem;
+    opacity: 1;
   }
 
   .profile-card-field-row {
@@ -597,6 +611,10 @@ h1,
   animation: none !important;
 }
 
+.wordle-animations-disabled .profile-alert-slot {
+  transition: none !important;
+}
+
 /* Alert enter/exit animations */
 @keyframes alert-enter {
   from {
@@ -819,6 +837,7 @@ h1,
   }
 
   .settings-entrance,
+  .profile-alert-slot,
   .scoreboard-row-entrance,
   .scoreboard-date-dropdown-enter,
   .scoreboard-date-dropdown-exit,

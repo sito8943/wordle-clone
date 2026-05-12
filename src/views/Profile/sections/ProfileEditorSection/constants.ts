@@ -1,0 +1,1 @@
+export const PROFILE_EDITOR_ALERT_EXIT_MS = 200;

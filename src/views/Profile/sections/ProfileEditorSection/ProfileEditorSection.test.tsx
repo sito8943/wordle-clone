@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Player } from "@domain/wordle";
 
@@ -27,6 +27,7 @@ vi.mock("@i18n", () => {
 
 import { i18n } from "@i18n";
 import type { ProfileViewContextValue } from "@views/Profile/providers/types";
+import { PROFILE_EDITOR_ALERT_EXIT_MS } from "./constants";
 import ProfileEditorSection from "./ProfileEditorSection";
 
 let mockProfileView: ProfileViewContextValue;
@@ -93,6 +94,7 @@ const buildMockProfileView = (
 
 describe("ProfileEditorSection", () => {
   afterEach(() => {
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -131,5 +133,33 @@ describe("ProfileEditorSection", () => {
       i18n.t("profile.labels.name"),
     ) as HTMLInputElement;
     expect(nameInput.readOnly).toBe(false);
+  });
+
+  it("keeps the success message during exit animation before unmounting", () => {
+    vi.useFakeTimers();
+    mockProfileView = buildMockProfileView({
+      savedMessage: i18n.t("profile.savedMessage"),
+    });
+    const { rerender } = render(<ProfileEditorSection />);
+
+    expect(screen.getByRole("status").className).toContain("alert-enter");
+
+    mockProfileView = buildMockProfileView({
+      savedMessage: "",
+    });
+    rerender(<ProfileEditorSection />);
+
+    expect(screen.getByRole("status").className).toContain("alert-exit");
+    expect(screen.getByText(i18n.t("profile.savedMessage"))).toBeTruthy();
+
+    act(() => {
+      vi.advanceTimersByTime(PROFILE_EDITOR_ALERT_EXIT_MS - 1);
+    });
+    expect(screen.getByRole("status")).toBeTruthy();
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(screen.queryByRole("status")).toBeNull();
   });
 });
