@@ -79,7 +79,7 @@ export const resources = {
             name: "Classic",
             details: {
               baseRules:
-                "Current standard mode: {{rows}} rows, {{letters}} letters.",
+                "Standard mode: {{rows}} rows, {{letters}} letters.",
               hintsChoice:
                 "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
               hintsDisabledBonus:
@@ -92,8 +92,8 @@ export const resources = {
             name: "Lightning",
             details: {
               baseRules:
-                "Current timed mode: {{rows}} rows, {{letters}} letters.",
-              timer: "You have {{seconds}} seconds to finish the board.",
+                "Timed mode: {{rows}} rows, {{letters}} letters.",
+              timer: "Complete the board in {{seconds}} seconds.",
               hintsChoice:
                 "Before starting, you can choose if hints are enabled ({{hintCount}} yellow hint).",
               hintsDisabledBonus:
@@ -110,7 +110,7 @@ export const resources = {
             },
             access: {
               loading: "Loading daily requirements...",
-              unavailable: "Requires daily word and meaning to unlock.",
+              unavailable: "This mode will be unlocked when the word and meaning of the day are available.",
             },
           },
         },
@@ -120,7 +120,7 @@ export const resources = {
         donationThankYouAlert:
           "Thanks for supporting Wordle with your donation.",
         versionUpdateDialog: {
-          title: "You're now on version {{version}}",
+          title: "Updated to the version {{version}}",
           description:
             "The app was updated successfully with improvements and changes.",
           previousVersionLabel: "Previous version: {{previousVersion}}.",
@@ -162,12 +162,12 @@ export const resources = {
           action: "Reload page",
         },
         routeOutlet: {
-          title: "This page could not be rendered.",
+          title: "This page could not be loaded.",
           description: "Try again or navigate to a different section.",
           action: "Reload page",
         },
         scoreboard: {
-          title: "Scoreboard table failed to render.",
+          title: "The ranking could not be loaded.",
           description: "Retry to load player rankings.",
           action: "Reload page",
         },
@@ -803,7 +803,7 @@ export const resources = {
             name: "Clásico",
             details: {
               baseRules:
-                "Modo estándar actual: {{rows}} filas y {{letters}} letras.",
+                "Modo estándar: {{rows}} filas y {{letters}} letras.",
               hintsChoice:
                 "Antes de empezar puedes decidir si activar pistas ({{hintCount}} pista amarilla).",
               hintsDisabledBonus:
@@ -816,8 +816,8 @@ export const resources = {
             name: "Relámpago",
             details: {
               baseRules:
-                "Modo contrarreloj actual: {{rows}} filas y {{letters}} letras.",
-              timer: "Tienes {{seconds}} segundos para completar el tablero.",
+                "Modo contrarreloj: {{rows}} filas y {{letters}} letras.",
+              timer: "Completa el tablero en {{seconds}} segundos.",
               hintsChoice:
                 "Antes de empezar puedes decidir si activar pistas ({{hintCount}} pista amarilla).",
               hintsDisabledBonus:
@@ -835,7 +835,7 @@ export const resources = {
             access: {
               loading: "Cargando requisitos del modo diario...",
               unavailable:
-                "Requiere palabra y significado diarios para desbloquearse.",
+                "Este modo se desbloqueará cuando estén disponibles la palabra y el significado del día.",
             },
           },
         },
@@ -844,13 +844,13 @@ export const resources = {
         donate: "Donar",
         donationThankYouAlert: "Gracias por apoyar Wordle con tu donación.",
         versionUpdateDialog: {
-          title: "Ya estás en la versión {{version}}",
+          title: "Actualizado a la versión {{version}}",
           description:
-            "La aplicación se ha actualizado correctamente con nuevas mejoras y cambios.",
+            "La aplicación se ha actualizado correctamente con mejoras y novedades.",
           previousVersionLabel: "Versión anterior: {{previousVersion}}.",
           historyTitle: "Historial de versiones",
           releaseLabel: "Versión {{version}} · {{date}}",
-          historyAction: "Ver changelog",
+          historyAction: "Ver novedades",
           featuredTitle: "Novedad principal",
           featuredFallback: "Estamos preparando más detalles de esta versión.",
           featuredImageAlt:
@@ -876,7 +876,7 @@ export const resources = {
       },
       errors: {
         generic: {
-          title: "Algo ha ido mal.",
+          title: "Algo salió mal.",
           description: "Vuelve a intentarlo en un momento.",
           action: "Recargar página",
         },
@@ -887,12 +887,12 @@ export const resources = {
           action: "Recargar página",
         },
         routeOutlet: {
-          title: "No se ha podido renderizar esta página.",
+          title: "No se pudo cargar esta página.",
           description: "Vuelve a intentarlo o navega a otra sección.",
           action: "Recargar página",
         },
         scoreboard: {
-          title: "No se ha podido renderizar la tabla.",
+          title: "No se pudo cargar la clasificación.",
           description: "Reintenta cargar la clasificación.",
           action: "Recargar página",
         },
@@ -904,7 +904,7 @@ export const resources = {
       },
       scoreboard: {
         title: "Clasificación",
-        refreshAriaLabel: "Actualizar puntuaciones",
+        refreshAriaLabel: "Actualizar clasificación",
         modeSelectorAriaLabel: "Seleccionar modo del marcador",
         convexNotConfigured:
           "El backend no está configurado (`VITE_BACKEND_URL` o `VITE_CONVEX_URL`). Se usará solo almacenamiento local.",
@@ -923,7 +923,7 @@ export const resources = {
           dailyWinner: "Este jugador ganó el desafío diario de hoy",
         },
         loading: "Cargando puntuaciones...",
-        empty: "Todavía no hay puntuaciones.",
+        empty: "Aún no hay puntuaciones.",
       },
       profile: {
         pageTitle: "Ajustes",
@@ -1122,16 +1122,16 @@ export const resources = {
           helpButton: "Ayuda",
           resultsAriaLabel: "Resultados",
           resultsButton: "Resultados",
-          settingsAriaLabel: "Ajustes rápidos",
+          settingsAriaLabel: "Configuración rápida",
           settingsButton: "Ajustes",
           developerConsoleAriaLabel: "Consola de desarrollo",
           developerConsoleButton: "Consola dev",
           insaneTimerAriaLabel: "Temporizador insano: {{seconds}} segundos",
           insaneTimerValue: "{{seconds}}s",
-          focusOnAriaLabel: "Focus on",
-          focusOnButton: "Focus on",
-          focusOffAriaLabel: "Focus off",
-          focusOffButton: "Focus off",
+          focusOnAriaLabel: "Modo enfoque",
+          focusOnButton: "Modo enfoque",
+          focusOffAriaLabel: "Desactivar enfoque",
+          focusOffButton: "Desactivar enfoque",
           refreshAriaLabel: "Actualizar",
           loadingWordList: "Cargando lista de palabras...",
           volumeAriaLabel: "Volumen",
@@ -1149,7 +1149,7 @@ export const resources = {
         volumeDialog: {
           title: "Volumen",
           muteAriaLabel: "Silenciar",
-          unmuteAriaLabel: "Activar sonido",
+          unmuteAriaLabel: "Activar audio",
           volumeSliderAriaLabel: "Nivel de volumen",
           enabledLabel: "Activo",
           channelEnabledAriaLabel: "Activar canal {{channel}}",

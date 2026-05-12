@@ -49,6 +49,7 @@ import {
   isEditableKeyboardTarget,
   hasVisibleModalDialog,
   markStartAnimationAsSeen,
+  resolveHintRevealStatus,
   shouldAnimateKeyboardEntryOnBoardLoad,
   shouldAnimateKeyboardEntryOnNewBoard,
   shouldAnimateOnFirstSessionView,
@@ -692,12 +693,18 @@ export default function useWordle(options: UseWordleOptions = {}) {
         return false;
       }
 
+      const resolvedHintStatus = resolveHintRevealStatus(
+        hintStatus,
+        letter,
+        answer[nextIndex] ?? "",
+      );
+
       setGameStateWithPersistence((previous) =>
         setLetterAt(previous, nextIndex, letter, resolvedRoundConfig),
       );
       setActiveRowHintStatuses((previous) => ({
         ...previous,
-        [nextIndex]: hintStatus,
+        [nextIndex]: resolvedHintStatus,
       }));
       setHintRevealTileIndex(nextIndex);
       setHintRevealPulse((previous) => previous + 1);

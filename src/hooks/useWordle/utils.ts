@@ -1,4 +1,5 @@
 import { WORDLE_START_ANIMATION_SESSION_KEY } from "@domain/wordle";
+import type { HintTileStatus } from "./types";
 
 export const hasSeenStartAnimationInSession = (): boolean => {
   if (typeof window === "undefined") {
@@ -140,4 +141,20 @@ export const getFirstEmptyTileIndex = (
   }
 
   return null;
+};
+
+export const resolveHintRevealStatus = (
+  hintStatus: HintTileStatus,
+  revealedLetter: string,
+  answerLetter: string,
+): HintTileStatus => {
+  if (hintStatus === "correct") {
+    return "correct";
+  }
+
+  if (hintStatus === "present" && revealedLetter === answerLetter) {
+    return "correct";
+  }
+
+  return hintStatus;
 };
