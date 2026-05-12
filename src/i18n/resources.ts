@@ -482,11 +482,11 @@ export const resources = {
             board: {
               title: "Board",
               description:
-                "This is your board. Guess the hidden word before you run out of rows. If the letter is Green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
+                "This is your board. Guess the hidden word before you run out of rows. If the letter is green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
             },
             boardZen: {
               description:
-                "This is your board. In Zen mode there is no row limit, so you can solve it at your own pace. If the letter is Green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
+                "This is your board. In Zen mode there is no row limit, so you can solve it at your own pace. If the letter is green means correct letter in the correct position, yellow means correct letter in a different position, and gray means the letter is not in the word.",
             },
             keyboard: {
               title: "Keyboard",
@@ -1207,11 +1207,11 @@ export const resources = {
             board: {
               title: "Tablero",
               description:
-                "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas. Si la letra es Verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
+                "Este es tu tablero. Adivina la palabra oculta antes de quedarte sin filas. Si la letra es verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
             },
             boardZen: {
               description:
-                "Este es tu tablero. En modo Calmado no hay límite de filas, así que puedes resolverlo a tu ritmo. Si la letra es Verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
+                "Este es tu tablero. En modo Calmado no hay límite de filas, así que puedes resolverlo a tu ritmo. Si la letra es verde significa letra correcta en la posición correcta, amarillo significa letra correcta en una posición diferente y gris significa que la letra no está en la palabra.",
             },
             keyboard: {
               title: "Teclado",
