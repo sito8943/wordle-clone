@@ -200,9 +200,7 @@ describe("View app version dialog", () => {
     expect(screen.queryByText("Version history")).toBeNull();
     expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.15");
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "View what's new" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "View what's new" }));
 
     await waitFor(() => {
       expect(localStorage.getItem(APP_VERSION_STORAGE_KEY)).toBe("0.0.16-beta");

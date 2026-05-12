@@ -43,7 +43,9 @@ const ProfileEditorSection = () => {
           <div
             role="status"
             aria-live="polite"
-            className={savedMessageAlert.isExiting ? "alert-exit" : "alert-enter"}
+            className={
+              savedMessageAlert.isExiting ? "alert-exit" : "alert-enter"
+            }
           >
             <Alert message={alertMessage} color="success" />
           </div>

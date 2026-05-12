@@ -852,8 +852,7 @@ export const resources = {
           releaseLabel: "Versión {{version}} · {{date}}",
           historyAction: "Ver changelog",
           featuredTitle: "Novedad principal",
-          featuredFallback:
-            "Estamos preparando más detalles de esta versión.",
+          featuredFallback: "Estamos preparando más detalles de esta versión.",
           featuredImageAlt:
             "Ilustración de la novedad principal de la versión {{version}}",
           closeAction: "Cerrar diálogo",
