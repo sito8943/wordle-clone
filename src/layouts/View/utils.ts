@@ -4,6 +4,7 @@ import {
   PLAYER_STORAGE_KEY,
   PREVIOUS_APP_VERSION_STORAGE_KEY,
 } from "./constants";
+import { CONSENT_STORAGE_KEY } from "@providers/Consent/constants";
 import { DEFAULT_PLAYER } from "@providers/Player/constants";
 import type { ViewVersionHistoryEntry } from "./types";
 
@@ -152,6 +153,31 @@ const restoreStoredPlayerCode = (code: string): void => {
   }
 };
 
+/** The privacy choice as stored, so an app update doesn't ask it again. */
+const readStoredConsentRaw = (): string | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return localStorage.getItem(CONSENT_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const restoreStoredConsentRaw = (raw: string | null): void => {
+  if (typeof window === "undefined" || raw === null) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(CONSENT_STORAGE_KEY, raw);
+  } catch {
+    // Ignore localStorage errors.
+  }
+};
+
 const toNumericSegments = (version: string): number[] =>
   version
     .split(".")
@@ -256,8 +282,10 @@ export const resetBrowserStorageOnAppUpdate = (
   }
 
   const preservedPlayerCode = readStoredPlayerCode();
+  const preservedConsent = readStoredConsentRaw();
   clearBrowserStorages();
   restoreStoredPlayerCode(preservedPlayerCode);
+  restoreStoredConsentRaw(preservedConsent);
   storeAppVersion(currentVersion);
   storePendingPreviousAppVersion(previousVersion);
   return previousVersion;

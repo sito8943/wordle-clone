@@ -1,3 +1,4 @@
+import { CONSENT_STORAGE_KEY } from "@providers/Consent/constants";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   APP_VERSION_STORAGE_KEY,
@@ -83,6 +84,22 @@ describe("View version helpers", () => {
     expect(localStorage.getItem(PREVIOUS_APP_VERSION_STORAGE_KEY)).toBe(
       "0.0.15",
     );
+  });
+
+  it("keeps the privacy choice on app update", () => {
+    const consent = JSON.stringify({
+      analytics: true,
+      version: 1,
+      decidedAt: "2026-11-05T10:00:00.000Z",
+    });
+    localStorage.setItem(APP_VERSION_STORAGE_KEY, "0.0.15");
+    localStorage.setItem(CONSENT_STORAGE_KEY, consent);
+    localStorage.setItem("wordle:test-local", "value");
+
+    resetBrowserStorageOnAppUpdate("0.0.16-beta");
+
+    expect(localStorage.getItem(CONSENT_STORAGE_KEY)).toBe(consent);
+    expect(localStorage.getItem("wordle:test-local")).toBeNull();
   });
 
   it("does not recreate player storage on update when there is no recovery code", () => {

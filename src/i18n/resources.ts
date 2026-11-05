@@ -199,6 +199,14 @@ export const resources = {
         loading: "Loading scores...",
         empty: "No scores yet.",
       },
+      privacy: {
+        notice: {
+          title: "Your privacy",
+          body: "We keep on your device only what the game needs: your player, your games and your settings. With your permission, we also count anonymously which screens are opened, with no data about you, your games or your device, to know what to improve. You can change it any time in Settings.",
+          accept: "Accept",
+          reject: "Reject",
+        },
+      },
       profile: {
         pageTitle: "Settings",
         editAction: "Edit",
@@ -223,12 +231,15 @@ export const resources = {
           endOfGameDialogs: "End-of-game dialogs",
           sound: "Sound effects",
           manualTileSelection: "Manual tile selection",
+          analytics: "Anonymous usage statistics",
         },
         endOfGameDialogsDescription:
           "Show dialogs when you win or lose a board.",
         soundEnabledDescription: "Play game sounds during matches.",
         manualTileSelectionDescription:
           "Click a tile before typing. The cursor will not advance automatically.",
+        analyticsDescription:
+          "Counts which screens are opened, with no data about you, your games or your device. Turning it off deletes the counts not sent yet.",
         codeHelp:
           "Use this 4-character code to recover your settings on another browser.",
         recovery: {
@@ -923,6 +934,14 @@ export const resources = {
         loading: "Cargando puntuaciones...",
         empty: "Aún no hay puntuaciones.",
       },
+      privacy: {
+        notice: {
+          title: "Tu privacidad",
+          body: "Guardamos en tu dispositivo solo lo que el juego necesita: tu jugador, tus partidas y tus ajustes. Con tu permiso, también contamos de forma anónima qué pantallas se abren, sin datos sobre ti, tus partidas ni tu dispositivo, para saber qué mejorar. Puedes cambiarlo cuando quieras en Ajustes.",
+          accept: "Aceptar",
+          reject: "Rechazar",
+        },
+      },
       profile: {
         pageTitle: "Ajustes",
         editAction: "Editar",
@@ -947,6 +966,7 @@ export const resources = {
           endOfGameDialogs: "Diálogos de fin de partida",
           sound: "Efectos de sonido",
           manualTileSelection: "Selección manual de casillas",
+          analytics: "Estadísticas de uso anónimas",
         },
         endOfGameDialogsDescription:
           "Muestra diálogos cuando ganas o pierdes un tablero.",
@@ -954,6 +974,8 @@ export const resources = {
           "Reproduce sonidos del juego durante las partidas.",
         manualTileSelectionDescription:
           "Haz clic en una casilla antes de escribir. El cursor no avanzará automáticamente.",
+        analyticsDescription:
+          "Cuenta qué pantallas se abren, sin datos sobre ti, tus partidas ni tu dispositivo. Al desactivarlo se borran los conteos aún no enviados.",
         codeHelp:
           "Usa este código de 4 caracteres para recuperar tus ajustes en otro navegador.",
         recovery: {

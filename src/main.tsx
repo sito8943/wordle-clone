@@ -6,6 +6,10 @@ import { env } from "@config";
 import App from "./App.tsx";
 import { ErrorBoundary, ErrorFallback } from "@components";
 import { resetBrowserStorageOnAppUpdate } from "@layouts/View/utils";
+// Imported directly, not through the @providers barrel, so they stay out of
+// every other module that uses it.
+import { ConsentProvider } from "@providers/Consent";
+import { FeatureUsageProvider } from "@providers/FeatureUsage";
 import {
   ApiProvider,
   DialogQueueProvider,
@@ -65,15 +69,19 @@ void initI18n().then(() => {
             storageKeys={WORDLE_SOUND_STORAGE_KEYS}
           >
             <FeatureFlagsProvider>
-              <ApiProvider>
-                <PlayerProvider>
-                  <PopupProvider>
-                    <DialogQueueProvider>
-                      <App />
-                    </DialogQueueProvider>
-                  </PopupProvider>
-                </PlayerProvider>
-              </ApiProvider>
+              <ConsentProvider>
+                <FeatureUsageProvider>
+                  <ApiProvider>
+                    <PlayerProvider>
+                      <PopupProvider>
+                        <DialogQueueProvider>
+                          <App />
+                        </DialogQueueProvider>
+                      </PopupProvider>
+                    </PlayerProvider>
+                  </ApiProvider>
+                </FeatureUsageProvider>
+              </ConsentProvider>
             </FeatureFlagsProvider>
           </SoundProvider>
         </QueryRoot>

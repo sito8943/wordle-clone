@@ -59,6 +59,8 @@ const configuredDailyWordApiUrl = readString(
 
 const env: RuntimeEnv = {
   appVersion: readString(import.meta.env.VITE_APP_VERSION, "0.0.0"),
+  usageUrl: readOptionalString(import.meta.env.VITE_USAGE_URL),
+  usageKey: readOptionalString(import.meta.env.VITE_USAGE_KEY),
   mode: runtimeMode,
   baseUrl: readString(import.meta.env.BASE_URL, "/"),
   backendUrl,

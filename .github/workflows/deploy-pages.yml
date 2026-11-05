@@ -8,6 +8,9 @@ env:
   VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
   VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
   VITE_APP_VERSION: ${{ vars.VITE_APP_VERSION }}
+  # Anonymous feature usage (sito-feature-usage), only after the player accepts it
+  VITE_USAGE_URL: https://api.usage.sito8943.com
+  VITE_USAGE_KEY: ${{ secrets.VITE_USAGE_KEY }}
   VITE_WORD_LIST_BUTTON_ENABLED: ${{ vars.VITE_WORD_LIST_BUTTON_ENABLED || 'true' }}
   VITE_WORD_REPORT_PHONE_NUMBER: ${{ vars.VITE_WORD_REPORT_PHONE_NUMBER }}
   VITE_WORD_REPORT_BUTTON_ENABLED: ${{ vars.VITE_WORD_REPORT_BUTTON_ENABLED || 'true' }}

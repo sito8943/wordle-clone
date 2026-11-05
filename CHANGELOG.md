@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-05
+
+### Branch `feat/feature-usage`
+
+- Added anonymous feature usage (sito-feature-usage, app `wordle`): one `page.<route>` count per screen, never who plays. Off without `VITE_USAGE_URL`.
+- Added a privacy notice (`DataChoices`): nothing is counted until the player accepts; accept and reject have the same weight. Settings has a switch to change or withdraw it (withdrawing deletes unsent counts).
+- The app-update storage reset now keeps `wordle:consent`, so the notice isn't asked again on every release.
+
 ## 2026-05-08
 
 ### Branch `0.0.23`
