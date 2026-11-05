@@ -1,9 +1,11 @@
 import { Button, SwitcherField } from "@components";
 import type { ThemePreference } from "@hooks/useThemePreference";
 import { useTranslation } from "@i18n";
+import { useConsent } from "@providers/Consent/useConsent";
 import { useFeatureFlags } from "@providers/FeatureFlags";
 import { DifficultySection } from "../DifficultySection";
 import {
+  PROFILE_ANALYTICS_INPUT_ID,
   PROFILE_END_OF_GAME_DIALOGS_INPUT_ID,
   PROFILE_MANUAL_TILE_SELECTION_INPUT_ID,
   PROFILE_SOUND_ENABLED_INPUT_ID,
@@ -13,6 +15,7 @@ import { useProfileView } from "@views/Profile/providers";
 
 const SettingsSection = () => {
   const { t } = useTranslation();
+  const { analytics, setAnalytics } = useConsent();
   const { soundEnabled: soundFeatureEnabled } = useFeatureFlags();
   const {
     controller: {
@@ -102,6 +105,16 @@ const SettingsSection = () => {
         />
       </div>
       <DifficultySection />
+      {/* Withdrawing consent must be as easy as giving it: applied at once. */}
+      <div id="privacy" className="mt-4 max-w-xl">
+        <SwitcherField
+          id={PROFILE_ANALYTICS_INPUT_ID}
+          checked={analytics === true}
+          onChange={(event) => setAnalytics(event.target.checked)}
+          label={t("profile.labels.analytics")}
+          description={t("profile.analyticsDescription")}
+        />
+      </div>
     </section>
   );
 };

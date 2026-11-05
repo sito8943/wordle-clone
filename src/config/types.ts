@@ -1,5 +1,9 @@
 export type RuntimeEnv = {
   appVersion: string;
+  /** sito-feature-usage API; empty: anonymous usage counts are off. */
+  usageUrl?: string;
+  /** The `wordle` key in sito-feature-usage. */
+  usageKey?: string;
   mode: string;
   baseUrl: string;
   backendUrl?: string;

@@ -193,7 +193,8 @@ This is an evolution of the current layered architecture, not a replacement for 
 - `wordle:sound-muted`: persisted master channel mute toggle for audio output.
 - `wordle:channel:music:enabled`, `wordle:channel:music:volume`, `wordle:channel:music:muted`: persisted music channel controls used by the sound provider.
 - `wordle:channel:sfx:enabled`, `wordle:channel:sfx:volume`, `wordle:channel:sfx:muted`: persisted SFX channel controls used by the sound provider.
-- `wordle:app-version`: last frontend app version seen by this browser. On startup, if `env.appVersion` is newer than this value, the app clears both `localStorage` and `sessionStorage` before providers mount, but preserves the normalized `player.code` (recovery code) by restoring a minimal `player` payload (`name: "Player"` + `code`) after the reset; then it stores the current version.
+- `wordle:consent`: the player's privacy choice (`{ analytics, version, decidedAt }`, `src/providers/Consent`). Anonymous feature usage (sito-feature-usage, `src/providers/FeatureUsage`: one `page.<ROUTES key>` per screen, from `routes.subscribe`, so nothing renders inside the layout) only runs when `analytics` is true; the notice (`DataChoices`) shows until a choice is made, and Settings switches it. Kept across the app-update reset below.
+- `wordle:app-version`: last frontend app version seen by this browser. On startup, if `env.appVersion` is newer than this value, the app clears both `localStorage` and `sessionStorage` before providers mount, but preserves `wordle:consent` and the normalized `player.code` (recovery code) by restoring a minimal `player` payload (`name: "Player"` + `code`) after the reset; then it stores the current version.
 - `wordle:app-version:previous`: temporary previous version marker used to keep the version-update dialog context after the storage reset.
 - additional feature keys for theme/animations/scoreboard caches.
 

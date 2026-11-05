@@ -6,6 +6,7 @@ export const PROFILE_DIFFICULTY_MODE_INPUT_ID = "difficulty-mode";
 export const PROFILE_END_OF_GAME_DIALOGS_INPUT_ID = "end-of-game-dialogs";
 export const PROFILE_SOUND_ENABLED_INPUT_ID = "sound-enabled";
 export const PROFILE_MANUAL_TILE_SELECTION_INPUT_ID = "manual-tile-selection";
+export const PROFILE_ANALYTICS_INPUT_ID = "anonymous-usage";
 export const DIFFICULTY_CHANGE_DIALOG_TITLE_ID =
   "difficulty-change-dialog-title";
 export const LANGUAGE_DIALOG_TITLE_ID = "language-dialog-title";
